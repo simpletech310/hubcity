@@ -90,35 +90,40 @@ export async function POST(request: Request) {
 
     if (itemsError) throw itemsError;
 
-    // Upsert business_customers
-    const { data: existing } = await supabase
+    // Upsert business_customers (fire-and-forget, don't block order)
+    supabase
       .from("business_customers")
       .select("id, total_orders, total_spent")
       .eq("business_id", business_id)
       .eq("customer_id", user.id)
-      .single();
-
-    if (existing) {
-      await supabase
-        .from("business_customers")
-        .update({
-          total_orders: existing.total_orders + 1,
-          total_spent: existing.total_spent + total,
-          last_visit: new Date().toISOString(),
-        })
-        .eq("id", existing.id);
-    } else {
-      await supabase.from("business_customers").insert({
-        business_id,
-        customer_id: user.id,
-        total_orders: 1,
-        total_bookings: 0,
-        total_spent: total,
-        first_visit: new Date().toISOString(),
-        last_visit: new Date().toISOString(),
-        tags: [],
+      .single()
+      .then(({ data: existing }) => {
+        if (existing) {
+          supabase
+            .from("business_customers")
+            .update({
+              total_orders: existing.total_orders + 1,
+              total_spent: existing.total_spent + total,
+              last_visit: new Date().toISOString(),
+            })
+            .eq("id", existing.id)
+            .then(() => {});
+        } else {
+          supabase
+            .from("business_customers")
+            .insert({
+              business_id,
+              customer_id: user.id,
+              total_orders: 1,
+              total_bookings: 0,
+              total_spent: total,
+              first_visit: new Date().toISOString(),
+              last_visit: new Date().toISOString(),
+              tags: [],
+            })
+            .then(() => {});
+        }
       });
-    }
 
     // Notify business owner of new order (fire-and-forget)
     supabase

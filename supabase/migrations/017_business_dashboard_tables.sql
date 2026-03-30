@@ -276,6 +276,38 @@ CREATE POLICY "stripe_accounts_owner_read" ON stripe_accounts
   );
 
 -- ============================================================
+-- BUSINESS CUSTOMERS (CRM tracking)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS business_customers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id UUID NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  customer_id UUID NOT NULL REFERENCES profiles(id),
+  total_orders INTEGER DEFAULT 0,
+  total_bookings INTEGER DEFAULT 0,
+  total_spent INTEGER DEFAULT 0,
+  first_visit TIMESTAMPTZ DEFAULT NOW(),
+  last_visit TIMESTAMPTZ DEFAULT NOW(),
+  tags TEXT[] DEFAULT '{}',
+  UNIQUE(business_id, customer_id)
+);
+
+CREATE INDEX idx_business_customers_business ON business_customers(business_id);
+CREATE INDEX idx_business_customers_customer ON business_customers(customer_id);
+
+ALTER TABLE business_customers ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "business_customers_owner_read" ON business_customers
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM businesses WHERE id = business_customers.business_id AND owner_id = auth.uid())
+  );
+
+CREATE POLICY "business_customers_insert" ON business_customers
+  FOR INSERT WITH CHECK (customer_id = auth.uid());
+
+CREATE POLICY "business_customers_update" ON business_customers
+  FOR UPDATE USING (customer_id = auth.uid());
+
+-- ============================================================
 -- RE-SEED MENU ITEMS INTO THE NEW TABLE
 -- (Migration 016 tried to insert but table didn't exist yet)
 -- ============================================================

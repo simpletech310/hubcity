@@ -115,13 +115,13 @@ export default async function BusinessDetailPage({
     .limit(6);
 
   // Fetch services if accepts bookings
-  let services: { id: string; name: string; description: string | null; duration_minutes: number; price: number }[] = [];
+  let services: { id: string; name: string; description: string | null; duration: number; price: number }[] = [];
   if (biz.accepts_bookings) {
     const { data: svcData } = await supabase
       .from("services")
-      .select("id, name, description, duration_minutes, price")
+      .select("id, name, description, duration, price")
       .eq("business_id", biz.id)
-      .eq("is_active", true)
+      .eq("is_available", true)
       .order("sort_order")
       .limit(6);
     services = (svcData ?? []) as typeof services;
@@ -280,9 +280,9 @@ export default async function BusinessDetailPage({
               <div>
                 <p className="text-sm font-bold">
                   <span className="text-emerald">Open</span>
-                  <span className="text-txt-secondary font-normal"> · Closes {todayHours.close}</span>
+                  <span className="text-txt-secondary font-normal"> · {typeof todayHours === "string" ? todayHours : `${todayHours.open} — ${todayHours.close}`}</span>
                 </p>
-                <p className="text-[11px] text-txt-secondary mt-0.5">{todayHours.open} — {todayHours.close} today</p>
+                <p className="text-[11px] text-txt-secondary mt-0.5">Today&apos;s hours</p>
               </div>
             </div>
           )}
@@ -333,7 +333,7 @@ export default async function BusinessDetailPage({
                     )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[10px] text-txt-secondary flex items-center gap-1">
-                        🕐 {svc.duration_minutes} min
+                        🕐 {svc.duration} min
                       </span>
                     </div>
                   </div>
@@ -407,7 +407,7 @@ export default async function BusinessDetailPage({
                   )}
                 </div>
                 <span className="font-heading font-bold shrink-0 ml-3" style={{ color: accentColor }}>
-                  ${(item.price_cents / 100).toFixed(2)}
+                  ${(item.price / 100).toFixed(2)}
                 </span>
               </div>
             ))}
@@ -449,6 +449,7 @@ export default async function BusinessDetailPage({
               const hours = biz.hours?.[day];
               if (!hours) return null;
               const isToday = day === today;
+              const hoursStr = typeof hours === "string" ? hours : `${hours.open} — ${hours.close}`;
               return (
                 <div
                   key={day}
@@ -463,7 +464,7 @@ export default async function BusinessDetailPage({
                     </span>
                   </div>
                   <span className={isToday ? "font-bold" : "text-txt-secondary"}>
-                    {hours.open} — {hours.close}
+                    {hoursStr}
                   </span>
                 </div>
               );
