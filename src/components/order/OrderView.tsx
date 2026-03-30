@@ -3,10 +3,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
 import { useCart } from "@/lib/cart";
 import MenuItemCard from "./MenuItemCard";
 import CartSheet from "./CartSheet";
+import PaymentSheet from "./PaymentSheet";
 import type { Business, MenuItem } from "@/types/database";
 
 interface OrderViewProps {
@@ -19,6 +19,13 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
   const { state, dispatch, subtotal, itemCount } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  // Payment state
+  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<string>("");
+  const [paymentTotal, setPaymentTotal] = useState(0);
 
   // Set business in cart context on mount
   useEffect(() => {
@@ -43,15 +50,8 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
     setCheckoutLoading(true);
 
     try {
-      // MVP: Skip Stripe Elements payment form.
-      // In production, you would:
-      // 1. POST to /api/stripe/create-payment-intent with cart data
-      // 2. Use Stripe Elements to collect card details
-      // 3. Confirm the payment intent client-side
-      // 4. Then create the order after successful payment
-
-      // For MVP, create order directly with pending status (simulated payment)
-      const res = await fetch("/api/orders", {
+      // Create payment intent and pending order
+      const res = await fetch("/api/orders/create-payment-intent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -65,24 +65,42 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
             special_instructions: item.special_instructions ?? null,
           })),
           delivery_address:
-            state.orderType === "delivery" ? "" : null, // TODO: collect delivery address from user input
+            state.orderType === "delivery" ? "" : null,
           tip: state.tip,
         }),
       });
 
       if (!res.ok) {
-        throw new Error("Failed to create order");
+        const err = await res.json();
+        throw new Error(err.error || "Failed to start checkout");
       }
 
-      const order = await res.json();
-      dispatch({ type: "CLEAR" });
-      router.push(`/orders/${order.id}`);
+      const data = await res.json();
+      setClientSecret(data.client_secret);
+      setOrderId(data.order_id);
+      setOrderNumber(data.order_number);
+      setPaymentTotal(data.total);
+
+      // Close cart, open payment
+      setCartOpen(false);
+      setPaymentOpen(true);
     } catch (err) {
       console.error("Checkout error:", err);
-      alert("Something went wrong placing your order. Please try again.");
+      alert("Something went wrong starting checkout. Please try again.");
     } finally {
       setCheckoutLoading(false);
     }
+  }
+
+  function handlePaymentSuccess(confirmedOrderId: string) {
+    dispatch({ type: "CLEAR" });
+    setPaymentOpen(false);
+    router.push(`/orders/${confirmedOrderId}`);
+  }
+
+  function handlePaymentClose() {
+    setPaymentOpen(false);
+    // Order stays pending — they can retry from cart
   }
 
   return (
@@ -136,7 +154,7 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
       </div>
 
       {/* Cart Summary Bar */}
-      {itemCount > 0 && (
+      {itemCount > 0 && !paymentOpen && (
         <div className="fixed bottom-0 inset-x-0 max-w-[430px] mx-auto z-30">
           <div className="bg-deep border-t border-border-subtle px-5 py-4">
             <button
@@ -164,6 +182,19 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
         onCheckout={handleCheckout}
         loading={checkoutLoading}
       />
+
+      {/* Payment Sheet */}
+      {clientSecret && orderId && (
+        <PaymentSheet
+          open={paymentOpen}
+          onClose={handlePaymentClose}
+          clientSecret={clientSecret}
+          orderId={orderId}
+          orderNumber={orderNumber}
+          total={paymentTotal}
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </div>
   );
 }
