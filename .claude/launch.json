@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hubcity-dev",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["/tmp/hubcity-app/.claude/start-dev.sh"],
+      "port": 3001,
+      "autoPort": true
+    }
+  ]
+}
