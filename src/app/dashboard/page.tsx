@@ -59,17 +59,21 @@ export default async function DashboardOverview() {
   const isResourceManager = userRole === "city_official" || userRole === "admin";
 
   // ── Business owner data ─────────────────────────────────
-  let business: { id: string } | null = null;
+  let business: { id: string; name: string; rating_avg: number; rating_count: number } | null = null;
   let todayCount = 0;
   let bookingCount = 0;
   let monthRevenue = 0;
+  let totalOrders = 0;
+  let totalCustomers = 0;
+  let menuItemCount = 0;
+  let totalBookings = 0;
   let orders: (Order & { customer: { display_name: string } | null })[] = [];
   let stripe: StripeAccount | null = null;
 
   if (isBusinessOwner) {
     const { data: biz } = await supabase
       .from("businesses")
-      .select("id")
+      .select("id, name, rating_avg, rating_count")
       .eq("owner_id", user.id)
       .single();
 
@@ -83,7 +87,7 @@ export default async function DashboardOverview() {
         1
       ).toISOString();
 
-      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount] =
+      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount, allOrdersCount, uniqueCustomers, menuItems, allBookingsCount] =
         await Promise.all([
           supabase
             .from("orders")
@@ -111,6 +115,22 @@ export default async function DashboardOverview() {
             .select("*")
             .eq("business_id", business.id)
             .single(),
+          supabase
+            .from("orders")
+            .select("id", { count: "exact", head: true })
+            .eq("business_id", business.id),
+          supabase
+            .from("orders")
+            .select("customer_id")
+            .eq("business_id", business.id),
+          supabase
+            .from("menu_items")
+            .select("id", { count: "exact", head: true })
+            .eq("business_id", business.id),
+          supabase
+            .from("bookings")
+            .select("id", { count: "exact", head: true })
+            .eq("business_id", business.id),
         ]);
 
       todayCount = ordersToday.count ?? 0;
@@ -123,6 +143,10 @@ export default async function DashboardOverview() {
         customer: { display_name: string } | null;
       })[];
       stripe = stripeAccount.data as StripeAccount | null;
+      totalOrders = allOrdersCount.count ?? 0;
+      totalCustomers = new Set((uniqueCustomers.data ?? []).map((o: { customer_id: string }) => o.customer_id)).size;
+      menuItemCount = menuItems.count ?? 0;
+      totalBookings = allBookingsCount.count ?? 0;
     }
   }
 
@@ -175,6 +199,7 @@ export default async function DashboardOverview() {
       {/* ── Business Owner Stats ─────────────────────────── */}
       {isBusinessOwner && business && (
         <>
+          {/* Today's Snapshot */}
           <div className="grid grid-cols-3 gap-3">
             <Card className="text-center">
               <p className="text-2xl font-heading font-bold text-gold">{todayCount}</p>
@@ -190,6 +215,57 @@ export default async function DashboardOverview() {
               </p>
               <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
             </Card>
+          </div>
+
+          {/* Business Metrics */}
+          <div>
+            <h2 className="text-sm font-semibold text-txt-secondary mb-3">
+              Business Metrics
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-gold rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Total Orders</p>
+                <p className="text-xl font-heading font-bold text-gold">{totalOrders}</p>
+              </Card>
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-hc-purple rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Customers</p>
+                <p className="text-xl font-heading font-bold text-hc-purple">{totalCustomers}</p>
+              </Card>
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-emerald rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Menu Items</p>
+                <p className="text-xl font-heading font-bold text-emerald">{menuItemCount}</p>
+              </Card>
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-cyan rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Bookings</p>
+                <p className="text-xl font-heading font-bold text-cyan">{totalBookings}</p>
+              </Card>
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-coral rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Rating</p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-xl font-heading font-bold text-coral">
+                    {business.rating_avg ? Number(business.rating_avg).toFixed(1) : "--"}
+                  </p>
+                  <span className="text-[10px] text-txt-secondary">★</span>
+                </div>
+                <p className="text-[9px] text-txt-secondary">{business.rating_count || 0} reviews</p>
+              </Card>
+              <Link href="/dashboard/analytics">
+                <Card hover className="relative overflow-hidden h-full flex flex-col justify-center">
+                  <div className="absolute top-0 left-0 w-[3px] h-full bg-gold rounded-r" />
+                  <div className="flex items-center gap-2">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-gold">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span className="text-sm font-medium text-gold">View Analytics</span>
+                  </div>
+                </Card>
+              </Link>
+            </div>
           </div>
 
           {/* Quick Actions */}

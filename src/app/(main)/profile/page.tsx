@@ -188,6 +188,17 @@ export default async function ProfilePage() {
     districtEvents = (data as Record<string, unknown>[]) ?? [];
   }
 
+  // Check if user is a business owner
+  let userBusiness: { id: string; name: string; slug: string; rating_avg: number; rating_count: number; category: string } | null = null;
+  if (role === "business_owner") {
+    const { data: biz } = await supabase
+      .from("businesses")
+      .select("id, name, slug, rating_avg, rating_count, category")
+      .eq("owner_id", user.id)
+      .single();
+    userBusiness = biz;
+  }
+
   const dInfo = district ? districtInfo[district] : null;
   const posts = recentPosts ?? [];
   const tickets = ticketOrders ?? [];
@@ -286,6 +297,56 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* ── Business Dashboard ── */}
+      {userBusiness && (
+        <section className="px-5 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gold" />
+            <h2 className="font-heading font-bold text-base">My Business</h2>
+          </div>
+          <Link href="/dashboard">
+            <div className="rounded-2xl bg-gradient-to-br from-gold/10 via-card to-card border border-gold/20 p-4 hover:border-gold/40 transition-colors press relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0">
+                  <span className="text-xl">🏪</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading font-bold text-[14px] truncate">{userBusiness.name}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[11px] text-txt-secondary capitalize">{userBusiness.category}</span>
+                    {Number(userBusiness.rating_avg) > 0 && (
+                      <>
+                        <span className="text-txt-secondary/30">·</span>
+                        <span className="text-[11px] text-gold">★ {Number(userBusiness.rating_avg).toFixed(1)}</span>
+                        <span className="text-[11px] text-txt-secondary">({userBusiness.rating_count})</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold shrink-0">
+                  <path d="M8 4l6 6-6 6" />
+                </svg>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-midnight/40 rounded-lg p-2 text-center">
+                  <span className="text-sm">📋</span>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Orders</p>
+                </div>
+                <div className="bg-midnight/40 rounded-lg p-2 text-center">
+                  <span className="text-sm">📅</span>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Bookings</p>
+                </div>
+                <div className="bg-midnight/40 rounded-lg p-2 text-center">
+                  <span className="text-sm">📊</span>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Analytics</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
 
       {/* ── Your District ── */}
       {district && dInfo && (
