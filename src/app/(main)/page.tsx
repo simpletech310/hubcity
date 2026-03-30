@@ -40,13 +40,11 @@ const quickActions = [
   { label: "Food", icon: "🔥", href: "/food", color: "#FF6B6B", desc: "Eat local" },
   { label: "Resources", icon: "💡", href: "/resources", color: "#06B6D4", desc: "Get help" },
   { label: "Schools", icon: "🎓", href: "/schools", color: "#3B82F6", desc: "K-12 channels" },
-  { label: "Live", icon: "📺", href: "/live", color: "#EF4444", desc: "Watch now" },
-  { label: "City Hall", icon: "🏛️", href: "/city-hall", color: "#F2A900", desc: "Government" },
+  { label: "HubTV", icon: "📺", href: "/live", color: "#EF4444", desc: "Watch now" },
+  { label: "City Hall", icon: "🏛️", href: "/city-hall", color: "#F2A900", desc: "Gov & Issues" },
   { label: "Jobs", icon: "💼", href: "/jobs", color: "#8B5CF6", desc: "Find careers" },
   { label: "Health", icon: "❤️", href: "/health", color: "#22C55E", desc: "Wellness" },
-  { label: "Issues", icon: "🚧", href: "/city-hall/issues", color: "#EF4444", desc: "Report & track" },
   { label: "Groups", icon: "🤝", href: "/groups", color: "#A855F7", desc: "Community" },
-  { label: "Podcasts", icon: "🎙️", href: "/podcasts", color: "#F97316", desc: "Listen now" },
 ];
 
 const businessImages: Record<string, string> = {

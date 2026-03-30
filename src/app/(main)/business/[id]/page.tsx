@@ -46,8 +46,11 @@ const categoryArt: Record<string, string> = {
 
 const badgeIcons: Record<string, string> = {
   black_owned: "✊🏿",
+  women_owned: "👩🏾",
   woman_owned: "👩🏾",
+  hispanic_owned: "🇲🇽",
   veteran_owned: "🎖️",
+  locally_owned: "📍",
   lgbtq_friendly: "🏳️‍🌈",
   family_owned: "👨‍👩‍👧",
   eco_friendly: "🌱",
@@ -146,7 +149,7 @@ export default async function BusinessDetailPage({
 
         {/* Back button */}
         <div className="absolute top-4 left-4 z-10">
-          <Link href="/business" className="w-9 h-9 rounded-full glass flex items-center justify-center press">
+          <Link href={biz.category === "restaurant" ? "/food" : "/business"} className="w-9 h-9 rounded-full glass flex items-center justify-center press">
             <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
               <path d="M11 13L7 9l4-4" />
             </svg>

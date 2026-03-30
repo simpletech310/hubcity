@@ -44,40 +44,79 @@ const comptonfavs = [
   { name: "Desserts", icon: "🧁", color: "#EC4899", search: "dessert" },
 ];
 
-// ─── Helper: Time-based open check (simplified) ────
-function isOpenNow(hours: Record<string, { open: string; close: string }> | null): boolean {
-  if (!hours) return false;
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const now = new Date();
-  const day = days[now.getDay()];
-  const h = hours[day];
-  if (!h) return false;
-  const currentMin = now.getHours() * 60 + now.getMinutes();
-  const [openH, openM] = h.open.split(":").map(Number);
-  const [closeH, closeM] = h.close.split(":").map(Number);
-  const openMin = openH * 60 + openM;
-  const closeMin = closeH * 60 + closeM;
-  if (closeMin < openMin) return currentMin >= openMin || currentMin <= closeMin; // overnight
+// ─── Helper: Parse time string like "10:00 AM" to minutes since midnight ────
+function parseTimeToMin(t: string): number {
+  const match = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return -1;
+  let h = parseInt(match[1]);
+  const m = parseInt(match[2]);
+  const ampm = match[3]?.toUpperCase();
+  if (ampm === "PM" && h < 12) h += 12;
+  if (ampm === "AM" && h === 12) h = 0;
+  return h * 60 + m;
+}
+
+// Hours can be either { open, close } objects or "10:00 AM - 8:00 PM" strings
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseHoursEntry(h: any): { openMin: number; closeMin: number } | null {
+  if (!h) return null;
+  if (typeof h === "string") {
+    if (h.toLowerCase() === "closed") return null;
+    const parts = h.split(/\s*[-–]\s*/);
+    if (parts.length < 2) return null;
+    const openMin = parseTimeToMin(parts[0]);
+    const closeMin = parseTimeToMin(parts[1]);
+    if (openMin < 0 || closeMin < 0) return null;
+    return { openMin, closeMin };
+  }
+  if (h.open && h.close) {
+    return { openMin: parseTimeToMin(h.open), closeMin: parseTimeToMin(h.close) };
+  }
+  return null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function getDayKey(hours: Record<string, any>): string | null {
+  const dayShort = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const dayFull = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+  const d = new Date().getDay();
+  // Try short form first (our DB uses short), then full
+  if (hours[dayShort[d]] !== undefined) return dayShort[d];
+  if (hours[dayFull[d]] !== undefined) return dayFull[d];
+  return null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isOpenNow(hours: Record<string, any> | null): boolean {
+  if (!hours || Object.keys(hours).length === 0) return false;
+  const key = getDayKey(hours);
+  if (!key) return false;
+  const parsed = parseHoursEntry(hours[key]);
+  if (!parsed) return false;
+  const currentMin = new Date().getHours() * 60 + new Date().getMinutes();
+  const { openMin, closeMin } = parsed;
+  if (closeMin <= openMin) return currentMin >= openMin || currentMin <= closeMin; // overnight
   return currentMin >= openMin && currentMin <= closeMin;
 }
 
-function isLateNight(hours: Record<string, { open: string; close: string }> | null): boolean {
-  if (!hours) return false;
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const now = new Date();
-  const day = days[now.getDay()];
-  const h = hours[day];
-  if (!h) return false;
-  const [closeH] = h.close.split(":").map(Number);
-  return closeH >= 22 || closeH <= 4; // closes at 10PM+ or early morning (overnight)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isLateNight(hours: Record<string, any> | null): boolean {
+  if (!hours || Object.keys(hours).length === 0) return false;
+  const key = getDayKey(hours);
+  if (!key) return false;
+  const parsed = parseHoursEntry(hours[key]);
+  if (!parsed) return false;
+  const closeH = Math.floor(parsed.closeMin / 60);
+  return closeH >= 22 || closeH <= 4;
 }
 
-function isAlwaysOpen(hours: Record<string, { open: string; close: string }> | null): boolean {
-  if (!hours) return false;
-  const days = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  return days.every(day => {
-    const h = hours[day];
-    return h && h.open === "00:00" && h.close === "23:59";
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isAlwaysOpen(hours: Record<string, any> | null): boolean {
+  if (!hours || Object.keys(hours).length === 0) return false;
+  const allDays = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  return allDays.every(day => {
+    const parsed = parseHoursEntry(hours[day]);
+    return parsed && parsed.openMin === 0 && parsed.closeMin === 23 * 60 + 59;
   });
 }
 

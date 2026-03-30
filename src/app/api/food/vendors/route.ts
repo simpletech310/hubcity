@@ -12,7 +12,7 @@ export async function GET() {
       )
       .eq("is_mobile_vendor", true)
       .eq("is_published", true)
-      .eq("vendor_status", "active")
+      .in("vendor_status", ["active", "en_route"])
       .order("location_updated_at", { ascending: false });
 
     if (error) throw error;

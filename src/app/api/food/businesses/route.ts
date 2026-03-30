@@ -16,19 +16,18 @@ export async function GET(request: Request) {
       .order("rating_avg", { ascending: false });
 
     if (subtype) {
-      // Filter by specific food subtype
       if (subtype === "food_truck") {
         query = query.eq("is_mobile_vendor", true).eq("category", "restaurant");
       } else if (subtype === "cart") {
         query = query.eq("is_mobile_vendor", true);
+      } else if (subtype === "restaurant") {
+        query = query.eq("category", "restaurant").eq("is_mobile_vendor", false);
       } else {
-        query = query.eq("category", subtype).eq("is_mobile_vendor", false);
+        query = query.eq("category", subtype);
       }
     } else {
-      // All food businesses: restaurants, food_trucks, bakeries, cafes, or mobile vendors
-      query = query.or(
-        "category.in.(restaurant,food_truck,bakery,cafe),is_mobile_vendor.eq.true"
-      );
+      // All food businesses: restaurants + mobile vendors
+      query = query.eq("category", "restaurant");
     }
 
     if (search) {
