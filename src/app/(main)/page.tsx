@@ -145,7 +145,7 @@ export default async function HomePage() {
       {/* ─── Art Spotlight Hero ─── */}
       <section className="relative">
         <Link href={`/art/${featuredArt.slug}`} className="block press">
-          <div className="relative w-full" style={{ height: "55vh", minHeight: "380px" }}>
+          <div className="relative w-full h-screen">
             <Image
               src={featuredArt.imageUrl}
               alt={featuredArt.title}
@@ -155,8 +155,8 @@ export default async function HomePage() {
               sizes="100vw"
             />
             {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-b from-midnight/40 via-transparent to-midnight" />
-            <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
+            <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
 
             {/* Art Spotlight badge */}
             <div className="absolute top-4 left-5 z-10">
@@ -167,24 +167,32 @@ export default async function HomePage() {
             </div>
 
             {/* Art info overlay at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 z-10">
+            <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
               <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
-                {featuredArt.medium} · {featuredArt.year}
+                Featured Artist · {featuredArt.year}
               </p>
-              <h2 className="font-display text-[24px] leading-tight mb-1 drop-shadow-lg">
+              <h2 className="font-display text-[28px] leading-tight mb-1.5 drop-shadow-lg">
                 &ldquo;{featuredArt.title}&rdquo;
               </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-[13px] text-gold font-heading font-semibold">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[14px] text-gold font-heading font-semibold">
                   {featuredArt.artist}
                 </span>
-                <span className="text-white/30">·</span>
-                <span className="text-[12px] text-white/40">{featuredArt.location}</span>
               </div>
-              <p className="text-[11px] text-white/30 mt-2 flex items-center gap-1">
+              <p className="text-[12px] text-white/40 mb-3">
+                {featuredArt.medium} · {featuredArt.location}
+              </p>
+              <p className="text-[11px] text-white/30 flex items-center gap-1">
                 Tap to view full artwork and artist details
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold"><path d="M5 3l4 4-4 4"/></svg>
               </p>
+
+              {/* Scroll indicator */}
+              <div className="flex justify-center mt-4">
+                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
+                  <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M3 5l4 4 4-4"/></svg>
+                </div>
+              </div>
             </div>
           </div>
         </Link>
