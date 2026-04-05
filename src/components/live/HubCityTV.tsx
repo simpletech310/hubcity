@@ -65,7 +65,7 @@ const ORIGINALS = [
     episodes: 6,
     gradient: "from-compton-red/80 via-compton-red/30 to-transparent",
     accent: "#EF4444",
-    playbackId: "gz2zqxILC0002QEg8p9YBCrlfHIgi5yIXK009ep02Nngpbc",
+    playbackId: "uV00dB900ydiHbaZ3ytSRUUmWK01S00mLQqL6hNYzPcSUzM",
   },
   {
     title: "Block Beats",
@@ -74,7 +74,7 @@ const ORIGINALS = [
     episodes: 12,
     gradient: "from-hc-purple/80 via-hc-purple/30 to-transparent",
     accent: "#8B5CF6",
-    playbackId: "VNSRVl9AwnEcIGVwuQAgRBUoCGs3TbYE900ywl01nUXzs",
+    playbackId: "djIRWA5IxCqF00raJ3hjIMd488F69sRhhF00xolcpwQGI",
   },
   {
     title: "Friday Night Lights",
@@ -83,7 +83,7 @@ const ORIGINALS = [
     episodes: 8,
     gradient: "from-emerald/80 via-emerald/30 to-transparent",
     accent: "#22C55E",
-    playbackId: "201pH01yrmEaWSDwxS003lXyqTUYXS9S6QgHvj66Oda2m8",
+    playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY",
   },
   {
     title: "The Real Compton",
@@ -92,7 +92,7 @@ const ORIGINALS = [
     episodes: 10,
     gradient: "from-gold/80 via-gold/30 to-transparent",
     accent: "#F2A900",
-    playbackId: "fRGWXPRIebDIEe01hIkiPzPlEcgYsEZL9dGVm8nOYYGk",
+    playbackId: "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo",
   },
   {
     title: "Compton Cooks",
