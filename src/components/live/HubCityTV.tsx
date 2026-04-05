@@ -408,21 +408,26 @@ export default function HubCityTV({
           HERO BANNER — Netflix-style cinematic header
           ══════════════════════════════════════════════════════ */}
       <div className="relative -mt-[72px] pt-[72px]">
-        {/* Abstract gradient background */}
-        <div
-          className="absolute inset-0 transition-all duration-700"
-          style={{
-            background: `
-              linear-gradient(180deg, transparent 0%, var(--color-midnight) 100%),
-              radial-gradient(ellipse at 20% 50%, ${currentHero.accent}30 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 30%, ${currentHero.accent}15 0%, transparent 50%),
-              var(--color-midnight)
-            `,
-          }}
-        />
-        {/* Decorative circles */}
-        <div className="absolute top-20 -right-10 w-[200px] h-[200px] rounded-full border border-white/[0.03]" />
-        <div className="absolute top-40 -left-8 w-[120px] h-[120px] rounded-full border border-white/[0.02]" />
+        {/* Background video poster */}
+        <div className="absolute inset-0 overflow-hidden">
+          <MuxPlayer
+            playbackId={currentHero.playbackId}
+            streamType="on-demand"
+            autoPlay="muted"
+            loop
+            muted
+            nohotkeys
+            poster={`https://image.mux.com/${currentHero.playbackId}/thumbnail.webp?width=960&height=540&time=8`}
+            accentColor={currentHero.accent}
+            style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
+            className="pointer-events-none"
+          />
+        </div>
+        {/* Gradient overlays for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-midnight)] via-[var(--color-midnight)]/70 to-[var(--color-midnight)]/40" />
+        <div className="absolute inset-0" style={{
+          background: `radial-gradient(ellipse at 20% 50%, ${currentHero.accent}20 0%, transparent 60%)`,
+        }} />
 
         <div className="relative z-10 px-5 pt-6 pb-8">
           {/* Brand tag */}
@@ -567,15 +572,22 @@ export default function HubCityTV({
                 }}>
                   <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
                     style={{ background: `linear-gradient(180deg, ${show.accent}20 0%, var(--color-midnight) 100%)` }}>
-                    {/* Mux thumbnail background */}
-                    <img
-                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=320&height=427&time=10`}
-                      alt={show.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
+                    {/* Auto-playing muted video preview */}
+                    <div className="absolute inset-0 pointer-events-none">
+                      <MuxPlayer
+                        playbackId={show.playbackId}
+                        streamType="on-demand"
+                        autoPlay="muted"
+                        loop
+                        muted
+                        nohotkeys
+                        poster={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=320&height=427&time=5`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
+                      />
+                    </div>
                     {/* Color overlay */}
                     <div className="absolute inset-0" style={{
-                      background: `linear-gradient(180deg, ${show.accent}40 0%, transparent 40%, ${show.accent}20 100%)`,
+                      background: `linear-gradient(180deg, ${show.accent}30 0%, transparent 30%, transparent 50%, ${show.accent}15 100%)`,
                     }} />
                     <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-midnight to-transparent" />
 
@@ -801,15 +813,22 @@ export default function HubCityTV({
                 } as unknown as ChannelVideo);
               }}>
                 <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-                  {/* Background with Mux thumbnail */}
-                  <div className="h-[180px] relative overflow-hidden">
-                    <img
-                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=360&time=15`}
-                      alt={show.title}
-                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                  {/* Video preview with poster */}
+                  <div className="h-[220px] relative overflow-hidden">
+                    <div className="absolute inset-0 pointer-events-none">
+                      <MuxPlayer
+                        playbackId={show.playbackId}
+                        streamType="on-demand"
+                        autoPlay="muted"
+                        loop
+                        muted
+                        nohotkeys
+                        poster={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=440&time=10`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
+                      />
+                    </div>
                     <div className="absolute inset-0" style={{
-                      background: `linear-gradient(180deg, transparent 0%, ${show.accent}20 50%, var(--color-card) 100%)`,
+                      background: `linear-gradient(180deg, transparent 0%, ${show.accent}15 60%, var(--color-card) 100%)`,
                     }} />
 
                     {/* Play button */}
