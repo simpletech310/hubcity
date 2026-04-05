@@ -24,7 +24,7 @@ export async function GET(
     const { data: posts, error } = await supabase
       .from("posts")
       .select(
-        "id, body, image_url, media_type, mux_playback_id, video_status, like_count, comment_count, created_at, author:profiles(id, display_name, avatar_url)"
+        "id, body, image_url, media_type, mux_playback_id, video_status, like_count, comment_count, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url)"
       )
       .eq("school_id", schoolId)
       .eq("is_published", true)
@@ -147,7 +147,7 @@ export async function POST(
       .from("posts")
       .insert(insertData)
       .select(
-        "id, body, image_url, media_type, mux_playback_id, video_status, created_at, author:profiles(id, display_name, avatar_url)"
+        "id, body, image_url, media_type, mux_playback_id, video_status, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url)"
       )
       .single();
 

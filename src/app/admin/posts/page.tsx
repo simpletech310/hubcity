@@ -8,7 +8,7 @@ export default async function AdminPostsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("posts")
-    .select("*, author:profiles(id, display_name, role)")
+    .select("*, author:profiles!posts_author_id_fkey(id, display_name, role)")
     .order("created_at", { ascending: false });
 
   const posts = (data as Post[]) ?? [];

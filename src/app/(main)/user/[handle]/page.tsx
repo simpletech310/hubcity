@@ -47,7 +47,7 @@ export default async function PublicProfilePage({
   ] = await Promise.all([
     supabase
       .from("posts")
-      .select("*, author:profiles(id, display_name, avatar_url, role, verification_status)")
+      .select("*, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role, verification_status)")
       .eq("author_id", profile.id)
       .eq("is_published", true)
       .order("created_at", { ascending: false })

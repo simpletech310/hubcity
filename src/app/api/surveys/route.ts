@@ -9,7 +9,7 @@ export async function GET() {
     const { data: surveys, error } = await supabase
       .from("surveys")
       .select(
-        "*, questions:survey_questions(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
       .eq("status", "active")
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
     const { data: completeSurvey } = await supabase
       .from("surveys")
       .select(
-        "*, questions:survey_questions(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("id", survey.id)
       .single();

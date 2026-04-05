@@ -9,7 +9,7 @@ export async function GET() {
     const { data: polls, error } = await supabase
       .from("polls")
       .select(
-        "*, options:poll_options(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
       .eq("status", "active")
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
     const { data: completePoll } = await supabase
       .from("polls")
       .select(
-        "*, options:poll_options(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("id", poll.id)
       .single();

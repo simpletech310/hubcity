@@ -674,7 +674,7 @@ export default async function SchoolDetailPage({
   const { data: posts } = await supabase
     .from("posts")
     .select(
-      "id, body, created_at, author:profiles(id, display_name, avatar_url)"
+      "id, body, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url)"
     )
     .eq("is_published", true)
     .ilike("body", `%${searchName}%`)

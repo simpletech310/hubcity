@@ -21,6 +21,7 @@ export const ROLE_BADGE_MAP: Record<string, { label: string; variant: "gold" | "
   city_ambassador: { label: "Ambassador", variant: "purple" },
   admin: { label: "Admin", variant: "blue" },
   business_owner: { label: "Business", variant: "emerald" },
+  creator: { label: "Creator", variant: "coral" },
   citizen: { label: "Citizen", variant: "cyan" },
 };
 

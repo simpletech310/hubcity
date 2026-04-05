@@ -73,21 +73,21 @@ export default async function HomePage() {
       .limit(3),
     supabase
       .from("posts")
-      .select("*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)")
+      .select("*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .eq("is_pinned", true)
       .order("created_at", { ascending: false })
       .limit(1),
     supabase
       .from("posts")
-      .select("*, author:profiles!inner(id, display_name, avatar_url, role, verification_status)")
+      .select("*, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .eq("profiles.role", "city_official")
       .order("created_at", { ascending: false })
       .limit(1),
     supabase
       .from("posts")
-      .select("*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)")
+      .select("*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .limit(5),

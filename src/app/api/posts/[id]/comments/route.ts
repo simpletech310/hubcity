@@ -13,7 +13,7 @@ export async function GET(
 
     const { data: comments, error } = await supabase
       .from("comments")
-      .select("*, author:profiles(*)")
+      .select("*, author:profiles!comments_user_id_fkey(*)")
       .eq("post_id", postId)
       .eq("is_published", true)
       .order("created_at", { ascending: true });
@@ -107,7 +107,7 @@ export async function POST(
         parent_id: parent_id || null,
         is_published: true,
       })
-      .select("*, author:profiles(*)")
+      .select("*, author:profiles!comments_user_id_fkey(*)")
       .single();
 
     if (error) throw error;

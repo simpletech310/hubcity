@@ -48,7 +48,7 @@ export default async function CityHallPage() {
       .order("sort_order", { ascending: true }),
     supabase
       .from("posts")
-      .select("*, author:profiles!inner(id, display_name, handle, avatar_url, role, verification_status)")
+      .select("*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .eq("profiles.role", "city_official")
       .order("created_at", { ascending: false })

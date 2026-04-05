@@ -13,7 +13,7 @@ export async function GET(
     const { data: poll, error } = await supabase
       .from("polls")
       .select(
-        "*, options:poll_options(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("id", id)
       .single();
@@ -79,7 +79,7 @@ export async function PATCH(
       .update({ status })
       .eq("id", id)
       .select(
-        "*, options:poll_options(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .single();
 

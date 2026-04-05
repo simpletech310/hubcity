@@ -18,7 +18,7 @@ export default async function PulsePage() {
     supabase
       .from("posts")
       .select(
-        "*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)"
+        "*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
       .order("is_pinned", { ascending: false })
@@ -34,7 +34,7 @@ export default async function PulsePage() {
     supabase
       .from("polls")
       .select(
-        "*, options:poll_options(*), author:profiles(id, display_name, handle, avatar_url, role, verification_status)"
+        "*, options:poll_options(*), author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
       .in("status", ["active"])
@@ -43,7 +43,7 @@ export default async function PulsePage() {
     supabase
       .from("surveys")
       .select(
-        "*, questions:survey_questions(*), author:profiles(id, display_name, handle, avatar_url, role, verification_status)"
+        "*, questions:survey_questions(*), author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
       .eq("status", "active")

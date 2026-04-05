@@ -12,7 +12,7 @@ export async function GET(
   const { data: survey, error } = await supabase
     .from("surveys")
     .select(
-      "*, questions:survey_questions(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+      "*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
     )
     .eq("id", id)
     .single();
@@ -85,7 +85,7 @@ export async function PATCH(
       .update(updates)
       .eq("id", id)
       .select(
-        "*, questions:survey_questions(*), author:profiles(id, display_name, avatar_url, role, verification_status)"
+        "*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .single();
 

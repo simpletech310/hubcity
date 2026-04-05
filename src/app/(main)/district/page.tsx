@@ -61,7 +61,7 @@ export default async function DistrictPage() {
       .limit(3),
     supabase
       .from("posts")
-      .select("id, body, created_at, author:profiles(id, display_name, avatar_url, role)")
+      .select("id, body, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role)")
       .eq("is_published", true)
       .eq("profiles.role", "city_official")
       .order("created_at", { ascending: false })

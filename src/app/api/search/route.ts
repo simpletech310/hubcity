@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         .limit(5),
       supabase
         .from("posts")
-        .select("id, body, author_id, created_at, like_count, profiles!inner(display_name, handle, avatar_url)")
+        .select("id, body, author_id, created_at, like_count, profiles!posts_author_id_fkey(display_name, handle, avatar_url)")
         .eq("is_published", true)
         .ilike("body", pattern)
         .order("created_at", { ascending: false })

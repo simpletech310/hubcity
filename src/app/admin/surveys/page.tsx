@@ -22,7 +22,7 @@ export default async function AdminSurveysPage() {
   const { data } = await supabase
     .from("surveys")
     .select(
-      "*, author:profiles(display_name, role), questions:survey_questions(id)"
+      "*, author:profiles!surveys_author_id_fkey(display_name, role), questions:survey_questions(id)"
     )
     .order("created_at", { ascending: false });
 

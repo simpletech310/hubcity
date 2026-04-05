@@ -29,7 +29,7 @@ export default async function AdminPollsPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("polls")
-    .select("*, author:profiles(display_name, role), options:poll_options(*)")
+    .select("*, author:profiles!polls_author_id_fkey(display_name, role), options:poll_options(*)")
     .order("created_at", { ascending: false });
 
   const polls = (data as Poll[] | null) ?? [];
