@@ -8,6 +8,32 @@ import { createClient } from "@/lib/supabase/client";
 export default function Header() {
   const pathname = usePathname();
   const [notificationCount, setNotificationCount] = useState(0);
+  const [hidden, setHidden] = useState(false);
+
+  // Scroll-aware hide/show
+  useEffect(() => {
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    function onScroll() {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          if (currentY > lastY && currentY > 60) {
+            setHidden(true); // scrolling down
+          } else {
+            setHidden(false); // scrolling up
+          }
+          lastY = currentY;
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -47,7 +73,7 @@ export default function Header() {
   const title = getTitle();
 
   return (
-    <header className="fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full z-[100]">
+    <header className={`fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full z-[100] transition-transform duration-300 ease-out ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       {/* Gradient fade background */}
       <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/95 to-transparent" />
       <div className="absolute inset-0 backdrop-blur-xl" style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, black 60%, transparent)' }} />

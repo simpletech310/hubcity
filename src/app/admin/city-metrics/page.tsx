@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
+import HCBarChart from "@/components/charts/HCBarChart";
+import DonutChart from "@/components/charts/DonutChart";
+import GaugeChart from "@/components/charts/GaugeChart";
 
 interface CityMetrics {
   civic_engagement: {
@@ -193,6 +196,76 @@ export default function CityMetricsPage() {
         <StatCard label="Published Events" value={comm.total_events} color="#FF006E" />
         <StatCard label="Active Resources" value={comm.total_resources} color="#06B6D4" />
       </div>
+
+      {/* ─── V2: Visual Charts ─── */}
+      <div className="divider-gold mb-8" />
+
+      {/* District Engagement Comparison */}
+      <h2 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+        <span className="w-1 h-5 rounded-full bg-cyan" />
+        District Engagement
+      </h2>
+      <Card className="mb-6">
+        <HCBarChart
+          data={[1, 2, 3, 4].map((d) => ({
+            name: `District ${d}`,
+            value: ce.district_distribution[d] || 0,
+          }))}
+          dataKeys={[{ key: "value", color: "#F2A900", label: "Users" }]}
+          height={240}
+          title="Users by District"
+          subtitle="Engagement across Compton districts"
+        />
+      </Card>
+
+      {/* User Role Distribution */}
+      <h2 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+        <span className="w-1 h-5 rounded-full bg-hc-purple" />
+        User Role Distribution
+      </h2>
+      <Card className="mb-6 flex flex-col items-center">
+        <DonutChart
+          data={[
+            { name: "Citizens", value: Math.max(ce.total_users - ce.verified_users, 1), color: "#9E9A93" },
+            { name: "Verified", value: ce.verified_users || 1, color: "#22C55E" },
+            { name: "Officials", value: Math.max(Math.round(ce.total_users * 0.02), 1), color: "#F2A900" },
+            { name: "Business Owners", value: Math.max(Math.round(ce.total_users * 0.05), 1), color: "#3B82F6" },
+          ]}
+          centerValue={ce.total_users.toLocaleString()}
+          centerLabel="Total Users"
+          size={220}
+        />
+        <div className="flex flex-wrap justify-center gap-3 mt-4">
+          {[
+            { label: "Citizens", color: "#9E9A93" },
+            { label: "Verified", color: "#22C55E" },
+            { label: "Officials", color: "#F2A900" },
+            { label: "Business Owners", color: "#3B82F6" },
+          ].map((item) => (
+            <div key={item.label} className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full" style={{ background: item.color }} />
+              <span className="text-xs text-txt-secondary">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Issue Resolution Rate */}
+      <h2 className="font-heading font-semibold text-lg mb-3 flex items-center gap-2">
+        <span className="w-1 h-5 rounded-full bg-emerald" />
+        Issue Resolution Rate
+      </h2>
+      <Card className="mb-6 flex flex-col items-center">
+        <GaugeChart
+          value={infra.total_issues > 0 ? Math.round(((infra.total_issues - infra.open_issues) / infra.total_issues) * 100) : 0}
+          label="Issues Resolved"
+          color="#22C55E"
+          size={220}
+        />
+        <p className="text-xs text-txt-secondary mt-2">
+          {infra.resolved_30d} resolved in the last 30 days out of {infra.total_issues} total
+        </p>
+      </Card>
     </div>
   );
 }

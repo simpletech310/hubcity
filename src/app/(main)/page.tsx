@@ -8,20 +8,11 @@ import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
+import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 
 function timeAgo(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "just now";
-  if (diffMin < 60) return `${diffMin}m ago`;
-  const diffHr = Math.floor(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
-  const diffDay = Math.floor(diffHr / 24);
-  if (diffDay < 7) return `${diffDay}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
 }
 
 function totalReactions(post: Post): number {
@@ -37,6 +28,7 @@ function getGreeting(): string {
 }
 
 const quickActions = [
+  { label: "Map", icon: "🗺️", href: "/map", color: "#06B6D4", desc: "Explore city" },
   { label: "Events", icon: "📅", href: "/events", color: "#22C55E", desc: "What's happening" },
   { label: "Food", icon: "🔥", href: "/food", color: "#FF6B6B", desc: "Eat local" },
   { label: "Resources", icon: "💡", href: "/resources", color: "#06B6D4", desc: "Get help" },
@@ -46,6 +38,8 @@ const quickActions = [
   { label: "Jobs", icon: "💼", href: "/jobs", color: "#8B5CF6", desc: "Find careers" },
   { label: "Health", icon: "❤️", href: "/health", color: "#22C55E", desc: "Wellness" },
   { label: "Groups", icon: "🤝", href: "/groups", color: "#A855F7", desc: "Community" },
+  { label: "Culture", icon: "🎭", href: "/culture", color: "#E91E63", desc: "Art & music" },
+  { label: "Parks", icon: "🌳", href: "/parks", color: "#22C55E", desc: "Outdoors" },
 ];
 
 const businessImages: Record<string, string> = {
@@ -213,16 +207,16 @@ export default async function HomePage() {
         <AISearchButton />
       </section>
 
-      {/* ─── Quick Actions Grid (3-col with accent bars) ─── */}
+      {/* ─── Quick Actions Grid (4-col) ─── */}
       <section className="px-5 mb-8">
-        <div className="grid grid-cols-3 gap-2.5">
-          {quickActions.slice(0, 6).map((action) => (
+        <div className="grid grid-cols-4 gap-2">
+          {quickActions.map((action) => (
             <Link
               key={action.label}
               href={action.href}
               className="group press"
             >
-              <div className="relative bg-royal rounded-2xl border border-border-subtle overflow-hidden p-4 pb-3.5 flex flex-col items-center gap-1.5 transition-all duration-200 group-hover:border-white/10">
+              <div className="relative bg-royal rounded-2xl border border-border-subtle overflow-hidden p-3 pb-2.5 flex flex-col items-center gap-1.5 transition-all duration-200 group-hover:border-white/10">
                 {/* Top color accent bar */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
@@ -230,37 +224,11 @@ export default async function HomePage() {
                     background: `linear-gradient(90deg, transparent, ${action.color}, transparent)`,
                   }}
                 />
-                <span className="text-[24px]">{action.icon}</span>
-                <span className="font-heading text-[12px] font-semibold text-txt-primary tracking-tight">
+                <span className="text-[22px]">{action.icon}</span>
+                <span className="font-heading text-[11px] font-semibold text-txt-primary tracking-tight">
                   {action.label}
                 </span>
-                <span className="text-[10px] text-muted-gray">
-                  {action.desc}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-        {/* Second row — remaining 2 items centered */}
-        <div className="grid grid-cols-3 gap-2.5 mt-2.5">
-          {quickActions.slice(6).map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className="group press"
-            >
-              <div className="relative bg-royal rounded-2xl border border-border-subtle overflow-hidden p-4 pb-3.5 flex flex-col items-center gap-1.5 transition-all duration-200 group-hover:border-white/10">
-                <div
-                  className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${action.color}, transparent)`,
-                  }}
-                />
-                <span className="text-[24px]">{action.icon}</span>
-                <span className="font-heading text-[12px] font-semibold text-txt-primary tracking-tight">
-                  {action.label}
-                </span>
-                <span className="text-[10px] text-muted-gray">
+                <span className="text-[9px] text-muted-gray">
                   {action.desc}
                 </span>
               </div>

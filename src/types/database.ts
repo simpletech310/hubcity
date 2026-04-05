@@ -1204,3 +1204,155 @@ export interface CartItem {
   quantity: number;
   special_instructions?: string;
 }
+
+// ── V2: City Alerts ─────────────────────────────────
+export type AlertType = 'weather' | 'emergency' | 'traffic' | 'city_notice';
+export type AlertSeverity = 'info' | 'warning' | 'critical';
+
+export interface CityAlert {
+  id: string;
+  alert_type: AlertType;
+  severity: AlertSeverity;
+  title: string;
+  body: string;
+  title_es: string | null;
+  body_es: string | null;
+  affected_districts: number[];
+  starts_at: string;
+  expires_at: string | null;
+  source_url: string | null;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+// ── V2: City Meetings ───────────────────────────────
+export type MeetingType = 'council' | 'planning' | 'budget' | 'special';
+
+export interface CityMeeting {
+  id: string;
+  title: string;
+  title_es: string | null;
+  meeting_type: MeetingType;
+  description: string | null;
+  description_es: string | null;
+  date: string;
+  start_time: string | null;
+  end_time: string | null;
+  location: string | null;
+  agenda_url: string | null;
+  minutes_url: string | null;
+  livestream_id: string | null;
+  is_public_comment_open: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── V2: Transit ─────────────────────────────────────
+export interface TransitStop {
+  id: string;
+  name: string;
+  route_name: string | null;
+  route_type: 'bus' | 'rail';
+  latitude: number | null;
+  longitude: number | null;
+  gtfs_stop_id: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+// ── V2: Analytics ───────────────────────────────────
+export interface ContentView {
+  id: string;
+  content_type: string;
+  content_id: string;
+  user_id: string | null;
+  session_id: string | null;
+  created_at: string;
+}
+
+export interface DailyMetric {
+  date: string;
+  metric_type: string;
+  metric_value: number;
+  district: number | null;
+}
+
+export interface ContentShare {
+  id: string;
+  content_type: string | null;
+  content_id: string | null;
+  shared_by: string | null;
+  share_method: string | null;
+  created_at: string;
+}
+
+// ── V2: Murals ──────────────────────────────────────
+export interface Mural {
+  id: string;
+  title: string;
+  artist_name: string | null;
+  artist_id: string | null;
+  description: string | null;
+  image_urls: string[];
+  latitude: number | null;
+  longitude: number | null;
+  address: string | null;
+  district: number | null;
+  year_created: number | null;
+  is_published: boolean;
+  created_at: string;
+}
+
+// ── V2: Parks ───────────────────────────────────────
+export interface Park {
+  id: string;
+  name: string;
+  slug: string | null;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  district: number | null;
+  amenities: string[];
+  hours: Record<string, string> | null;
+  phone: string | null;
+  image_urls: string[];
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ParkProgram {
+  id: string;
+  park_id: string;
+  name: string;
+  description: string | null;
+  age_range: string | null;
+  schedule: string | null;
+  fee: string | null;
+  registration_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  park?: Park;
+}
+
+// ── V2: District Engagement ─────────────────────────
+export interface DistrictEngagement {
+  user_id: string;
+  district: number;
+  engagement_points: number;
+  last_activity: string;
+}
+
+// ── V2: User Achievements ───────────────────────────
+export interface UserAchievement {
+  id: string;
+  user_id: string;
+  achievement_type: string;
+  achievement_data: Record<string, unknown>;
+  unlocked_at: string;
+}
+
+// ── V2: Notification Types Extended ─────────────────
+export type NotificationTypeV2 = NotificationType | 'weather_alert' | 'meeting_reminder' | 'achievement' | 'transit_alert' | 'community_safety';

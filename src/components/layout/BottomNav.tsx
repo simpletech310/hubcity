@@ -37,13 +37,12 @@ const navItems = [
     ),
   },
   {
-    href: "/business",
-    label: "Businesses",
+    href: "/map",
+    label: "Explore",
     icon: (active: boolean) => (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 7v13a2 2 0 002 2h14a2 2 0 002-2V7l-3-5z" fill={active ? "currentColor" : "none"} />
-        <line x1="3" y1="7" x2="21" y2="7" />
-        <path d="M16 11a4 4 0 01-8 0" />
+      <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88" fill={active ? "currentColor" : "none"} />
       </svg>
     ),
   },
