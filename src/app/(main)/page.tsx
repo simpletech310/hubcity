@@ -60,6 +60,8 @@ export default async function HomePage() {
     { data: officialPosts },
     { data: recentPosts },
     { count: activePollsCount },
+    { data: cityAlerts },
+    { data: upcomingMeetings },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
@@ -82,7 +84,7 @@ export default async function HomePage() {
       .limit(3),
     supabase
       .from("posts")
-      .select("*, author:profiles(id, display_name, avatar_url, role, verification_status)")
+      .select("*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .eq("is_pinned", true)
       .order("created_at", { ascending: false })
@@ -96,7 +98,7 @@ export default async function HomePage() {
       .limit(1),
     supabase
       .from("posts")
-      .select("*, author:profiles(id, display_name, avatar_url, role, verification_status)")
+      .select("*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .limit(4),
@@ -105,6 +107,18 @@ export default async function HomePage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "active")
       .eq("is_published", true),
+    supabase
+      .from("city_alerts")
+      .select("id, title, body, alert_type, severity")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(3),
+    supabase
+      .from("city_meetings")
+      .select("id, title, meeting_type, date, start_time, location")
+      .gte("date", new Date().toISOString().split("T")[0])
+      .order("date", { ascending: true })
+      .limit(3),
   ]);
 
   // Get user profile for greeting
@@ -207,6 +221,34 @@ export default async function HomePage() {
         <AISearchButton />
       </section>
 
+      {/* ─── City Alerts ─── */}
+      {cityAlerts && cityAlerts.length > 0 && (
+        <section className="px-5 mb-5">
+          <div className="flex flex-col gap-2">
+            {cityAlerts.map((alert) => {
+              const severityConfig: Record<string, { bg: string; border: string; icon: string; textColor: string }> = {
+                critical: { bg: "bg-compton-red/10", border: "border-compton-red/25", icon: "🚨", textColor: "text-compton-red" },
+                warning: { bg: "bg-gold/10", border: "border-gold/25", icon: "⚠️", textColor: "text-gold" },
+                info: { bg: "bg-cyan/10", border: "border-cyan/25", icon: "ℹ️", textColor: "text-cyan" },
+              };
+              const config = severityConfig[alert.severity] || severityConfig.info;
+              return (
+                <Link key={alert.id} href="/city-data" className="press">
+                  <div className={`${config.bg} border ${config.border} rounded-xl p-3 flex items-start gap-2.5`}>
+                    <span className="text-sm shrink-0 mt-0.5">{config.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-[12px] font-semibold ${config.textColor} mb-0.5`}>{alert.title}</p>
+                      <p className="text-[11px] text-white/50 line-clamp-1">{alert.body}</p>
+                    </div>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0 mt-1" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* ─── Quick Actions Grid (4-col) ─── */}
       <section className="px-5 mb-8">
         <div className="grid grid-cols-4 gap-2">
@@ -272,6 +314,74 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ─── Upcoming City Meetings ─── */}
+      {upcomingMeetings && upcomingMeetings.length > 0 && (
+        <section className="mb-8">
+          <SectionHeader
+            title="City Meetings"
+            subtitle="Upcoming government sessions"
+            linkText="All Meetings"
+            linkHref="/city-data/meetings"
+            linkColor="text-cyan"
+          />
+          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+            {upcomingMeetings.map((meeting, i) => {
+              const meetingDate = new Date(meeting.date + "T00:00:00");
+              const typeColors: Record<string, string> = {
+                council: "#F2A900",
+                planning: "#3B82F6",
+                budget: "#22C55E",
+                special: "#8B5CF6",
+              };
+              const typeIcons: Record<string, string> = {
+                council: "🏛️",
+                planning: "📐",
+                budget: "💰",
+                special: "⭐",
+              };
+              const color = typeColors[meeting.meeting_type] || "#F2A900";
+              const icon = typeIcons[meeting.meeting_type] || "🏛️";
+              return (
+                <Link
+                  key={meeting.id + "-" + i}
+                  href="/city-data/meetings"
+                  className="shrink-0 w-[200px] animate-slide-in press"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <Card hover padding={false}>
+                    <div className="p-3.5 pb-2.5 border-b border-border-subtle flex items-center gap-3">
+                      <div className="flex flex-col items-center bg-white/[0.04] rounded-xl px-2.5 py-1.5 min-w-[44px]">
+                        <span className="font-heading text-[16px] font-bold leading-none" style={{ color }}>
+                          {meetingDate.getDate()}
+                        </span>
+                        <span className="text-[9px] font-semibold text-warm-gray tracking-[0.05em] uppercase">
+                          {meetingDate.toLocaleDateString("en-US", { month: "short" })}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-heading text-[12px] font-semibold leading-tight line-clamp-2">
+                          {meeting.title}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="px-3.5 py-2.5 flex items-center justify-between">
+                      <span className="text-[11px] text-warm-gray truncate">
+                        {icon} {meeting.meeting_type.charAt(0).toUpperCase() + meeting.meeting_type.slice(1)}
+                      </span>
+                      {meeting.start_time && (
+                        <span className="text-[11px] font-medium" style={{ color }}>
+                          {meeting.start_time.slice(0, 5).replace(/^0/, "")} PM
+                        </span>
+                      )}
+                    </div>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* ─── Hub City TV Promo ─── */}
       <section className="px-5 mb-8">
@@ -347,6 +457,12 @@ export default async function HomePage() {
                       alt={biz.name}
                       fill
                       className="object-cover"
+                    />
+                  ) : biz.image_urls?.[0] ? (
+                    <img
+                      src={biz.image_urls[0]}
+                      alt={biz.name}
+                      className="w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full art-food" />

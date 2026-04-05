@@ -7,6 +7,7 @@ import { useCart } from "@/lib/cart";
 import MenuItemCard from "./MenuItemCard";
 import CartSheet from "./CartSheet";
 import PaymentSheet from "./PaymentSheet";
+import ProductDetailModal from "./ProductDetailModal";
 import type { Business, MenuItem } from "@/types/database";
 
 interface OrderViewProps {
@@ -27,6 +28,12 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [paymentTotal, setPaymentTotal] = useState(0);
 
+  // Product detail modal state
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const isRetail = business.category === "retail";
+
   // Set business in cart context on mount
   useEffect(() => {
     dispatch({
@@ -39,12 +46,17 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
   const grouped = useMemo(() => {
     const map = new Map<string, MenuItem[]>();
     for (const item of menuItems) {
-      const cat = item.category ?? "Menu";
+      const cat = item.category ?? (isRetail ? "Products" : "Menu");
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(item);
     }
     return map;
-  }, [menuItems]);
+  }, [menuItems, isRetail]);
+
+  function handleProductTap(item: MenuItem) {
+    setSelectedItem(item);
+    setModalOpen(true);
+  }
 
   async function handleCheckout() {
     setCheckoutLoading(true);
@@ -126,7 +138,9 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
         <h1 className="font-heading text-2xl font-bold mt-3">
           {business.name}
         </h1>
-        <p className="text-sm text-txt-secondary mt-0.5">Order Menu</p>
+        <p className="text-sm text-txt-secondary mt-0.5">
+          {isRetail ? "Shop Products" : "Order Menu"}
+        </p>
       </div>
 
       {/* Menu Items by Category */}
@@ -134,7 +148,9 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
         {menuItems.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-txt-secondary text-sm">
-              No menu items available right now.
+              {isRetail
+                ? "No products available right now."
+                : "No menu items available right now."}
             </p>
           </div>
         ) : (
@@ -143,11 +159,34 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
               <h2 className="font-heading font-bold text-base mb-3 capitalize">
                 {category}
               </h2>
-              <div className="space-y-2">
-                {items.map((item) => (
-                  <MenuItemCard key={item.id} item={item} />
-                ))}
-              </div>
+              {isRetail ? (
+                // Grid layout for retail products
+                <div className="grid grid-cols-2 gap-3">
+                  {items.map((item) => (
+                    <MenuItemCard
+                      key={item.id}
+                      item={item}
+                      isRetail
+                      onTap={handleProductTap}
+                    />
+                  ))}
+                </div>
+              ) : (
+                // List layout for restaurant menu
+                <div className="space-y-2">
+                  {items.map((item) => (
+                    <MenuItemCard
+                      key={item.id}
+                      item={item}
+                      onTap={
+                        item.image_url || item.gallery_urls?.length
+                          ? handleProductTap
+                          : undefined
+                      }
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           ))
         )}
@@ -195,6 +234,13 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
           onSuccess={handlePaymentSuccess}
         />
       )}
+
+      {/* Product Detail Modal */}
+      <ProductDetailModal
+        item={selectedItem}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </div>
   );
 }

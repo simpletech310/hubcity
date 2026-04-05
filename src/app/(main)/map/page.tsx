@@ -90,14 +90,86 @@ export default async function MapPage() {
     }
   }
 
-  // Fetch community resources with coordinates (general)
-  const { data: resources } = await supabase
-    .from("resources")
-    .select("id, name, slug, address, category, description, organization")
-    .eq("status", "open");
+  // Fetch murals with coordinates
+  const { data: murals } = await supabase
+    .from("murals")
+    .select("id, title, latitude, longitude, address, artist_name, description, year_created, district, image_urls")
+    .eq("is_published", true)
+    .not("latitude", "is", null)
+    .not("longitude", "is", null);
 
-  // Resources don't always have lat/lng columns — include only those that do
-  // (the table may not have these columns; if the query fails silently, skip)
+  if (murals) {
+    for (const m of murals) {
+      points.push({
+        id: m.id,
+        type: "mural",
+        name: m.title,
+        latitude: m.latitude!,
+        longitude: m.longitude!,
+        metadata: {
+          address: m.address,
+          artist_name: m.artist_name,
+          description: m.description,
+          year_created: m.year_created,
+          district: m.district,
+          image_url: m.image_urls?.[0],
+        },
+      });
+    }
+  }
+
+  // Fetch parks with coordinates
+  const { data: parks } = await supabase
+    .from("parks")
+    .select("id, name, slug, latitude, longitude, address, description, amenities, district, image_urls")
+    .eq("is_published", true)
+    .not("latitude", "is", null)
+    .not("longitude", "is", null);
+
+  if (parks) {
+    for (const p of parks) {
+      points.push({
+        id: p.id,
+        type: "park",
+        name: p.name,
+        latitude: p.latitude!,
+        longitude: p.longitude!,
+        metadata: {
+          slug: p.slug,
+          address: p.address,
+          description: p.description,
+          amenities: p.amenities,
+          district: p.district,
+          image_url: p.image_urls?.[0],
+        },
+      });
+    }
+  }
+
+  // Fetch transit stops with coordinates
+  const { data: transitStops } = await supabase
+    .from("transit_stops")
+    .select("id, name, route_name, route_type, latitude, longitude, gtfs_stop_id")
+    .eq("is_active", true)
+    .not("latitude", "is", null)
+    .not("longitude", "is", null);
+
+  if (transitStops) {
+    for (const t of transitStops) {
+      points.push({
+        id: t.id,
+        type: "transit",
+        name: t.name,
+        latitude: t.latitude!,
+        longitude: t.longitude!,
+        metadata: {
+          route_name: t.route_name,
+          route_type: t.route_type,
+          gtfs_stop_id: t.gtfs_stop_id,
+        },
+      });
+    }
+  }
 
   return <MapExplorer initialPoints={points} />;
 }

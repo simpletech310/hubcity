@@ -13,7 +13,7 @@ async function requireAdminOrOfficial(supabase: Awaited<ReturnType<typeof create
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["admin", "city_official"].includes(profile.role)) return null;
+  if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) return null;
   return user;
 }
 

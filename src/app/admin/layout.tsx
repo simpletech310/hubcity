@@ -22,7 +22,7 @@ export default async function AdminLayout({
     .eq("id", user.id)
     .single();
 
-  if (!profile || !["city_official", "admin"].includes(profile.role)) {
+  if (!profile || !["city_official", "admin", "city_ambassador"].includes(profile.role)) {
     redirect("/");
   }
 

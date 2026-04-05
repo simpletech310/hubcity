@@ -81,7 +81,7 @@ export default function AdminCreatorsPage() {
         .select("role")
         .eq("id", user.id)
         .single();
-      if (!profile || !["admin", "city_official"].includes(profile.role)) {
+      if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
         router.push("/");
         return;
       }

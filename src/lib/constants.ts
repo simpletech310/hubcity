@@ -18,7 +18,11 @@ export const REACTION_COLORS: Record<ReactionEmoji, { bg: string; text: string }
 
 export const ROLE_BADGE_MAP: Record<string, { label: string; variant: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" }> = {
   city_official: { label: "Official", variant: "gold" },
+  city_ambassador: { label: "Ambassador", variant: "purple" },
   admin: { label: "Admin", variant: "blue" },
   business_owner: { label: "Business", variant: "emerald" },
   citizen: { label: "Citizen", variant: "cyan" },
 };
+
+/** Roles that have admin panel access + elevated privileges */
+export const ELEVATED_ROLES = ["admin", "city_official", "city_ambassador"];

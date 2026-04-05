@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "city_official"].includes(profile.role)) {
+    if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
       return NextResponse.json(
         { error: "Forbidden: admin or city_official role required" },
         { status: 403 }

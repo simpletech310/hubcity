@@ -37,7 +37,7 @@ export async function DELETE(
       .single();
 
     const isOwner = stream.created_by === user.id;
-    const isAdmin = profile?.role === "admin" || profile?.role === "city_official";
+    const isAdmin = profile?.role === "admin" || profile?.role === "city_official" || profile?.role === "city_ambassador";
 
     if (!isOwner && !isAdmin) {
       return NextResponse.json(

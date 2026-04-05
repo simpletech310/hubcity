@@ -18,7 +18,7 @@ export async function POST() {
       .eq("id", user.id)
       .single();
 
-    const allowedRoles = ["admin", "city_official", "content_creator"];
+    const allowedRoles = ["admin", "city_official", "city_ambassador", "content_creator"];
     if (!profile?.is_creator && !allowedRoles.includes(profile?.role || "")) {
       return NextResponse.json(
         { error: "Only creators can upload content" },

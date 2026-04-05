@@ -112,7 +112,7 @@ export default function PulseFeed({
 
   // Pinned / city official posts
   const pinnedPosts = posts.filter(p => p.is_pinned);
-  const officialPosts = posts.filter(p => p.author?.role === "city_official" || p.author?.role === "admin");
+  const officialPosts = posts.filter(p => p.author?.role === "city_official" || p.author?.role === "city_ambassador" || p.author?.role === "admin");
   const businessPosts = posts.filter(p => p.author?.role === "business_owner");
 
   // Build unified feed

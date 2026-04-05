@@ -57,7 +57,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "city_official") {
+    if (profile?.role !== "admin" && profile?.role !== "city_official" && profile?.role !== "city_ambassador") {
       return NextResponse.json(
         { error: "Only admins and city officials can create health resources" },
         { status: 403 }

@@ -253,7 +253,7 @@ export default async function ProfilePage() {
             </div>
 
             {/* Edit profile */}
-            <Link href="/profile/settings" className="shrink-0">
+            <Link href="/profile/edit" className="shrink-0">
               <div className="w-9 h-9 rounded-xl bg-card border border-border-subtle flex items-center justify-center press hover:border-gold/20 transition-colors">
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
                   <path d="M11.5 1.5l3 3-9 9H2.5v-3l9-9z" />

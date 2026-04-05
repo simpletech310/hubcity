@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ReactionBar from "./ReactionBar";
@@ -49,6 +50,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const roleBadge = author?.role ? ROLE_BADGE_MAP[author.role] : null;
   const isVerified = author?.verification_status === "verified" ||
     author?.role === "city_official" ||
+    author?.role === "city_ambassador" ||
     author?.role === "admin";
 
   const timeAgo = getTimeAgo(post.created_at);
@@ -77,24 +79,26 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
 
       {/* Author row */}
       <div className="flex items-center gap-3 mb-3">
-        {author?.avatar_url ? (
-          <Image
-            src={author.avatar_url}
-            alt={author.display_name}
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-white/5"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/5">
-            {initials}
-          </div>
-        )}
+        <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0">
+          {author?.avatar_url ? (
+            <Image
+              src={author.avatar_url}
+              alt={author.display_name}
+              width={40}
+              height={40}
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-white/5"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/5">
+              {initials}
+            </div>
+          )}
+        </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold truncate">
+            <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="text-[13px] font-bold truncate hover:underline">
               {author?.display_name || "Unknown"}
-            </p>
+            </Link>
             {isVerified && (
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
                 <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />

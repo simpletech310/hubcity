@@ -90,7 +90,8 @@ export async function updateSession(request: NextRequest) {
       if (
         isAdminRoute &&
         profile.role !== "admin" &&
-        profile.role !== "city_official"
+        profile.role !== "city_official" &&
+        profile.role !== "city_ambassador"
       ) {
         const redirectUrl = request.nextUrl.clone();
         redirectUrl.pathname = "/";

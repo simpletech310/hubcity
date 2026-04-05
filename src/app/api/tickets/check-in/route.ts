@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (profile.role !== "admin" && profile.role !== "city_official") {
+    if (profile.role !== "admin" && profile.role !== "city_official" && profile.role !== "city_ambassador") {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }

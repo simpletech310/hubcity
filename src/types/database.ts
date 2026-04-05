@@ -1,4 +1,4 @@
-export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator";
+export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator" | "city_ambassador";
 export type VerificationStatus =
   | "unverified"
   | "pending"
@@ -380,6 +380,12 @@ export interface MenuItem {
   description: string | null;
   price: number; // cents
   image_url: string | null;
+  gallery_urls: string[];
+  video_url: string | null;
+  mux_playback_id: string | null;
+  sku: string | null;
+  stock_count: number | null;
+  is_digital: boolean;
   category: string | null;
   sort_order: number;
   is_available: boolean;
@@ -1335,6 +1341,23 @@ export interface ParkProgram {
   is_active: boolean;
   created_at: string;
   park?: Park;
+}
+
+// ── Video Ads ─────────────────────────────────────────
+export interface VideoAd {
+  id: string;
+  business_id: string;
+  title: string;
+  mux_asset_id: string | null;
+  mux_playback_id: string | null;
+  ad_type: string;
+  duration: number | null;
+  cta_text: string | null;
+  cta_url: string | null;
+  is_active: boolean;
+  impression_count: number;
+  click_count: number;
+  created_at: string;
 }
 
 // ── V2: District Engagement ─────────────────────────

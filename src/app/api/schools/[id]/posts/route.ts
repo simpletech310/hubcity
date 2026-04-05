@@ -97,10 +97,20 @@ export async function POST(
 
     let body: string | undefined;
     let image_url: string | undefined;
+    let media_type: string | undefined;
+    let mux_upload_id: string | undefined;
+    let mux_asset_id: string | undefined;
+    let mux_playback_id: string | undefined;
+    let video_status: string | undefined;
     try {
       const parsed = await request.json();
       body = parsed.body;
       image_url = parsed.image_url;
+      media_type = parsed.media_type;
+      mux_upload_id = parsed.mux_upload_id;
+      mux_asset_id = parsed.mux_asset_id;
+      mux_playback_id = parsed.mux_playback_id;
+      video_status = parsed.video_status;
     } catch {
       return NextResponse.json(
         { error: "Invalid JSON in request body" },
@@ -108,23 +118,36 @@ export async function POST(
       );
     }
 
-    if (!body?.trim() && !image_url) {
+    if (!body?.trim() && !image_url && !mux_upload_id) {
       return NextResponse.json(
-        { error: "Post must have text or an image" },
+        { error: "Post must have text, an image, or a video" },
         { status: 400 }
       );
     }
 
+    const insertData: Record<string, unknown> = {
+      author_id: user.id,
+      body: body?.trim() || "",
+      image_url: image_url || null,
+      school_id: schoolId,
+    };
+
+    // Support video posts
+    if (media_type === "video") {
+      insertData.media_type = "video";
+      if (mux_upload_id) insertData.mux_upload_id = mux_upload_id;
+      if (mux_asset_id) insertData.mux_asset_id = mux_asset_id;
+      if (mux_playback_id) insertData.mux_playback_id = mux_playback_id;
+      insertData.video_status = video_status || "preparing";
+    } else if (image_url) {
+      insertData.media_type = "image";
+    }
+
     const { data: post, error } = await supabase
       .from("posts")
-      .insert({
-        author_id: user.id,
-        body: body?.trim() || "",
-        image_url: image_url || null,
-        school_id: schoolId,
-      })
+      .insert(insertData)
       .select(
-        "id, body, image_url, created_at, author:profiles(id, display_name, avatar_url)"
+        "id, body, image_url, media_type, mux_playback_id, video_status, created_at, author:profiles(id, display_name, avatar_url)"
       )
       .single();
 
@@ -173,7 +196,7 @@ async function checkSchoolAdmin(supabase: any, schoolId: string, userId: string)
     .eq("id", userId)
     .single();
 
-  if (profile?.role === "admin" || profile?.role === "city_official") {
+  if (profile?.role === "admin" || profile?.role === "city_official" || profile?.role === "city_ambassador") {
     return true;
   }
 

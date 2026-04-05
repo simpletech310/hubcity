@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -9,12 +9,14 @@ import Badge from "@/components/ui/Badge";
 import Chip from "@/components/ui/Chip";
 import StreamCard from "./StreamCard";
 import CreateStreamModal from "./CreateStreamModal";
+import PreRollAd from "./PreRollAd";
 import type {
   Channel,
   ChannelVideo,
   LiveStream,
   TimeBlock,
   ChannelType,
+  VideoAd,
 } from "@/types/database";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
@@ -36,7 +38,8 @@ const CHANNEL_FILTERS: { label: string; value: ChannelType | "all" }[] = [
   { label: "All", value: "all" },
   { label: "Schools", value: "school" },
   { label: "City", value: "city" },
-  { label: "Organizations", value: "organization" },
+  { label: "Community", value: "community" },
+  { label: "Media", value: "media" },
 ];
 
 const TYPE_BADGE: Record<
@@ -51,53 +54,7 @@ const TYPE_BADGE: Record<
 };
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-// ── Mux Demo Playback IDs (real videos in the account) ────
-const DEMO_PLAYBACK_IDS = [
-  "gz2zqxILC0002QEg8p9YBCrlfHIgi5yIXK009ep02Nngpbc", // 669s 1080p 16:9
-  "201pH01yrmEaWSDwxS003lXyqTUYXS9S6QgHvj66Oda2m8", // 645s 1080p 16:9
-  "fRGWXPRIebDIEe01hIkiPzPlEcgYsEZL9dGVm8nOYYGk",   // 272s 1080p 16:9
-  "VNSRVl9AwnEcIGVwuQAgRBUoCGs3TbYE900ywl01nUXzs",   // 270s 720p  16:9
-  "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA",  // 94s  1080p 16:9
-  "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo",   // 15s  1080p 16:9
-  "3w9WlvYAhCZSPnUgrfnwK1mlP0087Kgp802tmOQowAaDU",   // 40s  720p  1:1
-];
-
-function demoId(index: number) {
-  return DEMO_PLAYBACK_IDS[index % DEMO_PLAYBACK_IDS.length];
-}
-
-// ── Demo video data used when DB is empty ─────────────────
-type DemoChannel = { id: string; name: string; slug: string; avatar_url: string | null; type: ChannelType };
-const DEMO_CHANNELS: DemoChannel[] = [
-  { id: "demo-ch-1", name: "Hub City News", slug: "hub-city-news", avatar_url: null, type: "city" },
-  { id: "demo-ch-2", name: "Compton Sports", slug: "compton-sports", avatar_url: null, type: "community" },
-  { id: "demo-ch-3", name: "Centennial HS", slug: "centennial-hs", avatar_url: null, type: "school" },
-  { id: "demo-ch-4", name: "Culture Hub", slug: "culture-hub", avatar_url: null, type: "media" },
-  { id: "demo-ch-5", name: "City Council", slug: "city-council", avatar_url: null, type: "city" },
-  { id: "demo-ch-6", name: "Block Beats Radio", slug: "block-beats", avatar_url: null, type: "media" },
-];
-
-const DEMO_FEATURED_VIDEOS = [
-  { id: "demo-fv-1", channel_id: "demo-ch-1", title: "Compton City Council - April Session", description: "Full city council meeting coverage with public comment period.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 669, view_count: 2340, is_published: true, is_featured: true, status: "ready", published_at: "2026-04-01T18:00:00Z", created_at: "2026-04-01T17:00:00Z", channel: DEMO_CHANNELS[0] },
-  { id: "demo-fv-2", channel_id: "demo-ch-2", title: "Friday Night Lights: Centennial vs Dominguez", description: "High school football rivalry game under the lights.", mux_playback_id: demoId(1), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 645, view_count: 4120, is_published: true, is_featured: true, status: "ready", published_at: "2026-04-03T02:00:00Z", created_at: "2026-04-03T01:00:00Z", channel: DEMO_CHANNELS[1] },
-  { id: "demo-fv-3", channel_id: "demo-ch-4", title: "The Real Compton: Episode 1 - Richland Farms", description: "Exploring the hidden gem neighborhood where horses roam.", mux_playback_id: demoId(2), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 272, view_count: 1850, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-28T20:00:00Z", created_at: "2026-03-28T19:00:00Z", channel: DEMO_CHANNELS[3] },
-  { id: "demo-fv-4", channel_id: "demo-ch-6", title: "Block Beats: West Coast Classics Remix Session", description: "Live DJ session remixing classic Compton hits.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 270, view_count: 3200, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-30T22:00:00Z", created_at: "2026-03-30T21:00:00Z", channel: DEMO_CHANNELS[5] },
-  { id: "demo-fv-5", channel_id: "demo-ch-5", title: "Budget Town Hall - Community Q&A", description: "Residents ask questions about the 2026-27 city budget.", mux_playback_id: demoId(4), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 94, view_count: 890, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-25T18:30:00Z", created_at: "2026-03-25T18:00:00Z", channel: DEMO_CHANNELS[4] },
-] as unknown as ChannelVideo[];
-
-const DEMO_RECENT_VIDEOS = [
-  { id: "demo-rv-1", channel_id: "demo-ch-1", title: "Morning Report: What's New in Compton", description: "Daily news roundup.", mux_playback_id: demoId(5), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 15, view_count: 560, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-05T12:00:00Z", created_at: "2026-04-05T11:00:00Z", channel: DEMO_CHANNELS[0] },
-  { id: "demo-rv-2", channel_id: "demo-ch-3", title: "Centennial Graduation Highlights 2026", description: "Best moments from this year's graduation ceremony.", mux_playback_id: demoId(6), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 40, view_count: 1200, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-04T20:00:00Z", created_at: "2026-04-04T19:00:00Z", channel: DEMO_CHANNELS[2] },
-  { id: "demo-rv-3", channel_id: "demo-ch-4", title: "Mural Walk: Downtown Compton Art Tour", description: "A walking tour of Compton's best public art.", mux_playback_id: demoId(2), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 272, view_count: 780, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-03T16:00:00Z", created_at: "2026-04-03T15:00:00Z", channel: DEMO_CHANNELS[3] },
-  { id: "demo-rv-4", channel_id: "demo-ch-2", title: "Youth Basketball League Finals Recap", description: "Highlights from the championship game at Lueders Park.", mux_playback_id: demoId(1), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 645, view_count: 2100, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-02T21:00:00Z", created_at: "2026-04-02T20:00:00Z", channel: DEMO_CHANNELS[1] },
-  { id: "demo-rv-5", channel_id: "demo-ch-6", title: "Compton Cooks: Abuela's Kitchen Episode 3", description: "Traditional Mexican recipes from Compton's own grandmothers.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 669, view_count: 3450, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-01T19:00:00Z", created_at: "2026-04-01T18:00:00Z", channel: DEMO_CHANNELS[5] },
-  { id: "demo-rv-6", channel_id: "demo-ch-5", title: "Parks & Rec Committee Meeting", description: "Monthly meeting on park improvements and youth programs.", mux_playback_id: demoId(4), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 94, view_count: 430, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-31T18:00:00Z", created_at: "2026-03-31T17:00:00Z", channel: DEMO_CHANNELS[4] },
-  { id: "demo-rv-7", channel_id: "demo-ch-1", title: "Community Spotlight: Compton Cowboys", description: "Meet the urban horseback riders keeping tradition alive.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 270, view_count: 5600, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-29T20:00:00Z", created_at: "2026-03-29T19:00:00Z", channel: DEMO_CHANNELS[0] },
-  { id: "demo-rv-8", channel_id: "demo-ch-3", title: "Centennial Band: Battle of the Bands", description: "Centennial High marching band performance.", mux_playback_id: demoId(6), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 40, view_count: 890, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-28T22:00:00Z", created_at: "2026-03-28T21:00:00Z", channel: DEMO_CHANNELS[2] },
-  { id: "demo-rv-9", channel_id: "demo-ch-4", title: "Compton Rising: Ep 1 - The Visionaries", description: "Five young creators building the future of Compton.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 669, view_count: 7200, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-27T20:00:00Z", created_at: "2026-03-27T19:00:00Z", channel: DEMO_CHANNELS[3] },
-  { id: "demo-rv-10", channel_id: "demo-ch-6", title: "Late Night Vibes: Lo-Fi Compton Mix", description: "Chill beats for studying and relaxation.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "podcast", duration: 270, view_count: 4300, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-26T23:00:00Z", created_at: "2026-03-26T22:00:00Z", channel: DEMO_CHANNELS[5] },
-] as unknown as ChannelVideo[];
+const DAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 // ── Hub City Originals (curated showcase content) ──────────
 const ORIGINALS = [
@@ -105,41 +62,46 @@ const ORIGINALS = [
     title: "Compton Rising",
     desc: "Five young creators. One city. Unlimited potential.",
     genre: "Documentary Series",
+    episodes: 6,
     gradient: "from-compton-red/80 via-compton-red/30 to-transparent",
     accent: "#EF4444",
-    playbackId: demoId(0),
+    playbackId: "gz2zqxILC0002QEg8p9YBCrlfHIgi5yIXK009ep02Nngpbc",
   },
   {
     title: "Block Beats",
     desc: "The sounds that shaped a city. Music, culture, legacy.",
     genre: "Music · Culture",
+    episodes: 12,
     gradient: "from-hc-purple/80 via-hc-purple/30 to-transparent",
     accent: "#8B5CF6",
-    playbackId: demoId(3),
+    playbackId: "VNSRVl9AwnEcIGVwuQAgRBUoCGs3TbYE900ywl01nUXzs",
   },
   {
     title: "Friday Night Lights",
     desc: "High school football in Compton. Under the lights, everything matters.",
     genre: "Live Sports",
+    episodes: 8,
     gradient: "from-emerald/80 via-emerald/30 to-transparent",
     accent: "#22C55E",
-    playbackId: demoId(1),
+    playbackId: "201pH01yrmEaWSDwxS003lXyqTUYXS9S6QgHvj66Oda2m8",
   },
   {
     title: "The Real Compton",
     desc: "Stories from the streets. Unscripted. Unfiltered. Real.",
     genre: "Talk Show",
+    episodes: 10,
     gradient: "from-gold/80 via-gold/30 to-transparent",
     accent: "#F2A900",
-    playbackId: demoId(2),
+    playbackId: "fRGWXPRIebDIEe01hIkiPzPlEcgYsEZL9dGVm8nOYYGk",
   },
   {
     title: "Compton Cooks",
     desc: "Local chefs, legendary recipes, and the food that built us.",
     genre: "Food · Lifestyle",
+    episodes: 4,
     gradient: "from-coral/80 via-coral/30 to-transparent",
     accent: "#FF6B6B",
-    playbackId: demoId(4),
+    playbackId: "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA",
   },
 ];
 
@@ -151,8 +113,8 @@ const COMPTON_STARS = [
   { name: "Dr. Dre", title: "Music Mogul", icon: "🎧" },
   { name: "Ice Cube", title: "Entertainment Icon", icon: "🎬" },
   { name: "The Game", title: "West Coast Legend", icon: "🎵" },
+  { name: "A'ja Wilson", title: "WNBA MVP", icon: "🏀" },
   { name: "Coolio", title: "Grammy Winner", icon: "🏅" },
-  { name: "Aja Wilson", title: "WNBA MVP", icon: "🏀" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────
@@ -178,6 +140,31 @@ function formatTimeBlock(time: string) {
   const ampm = hour >= 12 ? "PM" : "AM";
   const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
   return `${displayHour}:${m} ${ampm}`;
+}
+
+function timeAgo(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days}d ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks}w ago`;
+}
+
+function timeUntil(dateStr: string) {
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff < 0) return "Now";
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) {
+    const mins = Math.floor(diff / 60000);
+    return `${mins}m`;
+  }
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
 }
 
 // ── Props ──────────────────────────────────────────────────
@@ -210,101 +197,35 @@ export default function HubCityTV({
   const [watchingStream, setWatchingStream] = useState<LiveStream | null>(null);
   const [playingVideo, setPlayingVideo] = useState<ChannelVideo | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
+  const heroTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [preRollAd, setPreRollAd] = useState<VideoAd | null>(null);
+  const [pendingVideo, setPendingVideo] = useState<ChannelVideo | null>(null);
+  const [pendingStream, setPendingStream] = useState<LiveStream | null>(null);
 
-  // Merge demo data when DB is empty so the page is always populated
-  const allFeatured = featuredVideos.length > 0 ? featuredVideos : DEMO_FEATURED_VIDEOS;
-  const allRecent = recentVideos.length > 0 ? recentVideos : DEMO_RECENT_VIDEOS;
-  const allChannels = channels.length > 0 ? channels : (DEMO_CHANNELS as unknown as Channel[]);
+  // Auto-rotate hero every 6 seconds
+  useEffect(() => {
+    heroTimerRef.current = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % ORIGINALS.length);
+    }, 6000);
+    return () => { if (heroTimerRef.current) clearInterval(heroTimerRef.current); };
+  }, []);
 
-  const rawActiveStreams = streams.filter((s) => s.status === "active");
-  const rawUpcomingStreams = streams.filter((s) => s.status === "idle");
-
-  // Demo streams when DB is empty
-  const DEMO_STREAMS = (rawActiveStreams.length === 0 && rawUpcomingStreams.length === 0 ? [
-    {
-      id: "demo-stream-1",
-      title: "City Council Live: April Budget Review",
-      description: "Live coverage of the April city council budget review session.",
-      status: "active" as const,
-      category: "government",
-      mux_playback_id: demoId(0),
-      mux_stream_id: null, mux_stream_key: null,
-      rtmp_url: "rtmps://global-live.mux.com:443/app",
-      creator_id: "demo-creator-1",
-      channel_id: "demo-ch-5",
-      viewer_count: 127,
-      scheduled_at: new Date().toISOString(),
-      ended_at: null, created_at: new Date().toISOString(),
-      creator: { id: "demo-creator-1", display_name: "City Clerk Office", avatar_url: null, role: "city_official", verification_status: "verified" },
-      channel: DEMO_CHANNELS[4],
-    },
-    {
-      id: "demo-stream-2",
-      title: "Friday Night Lights: Compton vs Lynwood",
-      description: "High school football — live from the field.",
-      status: "active" as const,
-      category: "sports",
-      mux_playback_id: demoId(1),
-      mux_stream_id: null, mux_stream_key: null,
-      rtmp_url: "rtmps://global-live.mux.com:443/app",
-      creator_id: "demo-creator-2",
-      channel_id: "demo-ch-2",
-      viewer_count: 342,
-      scheduled_at: new Date().toISOString(),
-      ended_at: null, created_at: new Date().toISOString(),
-      creator: { id: "demo-creator-2", display_name: "Compton Sports Network", avatar_url: null, role: "admin", verification_status: "verified" },
-      channel: DEMO_CHANNELS[1],
-    },
-    {
-      id: "demo-stream-3",
-      title: "Late Night Vibes: Chill Beats from Compton",
-      description: "Lo-fi music stream with city visuals.",
-      status: "idle" as const,
-      category: "entertainment",
-      mux_playback_id: demoId(3),
-      mux_stream_id: null, mux_stream_key: null,
-      rtmp_url: "rtmps://global-live.mux.com:443/app",
-      creator_id: "demo-creator-3",
-      channel_id: "demo-ch-6",
-      viewer_count: 0,
-      scheduled_at: new Date(Date.now() + 3600000 * 2).toISOString(),
-      ended_at: null, created_at: new Date().toISOString(),
-      creator: { id: "demo-creator-3", display_name: "Block Beats Radio", avatar_url: null, role: "admin", verification_status: "verified" },
-      channel: DEMO_CHANNELS[5],
-    },
-    {
-      id: "demo-stream-4",
-      title: "Compton Rising: Behind the Scenes",
-      description: "Exclusive look at the making of the documentary series.",
-      status: "idle" as const,
-      category: "entertainment",
-      mux_playback_id: demoId(2),
-      mux_stream_id: null, mux_stream_key: null,
-      rtmp_url: "rtmps://global-live.mux.com:443/app",
-      creator_id: "demo-creator-4",
-      channel_id: "demo-ch-4",
-      viewer_count: 0,
-      scheduled_at: new Date(Date.now() + 3600000 * 5).toISOString(),
-      ended_at: null, created_at: new Date().toISOString(),
-      creator: { id: "demo-creator-4", display_name: "Culture Hub TV", avatar_url: null, role: "admin", verification_status: "verified" },
-      channel: DEMO_CHANNELS[3],
-    },
-  ] : []) as unknown as LiveStream[];
-
-  const activeStreams = rawActiveStreams.length > 0 ? rawActiveStreams : DEMO_STREAMS.filter((s) => s.status === "active");
-  const upcomingStreams = rawUpcomingStreams.length > 0 ? rawUpcomingStreams : DEMO_STREAMS.filter((s) => s.status === "idle");
+  const activeStreams = streams.filter((s) => s.status === "active");
+  const upcomingStreams = streams.filter((s) => s.status === "idle");
 
   const filteredChannels =
-    channelFilter === "all" ? allChannels : allChannels.filter((c) => c.type === channelFilter);
+    channelFilter === "all" ? channels : channels.filter((c) => c.type === channelFilter);
 
   const today = new Date().getDay();
   const tomorrow = (today + 1) % 7;
   const todayBlocks = timeBlocks.filter((tb) => tb.day_of_week === today);
   const tomorrowBlocks = timeBlocks.filter((tb) => tb.day_of_week === tomorrow);
 
-  const originals = allRecent.filter((v) => v.video_type === "original");
-  const podcasts = allRecent.filter((v) => v.video_type === "podcast");
-  const cityHall = allRecent.filter((v) => v.video_type === "city_hall");
+  // Categorize videos
+  const originals = recentVideos.filter((v) => v.video_type === "original");
+  const cityHall = recentVideos.filter((v) => v.video_type === "city_hall");
+  const sportsVideos = recentVideos.filter((v) => v.video_type === "featured" || v.channel?.type === "community");
+  const trendingVideos = [...recentVideos].sort((a, b) => b.view_count - a.view_count).slice(0, 8);
 
   const handleFollow = useCallback(
     async (channelId: string) => {
@@ -330,7 +251,70 @@ export default function HubCityTV({
     [userId, followedIds]
   );
 
+  const fetchPreRollAd = useCallback(async (): Promise<VideoAd | null> => {
+    try {
+      const res = await fetch("/api/ads/pre-roll");
+      const data = await res.json();
+      return data.ad || null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const playVideo = useCallback(async (video: ChannelVideo) => {
+    if (!video.mux_playback_id) {
+      router.push(`/live/watch/${video.id}`);
+      return;
+    }
+    const ad = await fetchPreRollAd();
+    if (ad) {
+      setPreRollAd(ad);
+      setPendingVideo(video);
+      setPendingStream(null);
+    } else {
+      setPlayingVideo(video);
+    }
+  }, [fetchPreRollAd, router]);
+
+  const watchStream = useCallback(async (stream: LiveStream) => {
+    if (!stream.mux_playback_id) return;
+    const ad = await fetchPreRollAd();
+    if (ad) {
+      setPreRollAd(ad);
+      setPendingStream(stream);
+      setPendingVideo(null);
+    } else {
+      setWatchingStream(stream);
+    }
+  }, [fetchPreRollAd]);
+
+  const handleAdComplete = useCallback(() => {
+    setPreRollAd(null);
+    if (pendingVideo) {
+      setPlayingVideo(pendingVideo);
+      setPendingVideo(null);
+    } else if (pendingStream) {
+      setWatchingStream(pendingStream);
+      setPendingStream(null);
+    }
+  }, [pendingVideo, pendingStream]);
+
   const currentHero = ORIGINALS[heroIndex];
+
+  // ── Pre-Roll Ad ─────────────────────────────────────────
+  if (preRollAd && preRollAd.mux_playback_id) {
+    return (
+      <PreRollAd
+        playbackId={preRollAd.mux_playback_id}
+        ctaText={preRollAd.cta_text || "Shop Now"}
+        ctaUrl={preRollAd.cta_url || "#"}
+        businessName={preRollAd.title}
+        adId={preRollAd.id}
+        onComplete={handleAdComplete}
+        onSkip={handleAdComplete}
+      />
+    );
+  }
 
   // ── Inline Video Player ──────────────────────────────────
   if (playingVideo && playingVideo.mux_playback_id) {
@@ -353,15 +337,32 @@ export default function HubCityTV({
           <h2 className="font-heading font-bold text-lg">{playingVideo.title}</h2>
           {playingVideo.channel && (
             <Link href={`/live/channel/${playingVideo.channel.id}`} className="flex items-center gap-2 press">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading text-[10px] font-bold">{channelInitials(playingVideo.channel.name)}</div>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading text-[10px] font-bold overflow-hidden">
+                {playingVideo.channel.avatar_url ? (
+                  <img src={playingVideo.channel.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : channelInitials(playingVideo.channel.name)}
+              </div>
               <span className="text-sm text-txt-secondary">{playingVideo.channel.name}</span>
             </Link>
           )}
           <div className="flex items-center gap-3 text-[11px] text-txt-secondary">
             <span>{formatViews(playingVideo.view_count)} views</span>
-            {playingVideo.published_at && <span>{new Date(playingVideo.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>}
+            {playingVideo.published_at && <span>· {timeAgo(playingVideo.published_at)}</span>}
+            {playingVideo.duration && <span>· {formatDuration(playingVideo.duration)}</span>}
           </div>
           {playingVideo.description && <p className="text-sm text-txt-secondary leading-relaxed">{playingVideo.description}</p>}
+
+          {/* Up Next */}
+          {recentVideos.length > 1 && (
+            <div className="pt-4 border-t border-border-subtle">
+              <h3 className="font-heading font-bold text-sm mb-3">Up Next</h3>
+              <div className="space-y-3">
+                {recentVideos.filter(v => v.id !== playingVideo.id).slice(0, 5).map((video) => (
+                  <VideoCardRow key={video.id} video={video} onPlay={() => playVideo(video)} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -387,13 +388,28 @@ export default function HubCityTV({
         </div>
         <div className="px-5 space-y-3">
           <h2 className="font-heading font-bold text-lg">{watchingStream.title}</h2>
+          {watchingStream.creator && (
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-compton-red flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
+                {watchingStream.creator.avatar_url ? (
+                  <img src={watchingStream.creator.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : watchingStream.creator.display_name?.[0]?.toUpperCase() || "?"}
+              </div>
+              <span className="text-sm text-txt-secondary">{watchingStream.creator.display_name}</span>
+              {watchingStream.viewer_count > 0 && (
+                <span className="text-[11px] text-txt-secondary ml-auto">
+                  <span className="text-coral font-bold">{watchingStream.viewer_count}</span> watching
+                </span>
+              )}
+            </div>
+          )}
           {watchingStream.description && <p className="text-sm text-txt-secondary">{watchingStream.description}</p>}
           {watchingStream.status === "active" && (
             <div className="rounded-xl bg-coral/10 border border-coral/20 p-4 flex items-center gap-3">
               <div className="w-3 h-3 rounded-full bg-coral animate-pulse shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-coral">Broadcasting Live</p>
-                <p className="text-[11px] text-txt-secondary">Stream is active</p>
+                <p className="text-[11px] text-txt-secondary">{watchingStream.viewer_count || 0} viewers tuned in</p>
               </div>
             </div>
           )}
@@ -410,71 +426,56 @@ export default function HubCityTV({
       <div className="relative -mt-[72px] pt-[72px]">
         {/* Background video poster */}
         <div className="absolute inset-0 overflow-hidden">
-          <MuxPlayer
-            playbackId={currentHero.playbackId}
-            streamType="on-demand"
-            autoPlay="muted"
-            loop
-            muted
-            nohotkeys
-            poster={`https://image.mux.com/${currentHero.playbackId}/thumbnail.webp?width=960&height=540&time=8`}
-            accentColor={currentHero.accent}
-            style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
-            className="pointer-events-none"
+          <img
+            src={`https://image.mux.com/${currentHero.playbackId}/thumbnail.webp?width=960&height=540&time=8`}
+            alt=""
+            className="w-full h-full object-cover transition-opacity duration-700"
           />
         </div>
-        {/* Gradient overlays for readability */}
+        {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-midnight)] via-[var(--color-midnight)]/70 to-[var(--color-midnight)]/40" />
-        <div className="absolute inset-0" style={{
-          background: `radial-gradient(ellipse at 20% 50%, ${currentHero.accent}20 0%, transparent 60%)`,
-        }} />
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 20% 50%, ${currentHero.accent}20 0%, transparent 60%)` }} />
 
         <div className="relative z-10 px-5 pt-6 pb-8">
           {/* Brand tag */}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-compton-red/15 border border-compton-red/30 mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-            <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.1em]">
-              HUB CITY ORIGINALS
-            </span>
+            <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.1em]">HUB CITY TV</span>
           </div>
 
-          {/* Title */}
+          {/* Live count indicator */}
+          {activeStreams.length > 0 && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30 mb-4 ml-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+              <span className="font-heading text-[10px] font-bold text-coral tracking-wider">{activeStreams.length} LIVE NOW</span>
+            </div>
+          )}
+
           <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
             {currentHero.title}
           </h1>
-
-          {/* Description */}
           <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
             {currentHero.desc}
           </p>
-
-          {/* Genre tag */}
-          <p className="text-[12px] text-txt-secondary mb-6">{currentHero.genre}</p>
+          <p className="text-[12px] text-txt-secondary mb-1">{currentHero.genre} · {currentHero.episodes} episodes</p>
 
           {/* CTA Buttons */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 mt-5">
             <button
               onClick={() => {
-                const demoVideo: ChannelVideo = {
+                const demoVideo = {
                   id: `original-hero-${heroIndex}`,
-                  channel_id: DEMO_CHANNELS[heroIndex % DEMO_CHANNELS.length].id,
+                  channel_id: "demo",
                   title: currentHero.title,
                   description: currentHero.desc,
                   mux_playback_id: currentHero.playbackId,
-                  mux_asset_id: null,
-                  mux_upload_id: null,
-                  thumbnail_url: null,
-                  video_type: "original",
-                  duration: 300,
-                  view_count: 5000 + heroIndex * 1200,
-                  is_published: true,
-                  is_featured: true,
-                  status: "ready",
-                  published_at: new Date().toISOString(),
-                  created_at: new Date().toISOString(),
-                  channel: DEMO_CHANNELS[heroIndex % DEMO_CHANNELS.length],
+                  mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
+                  video_type: "original", duration: 300, view_count: 5000 + heroIndex * 1200,
+                  is_published: true, is_featured: true, status: "ready",
+                  published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+                  channel: null,
                 } as unknown as ChannelVideo;
-                setPlayingVideo(demoVideo);
+                playVideo(demoVideo);
               }}
               className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
             >
@@ -482,7 +483,8 @@ export default function HubCityTV({
               Watch Now
             </button>
             <button className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
-              + My List
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+              My List
             </button>
           </div>
 
@@ -491,9 +493,9 @@ export default function HubCityTV({
             {ORIGINALS.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setHeroIndex(i)}
-                className={`h-[3px] rounded-full transition-all duration-300 ${
-                  i === heroIndex ? "w-8 bg-gold" : "w-3 bg-white/20"
+                onClick={() => { setHeroIndex(i); if (heroTimerRef.current) clearInterval(heroTimerRef.current); }}
+                className={`h-[3px] rounded-full transition-all duration-500 ${
+                  i === heroIndex ? "w-8 bg-gold" : "w-3 bg-white/20 hover:bg-white/40"
                 }`}
               />
             ))}
@@ -502,7 +504,7 @@ export default function HubCityTV({
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          TAB NAVIGATION — Netflix top nav style
+          TAB NAVIGATION
           ══════════════════════════════════════════════════════ */}
       <div className="flex gap-1 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
         {TABS.map((tab) => (
@@ -524,11 +526,11 @@ export default function HubCityTV({
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          HOME TAB — Netflix-style content rows
+          HOME TAB
           ══════════════════════════════════════════════════════ */}
       {activeTab === "home" && (
         <div className="animate-fade-in">
-          {/* Live Now — if active streams */}
+          {/* ── Live Now ── */}
           {activeStreams.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center gap-2 px-5 mb-3">
@@ -538,97 +540,117 @@ export default function HubCityTV({
               </div>
               <div className="px-5 space-y-3">
                 {activeStreams.map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} isLive onWatch={() => setWatchingStream(stream)} />
+                  <StreamCard key={stream.id} stream={stream} isLive onWatch={() => watchStream(stream)} />
                 ))}
               </div>
             </section>
           )}
 
-          {/* Hub City Originals row */}
+          {/* ── Trending on Hub City TV ── */}
+          {trendingVideos.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between px-5 mb-3">
+                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-coral">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  Trending
+                </h2>
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+                {trendingVideos.map((video, i) => (
+                  <button key={video.id} onClick={() => playVideo(video)} className="shrink-0 w-[200px] text-left press group">
+                    <div className="relative rounded-xl overflow-hidden mb-2">
+                      <div className="aspect-video bg-gradient-to-br from-coral/15 via-midnight to-gold/10 flex items-center justify-center">
+                        {video.mux_playback_id ? (
+                          <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`} alt={video.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gold/30"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                        )}
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                          <div className="w-10 h-10 rounded-full bg-gold/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          </div>
+                        </div>
+                        {/* Rank badge */}
+                        <div className="absolute top-2 left-2 w-6 h-6 rounded-md bg-coral/90 flex items-center justify-center">
+                          <span className="text-[10px] font-bold text-white">{i + 1}</span>
+                        </div>
+                        {video.duration && <div className="absolute bottom-1.5 right-1.5 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">{formatDuration(video.duration)}</div>}
+                      </div>
+                    </div>
+                    <h3 className="font-heading font-bold text-[12px] line-clamp-2 mb-0.5">{video.title}</h3>
+                    <div className="flex items-center gap-1.5">
+                      {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
+                      <span className="text-[10px] text-txt-secondary">· {formatViews(video.view_count)} views</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── Hub City Originals ── */}
           <section className="mb-8">
             <div className="flex items-center justify-between px-5 mb-3">
               <h2 className="font-heading font-bold text-[18px]">
                 <span className="text-gold">Hub City</span> Originals
               </h2>
-              <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">
-                See All →
-              </button>
+              <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
               {ORIGINALS.map((show, i) => (
-                <button key={i} className="shrink-0 w-[160px] text-left press group" onClick={() => {
-                  setPlayingVideo({
-                    id: `original-card-${i}`,
-                    channel_id: DEMO_CHANNELS[i % DEMO_CHANNELS.length].id,
-                    title: show.title,
-                    description: show.desc,
-                    mux_playback_id: show.playbackId,
+                <button key={i} className="shrink-0 w-[140px] text-left press group" onClick={() => {
+                  playVideo({
+                    id: `original-card-${i}`, channel_id: "demo", title: show.title,
+                    description: show.desc, mux_playback_id: show.playbackId,
                     mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
                     video_type: "original", duration: 300, view_count: 3000 + i * 800,
                     is_published: true, is_featured: true, status: "ready",
                     published_at: new Date().toISOString(), created_at: new Date().toISOString(),
-                    channel: DEMO_CHANNELS[i % DEMO_CHANNELS.length],
+                    channel: null,
                   } as unknown as ChannelVideo);
                 }}>
                   <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
                     style={{ background: `linear-gradient(180deg, ${show.accent}20 0%, var(--color-midnight) 100%)` }}>
-                    {/* Auto-playing muted video preview */}
-                    <div className="absolute inset-0 pointer-events-none">
-                      <MuxPlayer
-                        playbackId={show.playbackId}
-                        streamType="on-demand"
-                        autoPlay="muted"
-                        loop
-                        muted
-                        nohotkeys
-                        poster={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=320&height=427&time=5`}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
-                      />
-                    </div>
-                    {/* Color overlay */}
+                    <img
+                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=280&height=373&time=5`}
+                      alt={show.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <div className="absolute inset-0" style={{
                       background: `linear-gradient(180deg, ${show.accent}30 0%, transparent 30%, transparent 50%, ${show.accent}15 100%)`,
                     }} />
                     <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-midnight to-transparent" />
-
-                    {/* Play overlay */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="w-12 h-12 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       </div>
                     </div>
-
-                    {/* Badge */}
                     <div className="absolute top-2.5 left-2.5">
-                      <span className="px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>
-                        Original
-                      </span>
+                      <span className="px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>Original</span>
+                    </div>
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                      <h3 className="font-heading font-bold text-[14px] leading-tight text-white drop-shadow-lg">{show.title}</h3>
                     </div>
                   </div>
-                  <h3 className="font-heading font-bold text-[13px] mb-0.5">{show.title}</h3>
-                  <p className="text-[10px] text-warm-gray">{show.genre}</p>
+                  <p className="text-[10px] text-warm-gray">{show.genre} · {show.episodes} ep</p>
                 </button>
               ))}
             </div>
           </section>
 
-          {/* Compton Stars — horizontal scroll */}
+          {/* ── Compton Stars ── */}
           <section className="mb-8">
             <div className="px-5 mb-3">
-              <h2 className="font-heading font-bold text-[18px]">
-                Compton <span className="text-gold">Stars</span>
-              </h2>
+              <h2 className="font-heading font-bold text-[18px]">Compton <span className="text-gold">Stars</span></h2>
               <p className="text-[12px] text-warm-gray mt-0.5">Legends who started here</p>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
               {COMPTON_STARS.map((star, i) => (
                 <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[80px] press">
                   <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-br from-gold/20 via-royal to-hc-purple/20 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center text-[24px]">
-                      {star.icon}
-                    </div>
+                    <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center text-[24px]">{star.icon}</div>
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold leading-tight">{star.name}</p>
@@ -639,8 +661,8 @@ export default function HubCityTV({
             </div>
           </section>
 
-          {/* Featured Videos */}
-          {allFeatured.length > 0 && (
+          {/* ── Featured Videos ── */}
+          {featuredVideos.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
@@ -651,54 +673,61 @@ export default function HubCityTV({
                 </h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {allFeatured.map((video) => (
-                  <VideoCardLarge key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
+                {featuredVideos.map((video) => (
+                  <VideoCardLarge key={video.id} video={video} onPlay={() => playVideo(video)} />
                 ))}
               </div>
             </section>
           )}
 
-          {/* Channel Stories scroller */}
+          {/* ── City Hall ── */}
+          {cityHall.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between px-5 mb-3">
+                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan">
+                    <path d="M3 21h18M3 7v14M21 7v14M6 7V4l6-2 6 2v3M9 21v-4h6v4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  City Hall
+                </h2>
+                <span className="text-[11px] text-txt-secondary">{cityHall.length} videos</span>
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+                {cityHall.map((video) => (
+                  <VideoCardSmall key={video.id} video={video} onPlay={() => playVideo(video)} badgeLabel="City Hall" badgeVariant="cyan" />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── Channels scroller ── */}
           <section className="mb-8">
             <div className="flex items-center justify-between px-5 mb-3">
               <h2 className="font-heading font-bold text-[18px]">Channels</h2>
-              <button onClick={() => setActiveTab("channels")} className="text-[12px] text-gold font-semibold press">
-                See All →
-              </button>
+              <button onClick={() => setActiveTab("channels")} className="text-[12px] text-gold font-semibold press">See All →</button>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
-              {allChannels.slice(0, 15).map((ch) => (
-                <Link key={ch.id} href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">
-                      {ch.avatar_url ? (
-                        <img src={ch.avatar_url} alt={ch.name} className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-gold font-heading font-bold text-sm">{channelInitials(ch.name)}</span>
-                      )}
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-txt-secondary text-center w-16 truncate">{ch.name}</span>
-                </Link>
+              {channels.slice(0, 15).map((ch) => (
+                <ChannelBubble key={ch.id} channel={ch} />
               ))}
             </div>
           </section>
 
-          {/* Recent Uploads */}
-          {allRecent.length > 0 && (
+          {/* ── Recently Added ── */}
+          {recentVideos.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px]">Recently Added</h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {allRecent.slice(0, 10).map((video) => (
-                  <VideoCardSmall key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
+                {recentVideos.slice(0, 10).map((video) => (
+                  <VideoCardSmall key={video.id} video={video} onPlay={() => playVideo(video)} />
                 ))}
               </div>
             </section>
           )}
 
-          {/* Upcoming Streams */}
+          {/* ── Coming Up Next ── */}
           {upcomingStreams.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
@@ -706,17 +735,26 @@ export default function HubCityTV({
                 <p className="text-[12px] text-warm-gray mt-0.5">{upcomingStreams.length} scheduled streams</p>
               </div>
               <div className="px-5 space-y-3">
-                {upcomingStreams.slice(0, 5).map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.mux_playback_id) setWatchingStream(stream); }} />
+                {upcomingStreams.map((stream) => (
+                  <div key={stream.id} className="relative">
+                    {stream.scheduled_at && (
+                      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center z-10">
+                        <span className="text-[9px] font-bold text-gold">{timeUntil(stream.scheduled_at)}</span>
+                      </div>
+                    )}
+                    <div className="ml-8">
+                      <StreamCard stream={stream} onWatch={() => { if (stream.mux_playback_id) watchStream(stream); }} />
+                    </div>
+                  </div>
                 ))}
               </div>
             </section>
           )}
 
-          {/* Entertainment categories preview */}
+          {/* ── Browse by Category ── */}
           <section className="mb-8 px-5">
             <h2 className="font-heading font-bold text-[18px] mb-3">Browse by Category</h2>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-3 gap-2.5">
               {[
                 { label: "Sports", icon: "🏈", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
                 { label: "Music", icon: "🎵", color: "#8B5CF6", gradient: "from-hc-purple/30 to-hc-purple/5" },
@@ -725,14 +763,30 @@ export default function HubCityTV({
                 { label: "Podcasts", icon: "🎙️", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
                 { label: "Education", icon: "📚", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
               ].map((cat, i) => (
-                <button key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-border-subtle p-4 text-left press group`}>
+                <button key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-border-subtle p-3 text-left press group`}>
                   <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50" style={{ background: `linear-gradient(90deg, transparent, ${cat.color}, transparent)` }} />
-                  <span className="text-[28px] block mb-2">{cat.icon}</span>
-                  <span className="font-heading text-[14px] font-bold">{cat.label}</span>
+                  <span className="text-[22px] block mb-1.5">{cat.icon}</span>
+                  <span className="font-heading text-[12px] font-bold">{cat.label}</span>
                 </button>
               ))}
             </div>
           </section>
+
+          {/* ── Today on Hub City TV ── */}
+          {todayBlocks.length > 0 && (
+            <section className="mb-8 px-5">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-gold" />
+                  Today on HubTV
+                </h2>
+                <button onClick={() => setActiveTab("schedule")} className="text-[12px] text-gold font-semibold press">Full Schedule →</button>
+              </div>
+              <div className="space-y-2">
+                {todayBlocks.slice(0, 4).map((tb) => <TimeBlockCard key={tb.id} block={tb} />)}
+              </div>
+            </section>
+          )}
         </div>
       )}
 
@@ -741,24 +795,41 @@ export default function HubCityTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "live" && (
         <div className="animate-fade-in">
+          {/* Stats bar */}
+          <div className="px-5 mb-5">
+            <div className="flex gap-3">
+              <div className="flex-1 rounded-xl bg-coral/10 border border-coral/20 p-3 text-center">
+                <p className="text-[22px] font-heading font-bold text-coral">{activeStreams.length}</p>
+                <p className="text-[10px] text-txt-secondary">Live Now</p>
+              </div>
+              <div className="flex-1 rounded-xl bg-gold/10 border border-gold/20 p-3 text-center">
+                <p className="text-[22px] font-heading font-bold text-gold">{upcomingStreams.length}</p>
+                <p className="text-[10px] text-txt-secondary">Upcoming</p>
+              </div>
+              <div className="flex-1 rounded-xl bg-cyan/10 border border-cyan/20 p-3 text-center">
+                <p className="text-[22px] font-heading font-bold text-cyan">{channels.length}</p>
+                <p className="text-[10px] text-txt-secondary">Channels</p>
+              </div>
+            </div>
+          </div>
+
           {activeStreams.length > 0 && (
             <div className="px-5 mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <h2 className="font-heading font-bold text-base">Live Now</h2>
                 <div className="w-2 h-2 rounded-full bg-coral animate-pulse" />
               </div>
-              <div className="space-y-3 stagger">
+              <div className="space-y-3">
                 {activeStreams.map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} isLive onWatch={() => setWatchingStream(stream)} />
+                  <StreamCard key={stream.id} stream={stream} isLive onWatch={() => watchStream(stream)} />
                 ))}
               </div>
             </div>
           )}
+
           <div className="px-5 mb-6">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-heading font-bold text-base">
-                {upcomingStreams.length > 0 ? "Upcoming Streams" : "Scheduled"}
-              </h2>
+              <h2 className="font-heading font-bold text-base">Upcoming Streams</h2>
               <span className="text-[11px] text-txt-secondary">{upcomingStreams.length} scheduled</span>
             </div>
             {upcomingStreams.length === 0 ? (
@@ -768,21 +839,34 @@ export default function HubCityTV({
                     <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                   </svg>
                 </div>
-                <p className="text-sm text-txt-secondary">No streams scheduled</p>
+                <p className="text-sm text-txt-secondary mb-1">No streams scheduled yet</p>
+                {canStream && <p className="text-[12px] text-gold">Tap the camera button to go live</p>}
               </div>
             ) : (
-              <div className="space-y-3 stagger">
+              <div className="space-y-3">
                 {upcomingStreams.map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.mux_playback_id) setWatchingStream(stream); }} />
+                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.mux_playback_id) watchStream(stream); }} />
                 ))}
               </div>
             )}
           </div>
+
+          {/* Recent live replays */}
+          {recentVideos.length > 0 && (
+            <div className="px-5 mb-6">
+              <h2 className="font-heading font-bold text-base mb-3">Recent Replays</h2>
+              <div className="space-y-3">
+                {recentVideos.slice(0, 6).map((video) => (
+                  <VideoCardRow key={video.id} video={video} onPlay={() => playVideo(video)} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {/* ══════════════════════════════════════════════════════
-          ORIGINALS TAB — Full showcase
+          ORIGINALS TAB
           ══════════════════════════════════════════════════════ */}
       {activeTab === "originals" && (
         <div className="animate-fade-in">
@@ -799,73 +883,55 @@ export default function HubCityTV({
           <div className="px-5 space-y-4 mb-8">
             {ORIGINALS.map((show, i) => (
               <button key={i} className="w-full text-left press group" onClick={() => {
-                setPlayingVideo({
-                  id: `original-full-${i}`,
-                  channel_id: DEMO_CHANNELS[i % DEMO_CHANNELS.length].id,
-                  title: show.title,
-                  description: show.desc,
-                  mux_playback_id: show.playbackId,
+                playVideo({
+                  id: `original-full-${i}`, channel_id: "demo", title: show.title,
+                  description: show.desc, mux_playback_id: show.playbackId,
                   mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
                   video_type: "original", duration: 300, view_count: 3000 + i * 800,
                   is_published: true, is_featured: true, status: "ready",
                   published_at: new Date().toISOString(), created_at: new Date().toISOString(),
-                  channel: DEMO_CHANNELS[i % DEMO_CHANNELS.length],
+                  channel: null,
                 } as unknown as ChannelVideo);
               }}>
                 <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-                  {/* Video preview with poster */}
-                  <div className="h-[220px] relative overflow-hidden">
-                    <div className="absolute inset-0 pointer-events-none">
-                      <MuxPlayer
-                        playbackId={show.playbackId}
-                        streamType="on-demand"
-                        autoPlay="muted"
-                        loop
-                        muted
-                        nohotkeys
-                        poster={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=440&time=10`}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", aspectRatio: "unset", ["--controls" as string]: "none", ["--media-object-fit" as string]: "cover" }}
-                      />
-                    </div>
+                  <div className="h-[200px] relative overflow-hidden">
+                    <img
+                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=400&time=10`}
+                      alt={show.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
                     <div className="absolute inset-0" style={{
                       background: `linear-gradient(180deg, transparent 0%, ${show.accent}15 60%, var(--color-card) 100%)`,
                     }} />
-
-                    {/* Play button */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-1">
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                       </div>
                     </div>
-
-                    {/* Badge */}
                     <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>
-                        Hub City Original
-                      </span>
+                      <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>Hub City Original</span>
                     </div>
                   </div>
                   <div className="p-4">
                     <h3 className="font-heading text-[18px] font-bold mb-1">{show.title}</h3>
                     <p className="text-[13px] text-warm-gray leading-relaxed mb-2">{show.desc}</p>
-                    <p className="text-[11px] text-txt-secondary">{show.genre}</p>
+                    <p className="text-[11px] text-txt-secondary">{show.genre} · {show.episodes} episodes</p>
                   </div>
                 </div>
               </button>
             ))}
           </div>
 
-          {/* Originals tab also shows real original videos */}
+          {/* Real original videos from DB */}
           {originals.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-base">Episodes</h2>
+                <h2 className="font-heading font-bold text-base">Community Originals</h2>
+                <p className="text-[12px] text-warm-gray mt-0.5">Created by Compton channels</p>
               </div>
               <div className="px-5 space-y-3">
                 {originals.map((video) => (
-                  <VideoCardRow key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
+                  <VideoCardRow key={video.id} video={video} onPlay={() => playVideo(video)} />
                 ))}
               </div>
             </section>
@@ -878,27 +944,25 @@ export default function HubCityTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "channels" && (
         <div className="animate-fade-in">
+          {/* Channel story bubbles */}
           <div className="flex gap-3 px-5 mb-5 overflow-x-auto scrollbar-hide pb-1">
-            {allChannels.slice(0, 15).map((ch) => (
-              <Link key={ch.id} href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
-                  <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">
-                    {ch.avatar_url ? (
-                      <img src={ch.avatar_url} alt={ch.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-gold font-heading font-bold text-sm">{channelInitials(ch.name)}</span>
-                    )}
-                  </div>
-                </div>
-                <span className="text-[10px] text-txt-secondary text-center w-16 truncate">{ch.name}</span>
-              </Link>
+            {channels.slice(0, 15).map((ch) => (
+              <ChannelBubble key={ch.id} channel={ch} />
             ))}
           </div>
+
+          {/* Filter chips */}
           <div className="flex gap-2 px-5 mb-4 overflow-x-auto scrollbar-hide pb-1">
             {CHANNEL_FILTERS.map((f) => (
               <Chip key={f.value} label={f.label} active={channelFilter === f.value} onClick={() => setChannelFilter(f.value)} />
             ))}
           </div>
+
+          {/* Channel count */}
+          <div className="px-5 mb-3">
+            <p className="text-[12px] text-txt-secondary">{filteredChannels.length} channels{channelFilter !== "all" ? ` in ${channelFilter}` : ""}</p>
+          </div>
+
           <div className="px-5 space-y-3">
             {filteredChannels.length === 0 ? (
               <div className="text-center py-10"><p className="text-sm text-txt-secondary">No channels in this category</p></div>
@@ -931,8 +995,11 @@ export default function HubCityTV({
                         </Link>
                         <div className="flex items-center gap-2 mb-1">
                           <Badge label={badge.label} variant={badge.variant} />
-                          <span className="text-[10px] text-txt-secondary">{ch.follower_count} followers</span>
+                          <span className="text-[10px] text-txt-secondary">{ch.follower_count.toLocaleString()} followers</span>
                         </div>
+                        {ch.description && (
+                          <p className="text-[11px] text-txt-secondary line-clamp-1">{ch.description}</p>
+                        )}
                       </div>
                       {userId && (
                         <button
@@ -960,9 +1027,25 @@ export default function HubCityTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "schedule" && (
         <div className="animate-fade-in px-5">
+          {/* Week overview */}
+          <div className="flex gap-1.5 mb-6 overflow-x-auto scrollbar-hide pb-1">
+            {DAY_NAMES.map((day, i) => {
+              const blockCount = timeBlocks.filter((tb) => tb.day_of_week === i).length;
+              const isToday = i === today;
+              return (
+                <div key={i} className={`shrink-0 w-[52px] rounded-xl p-2 text-center ${isToday ? "bg-gold/15 border border-gold/30" : "bg-white/[0.04] border border-border-subtle"}`}>
+                  <p className={`text-[10px] font-bold ${isToday ? "text-gold" : "text-txt-secondary"}`}>{DAY_NAMES_SHORT[i]}</p>
+                  <p className={`text-[16px] font-heading font-bold ${isToday ? "text-gold" : "text-white"}`}>{blockCount}</p>
+                  <p className="text-[8px] text-txt-secondary">shows</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Today */}
           <div className="mb-6">
             <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-gold" />
+              <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
               Today &mdash; {DAY_NAMES[today]}
             </h2>
             {todayBlocks.length === 0 ? (
@@ -971,6 +1054,8 @@ export default function HubCityTV({
               <div className="space-y-2">{todayBlocks.map((tb) => <TimeBlockCard key={tb.id} block={tb} />)}</div>
             )}
           </div>
+
+          {/* Tomorrow */}
           <div className="mb-6">
             <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
               Tomorrow &mdash; {DAY_NAMES[tomorrow]}
@@ -981,6 +1066,19 @@ export default function HubCityTV({
               <div className="space-y-2">{tomorrowBlocks.map((tb) => <TimeBlockCard key={tb.id} block={tb} />)}</div>
             )}
           </div>
+
+          {/* Full week */}
+          {DAY_NAMES.map((day, i) => {
+            if (i === today || i === tomorrow) return null;
+            const blocks = timeBlocks.filter((tb) => tb.day_of_week === i);
+            if (blocks.length === 0) return null;
+            return (
+              <div key={i} className="mb-6">
+                <h2 className="font-heading font-bold text-base mb-3">{day}</h2>
+                <div className="space-y-2">{blocks.map((tb) => <TimeBlockCard key={tb.id} block={tb} />)}</div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -1003,15 +1101,32 @@ export default function HubCityTV({
 
 // ── Sub-components ─────────────────────────────────────────
 
+function ChannelBubble({ channel: ch }: { channel: Channel }) {
+  return (
+    <Link href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
+      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
+        <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">
+          {ch.avatar_url ? (
+            <img src={ch.avatar_url} alt={ch.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-gold font-heading font-bold text-sm">{channelInitials(ch.name)}</span>
+          )}
+        </div>
+      </div>
+      <span className="text-[10px] text-txt-secondary text-center w-16 truncate">{ch.name}</span>
+    </Link>
+  );
+}
+
 function VideoCardLarge({ video, onPlay }: { video: ChannelVideo; onPlay: () => void }) {
   return (
     <button onClick={onPlay} className="shrink-0 w-[260px] text-left press group">
       <div className="relative rounded-xl overflow-hidden mb-2">
         <div className="aspect-video bg-gradient-to-br from-gold/20 via-midnight to-hc-purple/20 flex items-center justify-center">
-          {video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-          ) : video.mux_playback_id ? (
+          {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=520&height=292&time=5`} alt={video.title} className="w-full h-full object-cover" />
+          ) : video.thumbnail_url ? (
+            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-gold/40"><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
@@ -1025,21 +1140,23 @@ function VideoCardLarge({ video, onPlay }: { video: ChannelVideo; onPlay: () => 
         </div>
       </div>
       <h3 className="font-heading font-bold text-[13px] line-clamp-2 mb-1">{video.title}</h3>
-      {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
-      <span className="text-[10px] text-txt-secondary">{formatViews(video.view_count)} views</span>
+      <div className="flex items-center gap-1.5">
+        {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
+        <span className="text-[10px] text-txt-secondary">· {formatViews(video.view_count)} views</span>
+      </div>
     </button>
   );
 }
 
-function VideoCardSmall({ video, onPlay }: { video: ChannelVideo; onPlay: () => void }) {
+function VideoCardSmall({ video, onPlay, badgeLabel, badgeVariant }: { video: ChannelVideo; onPlay: () => void; badgeLabel?: string; badgeVariant?: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }) {
   return (
     <button onClick={onPlay} className="shrink-0 w-[180px] text-left press group">
       <div className="relative rounded-xl overflow-hidden mb-2">
         <div className="aspect-video bg-gradient-to-br from-gold/15 via-midnight to-coral/15 flex items-center justify-center">
-          {video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-          ) : video.mux_playback_id ? (
+          {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=360&height=202&time=5`} alt={video.title} className="w-full h-full object-cover" />
+          ) : video.thumbnail_url ? (
+            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-gold/30"><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
@@ -1049,10 +1166,14 @@ function VideoCardSmall({ video, onPlay }: { video: ChannelVideo; onPlay: () => 
             </div>
           </div>
           {video.duration && <div className="absolute bottom-1.5 right-1.5 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">{formatDuration(video.duration)}</div>}
+          {badgeLabel && <div className="absolute top-1.5 left-1.5"><Badge label={badgeLabel} variant={badgeVariant || "gold"} /></div>}
         </div>
       </div>
       <h3 className="font-heading font-bold text-[12px] line-clamp-2">{video.title}</h3>
-      {video.channel && <p className="text-[10px] text-txt-secondary truncate mt-0.5">{video.channel.name}</p>}
+      <div className="flex items-center gap-1 mt-0.5">
+        {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
+        {video.published_at && <span className="text-[10px] text-txt-secondary">· {timeAgo(video.published_at)}</span>}
+      </div>
     </button>
   );
 }
@@ -1062,10 +1183,10 @@ function VideoCardRow({ video, onPlay }: { video: ChannelVideo; onPlay: () => vo
     <Card hover onClick={onPlay} className="cursor-pointer">
       <div className="flex gap-3">
         <div className="w-28 h-[72px] rounded-xl overflow-hidden shrink-0 relative bg-gradient-to-br from-midnight to-deep flex items-center justify-center group">
-          {video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-          ) : video.mux_playback_id ? (
+          {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=224&height=144&time=5`} alt={video.title} className="w-full h-full object-cover" />
+          ) : video.thumbnail_url ? (
+            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-white/20"><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
@@ -1083,8 +1204,8 @@ function VideoCardRow({ video, onPlay }: { video: ChannelVideo; onPlay: () => vo
             <span>{formatViews(video.view_count)} views</span>
             {video.published_at && (
               <>
-                <span>&middot;</span>
-                <span>{new Date(video.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                <span>·</span>
+                <span>{timeAgo(video.published_at)}</span>
               </>
             )}
           </div>
@@ -1120,7 +1241,7 @@ function TimeBlockCard({ block }: { block: TimeBlock }) {
                 <Badge label={badge.label} variant={badge.variant} />
               </>
             )}
-            {block.is_recurring && <span className="text-[9px] text-txt-secondary">Recurring</span>}
+            {block.is_recurring && <span className="text-[9px] text-txt-secondary">Weekly</span>}
           </div>
         </div>
       </div>

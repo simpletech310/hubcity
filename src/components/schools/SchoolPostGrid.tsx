@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { createBrowserClient } from "@supabase/ssr";
+
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false });
 
 interface SchoolPost {
   id: string;
@@ -45,6 +48,8 @@ export default function SchoolPostGrid({
   const [showComposer, setShowComposer] = useState(false);
   const [composerBody, setComposerBody] = useState("");
   const [composerImage, setComposerImage] = useState("");
+  const [composerVideo, setComposerVideo] = useState<{ uploadId: string; status: string } | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
   const [posting, setPosting] = useState(false);
 
   const fetchPosts = useCallback(async (p: number, append = false) => {
@@ -68,20 +73,29 @@ export default function SchoolPostGrid({
   }, [fetchPosts]);
 
   const handlePost = async () => {
-    if ((!composerBody.trim() && !composerImage.trim()) || posting) return;
+    if ((!composerBody.trim() && !composerImage.trim() && !composerVideo) || posting) return;
     setPosting(true);
     try {
+      const payload: Record<string, unknown> = {
+        body: composerBody.trim(),
+        image_url: composerImage.trim() || null,
+      };
+
+      if (composerVideo) {
+        payload.media_type = "video";
+        payload.mux_upload_id = composerVideo.uploadId;
+        payload.video_status = "preparing";
+      }
+
       const res = await fetch(`/api/schools/${schoolSlug}/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          body: composerBody.trim(),
-          image_url: composerImage.trim() || null,
-        }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         setComposerBody("");
         setComposerImage("");
+        setComposerVideo(null);
         setShowComposer(false);
         fetchPosts(1);
       } else {
@@ -92,6 +106,48 @@ export default function SchoolPostGrid({
       alert("Failed to post");
     }
     setPosting(false);
+  };
+
+  const handleVideoUpload = async (file: File) => {
+    const allowedVideoTypes = ["video/mp4", "video/quicktime", "video/webm", "video/x-msvideo"];
+    if (!allowedVideoTypes.includes(file.type)) {
+      alert("Only MP4, MOV, WebM, and AVI videos are allowed");
+      return;
+    }
+    if (file.size > 500 * 1024 * 1024) {
+      alert("Video must be under 500MB");
+      return;
+    }
+
+    setVideoUploading(true);
+    try {
+      // Get Mux upload URL
+      const res = await fetch("/api/mux/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: `${schoolName} Post` }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to start upload");
+      }
+      const { upload_url, upload_id } = await res.json();
+
+      // Upload directly to Mux
+      const uploadRes = await fetch(upload_url, {
+        method: "PUT",
+        body: file,
+        headers: { "Content-Type": file.type },
+      });
+      if (!uploadRes.ok) throw new Error("Video upload failed");
+
+      setComposerVideo({ uploadId: upload_id, status: "preparing" });
+      setComposerImage(""); // Clear image if video is added
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Video upload failed");
+    } finally {
+      setVideoUploading(false);
+    }
   };
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -215,35 +271,82 @@ export default function SchoolPostGrid({
               </div>
             )}
 
+            {/* Video preview */}
+            {composerVideo && (
+              <div className="relative rounded-xl overflow-hidden mb-3 bg-white/5 border border-border-subtle py-6 flex flex-col items-center gap-2">
+                <div className="w-10 h-10 rounded-full bg-emerald/20 flex items-center justify-center">
+                  <svg width="20" height="20" fill="none" stroke="#22C55E" strokeWidth="2" strokeLinecap="round">
+                    <path d="M4 10l4 4 8-8" />
+                  </svg>
+                </div>
+                <p className="text-xs text-emerald font-medium">Video uploaded</p>
+                <p className="text-[10px] text-txt-secondary">Video will be processed after posting</p>
+                <button
+                  onClick={() => setComposerVideo(null)}
+                  className="text-[10px] text-coral font-medium mt-1"
+                >
+                  Remove video
+                </button>
+              </div>
+            )}
+
+            {/* Video uploading */}
+            {videoUploading && (
+              <div className="rounded-xl bg-white/5 border border-border-subtle mb-3 flex flex-col items-center justify-center py-6 gap-2">
+                <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+                <p className="text-xs text-txt-secondary">Uploading video...</p>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 text-[11px] text-white/50 font-medium cursor-pointer hover:bg-white/10 transition-colors">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="2" width="10" height="10" rx="2" />
-                  <circle cx="5" cy="5" r="1" />
-                  <path d="M12 9l-3-3-7 7" />
-                </svg>
-                Add Photo
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleImageUpload(file);
-                  }}
-                />
-              </label>
+              <div className="flex gap-1.5">
+                <label className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-white/5 text-[11px] text-white/50 font-medium cursor-pointer hover:bg-white/10 transition-colors">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="2" width="10" height="10" rx="2" />
+                    <circle cx="5" cy="5" r="1" />
+                    <path d="M12 9l-3-3-7 7" />
+                  </svg>
+                  Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={!!composerVideo}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageUpload(file);
+                    }}
+                  />
+                </label>
+
+                <label className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg bg-white/5 text-[11px] text-white/50 font-medium cursor-pointer hover:bg-white/10 transition-colors">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5,3 19,12 5,21" />
+                  </svg>
+                  Video
+                  <input
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/webm"
+                    className="hidden"
+                    disabled={videoUploading || !!composerImage}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleVideoUpload(file);
+                    }}
+                  />
+                </label>
+              </div>
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowComposer(false)}
+                  onClick={() => { setShowComposer(false); setComposerVideo(null); }}
                   className="px-3 py-2 rounded-lg bg-white/5 text-txt-secondary text-[11px] font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handlePost}
-                  disabled={posting || (!composerBody.trim() && !composerImage)}
+                  disabled={posting || videoUploading || (!composerBody.trim() && !composerImage && !composerVideo)}
                   className="px-4 py-2 rounded-lg text-[11px] font-bold text-midnight disabled:opacity-40"
                   style={{ background: schoolColor }}
                 >
@@ -356,8 +459,18 @@ export default function SchoolPostGrid({
         <>
           <div className="fixed inset-0 bg-black/70 z-50" onClick={() => setSelectedPost(null)} />
           <div className="fixed inset-x-3 top-1/2 -translate-y-1/2 z-50 bg-deep border border-border-subtle rounded-2xl overflow-hidden max-w-lg mx-auto max-h-[85vh] flex flex-col">
-            {/* Image */}
-            {selectedPost.image_url && (
+            {/* Media */}
+            {selectedPost.media_type === "video" && selectedPost.video_status === "ready" && selectedPost.mux_playback_id ? (
+              <div className="w-full shrink-0">
+                <MuxPlayer
+                  playbackId={selectedPost.mux_playback_id}
+                  streamType="on-demand"
+                  accentColor={schoolColor}
+                  style={{ aspectRatio: "16/9", width: "100%" }}
+                  metadata={{ video_title: `${schoolName} Post` }}
+                />
+              </div>
+            ) : selectedPost.image_url ? (
               <div className="relative w-full aspect-square bg-black shrink-0">
                 <Image
                   src={selectedPost.image_url}
@@ -366,7 +479,7 @@ export default function SchoolPostGrid({
                   className="object-contain"
                 />
               </div>
-            )}
+            ) : null}
 
             {/* Content */}
             <div className="p-4 overflow-y-auto">

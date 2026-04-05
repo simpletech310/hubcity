@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import SearchModal from "@/components/search/SearchModal";
 
 export default function Header() {
   const pathname = usePathname();
   const [notificationCount, setNotificationCount] = useState(0);
   const [hidden, setHidden] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Scroll-aware hide/show
   useEffect(() => {
@@ -73,6 +75,7 @@ export default function Header() {
   const title = getTitle();
 
   return (
+  <>
     <header className={`fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full z-[100] transition-transform duration-300 ease-out ${hidden ? "-translate-y-full" : "translate-y-0"}`}>
       {/* Gradient fade background */}
       <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/95 to-transparent" />
@@ -106,7 +109,10 @@ export default function Header() {
         {/* Action Buttons */}
         <div className="flex gap-2">
           {/* Search */}
-          <button className="w-[38px] h-[38px] rounded-full bg-white/[0.06] border border-border-subtle text-txt-secondary flex items-center justify-center press hover:text-white hover:bg-white/[0.1] transition-all">
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="w-[38px] h-[38px] rounded-full bg-white/[0.06] border border-border-subtle text-txt-secondary flex items-center justify-center press hover:text-white hover:bg-white/[0.1] transition-all"
+          >
             <svg width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="7.5" cy="7.5" r="5" />
               <path d="M11.5 11.5l3.5 3.5" />
@@ -131,5 +137,8 @@ export default function Header() {
         </div>
       </div>
     </header>
+
+    <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+  </>
   );
 }

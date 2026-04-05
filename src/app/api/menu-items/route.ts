@@ -12,8 +12,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { business_id, name, description, price, image_url, category, sort_order } =
-      await request.json();
+    const {
+      business_id,
+      name,
+      description,
+      price,
+      image_url,
+      gallery_urls,
+      video_url,
+      mux_playback_id,
+      sku,
+      stock_count,
+      is_digital,
+      category,
+      sort_order,
+    } = await request.json();
 
     if (!business_id || !name || price === undefined) {
       return NextResponse.json(
@@ -45,6 +58,12 @@ export async function POST(request: Request) {
         description: description || null,
         price,
         image_url: image_url || null,
+        gallery_urls: gallery_urls || [],
+        video_url: video_url || null,
+        mux_playback_id: mux_playback_id || null,
+        sku: sku || null,
+        stock_count: stock_count ?? null,
+        is_digital: is_digital ?? false,
         category: category || null,
         sort_order: sort_order ?? 0,
         is_available: true,

@@ -144,8 +144,8 @@ export default function MapExplorer({ initialPoints }: MapExplorerProps) {
   // Merge DB points with landmark seed data (de-duplicate by proximity)
   const allPoints = useMemo(() => {
     const combined = [...initialPoints];
-    // Add landmarks only if there aren't already many DB points
-    if (initialPoints.length < 5) {
+    // Add landmarks only when DB has very few points (fallback for empty DB)
+    if (initialPoints.length < 10) {
       for (const lm of COMPTON_LANDMARKS) {
         // Skip if a DB point is within ~100m
         const isDuplicate = initialPoints.some(

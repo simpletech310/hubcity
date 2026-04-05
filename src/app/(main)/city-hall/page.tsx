@@ -39,6 +39,7 @@ export default async function CityHallPage() {
     { data: departments },
     { data: officialPosts },
     { data: cityEvents },
+    { data: councilMembers },
   ] = await Promise.all([
     supabase
       .from("city_departments")
@@ -47,7 +48,7 @@ export default async function CityHallPage() {
       .order("sort_order", { ascending: true }),
     supabase
       .from("posts")
-      .select("*, author:profiles!inner(id, display_name, avatar_url, role, verification_status)")
+      .select("*, author:profiles!inner(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .eq("profiles.role", "city_official")
       .order("created_at", { ascending: false })
@@ -60,6 +61,13 @@ export default async function CityHallPage() {
       .gte("start_date", today)
       .order("start_date", { ascending: true })
       .limit(5),
+    supabase
+      .from("profiles")
+      .select("id, display_name, handle, avatar_url, bio, district, verification_status")
+      .eq("role", "city_official")
+      .eq("verification_status", "verified")
+      .in("handle", ["mayor_sharif", "council_duhart", "council_spicer", "council_bowers", "council_darden"])
+      .order("display_name"),
   ]);
 
   const depts = (departments ?? []) as Department[];
@@ -144,6 +152,50 @@ export default async function CityHallPage() {
           })}
         </div>
       </section>
+
+      {/* City Council Members */}
+      {councilMembers && councilMembers.length > 0 && (
+        <section className="px-5 mb-8">
+          <SectionHeader title="City Council" subtitle="Your elected representatives" compact />
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {councilMembers.map((member) => (
+              <Link
+                key={member.id}
+                href={`/user/${member.handle}`}
+                className="shrink-0 w-[160px] press"
+              >
+                <div className="bg-royal rounded-2xl border border-border-subtle overflow-hidden hover:border-gold/20 transition-all">
+                  {/* Avatar */}
+                  <div className="relative h-[100px] bg-gradient-to-br from-gold/20 to-royal">
+                    {member.avatar_url && (
+                      <img
+                        src={member.avatar_url}
+                        alt={member.display_name}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-royal via-transparent to-transparent" />
+                    {/* Verified badge */}
+                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center">
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="#F2A900">
+                        <path d="M6 0L7.5 2.5L10.5 1.5L10 4.5L12 6L10 7.5L10.5 10.5L7.5 9.5L6 12L4.5 9.5L1.5 10.5L2 7.5L0 6L2 4.5L1.5 1.5L4.5 2.5Z" />
+                      </svg>
+                    </div>
+                  </div>
+                  <div className="p-3 pt-2">
+                    <p className="font-heading font-bold text-[12px] leading-tight mb-0.5 truncate">
+                      {member.display_name}
+                    </p>
+                    <p className="text-[10px] text-gold font-medium">
+                      {member.display_name.includes("Mayor") ? "Mayor — At-Large" : `District ${member.district}`}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="divider-subtle mx-5 mb-8" />
 

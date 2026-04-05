@@ -34,6 +34,7 @@ export default function EventForm({ event }: EventFormProps) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [imageUploading, setImageUploading] = useState(false);
 
   // Core event fields
   const [title, setTitle] = useState(event?.title ?? "");
@@ -278,7 +279,73 @@ export default function EventForm({ event }: EventFormProps) {
           </div>
         </div>
 
-        <Input label="Image URL" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-medium text-txt-secondary mb-1.5">Event Image</label>
+          {imageUrl && (
+            <div className="relative rounded-xl overflow-hidden mb-3 bg-white/5 border border-border-subtle">
+              <img
+                src={imageUrl}
+                alt="Event preview"
+                className="w-full h-[160px] object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => setImageUrl("")}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80 transition-colors"
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M3 3l8 8M11 3l-8 8" />
+                </svg>
+              </button>
+            </div>
+          )}
+          <div className="flex gap-2">
+            <label className="flex-1 cursor-pointer">
+              <div className="flex items-center justify-center gap-2 py-3 bg-gold/10 border border-gold/20 rounded-xl text-gold text-sm font-semibold hover:bg-gold/15 transition-colors">
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M8 12V4m0 0L5 7m3-3l3 3" />
+                  <path d="M14 12v1.5a1.5 1.5 0 01-1.5 1.5h-9A1.5 1.5 0 012 13.5V12" />
+                </svg>
+                {imageUploading ? "Uploading..." : "Upload Image"}
+              </div>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                disabled={imageUploading}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setImageUploading(true);
+                  try {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    const res = await fetch("/api/upload/event-image", {
+                      method: "POST",
+                      body: formData,
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Upload failed");
+                    setImageUrl(data.url);
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Image upload failed");
+                  } finally {
+                    setImageUploading(false);
+                  }
+                }}
+              />
+            </label>
+          </div>
+          <div className="mt-2">
+            <Input
+              label=""
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Or paste image URL..."
+            />
+          </div>
+        </div>
 
         {/* ── Ticketing Section ─────────────────────────────── */}
         <div className="border border-gold/20 rounded-xl overflow-hidden">

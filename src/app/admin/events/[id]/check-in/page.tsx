@@ -59,7 +59,7 @@ export default function CheckInScannerPage() {
           .eq("id", user.id)
           .single();
 
-        if (!profile || !["admin", "city_official"].includes(profile.role)) {
+        if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
           router.replace("/");
           return;
         }

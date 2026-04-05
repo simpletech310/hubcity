@@ -39,16 +39,14 @@ export default async function LivePage() {
     .eq("is_published", true)
     .eq("status", "ready")
     .order("published_at", { ascending: false })
-    .limit(20);
+    .limit(30);
 
-  // Fetch time blocks for today and tomorrow
-  const today = new Date().getDay();
-  const tomorrow = (today + 1) % 7;
+  // Fetch time blocks for all days (full weekly schedule)
   const { data: rawTimeBlocks } = await supabase
     .from("time_blocks")
     .select("*, channel:channels(id, name, slug, avatar_url, type)")
     .eq("is_active", true)
-    .in("day_of_week", [today, tomorrow])
+    .order("day_of_week", { ascending: true })
     .order("start_time", { ascending: true });
 
   // Get current user + role
@@ -74,7 +72,7 @@ export default async function LivePage() {
     followedChannelIds = (follows || []).map((f) => f.channel_id);
   }
 
-  const canStream = userRole === "admin" || userRole === "city_official";
+  const canStream = userRole === "admin" || userRole === "city_official" || userRole === "city_ambassador";
 
   return (
     <HubCityTV

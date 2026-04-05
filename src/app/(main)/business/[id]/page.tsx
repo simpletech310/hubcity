@@ -105,6 +105,8 @@ export default async function BusinessDetailPage({
   const artClass = categoryArt[biz.category] ?? "art-city";
   const variant = categoryBadgeVariant[biz.category] || "gold";
 
+  const isRetail = biz.category === "retail";
+
   // Fetch menu items
   const { data: menuItems } = await supabase
     .from("menu_items")
@@ -112,7 +114,17 @@ export default async function BusinessDetailPage({
     .eq("business_id", biz.id)
     .eq("is_available", true)
     .order("sort_order")
-    .limit(6);
+    .limit(isRetail ? 8 : 6);
+
+  // Fetch food promotions / coupons
+  const { data: promotions } = await supabase
+    .from("food_promotions")
+    .select("*")
+    .eq("business_id", biz.id)
+    .eq("is_active", true)
+    .gte("valid_until", new Date().toISOString())
+    .order("created_at", { ascending: false })
+    .limit(3);
 
   // Fetch services if accepts bookings
   let services: { id: string; name: string; description: string | null; duration: number; price: number }[] = [];
@@ -383,44 +395,153 @@ export default async function BusinessDetailPage({
         </div>
       )}
 
-      {/* ── Menu Preview ── */}
+      {/* ── Coupons / Promotions ── */}
+      {promotions && promotions.length > 0 && (
+        <div className="px-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-emerald" />
+            <h2 className="font-heading font-bold text-base">
+              {isRetail ? "Deals" : "Coupons"}
+            </h2>
+          </div>
+          <div className="space-y-2">
+            {promotions.map((promo) => (
+              <div
+                key={promo.id}
+                className="rounded-2xl bg-emerald/5 border border-emerald/20 p-3.5 relative overflow-hidden"
+              >
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald rounded-l-2xl" />
+                <div className="pl-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🏷️</span>
+                    <h3 className="text-[13px] font-bold text-emerald">{promo.title}</h3>
+                  </div>
+                  {promo.description && (
+                    <p className="text-[11px] text-txt-secondary mt-1 line-clamp-2">{promo.description}</p>
+                  )}
+                  <div className="flex items-center gap-3 mt-2">
+                    {promo.promo_code && (
+                      <span className="text-[10px] font-bold bg-emerald/10 text-emerald px-2 py-0.5 rounded-full border border-emerald/20">
+                        Code: {promo.promo_code}
+                      </span>
+                    )}
+                    {promo.discount_percent && (
+                      <span className="text-[10px] font-bold text-emerald">
+                        {promo.discount_percent}% OFF
+                      </span>
+                    )}
+                    {promo.discount_amount && (
+                      <span className="text-[10px] font-bold text-emerald">
+                        ${(promo.discount_amount / 100).toFixed(2)} OFF
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Menu / Products Preview ── */}
       {menuItems && menuItems.length > 0 && (
         <div className="px-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-            <h2 className="font-heading font-bold text-base">Menu</h2>
+            <h2 className="font-heading font-bold text-base">
+              {isRetail ? "Products" : "Menu"}
+            </h2>
             <Link
               href={`/business/${biz.slug || biz.id}/order`}
               className="ml-auto text-xs font-semibold press"
               style={{ color: accentColor }}
             >
-              Full Menu →
+              {isRetail ? "All Products" : "Full Menu"} →
             </Link>
           </div>
-          <div className="space-y-2">
-            {menuItems.map((item) => (
-              <div key={item.id} className="rounded-2xl bg-card border border-border-subtle p-3.5 flex items-center justify-between press hover:border-gold/20 transition-colors">
-                <div className="min-w-0">
-                  <h3 className="text-[13px] font-bold truncate">{item.name}</h3>
-                  {item.category && (
-                    <p className="text-[9px] text-txt-secondary uppercase tracking-wider mt-0.5">{item.category}</p>
-                  )}
-                </div>
-                <span className="font-heading font-bold shrink-0 ml-3" style={{ color: accentColor }}>
-                  ${(item.price / 100).toFixed(2)}
-                </span>
-              </div>
-            ))}
-          </div>
 
-          {/* Order CTA */}
+          {isRetail ? (
+            /* Retail: Product grid with images */
+            <div className="grid grid-cols-2 gap-3">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/business/${biz.slug || biz.id}/order`}
+                  className="rounded-2xl bg-card border border-border-subtle overflow-hidden press hover:border-gold/20 transition-colors"
+                >
+                  {/* Product Image */}
+                  <div className="relative aspect-square bg-midnight/50">
+                    {item.image_url ? (
+                      <Image src={item.image_url} alt={item.name} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-3xl opacity-20">
+                          {item.is_digital ? "📱" : "📦"}
+                        </span>
+                      </div>
+                    )}
+                    {/* Video indicator */}
+                    {(item.mux_playback_id || item.video_url) && (
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    )}
+                    {item.is_digital && (
+                      <div className="absolute bottom-2 left-2 bg-blue-500/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
+                        Digital
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    <h3 className="text-[12px] font-bold truncate">{item.name}</h3>
+                    <span className="text-sm font-heading font-bold" style={{ color: accentColor }}>
+                      ${(item.price / 100).toFixed(2)}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            /* Restaurant: List layout */
+            <div className="space-y-2">
+              {menuItems.map((item) => (
+                <div key={item.id} className="rounded-2xl bg-card border border-border-subtle p-3.5 flex items-center gap-3 press hover:border-gold/20 transition-colors">
+                  {/* Thumbnail for items with images */}
+                  {item.image_url && (
+                    <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-midnight/50">
+                      <Image src={item.image_url} alt={item.name} fill className="object-cover" />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[13px] font-bold truncate">{item.name}</h3>
+                    {item.category && (
+                      <p className="text-[9px] text-txt-secondary uppercase tracking-wider mt-0.5">{item.category}</p>
+                    )}
+                  </div>
+                  <span className="font-heading font-bold shrink-0 ml-3" style={{ color: accentColor }}>
+                    ${(item.price / 100).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Order / Shop CTA */}
           {biz.accepts_orders && (
             <Link href={`/business/${biz.slug || biz.id}/order`} className="block mt-4">
               <div className="rounded-2xl bg-gradient-to-r from-gold to-gold-light p-4 flex items-center justify-between press">
                 <div>
-                  <p className="text-midnight font-bold text-base">Order Now</p>
+                  <p className="text-midnight font-bold text-base">
+                    {isRetail ? "Shop Now" : "Order Now"}
+                  </p>
                   <p className="text-midnight/70 text-xs font-medium">
-                    {biz.delivery_enabled ? "Delivery & pickup available" : "Pickup available"}
+                    {isRetail
+                      ? "Browse all products"
+                      : biz.delivery_enabled
+                        ? "Delivery & pickup available"
+                        : "Pickup available"}
                   </p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">

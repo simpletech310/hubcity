@@ -30,7 +30,7 @@ export async function PATCH(
     const { id: targetUserId } = await params;
     const { role } = await request.json();
 
-    const validRoles = ["citizen", "business_owner", "city_official", "admin"];
+    const validRoles = ["citizen", "business_owner", "city_official", "city_ambassador", "admin"];
     if (!role || !validRoles.includes(role)) {
       return NextResponse.json(
         { error: "Invalid role. Must be one of: " + validRoles.join(", ") },

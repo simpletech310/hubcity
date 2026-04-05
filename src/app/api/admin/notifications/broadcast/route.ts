@@ -20,7 +20,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "city_official"].includes(profile.role)) {
+    if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -165,7 +165,7 @@ export async function GET() {
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "city_official"].includes(profile.role)) {
+    if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

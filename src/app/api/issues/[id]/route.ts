@@ -67,7 +67,7 @@ export async function PATCH(
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "city_official"].includes(profile.role)) {
+    if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
