@@ -8,9 +8,9 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="max-w-[430px] mx-auto min-h-dvh relative bg-midnight">
+    <div className="max-w-[430px] mx-auto min-h-dvh relative bg-midnight selection:bg-gold/30 selection:text-white">
       <Header />
-      <main className="pt-[72px] pb-safe overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <main className="pt-[64px] pb-24 pb-safe overflow-y-auto overflow-x-hidden scrollbar-hide">
         {children}
       </main>
       <BottomNav />

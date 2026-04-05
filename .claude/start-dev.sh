@@ -1,3 +1,4 @@
 #!/bin/bash
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 cd "/Users/tj/Documents/Claude/Projects/HubCity MVP/hubcity-app"
-exec node node_modules/.bin/next dev -p "${PORT:-3001}"
+exec npx next dev --turbopack -p 3000

@@ -78,8 +78,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {/* Author row */}
-      <div className="flex items-center gap-3 mb-3">
-        <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0">
+      <div className="flex items-start gap-3 mb-3">
+        <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0 mt-0.5">
           {author?.avatar_url ? (
             <Image
               src={author.avatar_url}
@@ -105,17 +105,20 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
               </svg>
             )}
+          </div>
+          <div className="flex items-center gap-2 mt-0.5">
             {roleBadge && (
               <Badge label={roleBadge.label} variant={roleBadge.variant} />
             )}
+            <p className="text-[10px] text-txt-secondary">{timeAgo}</p>
           </div>
-          <p className="text-[10px] text-txt-secondary">{timeAgo}</p>
         </div>
         {/* More menu */}
         {showMenuButton && (
           <div className="relative">
             <button
               onClick={() => setShowMenu(!showMenu)}
+              aria-label="Post options"
               className="p-1.5 rounded-lg hover:bg-white/5 text-txt-secondary hover:text-white transition-colors"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -181,7 +184,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           <textarea
             value={editBody}
             onChange={(e) => setEditBody(e.target.value)}
-            className="w-full bg-white/5 border border-gold/30 rounded-xl px-3 py-2.5 text-[13px] text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/50 min-h-[80px] resize-none leading-relaxed"
+            className="w-full bg-white/5 border border-gold/30 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/50 min-h-[80px] resize-none leading-relaxed"
             autoFocus
           />
           <div className="flex gap-2 mt-2">
@@ -224,7 +227,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         </div>
       ) : (
         <div className="mb-3">
-          <p className="text-[13px] text-txt-secondary leading-relaxed">
+          <p className="text-sm text-txt-secondary leading-relaxed">
             {currentBody}
           </p>
           {editedAt && (
@@ -240,8 +243,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
             src={post.image_url}
             alt="Post image"
             width={400}
-            height={300}
-            className="w-full h-auto max-h-[300px] object-cover"
+            height={400}
+            className="w-full h-auto max-h-[400px] object-cover"
           />
         </div>
       )}

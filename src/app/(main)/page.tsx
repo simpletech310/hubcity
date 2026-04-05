@@ -15,11 +15,6 @@ function timeAgo(dateStr: string): string {
   return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
 }
 
-function totalReactions(post: Post): number {
-  if (!post.reaction_counts) return 0;
-  return Object.values(post.reaction_counts).reduce((sum, n) => sum + (n ?? 0), 0);
-}
-
 function getGreeting(): string {
   const h = new Date().getHours();
   if (h < 12) return "Good morning";
@@ -28,25 +23,19 @@ function getGreeting(): string {
 }
 
 const quickActions = [
-  { label: "Map", icon: "🗺️", href: "/map", color: "#06B6D4", desc: "Explore city" },
-  { label: "Events", icon: "📅", href: "/events", color: "#22C55E", desc: "What's happening" },
-  { label: "Food", icon: "🔥", href: "/food", color: "#FF6B6B", desc: "Eat local" },
-  { label: "Resources", icon: "💡", href: "/resources", color: "#06B6D4", desc: "Get help" },
-  { label: "Schools", icon: "🎓", href: "/schools", color: "#3B82F6", desc: "K-12 channels" },
-  { label: "HubTV", icon: "📺", href: "/live", color: "#EF4444", desc: "Watch now" },
-  { label: "City Hall", icon: "🏛️", href: "/city-hall", color: "#F2A900", desc: "Gov & Issues" },
-  { label: "Jobs", icon: "💼", href: "/jobs", color: "#8B5CF6", desc: "Find careers" },
-  { label: "Health", icon: "❤️", href: "/health", color: "#22C55E", desc: "Wellness" },
-  { label: "Groups", icon: "🤝", href: "/groups", color: "#A855F7", desc: "Community" },
-  { label: "Culture", icon: "🎭", href: "/culture", color: "#E91E63", desc: "Art & music" },
-  { label: "Parks", icon: "🌳", href: "/parks", color: "#22C55E", desc: "Outdoors" },
+  { label: "Map", icon: "🗺️", href: "/map" },
+  { label: "Events", icon: "📅", href: "/events" },
+  { label: "Food", icon: "🔥", href: "/food" },
+  { label: "Resources", icon: "💡", href: "/resources" },
+  { label: "Schools", icon: "🎓", href: "/schools" },
+  { label: "HubTV", icon: "📺", href: "/live" },
+  { label: "City Hall", icon: "🏛️", href: "/city-hall" },
+  { label: "Jobs", icon: "💼", href: "/jobs" },
+  { label: "Health", icon: "❤️", href: "/health" },
+  { label: "Groups", icon: "🤝", href: "/groups" },
+  { label: "Culture", icon: "🎭", href: "/culture" },
+  { label: "Parks", icon: "🌳", href: "/parks" },
 ];
-
-const businessImages: Record<string, string> = {
-  "bludsos-bbq": "/images/bludsos-bbq.png",
-  "billionaire-burger-boyz": "/images/billionaire-burgers.png",
-  "ch-y-la-birria": "/images/birria-tacos.png",
-};
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -101,7 +90,7 @@ export default async function HomePage() {
       .select("*, author:profiles(id, display_name, handle, avatar_url, role, verification_status)")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
-      .limit(4),
+      .limit(5),
     supabase
       .from("polls")
       .select("*", { count: "exact", head: true })
@@ -130,30 +119,25 @@ export default async function HomePage() {
       .eq("id", user.id)
       .single();
     if (profile?.display_name) {
-      displayName = profile.display_name.split(" ")[0]; // First name only
+      displayName = profile.display_name.split(" ")[0];
     }
   }
 
-  const boardPost: Post | null =
-    (pinnedPosts && pinnedPosts.length > 0 ? pinnedPosts[0] : null) ??
-    (officialPosts && officialPosts.length > 0 ? officialPosts[0] : null) ??
-    null;
-
   const pulsePosts: Post[] = (recentPosts ?? []) as Post[];
-
   const greeting = getGreeting();
   const featuredArt = getFeaturedArt();
 
-  // Community pulse stats
-  const totalListings = (businesses?.length ?? 0) + (events?.length ?? 0);
-  const liveCount = liveStreams?.length ?? 0;
+  // Pick best content for the featured section
+  const featuredEvent = events?.[0] ?? null;
+  const featuredBusiness = businesses?.[0] ?? null;
+  const hasLive = liveStreams && liveStreams.length > 0;
 
   return (
-    <div className="animate-fade-in">
-      {/* ─── Art Spotlight Hero ─── */}
-      <section className="relative">
+    <div className="animate-fade-in space-y-6">
+      {/* ── Compact Art Hero ── */}
+      <section>
         <Link href={`/art/${featuredArt.slug}`} className="block press">
-          <div className="relative w-full h-screen">
+          <div className="relative w-full h-[200px] overflow-hidden">
             <Image
               src={featuredArt.imageUrl}
               alt={featuredArt.title}
@@ -162,68 +146,45 @@ export default async function HomePage() {
               priority
               sizes="100vw"
             />
-            {/* Gradient overlays */}
-            <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
-            <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-midnight/40 via-transparent to-midnight" />
 
             {/* Art Spotlight badge */}
-            <div className="absolute top-4 left-5 z-10">
-              <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1.5 text-[10px] font-bold text-gold tracking-wider uppercase">
+            <div className="absolute top-3 left-4 z-10">
+              <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-2.5 py-1 text-[10px] font-bold text-gold tracking-wider uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
                 Art Spotlight
               </span>
             </div>
 
-            {/* Art info overlay at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
-              <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
-                Featured Artist · {featuredArt.year}
-              </p>
-              <h2 className="font-display text-[28px] leading-tight mb-1.5 drop-shadow-lg">
+            {/* Art info */}
+            <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 z-10">
+              <h2 className="font-display text-[18px] leading-tight drop-shadow-lg">
                 &ldquo;{featuredArt.title}&rdquo;
               </h2>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[14px] text-gold font-heading font-semibold">
-                  {featuredArt.artist}
-                </span>
-              </div>
-              <p className="text-[12px] text-white/40 mb-3">
-                {featuredArt.medium} · {featuredArt.location}
+              <p className="text-[12px] text-gold/80 font-heading font-semibold">
+                {featuredArt.artist} &middot; {featuredArt.medium}
               </p>
-              <p className="text-[11px] text-white/30 flex items-center gap-1">
-                Tap to view full artwork and artist details
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold"><path d="M5 3l4 4-4 4"/></svg>
-              </p>
-
-              {/* Scroll indicator */}
-              <div className="flex justify-center mt-4">
-                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
-                  <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M3 5l4 4 4-4"/></svg>
-                </div>
-              </div>
             </div>
           </div>
         </Link>
       </section>
 
-      {/* ─── Greeting + Search ─── */}
-      <section className="px-5 pt-4 pb-2">
-        <h1 className="font-display text-[28px] leading-tight">
-          {greeting}, <span className="text-gold">{displayName}</span>
-        </h1>
-        <p className="text-[14px] text-warm-gray mt-1">
-          What&apos;s happening in Compton today
-        </p>
-      </section>
-
-      {/* AI Search Bar */}
-      <section className="px-5 mb-6">
+      {/* ── Greeting + Search ── */}
+      <section className="px-5 -mt-1 space-y-3">
+        <div>
+          <h1 className="font-display text-[26px] leading-tight">
+            {greeting}, <span className="text-gold">{displayName}</span>
+          </h1>
+          <p className="text-[13px] text-warm-gray mt-0.5">
+            What&apos;s happening in Compton today
+          </p>
+        </div>
         <AISearchButton />
       </section>
 
-      {/* ─── City Alerts ─── */}
+      {/* ── City Alerts ── */}
       {cityAlerts && cityAlerts.length > 0 && (
-        <section className="px-5 mb-5">
+        <section className="px-5">
           <div className="flex flex-col gap-2">
             {cityAlerts.map((alert) => {
               const severityConfig: Record<string, { bg: string; border: string; icon: string; textColor: string }> = {
@@ -234,13 +195,13 @@ export default async function HomePage() {
               const config = severityConfig[alert.severity] || severityConfig.info;
               return (
                 <Link key={alert.id} href="/city-data" className="press">
-                  <div className={`${config.bg} border ${config.border} rounded-xl p-3 flex items-start gap-2.5`}>
-                    <span className="text-sm shrink-0 mt-0.5">{config.icon}</span>
+                  <div className={`${config.bg} border ${config.border} rounded-xl p-3 flex items-center gap-2.5`}>
+                    <span className="text-sm shrink-0">{config.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-[12px] font-semibold ${config.textColor} mb-0.5`}>{alert.title}</p>
+                      <p className={`text-[12px] font-semibold ${config.textColor}`}>{alert.title}</p>
                       <p className="text-[11px] text-white/50 line-clamp-1">{alert.body}</p>
                     </div>
-                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0 mt-1" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
                   </div>
                 </Link>
               );
@@ -249,464 +210,194 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ─── Quick Actions Grid (4-col) ─── */}
-      <section className="px-5 mb-8">
-        <div className="grid grid-cols-4 gap-2">
-          {quickActions.map((action) => (
-            <Link
-              key={action.label}
-              href={action.href}
-              className="group press"
-            >
-              <div className="relative bg-royal rounded-2xl border border-border-subtle overflow-hidden p-3 pb-2.5 flex flex-col items-center gap-1.5 transition-all duration-200 group-hover:border-white/10">
-                {/* Top color accent bar */}
-                <div
-                  className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${action.color}, transparent)`,
-                  }}
-                />
-                <span className="text-[22px]">{action.icon}</span>
-                <span className="font-heading text-[11px] font-semibold text-txt-primary tracking-tight">
-                  {action.label}
-                </span>
-                <span className="text-[9px] text-muted-gray">
-                  {action.desc}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── Live Now Banner ─── */}
-      {liveStreams && liveStreams.length > 0 && (
-        <LiveNowBanner streams={liveStreams} />
-      )}
-
-      {/* ─── Community Pulse Stats ─── */}
-      <section className="px-5 mb-8">
-        <SectionHeader title="Community Pulse" subtitle="Compton at a glance" compact />
-        <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-royal rounded-2xl border border-border-subtle p-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-[3px] h-full bg-gold rounded-r" />
-            <p className="font-heading text-[26px] font-bold tracking-tight">{totalListings}+</p>
-            <p className="text-[12px] text-warm-gray mt-0.5">Active listings</p>
-            <span className="text-[11px] font-medium text-gold mt-1.5 inline-block">Businesses & events</span>
-          </div>
-          <div className="bg-royal rounded-2xl border border-border-subtle p-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-[3px] h-full bg-coral rounded-r" />
-            <p className="font-heading text-[26px] font-bold tracking-tight">{liveCount}</p>
-            <p className="text-[12px] text-warm-gray mt-0.5">Live streams</p>
-            <span className="text-[11px] font-medium text-coral mt-1.5 inline-block">{liveCount > 0 ? "Broadcasting now" : "Check back soon"}</span>
-          </div>
-          <div className="bg-royal rounded-2xl border border-border-subtle p-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-[3px] h-full bg-hc-purple rounded-r" />
-            <p className="font-heading text-[26px] font-bold tracking-tight">{pulsePosts.length}</p>
-            <p className="text-[12px] text-warm-gray mt-0.5">Recent posts</p>
-            <span className="text-[11px] font-medium text-hc-purple mt-1.5 inline-block">City Pulse</span>
-          </div>
-          <div className="bg-royal rounded-2xl border border-border-subtle p-4 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-[3px] h-full bg-emerald rounded-r" />
-            <p className="font-heading text-[26px] font-bold tracking-tight">{activePollsCount ?? 0}</p>
-            <p className="text-[12px] text-warm-gray mt-0.5">Active polls</p>
-            <span className="text-[11px] font-medium text-emerald mt-1.5 inline-block">Have your say</span>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Upcoming City Meetings ─── */}
-      {upcomingMeetings && upcomingMeetings.length > 0 && (
-        <section className="mb-8">
-          <SectionHeader
-            title="City Meetings"
-            subtitle="Upcoming government sessions"
-            linkText="All Meetings"
-            linkHref="/city-data/meetings"
-            linkColor="text-cyan"
-          />
-          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-            {upcomingMeetings.map((meeting, i) => {
-              const meetingDate = new Date(meeting.date + "T00:00:00");
-              const typeColors: Record<string, string> = {
-                council: "#F2A900",
-                planning: "#3B82F6",
-                budget: "#22C55E",
-                special: "#8B5CF6",
-              };
-              const typeIcons: Record<string, string> = {
-                council: "🏛️",
-                planning: "📐",
-                budget: "💰",
-                special: "⭐",
-              };
-              const color = typeColors[meeting.meeting_type] || "#F2A900";
-              const icon = typeIcons[meeting.meeting_type] || "🏛️";
-              return (
-                <Link
-                  key={meeting.id + "-" + i}
-                  href="/city-data/meetings"
-                  className="shrink-0 w-[200px] animate-slide-in press"
-                  style={{ animationDelay: `${i * 80}ms` }}
-                >
-                  <Card hover padding={false}>
-                    <div className="p-3.5 pb-2.5 border-b border-border-subtle flex items-center gap-3">
-                      <div className="flex flex-col items-center bg-white/[0.04] rounded-xl px-2.5 py-1.5 min-w-[44px]">
-                        <span className="font-heading text-[16px] font-bold leading-none" style={{ color }}>
-                          {meetingDate.getDate()}
-                        </span>
-                        <span className="text-[9px] font-semibold text-warm-gray tracking-[0.05em] uppercase">
-                          {meetingDate.toLocaleDateString("en-US", { month: "short" })}
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-heading text-[12px] font-semibold leading-tight line-clamp-2">
-                          {meeting.title}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="px-3.5 py-2.5 flex items-center justify-between">
-                      <span className="text-[11px] text-warm-gray truncate">
-                        {icon} {meeting.meeting_type.charAt(0).toUpperCase() + meeting.meeting_type.slice(1)}
-                      </span>
-                      {meeting.start_time && (
-                        <span className="text-[11px] font-medium" style={{ color }}>
-                          {meeting.start_time.slice(0, 5).replace(/^0/, "")} PM
-                        </span>
-                      )}
-                    </div>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* ─── Hub City TV Promo ─── */}
-      <section className="px-5 mb-8">
-        <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-          {/* Abstract art background */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: `
-                linear-gradient(135deg, #1a0a00, var(--color-royal)),
-                radial-gradient(ellipse at 10% 90%, rgba(242,169,0,0.25) 0%, transparent 50%),
-                radial-gradient(ellipse at 90% 10%, rgba(239,68,68,0.15) 0%, transparent 40%),
-                radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.10) 0%, transparent 60%)
-              `,
-            }}
-          />
-          {/* Decorative circles */}
-          <div className="absolute -top-5 -right-5 w-[120px] h-[120px] rounded-full border border-gold/10" />
-          <div className="absolute -bottom-8 -left-3 w-[80px] h-[80px] rounded-full border border-hc-purple/10" />
-
-          <div className="relative p-6 z-10">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-compton-red/20 border border-compton-red/40 mb-3.5">
-              <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.08em]">
-                HUB CITY TV
-              </span>
-            </div>
-
-            <h3 className="font-display text-[26px] leading-[1.15] mb-2">
-              Compton Rising
-            </h3>
-            <p className="text-[13px] text-warm-gray leading-relaxed max-w-[280px] mb-5">
-              Five young creators. One city. Unlimited potential. A Hub City Original.
-            </p>
-
-            <div className="flex gap-2.5">
-              <Link
-                href="/live"
-                className="inline-flex items-center gap-1.5 bg-gold text-midnight px-5 py-2.5 rounded-xl font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors"
-              >
-                ▶ Watch Now
+      {/* ── Quick Actions (3-col, 2 rows visible, scroll for rest) ── */}
+      <section className="px-5">
+        <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
+          <div className="grid grid-rows-2 grid-flow-col auto-cols-[calc(33.333%-8px)] gap-2">
+            {quickActions.map((action) => (
+              <Link key={action.label} href={action.href} className="press">
+                <div className="bg-royal rounded-xl border border-border-subtle p-3 flex flex-col items-center gap-1.5 transition-colors hover:border-white/10">
+                  <span className="text-[28px] leading-none">{action.icon}</span>
+                  <span className="font-heading text-[11px] font-semibold text-txt-primary tracking-tight text-center">
+                    {action.label}
+                  </span>
+                </div>
               </Link>
-              <button className="inline-flex items-center gap-1.5 bg-white/[0.08] border border-white/[0.12] text-white px-4 py-2.5 rounded-xl text-[13px] font-medium press hover:bg-white/[0.12] transition-colors">
-                + My List
-              </button>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <div className="divider-gold mx-5 mb-8" />
+      {/* ── Live Now Banner ── */}
+      {hasLive && <LiveNowBanner streams={liveStreams} />}
 
-      {/* ─── Featured Businesses ─── */}
-      <section className="mb-8">
-        <SectionHeader
-          title="Featured Businesses"
-          subtitle="Support local Compton"
-          linkText="See All"
-          linkHref="/business"
-        />
-        <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-          {(businesses ?? []).map((biz, i) => (
-            <Link
-              key={biz.id}
-              href={`/business/${biz.slug}`}
-              className="shrink-0 w-[190px] animate-slide-in"
-              style={{ animationDelay: `${i * 80}ms` }}
-            >
-              <Card hover padding={false}>
-                <div className="h-[110px] relative overflow-hidden rounded-t-2xl">
-                  {businessImages[biz.slug] ? (
-                    <Image
-                      src={businessImages[biz.slug]}
-                      alt={biz.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : biz.image_urls?.[0] ? (
+      {/* ── Featured Section (mixed content) ── */}
+      <section className="px-5 space-y-3">
+        <SectionHeader title="Featured" subtitle="Highlights from Compton" compact />
+
+        {/* Featured event — large card */}
+        {featuredEvent && (
+          <Link href={`/events/${featuredEvent.id}`} className="block press">
+            <Card hover padding={false}>
+              <div className="p-4 flex items-start gap-3.5">
+                <div className="flex flex-col items-center bg-gold/10 rounded-xl px-3 py-2 min-w-[52px]">
+                  <span className="font-heading text-[20px] font-bold leading-none text-gold">
+                    {new Date(featuredEvent.start_date).getDate()}
+                  </span>
+                  <span className="text-[10px] font-semibold text-warm-gray tracking-wide uppercase">
+                    {new Date(featuredEvent.start_date).toLocaleDateString("en-US", { month: "short" })}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-0.5">
+                    Upcoming Event
+                  </p>
+                  <h3 className="font-heading text-[15px] font-bold leading-snug line-clamp-2 mb-1">
+                    {featuredEvent.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-[11px] text-warm-gray">
+                    {featuredEvent.location_name && (
+                      <span className="truncate">📍 {featuredEvent.location_name}</span>
+                    )}
+                    <span>
+                      {new Date(featuredEvent.start_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </Link>
+        )}
+
+        {/* Featured business — compact card */}
+        {featuredBusiness && (
+          <Link href={`/business/${featuredBusiness.slug}`} className="block press">
+            <Card hover padding={false}>
+              <div className="p-4 flex items-center gap-3.5">
+                <div className="w-[52px] h-[52px] rounded-xl overflow-hidden relative shrink-0 bg-royal">
+                  {featuredBusiness.image_urls?.[0] ? (
                     <img
-                      src={biz.image_urls[0]}
-                      alt={biz.name}
+                      src={featuredBusiness.image_urls[0]}
+                      alt={featuredBusiness.name}
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full art-food" />
+                    <div className="w-full h-full flex items-center justify-center text-[22px]">🏪</div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-                  <div className="absolute top-2.5 right-2.5 bg-midnight/70 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1">
-                    <span className="text-gold text-[10px]">★</span>
-                    <span className="text-[10px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
-                  </div>
                 </div>
-                <div className="p-3">
-                  <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">
-                    {biz.name}
-                  </h3>
-                  <p className="text-[10px] text-txt-secondary mb-2 truncate">
-                    {biz.category.charAt(0).toUpperCase() + biz.category.slice(1)} · {biz.address?.split(",")[0]}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-semibold text-hc-blue uppercase tracking-wider mb-0.5">
+                    Featured Business
                   </p>
-                  <div className="flex items-center gap-1.5">
-                    {biz.badges?.slice(0, 2).map((badge: string) => (
-                      <Badge
-                        key={badge}
-                        label={badge.replace("_", " ")}
-                        variant="gold"
-                      />
-                    ))}
+                  <h3 className="font-heading text-[14px] font-bold leading-snug truncate">
+                    {featuredBusiness.name}
+                  </h3>
+                  <div className="flex items-center gap-2 text-[11px] text-warm-gray">
+                    <span className="truncate">
+                      {featuredBusiness.category.charAt(0).toUpperCase() + featuredBusiness.category.slice(1)}
+                      {featuredBusiness.address ? ` · ${featuredBusiness.address.split(",")[0]}` : ""}
+                    </span>
+                    <span className="shrink-0 flex items-center gap-0.5 text-gold">
+                      ★ {Number(featuredBusiness.rating_avg).toFixed(1)}
+                    </span>
                   </div>
                 </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
+              </div>
+            </Card>
+          </Link>
+        )}
 
-      {/* ─── Upcoming Events ─── */}
-      <section className="mb-8">
-        <SectionHeader
-          title="Upcoming Events"
-          subtitle="Don't miss out"
-          linkText="Calendar"
-          linkHref="/events"
-          linkColor="text-emerald"
-        />
-        <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-          {(events ?? []).map((event, i) => {
-            const categoryColors: Record<string, string> = {
-              city: "text-gold",
-              sports: "text-emerald",
-              culture: "text-coral",
-              community: "text-cyan",
-              school: "text-hc-blue",
-              youth: "text-hc-purple",
-            };
-            const categoryEmojis: Record<string, string> = {
-              city: "🏛️",
-              sports: "⚽",
-              culture: "🎭",
-              community: "🤝",
-              school: "📚",
-              youth: "🌟",
-            };
-            const colorClass = categoryColors[event.category] || "text-gold";
-            return (
-              <Link
-                key={event.id}
-                href={`/events/${event.id}`}
-                className="shrink-0 w-[220px] animate-slide-in"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <Card hover padding={false}>
-                  {/* Date header with color accent */}
-                  <div className="p-3.5 pb-2.5 border-b border-border-subtle flex items-center gap-3">
-                    <div className="flex flex-col items-center bg-white/[0.04] rounded-xl px-2.5 py-1.5 min-w-[44px]">
-                      <span className={`font-heading text-[16px] font-bold leading-none ${colorClass}`}>
-                        {new Date(event.start_date).getDate()}
-                      </span>
-                      <span className="text-[9px] font-semibold text-warm-gray tracking-[0.05em] uppercase">
-                        {new Date(event.start_date).toLocaleDateString("en-US", { month: "short" })}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-heading text-[13px] font-semibold leading-tight line-clamp-2">
-                        {event.title}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="px-3.5 py-2.5 flex items-center justify-between">
-                    <span className="text-[11px] text-warm-gray truncate">
-                      {event.location_name ? `📍 ${event.location_name}` : categoryEmojis[event.category] || "📅"}
-                    </span>
-                    <span className={`text-[11px] font-medium ${colorClass}`}>
-                      {new Date(event.start_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+        {/* Live stream card (if available and not already shown via banner) */}
+        {hasLive && liveStreams[0] && (
+          <Link href="/live" className="block press">
+            <Card hover padding={false}>
+              <div className="p-4 flex items-center gap-3.5">
+                <div className="w-[52px] h-[52px] rounded-xl bg-compton-red/15 border border-compton-red/30 flex items-center justify-center shrink-0">
+                  <span className="text-[22px]">📺</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-compton-red uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
+                      Live Now
                     </span>
                   </div>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+                  <h3 className="font-heading text-[14px] font-bold leading-snug truncate">
+                    {liveStreams[0].title}
+                  </h3>
+                  <p className="text-[11px] text-warm-gray">
+                    {liveStreams[0].viewer_count ?? 0} watching &middot; {liveStreams[0].category ?? "HubTV"}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+        )}
       </section>
 
-      {/* ─── What's New Feed ─── */}
+      {/* ── What's New Feed ── */}
       {pulsePosts.length > 0 && (
-        <section className="mb-8">
+        <section className="px-5 space-y-3">
           <SectionHeader
             title="What's New"
             subtitle="Latest from your city"
             linkText="All updates"
             linkHref="/pulse"
+            compact
           />
-          <div className="px-5 flex flex-col gap-2.5">
+          <div className="flex flex-col divide-y divide-border-subtle rounded-2xl bg-royal border border-border-subtle overflow-hidden">
             {pulsePosts.map((post) => {
               const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;
-              const roleColors: Record<string, string> = {
-                city_official: "#F2A900",
-                business_owner: "#3B82F6",
-                community_leader: "#22C55E",
-              };
-              const iconColor = post.author?.role ? (roleColors[post.author.role] || "#9E9A93") : "#9E9A93";
-              const roleIcons: Record<string, string> = {
-                city_official: "🏛️",
-                business_owner: "🏪",
-                community_leader: "🌿",
-                citizen: "💬",
-              };
-              const icon = post.author?.role ? (roleIcons[post.author.role] || "💬") : "💬";
-
               return (
-                <div
-                  key={post.id}
-                  className="flex gap-3.5 items-start bg-royal border border-border-subtle rounded-2xl p-3.5 press"
-                >
-                  {/* Icon badge */}
-                  <div
-                    className="w-[42px] h-[42px] rounded-xl flex items-center justify-center text-[18px] shrink-0 border"
-                    style={{
-                      background: `${iconColor}18`,
-                      borderColor: `${iconColor}30`,
-                    }}
-                  >
-                    {icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-medium leading-snug line-clamp-2">
-                      {post.body}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[11px] font-medium" style={{ color: iconColor }}>
-                        {post.author?.display_name ?? "Community"}
-                      </span>
-                      <span className="text-muted-gray text-[11px]">·</span>
-                      <span className="text-[11px] text-muted-gray">
-                        {timeAgo(post.created_at)}
-                      </span>
-                      {badge && (
-                        <>
-                          <span className="text-muted-gray text-[11px]">·</span>
-                          <Badge label={badge.label} variant={badge.variant} />
-                        </>
+                <Link key={post.id} href="/pulse" className="press">
+                  <div className="flex items-start gap-3 px-4 py-3">
+                    {/* Avatar */}
+                    <div className="w-8 h-8 rounded-full overflow-hidden relative shrink-0 bg-deep">
+                      {post.author?.avatar_url ? (
+                        <Image
+                          src={post.author.avatar_url}
+                          alt={post.author.display_name ?? ""}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-gold">
+                          {post.author?.display_name?.charAt(0) ?? "?"}
+                        </div>
                       )}
                     </div>
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[12px] font-semibold truncate">
+                          {post.author?.display_name ?? "Community"}
+                        </span>
+                        {badge && <Badge label={badge.label} variant={badge.variant} />}
+                        <span className="text-[11px] text-muted-gray ml-auto shrink-0">
+                          {timeAgo(post.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-[12px] text-warm-gray leading-snug line-clamp-2">
+                        {post.body}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
         </section>
       )}
 
-      {/* ─── Community Board (pinned/official post) ─── */}
-      {boardPost && (
-        <section className="px-5 mb-8">
-          <SectionHeader title="Community Board" compact />
-          <Card glow className="border-gold/10 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-11 h-11 rounded-full overflow-hidden relative ring-2 ring-gold/20">
-                {boardPost.author?.avatar_url ? (
-                  <Image
-                    src={boardPost.author.avatar_url}
-                    alt={boardPost.author.display_name}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-card to-deep flex items-center justify-center text-[13px] font-bold text-gold">
-                    {boardPost.author?.display_name?.split(" ").map((w) => w[0]).join("").slice(0, 2) ?? "?"}
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-bold">{boardPost.author?.display_name ?? "Community"}</p>
-                  {boardPost.author?.role && ROLE_BADGE_MAP[boardPost.author.role] && (
-                    <Badge
-                      label={ROLE_BADGE_MAP[boardPost.author.role].label}
-                      variant={ROLE_BADGE_MAP[boardPost.author.role].variant}
-                    />
-                  )}
-                </div>
-                <p className="text-[10px] text-txt-secondary">{timeAgo(boardPost.created_at)}</p>
-              </div>
-            </div>
-            <p className="text-[13px] text-txt-secondary leading-relaxed mb-3">
-              {boardPost.body}
-            </p>
-            <div className="flex items-center gap-5 pt-3 border-t border-border-subtle">
-              <span className="text-xs text-txt-secondary flex items-center gap-1.5">
-                ❤️ <span className="font-medium">{totalReactions(boardPost)}</span>
-              </span>
-              <span className="text-xs text-txt-secondary flex items-center gap-1.5">
-                💬 <span className="font-medium">{boardPost.comment_count}</span>
-              </span>
-              {boardPost.is_pinned && (
-                <span className="text-[10px] text-gold font-medium ml-auto">📌 Pinned</span>
-              )}
-            </div>
-          </Card>
-        </section>
-      )}
-
-      {/* ─── Compton Pride Banner ─── */}
-      <section className="px-5 mb-8">
-        <div className="relative rounded-2xl overflow-hidden p-5 bg-gradient-to-br from-royal via-deep to-midnight border border-gold/10">
-          <div className="pattern-dots absolute inset-0 opacity-20" />
-          <div className="relative">
-            <p className="text-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-1">
-              Built in Compton
-            </p>
-            <h3 className="font-heading font-bold text-lg mb-1.5">
-              Streaming to the World
-            </h3>
-            <p className="font-display italic text-[13px] text-txt-secondary leading-relaxed mb-4 max-w-[280px]">
-              Where culture becomes content and community becomes currency.
-            </p>
-            <div className="flex gap-2">
-              <Link href="/business" className="inline-flex items-center gap-1.5 bg-gold text-midnight px-4 py-2 rounded-full text-xs font-bold press hover:bg-gold-light transition-colors">
-                Explore Businesses
-              </Link>
-              <Link href="/resources" className="inline-flex items-center gap-1.5 bg-white/[0.06] text-white px-4 py-2 rounded-full text-xs font-medium press hover:bg-white/10 transition-colors border border-white/[0.08]">
-                Find Resources
-              </Link>
-            </div>
-          </div>
-        </div>
+      {/* ── Bottom CTA ── */}
+      <section className="px-5 pb-6">
+        <Link
+          href="/map"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gold/20 bg-gold/5 text-gold text-[13px] font-heading font-semibold press hover:bg-gold/10 transition-colors"
+        >
+          Explore more on Hub City
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+        </Link>
       </section>
     </div>
   );
