@@ -66,7 +66,7 @@ export default async function MapPage() {
   // Fetch health resources with coordinates
   const { data: healthResources } = await supabase
     .from("health_resources")
-    .select("id, name, latitude, longitude, address, category, description, organization")
+    .select("id, name, slug, latitude, longitude, address, category, description, organization")
     .eq("is_published", true)
     .not("latitude", "is", null)
     .not("longitude", "is", null);
@@ -80,6 +80,7 @@ export default async function MapPage() {
         latitude: h.latitude!,
         longitude: h.longitude!,
         metadata: {
+          slug: h.slug,
           address: h.address,
           category: h.category,
           description: h.description,

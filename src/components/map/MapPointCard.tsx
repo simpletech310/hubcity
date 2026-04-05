@@ -17,17 +17,17 @@ function getDetailLink(point: MapPoint): string {
     case "event":
       return `/events/${point.id}`;
     case "health":
-      return `/health/${point.id}`;
+      return `/health/${point.metadata?.slug || point.id}`;
     case "issue":
-      return `/issues/${point.id}`;
+      return `/city-hall/issues/${point.id}`;
     case "school":
       return `/schools/${point.id}`;
     case "transit":
-      return `/transit/${point.id}`;
+      return `/city-data/transit/${point.id}`;
     case "park":
       return `/parks/${point.id}`;
     case "mural":
-      return `/murals/${point.id}`;
+      return `/culture/murals/${point.metadata?.slug || point.id}`;
     default:
       return "#";
   }
