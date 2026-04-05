@@ -22,20 +22,6 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-const quickActions = [
-  { label: "Map", icon: "🗺️", href: "/map" },
-  { label: "Events", icon: "📅", href: "/events" },
-  { label: "Food", icon: "🔥", href: "/food" },
-  { label: "Resources", icon: "💡", href: "/resources" },
-  { label: "Schools", icon: "🎓", href: "/schools" },
-  { label: "HubTV", icon: "📺", href: "/live" },
-  { label: "City Hall", icon: "🏛️", href: "/city-hall" },
-  { label: "Jobs", icon: "💼", href: "/jobs" },
-  { label: "Health", icon: "❤️", href: "/health" },
-  { label: "Groups", icon: "🤝", href: "/groups" },
-  { label: "Culture", icon: "🎭", href: "/culture" },
-  { label: "Parks", icon: "🌳", href: "/parks" },
-];
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -134,10 +120,10 @@ export default async function HomePage() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* ── Compact Art Hero ── */}
-      <section>
+      {/* ── Full-Screen Art Hero ── */}
+      <section className="relative">
         <Link href={`/art/${featuredArt.slug}`} className="block press">
-          <div className="relative w-full h-[200px] overflow-hidden">
+          <div className="relative w-full h-screen">
             <Image
               src={featuredArt.imageUrl}
               alt={featuredArt.title}
@@ -146,24 +132,38 @@ export default async function HomePage() {
               priority
               sizes="100vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-midnight/40 via-transparent to-midnight" />
+            <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
+            <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
 
             {/* Art Spotlight badge */}
-            <div className="absolute top-3 left-4 z-10">
-              <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-2.5 py-1 text-[10px] font-bold text-gold tracking-wider uppercase">
+            <div className="absolute top-4 left-5 z-10">
+              <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1.5 text-[10px] font-bold text-gold tracking-wider uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
                 Art Spotlight
               </span>
             </div>
 
-            {/* Art info */}
-            <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 z-10">
-              <h2 className="font-display text-[18px] leading-tight drop-shadow-lg">
+            {/* Art info at bottom */}
+            <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
+              <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
+                Featured Artist &middot; {featuredArt.year}
+              </p>
+              <h2 className="font-display text-[28px] leading-tight mb-1.5 drop-shadow-lg">
                 &ldquo;{featuredArt.title}&rdquo;
               </h2>
-              <p className="text-[12px] text-gold/80 font-heading font-semibold">
-                {featuredArt.artist} &middot; {featuredArt.medium}
+              <p className="text-[14px] text-gold font-heading font-semibold mb-1">
+                {featuredArt.artist}
               </p>
+              <p className="text-[12px] text-white/40">
+                {featuredArt.medium} &middot; {featuredArt.location}
+              </p>
+
+              {/* Scroll indicator */}
+              <div className="flex justify-center mt-6">
+                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
+                  <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M3 5l4 4 4-4"/></svg>
+                </div>
+              </div>
             </div>
           </div>
         </Link>
@@ -209,24 +209,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
-      {/* ── Quick Actions (3-col, 2 rows visible, scroll for rest) ── */}
-      <section className="px-5">
-        <div className="overflow-x-auto scrollbar-hide -mx-5 px-5">
-          <div className="grid grid-rows-2 grid-flow-col auto-cols-[calc(33.333%-8px)] gap-2">
-            {quickActions.map((action) => (
-              <Link key={action.label} href={action.href} className="press">
-                <div className="bg-royal rounded-xl border border-border-subtle p-3 flex flex-col items-center gap-1.5 transition-colors hover:border-white/10">
-                  <span className="text-[28px] leading-none">{action.icon}</span>
-                  <span className="font-heading text-[11px] font-semibold text-txt-primary tracking-tight text-center">
-                    {action.label}
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── Live Now Banner ── */}
       {hasLive && <LiveNowBanner streams={liveStreams} />}
