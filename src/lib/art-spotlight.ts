@@ -21,6 +21,22 @@ export interface ArtPiece {
 
 export const artSpotlight: ArtPiece[] = [
   {
+    id: "2",
+    slug: "compton-museum",
+    title: "Compton Museum",
+    artist: "Compton Art & History Museum",
+    artistBio:
+      "The Compton Art & History Museum preserves and celebrates the rich cultural heritage of Compton, California — showcasing local art, history, and community stories for residents and visitors alike.",
+    medium: "Photography",
+    year: "2026",
+    location: "Compton, CA",
+    locationAddress: "106 W Compton Blvd, Compton",
+    description:
+      "A striking photograph from the Compton Art & History Museum, capturing the spirit and cultural legacy of one of Compton's most important cultural institutions.",
+    imageUrl: "/images/compton-museum-hero.jpg",
+    tags: ["museum", "compton", "culture", "history", "photography"],
+  },
+  {
     id: "1",
     slug: "compton-hub-city-mural",
     title: "Compton Hub City",

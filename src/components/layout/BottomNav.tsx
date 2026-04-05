@@ -329,43 +329,12 @@ export default function BottomNav() {
             icon={(a) => <PulseIcon active={a} />}
           />
 
-          {/* Live — center prominent */}
-          <Link
-            href="/live"
-            aria-label="Live"
-            className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl relative transition-all duration-200 active:scale-95 ${
-              isActive("/live") ? "text-[#F2A900]" : "text-white/50 hover:text-white/80"
-            }`}
-          >
-            {isActive("/live") && (
-              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-[#F2A900]" />
-            )}
-            <div
-              className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                isActive("/live")
-                  ? "bg-[#F2A900]/15"
-                  : "bg-white/[0.06]"
-              }`}
-            >
-              <LiveIcon active={isActive("/live")} />
-              {/* Red dot — live indicator */}
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#FF6B6B] shadow-[0_0_6px_rgba(255,107,107,0.6)]" />
-            </div>
-            <span
-              className={`text-[10px] font-semibold transition-colors ${
-                isActive("/live") ? "text-[#F2A900]" : ""
-              }`}
-            >
-              Live
-            </span>
-          </Link>
-
-          {/* Services */}
+          {/* Services — center prominent */}
           <button
             onClick={() => setServicesOpen((prev) => !prev)}
             aria-label="Services"
             aria-expanded={servicesOpen}
-            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl relative transition-all duration-200 active:scale-95 ${
+            className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl relative transition-all duration-200 active:scale-95 ${
               servicesOpen || isServiceRouteActive
                 ? "text-[#F2A900]"
                 : "text-white/50 hover:text-white/80"
@@ -375,20 +344,51 @@ export default function BottomNav() {
               <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-[#F2A900]" />
             )}
             <div
-              className={`transition-transform duration-200 ${
-                (servicesOpen || isServiceRouteActive) ? "scale-110" : ""
+              className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
+                (servicesOpen || isServiceRouteActive)
+                  ? "bg-[#F2A900]/15"
+                  : "bg-white/[0.06]"
               }`}
             >
               <ServicesIcon active={servicesOpen || isServiceRouteActive} />
             </div>
             <span
-              className={`text-[10px] font-medium transition-colors ${
-                (servicesOpen || isServiceRouteActive) ? "text-[#F2A900] font-semibold" : ""
+              className={`text-[10px] font-semibold transition-colors ${
+                (servicesOpen || isServiceRouteActive) ? "text-[#F2A900]" : ""
               }`}
             >
               Services
             </span>
           </button>
+
+          {/* Live */}
+          <Link
+            href="/live"
+            aria-label="Live"
+            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl relative transition-all duration-200 active:scale-95 ${
+              isActive("/live") ? "text-[#F2A900]" : "text-white/50 hover:text-white/80"
+            }`}
+          >
+            {isActive("/live") && (
+              <div className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-8 h-1 rounded-full bg-[#F2A900]" />
+            )}
+            <div
+              className={`relative transition-all duration-200 ${
+                isActive("/live") ? "scale-110" : ""
+              }`}
+            >
+              <LiveIcon active={isActive("/live")} />
+              {/* Red dot — live indicator */}
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#FF6B6B] shadow-[0_0_6px_rgba(255,107,107,0.6)]" />
+            </div>
+            <span
+              className={`text-[10px] font-medium transition-colors ${
+                isActive("/live") ? "text-[#F2A900] font-semibold" : ""
+              }`}
+            >
+              Live
+            </span>
+          </Link>
 
           {/* Me */}
           <NavTab
