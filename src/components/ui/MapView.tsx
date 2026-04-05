@@ -69,6 +69,27 @@ export default function MapView({
     setLoaded(true);
   }, []);
 
+  // Fly to new center/zoom when props change
+  const prevCenter = useRef(center);
+  const prevZoom = useRef(zoom);
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loaded) return;
+    if (
+      prevCenter.current[0] !== center[0] ||
+      prevCenter.current[1] !== center[1] ||
+      prevZoom.current !== zoom
+    ) {
+      map.flyTo({
+        center: [center[0], center[1]],
+        zoom,
+        duration: 1200,
+      });
+      prevCenter.current = center;
+      prevZoom.current = zoom;
+    }
+  }, [center, zoom, loaded]);
+
   const handleMarkerClick = useCallback(
     (point: MapPoint) => {
       setPopupPoint(point);
