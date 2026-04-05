@@ -52,6 +52,53 @@ const TYPE_BADGE: Record<
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
+// ── Mux Demo Playback IDs (real videos in the account) ────
+const DEMO_PLAYBACK_IDS = [
+  "gz2zqxILC0002QEg8p9YBCrlfHIgi5yIXK009ep02Nngpbc", // 669s 1080p 16:9
+  "201pH01yrmEaWSDwxS003lXyqTUYXS9S6QgHvj66Oda2m8", // 645s 1080p 16:9
+  "fRGWXPRIebDIEe01hIkiPzPlEcgYsEZL9dGVm8nOYYGk",   // 272s 1080p 16:9
+  "VNSRVl9AwnEcIGVwuQAgRBUoCGs3TbYE900ywl01nUXzs",   // 270s 720p  16:9
+  "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA",  // 94s  1080p 16:9
+  "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo",   // 15s  1080p 16:9
+  "3w9WlvYAhCZSPnUgrfnwK1mlP0087Kgp802tmOQowAaDU",   // 40s  720p  1:1
+];
+
+function demoId(index: number) {
+  return DEMO_PLAYBACK_IDS[index % DEMO_PLAYBACK_IDS.length];
+}
+
+// ── Demo video data used when DB is empty ─────────────────
+type DemoChannel = { id: string; name: string; slug: string; avatar_url: string | null; type: ChannelType };
+const DEMO_CHANNELS: DemoChannel[] = [
+  { id: "demo-ch-1", name: "Hub City News", slug: "hub-city-news", avatar_url: null, type: "city" },
+  { id: "demo-ch-2", name: "Compton Sports", slug: "compton-sports", avatar_url: null, type: "community" },
+  { id: "demo-ch-3", name: "Centennial HS", slug: "centennial-hs", avatar_url: null, type: "school" },
+  { id: "demo-ch-4", name: "Culture Hub", slug: "culture-hub", avatar_url: null, type: "media" },
+  { id: "demo-ch-5", name: "City Council", slug: "city-council", avatar_url: null, type: "city" },
+  { id: "demo-ch-6", name: "Block Beats Radio", slug: "block-beats", avatar_url: null, type: "media" },
+];
+
+const DEMO_FEATURED_VIDEOS = [
+  { id: "demo-fv-1", channel_id: "demo-ch-1", title: "Compton City Council - April Session", description: "Full city council meeting coverage with public comment period.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 669, view_count: 2340, is_published: true, is_featured: true, status: "ready", published_at: "2026-04-01T18:00:00Z", created_at: "2026-04-01T17:00:00Z", channel: DEMO_CHANNELS[0] },
+  { id: "demo-fv-2", channel_id: "demo-ch-2", title: "Friday Night Lights: Centennial vs Dominguez", description: "High school football rivalry game under the lights.", mux_playback_id: demoId(1), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 645, view_count: 4120, is_published: true, is_featured: true, status: "ready", published_at: "2026-04-03T02:00:00Z", created_at: "2026-04-03T01:00:00Z", channel: DEMO_CHANNELS[1] },
+  { id: "demo-fv-3", channel_id: "demo-ch-4", title: "The Real Compton: Episode 1 - Richland Farms", description: "Exploring the hidden gem neighborhood where horses roam.", mux_playback_id: demoId(2), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 272, view_count: 1850, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-28T20:00:00Z", created_at: "2026-03-28T19:00:00Z", channel: DEMO_CHANNELS[3] },
+  { id: "demo-fv-4", channel_id: "demo-ch-6", title: "Block Beats: West Coast Classics Remix Session", description: "Live DJ session remixing classic Compton hits.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 270, view_count: 3200, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-30T22:00:00Z", created_at: "2026-03-30T21:00:00Z", channel: DEMO_CHANNELS[5] },
+  { id: "demo-fv-5", channel_id: "demo-ch-5", title: "Budget Town Hall - Community Q&A", description: "Residents ask questions about the 2026-27 city budget.", mux_playback_id: demoId(4), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 94, view_count: 890, is_published: true, is_featured: true, status: "ready", published_at: "2026-03-25T18:30:00Z", created_at: "2026-03-25T18:00:00Z", channel: DEMO_CHANNELS[4] },
+] as unknown as ChannelVideo[];
+
+const DEMO_RECENT_VIDEOS = [
+  { id: "demo-rv-1", channel_id: "demo-ch-1", title: "Morning Report: What's New in Compton", description: "Daily news roundup.", mux_playback_id: demoId(5), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 15, view_count: 560, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-05T12:00:00Z", created_at: "2026-04-05T11:00:00Z", channel: DEMO_CHANNELS[0] },
+  { id: "demo-rv-2", channel_id: "demo-ch-3", title: "Centennial Graduation Highlights 2026", description: "Best moments from this year's graduation ceremony.", mux_playback_id: demoId(6), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 40, view_count: 1200, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-04T20:00:00Z", created_at: "2026-04-04T19:00:00Z", channel: DEMO_CHANNELS[2] },
+  { id: "demo-rv-3", channel_id: "demo-ch-4", title: "Mural Walk: Downtown Compton Art Tour", description: "A walking tour of Compton's best public art.", mux_playback_id: demoId(2), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 272, view_count: 780, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-03T16:00:00Z", created_at: "2026-04-03T15:00:00Z", channel: DEMO_CHANNELS[3] },
+  { id: "demo-rv-4", channel_id: "demo-ch-2", title: "Youth Basketball League Finals Recap", description: "Highlights from the championship game at Lueders Park.", mux_playback_id: demoId(1), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 645, view_count: 2100, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-02T21:00:00Z", created_at: "2026-04-02T20:00:00Z", channel: DEMO_CHANNELS[1] },
+  { id: "demo-rv-5", channel_id: "demo-ch-6", title: "Compton Cooks: Abuela's Kitchen Episode 3", description: "Traditional Mexican recipes from Compton's own grandmothers.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 669, view_count: 3450, is_published: true, is_featured: false, status: "ready", published_at: "2026-04-01T19:00:00Z", created_at: "2026-04-01T18:00:00Z", channel: DEMO_CHANNELS[5] },
+  { id: "demo-rv-6", channel_id: "demo-ch-5", title: "Parks & Rec Committee Meeting", description: "Monthly meeting on park improvements and youth programs.", mux_playback_id: demoId(4), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "city_hall", duration: 94, view_count: 430, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-31T18:00:00Z", created_at: "2026-03-31T17:00:00Z", channel: DEMO_CHANNELS[4] },
+  { id: "demo-rv-7", channel_id: "demo-ch-1", title: "Community Spotlight: Compton Cowboys", description: "Meet the urban horseback riders keeping tradition alive.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 270, view_count: 5600, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-29T20:00:00Z", created_at: "2026-03-29T19:00:00Z", channel: DEMO_CHANNELS[0] },
+  { id: "demo-rv-8", channel_id: "demo-ch-3", title: "Centennial Band: Battle of the Bands", description: "Centennial High marching band performance.", mux_playback_id: demoId(6), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 40, view_count: 890, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-28T22:00:00Z", created_at: "2026-03-28T21:00:00Z", channel: DEMO_CHANNELS[2] },
+  { id: "demo-rv-9", channel_id: "demo-ch-4", title: "Compton Rising: Ep 1 - The Visionaries", description: "Five young creators building the future of Compton.", mux_playback_id: demoId(0), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "original", duration: 669, view_count: 7200, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-27T20:00:00Z", created_at: "2026-03-27T19:00:00Z", channel: DEMO_CHANNELS[3] },
+  { id: "demo-rv-10", channel_id: "demo-ch-6", title: "Late Night Vibes: Lo-Fi Compton Mix", description: "Chill beats for studying and relaxation.", mux_playback_id: demoId(3), mux_asset_id: null, mux_upload_id: null, thumbnail_url: null, video_type: "podcast", duration: 270, view_count: 4300, is_published: true, is_featured: false, status: "ready", published_at: "2026-03-26T23:00:00Z", created_at: "2026-03-26T22:00:00Z", channel: DEMO_CHANNELS[5] },
+] as unknown as ChannelVideo[];
+
 // ── Hub City Originals (curated showcase content) ──────────
 const ORIGINALS = [
   {
@@ -60,6 +107,7 @@ const ORIGINALS = [
     genre: "Documentary Series",
     gradient: "from-compton-red/80 via-compton-red/30 to-transparent",
     accent: "#EF4444",
+    playbackId: demoId(0),
   },
   {
     title: "Block Beats",
@@ -67,6 +115,7 @@ const ORIGINALS = [
     genre: "Music · Culture",
     gradient: "from-hc-purple/80 via-hc-purple/30 to-transparent",
     accent: "#8B5CF6",
+    playbackId: demoId(3),
   },
   {
     title: "Friday Night Lights",
@@ -74,6 +123,7 @@ const ORIGINALS = [
     genre: "Live Sports",
     gradient: "from-emerald/80 via-emerald/30 to-transparent",
     accent: "#22C55E",
+    playbackId: demoId(1),
   },
   {
     title: "The Real Compton",
@@ -81,6 +131,7 @@ const ORIGINALS = [
     genre: "Talk Show",
     gradient: "from-gold/80 via-gold/30 to-transparent",
     accent: "#F2A900",
+    playbackId: demoId(2),
   },
   {
     title: "Compton Cooks",
@@ -88,6 +139,7 @@ const ORIGINALS = [
     genre: "Food · Lifestyle",
     gradient: "from-coral/80 via-coral/30 to-transparent",
     accent: "#FF6B6B",
+    playbackId: demoId(4),
   },
 ];
 
@@ -159,20 +211,100 @@ export default function HubCityTV({
   const [playingVideo, setPlayingVideo] = useState<ChannelVideo | null>(null);
   const [heroIndex, setHeroIndex] = useState(0);
 
-  const activeStreams = streams.filter((s) => s.status === "active");
-  const upcomingStreams = streams.filter((s) => s.status === "idle");
+  // Merge demo data when DB is empty so the page is always populated
+  const allFeatured = featuredVideos.length > 0 ? featuredVideos : DEMO_FEATURED_VIDEOS;
+  const allRecent = recentVideos.length > 0 ? recentVideos : DEMO_RECENT_VIDEOS;
+  const allChannels = channels.length > 0 ? channels : (DEMO_CHANNELS as unknown as Channel[]);
+
+  const rawActiveStreams = streams.filter((s) => s.status === "active");
+  const rawUpcomingStreams = streams.filter((s) => s.status === "idle");
+
+  // Demo streams when DB is empty
+  const DEMO_STREAMS = (rawActiveStreams.length === 0 && rawUpcomingStreams.length === 0 ? [
+    {
+      id: "demo-stream-1",
+      title: "City Council Live: April Budget Review",
+      description: "Live coverage of the April city council budget review session.",
+      status: "active" as const,
+      category: "government",
+      mux_playback_id: demoId(0),
+      mux_stream_id: null, mux_stream_key: null,
+      rtmp_url: "rtmps://global-live.mux.com:443/app",
+      creator_id: "demo-creator-1",
+      channel_id: "demo-ch-5",
+      viewer_count: 127,
+      scheduled_at: new Date().toISOString(),
+      ended_at: null, created_at: new Date().toISOString(),
+      creator: { id: "demo-creator-1", display_name: "City Clerk Office", avatar_url: null, role: "city_official", verification_status: "verified" },
+      channel: DEMO_CHANNELS[4],
+    },
+    {
+      id: "demo-stream-2",
+      title: "Friday Night Lights: Compton vs Lynwood",
+      description: "High school football — live from the field.",
+      status: "active" as const,
+      category: "sports",
+      mux_playback_id: demoId(1),
+      mux_stream_id: null, mux_stream_key: null,
+      rtmp_url: "rtmps://global-live.mux.com:443/app",
+      creator_id: "demo-creator-2",
+      channel_id: "demo-ch-2",
+      viewer_count: 342,
+      scheduled_at: new Date().toISOString(),
+      ended_at: null, created_at: new Date().toISOString(),
+      creator: { id: "demo-creator-2", display_name: "Compton Sports Network", avatar_url: null, role: "admin", verification_status: "verified" },
+      channel: DEMO_CHANNELS[1],
+    },
+    {
+      id: "demo-stream-3",
+      title: "Late Night Vibes: Chill Beats from Compton",
+      description: "Lo-fi music stream with city visuals.",
+      status: "idle" as const,
+      category: "entertainment",
+      mux_playback_id: demoId(3),
+      mux_stream_id: null, mux_stream_key: null,
+      rtmp_url: "rtmps://global-live.mux.com:443/app",
+      creator_id: "demo-creator-3",
+      channel_id: "demo-ch-6",
+      viewer_count: 0,
+      scheduled_at: new Date(Date.now() + 3600000 * 2).toISOString(),
+      ended_at: null, created_at: new Date().toISOString(),
+      creator: { id: "demo-creator-3", display_name: "Block Beats Radio", avatar_url: null, role: "admin", verification_status: "verified" },
+      channel: DEMO_CHANNELS[5],
+    },
+    {
+      id: "demo-stream-4",
+      title: "Compton Rising: Behind the Scenes",
+      description: "Exclusive look at the making of the documentary series.",
+      status: "idle" as const,
+      category: "entertainment",
+      mux_playback_id: demoId(2),
+      mux_stream_id: null, mux_stream_key: null,
+      rtmp_url: "rtmps://global-live.mux.com:443/app",
+      creator_id: "demo-creator-4",
+      channel_id: "demo-ch-4",
+      viewer_count: 0,
+      scheduled_at: new Date(Date.now() + 3600000 * 5).toISOString(),
+      ended_at: null, created_at: new Date().toISOString(),
+      creator: { id: "demo-creator-4", display_name: "Culture Hub TV", avatar_url: null, role: "admin", verification_status: "verified" },
+      channel: DEMO_CHANNELS[3],
+    },
+  ] : []) as unknown as LiveStream[];
+
+  const activeStreams = rawActiveStreams.length > 0 ? rawActiveStreams : DEMO_STREAMS.filter((s) => s.status === "active");
+  const upcomingStreams = rawUpcomingStreams.length > 0 ? rawUpcomingStreams : DEMO_STREAMS.filter((s) => s.status === "idle");
 
   const filteredChannels =
-    channelFilter === "all" ? channels : channels.filter((c) => c.type === channelFilter);
+    channelFilter === "all" ? allChannels : allChannels.filter((c) => c.type === channelFilter);
 
   const today = new Date().getDay();
   const tomorrow = (today + 1) % 7;
   const todayBlocks = timeBlocks.filter((tb) => tb.day_of_week === today);
   const tomorrowBlocks = timeBlocks.filter((tb) => tb.day_of_week === tomorrow);
 
-  const originals = recentVideos.filter((v) => v.video_type === "original");
-  const podcasts = recentVideos.filter((v) => v.video_type === "podcast");
-  const cityHall = recentVideos.filter((v) => v.video_type === "city_hall");
+  const originals = allRecent.filter((v) => v.video_type === "original");
+  const podcasts = allRecent.filter((v) => v.video_type === "podcast");
+  const cityHall = allRecent.filter((v) => v.video_type === "city_hall");
 
   const handleFollow = useCallback(
     async (channelId: string) => {
@@ -316,7 +448,31 @@ export default function HubCityTV({
 
           {/* CTA Buttons */}
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20">
+            <button
+              onClick={() => {
+                const demoVideo: ChannelVideo = {
+                  id: `original-hero-${heroIndex}`,
+                  channel_id: DEMO_CHANNELS[heroIndex % DEMO_CHANNELS.length].id,
+                  title: currentHero.title,
+                  description: currentHero.desc,
+                  mux_playback_id: currentHero.playbackId,
+                  mux_asset_id: null,
+                  mux_upload_id: null,
+                  thumbnail_url: null,
+                  video_type: "original",
+                  duration: 300,
+                  view_count: 5000 + heroIndex * 1200,
+                  is_published: true,
+                  is_featured: true,
+                  status: "ready",
+                  published_at: new Date().toISOString(),
+                  created_at: new Date().toISOString(),
+                  channel: DEMO_CHANNELS[heroIndex % DEMO_CHANNELS.length],
+                } as unknown as ChannelVideo;
+                setPlayingVideo(demoVideo);
+              }}
+              className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
               Watch Now
             </button>
@@ -395,18 +551,32 @@ export default function HubCityTV({
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
               {ORIGINALS.map((show, i) => (
-                <button key={i} className="shrink-0 w-[160px] text-left press group">
+                <button key={i} className="shrink-0 w-[160px] text-left press group" onClick={() => {
+                  setPlayingVideo({
+                    id: `original-card-${i}`,
+                    channel_id: DEMO_CHANNELS[i % DEMO_CHANNELS.length].id,
+                    title: show.title,
+                    description: show.desc,
+                    mux_playback_id: show.playbackId,
+                    mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
+                    video_type: "original", duration: 300, view_count: 3000 + i * 800,
+                    is_published: true, is_featured: true, status: "ready",
+                    published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+                    channel: DEMO_CHANNELS[i % DEMO_CHANNELS.length],
+                  } as unknown as ChannelVideo);
+                }}>
                   <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
                     style={{ background: `linear-gradient(180deg, ${show.accent}20 0%, var(--color-midnight) 100%)` }}>
-                    {/* Abstract art fill */}
+                    {/* Mux thumbnail background */}
+                    <img
+                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=320&height=427&time=10`}
+                      alt={show.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    {/* Color overlay */}
                     <div className="absolute inset-0" style={{
-                      background: `
-                        radial-gradient(ellipse at 30% 30%, ${show.accent}40 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 70%, ${show.accent}20 0%, transparent 50%)
-                      `,
+                      background: `linear-gradient(180deg, ${show.accent}40 0%, transparent 40%, ${show.accent}20 100%)`,
                     }} />
-                    {/* Decorative shape */}
-                    <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 opacity-20" style={{ borderColor: show.accent }} />
                     <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-midnight to-transparent" />
 
                     {/* Play overlay */}
@@ -458,7 +628,7 @@ export default function HubCityTV({
           </section>
 
           {/* Featured Videos */}
-          {featuredVideos.length > 0 && (
+          {allFeatured.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
@@ -469,8 +639,8 @@ export default function HubCityTV({
                 </h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {featuredVideos.map((video) => (
-                  <VideoCardLarge key={video.id} video={video} onPlay={() => router.push(`/live/watch/${video.id}`)} />
+                {allFeatured.map((video) => (
+                  <VideoCardLarge key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
                 ))}
               </div>
             </section>
@@ -485,7 +655,7 @@ export default function HubCityTV({
               </button>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
-              {channels.slice(0, 15).map((ch) => (
+              {allChannels.slice(0, 15).map((ch) => (
                 <Link key={ch.id} href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
                   <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
                     <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">
@@ -503,14 +673,14 @@ export default function HubCityTV({
           </section>
 
           {/* Recent Uploads */}
-          {recentVideos.length > 0 && (
+          {allRecent.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px]">Recently Added</h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {recentVideos.slice(0, 10).map((video) => (
-                  <VideoCardSmall key={video.id} video={video} onPlay={() => router.push(`/live/watch/${video.id}`)} />
+                {allRecent.slice(0, 10).map((video) => (
+                  <VideoCardSmall key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
                 ))}
               </div>
             </section>
@@ -525,7 +695,7 @@ export default function HubCityTV({
               </div>
               <div className="px-5 space-y-3">
                 {upcomingStreams.slice(0, 5).map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.status === "active") setWatchingStream(stream); }} />
+                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.mux_playback_id) setWatchingStream(stream); }} />
                 ))}
               </div>
             </section>
@@ -591,7 +761,7 @@ export default function HubCityTV({
             ) : (
               <div className="space-y-3 stagger">
                 {upcomingStreams.map((stream) => (
-                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.status === "active") setWatchingStream(stream); }} />
+                  <StreamCard key={stream.id} stream={stream} onWatch={() => { if (stream.mux_playback_id) setWatchingStream(stream); }} />
                 ))}
               </div>
             )}
@@ -616,20 +786,31 @@ export default function HubCityTV({
           {/* Originals grid */}
           <div className="px-5 space-y-4 mb-8">
             {ORIGINALS.map((show, i) => (
-              <button key={i} className="w-full text-left press group">
+              <button key={i} className="w-full text-left press group" onClick={() => {
+                setPlayingVideo({
+                  id: `original-full-${i}`,
+                  channel_id: DEMO_CHANNELS[i % DEMO_CHANNELS.length].id,
+                  title: show.title,
+                  description: show.desc,
+                  mux_playback_id: show.playbackId,
+                  mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
+                  video_type: "original", duration: 300, view_count: 3000 + i * 800,
+                  is_published: true, is_featured: true, status: "ready",
+                  published_at: new Date().toISOString(), created_at: new Date().toISOString(),
+                  channel: DEMO_CHANNELS[i % DEMO_CHANNELS.length],
+                } as unknown as ChannelVideo);
+              }}>
                 <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-                  {/* Background */}
-                  <div className="h-[180px] relative" style={{
-                    background: `
-                      linear-gradient(180deg, ${show.accent}15 0%, var(--color-midnight) 100%),
-                      radial-gradient(ellipse at 30% 40%, ${show.accent}30 0%, transparent 50%),
-                      radial-gradient(ellipse at 80% 60%, ${show.accent}15 0%, transparent 50%)
-                    `,
-                  }}>
-                    {/* Decorative shapes */}
-                    <div className="absolute top-8 right-8 w-20 h-20 rounded-full border border-white/[0.05]" />
-                    <div className="absolute bottom-4 left-4 w-12 h-12 rounded-full border border-white/[0.03]" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent" />
+                  {/* Background with Mux thumbnail */}
+                  <div className="h-[180px] relative overflow-hidden">
+                    <img
+                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=360&time=15`}
+                      alt={show.title}
+                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0" style={{
+                      background: `linear-gradient(180deg, transparent 0%, ${show.accent}20 50%, var(--color-card) 100%)`,
+                    }} />
 
                     {/* Play button */}
                     <div className="absolute inset-0 flex items-center justify-center">
@@ -665,7 +846,7 @@ export default function HubCityTV({
               </div>
               <div className="px-5 space-y-3">
                 {originals.map((video) => (
-                  <VideoCardRow key={video.id} video={video} onPlay={() => router.push(`/live/watch/${video.id}`)} />
+                  <VideoCardRow key={video.id} video={video} onPlay={() => video.mux_playback_id ? setPlayingVideo(video) : router.push(`/live/watch/${video.id}`)} />
                 ))}
               </div>
             </section>
@@ -679,7 +860,7 @@ export default function HubCityTV({
       {activeTab === "channels" && (
         <div className="animate-fade-in">
           <div className="flex gap-3 px-5 mb-5 overflow-x-auto scrollbar-hide pb-1">
-            {channels.slice(0, 15).map((ch) => (
+            {allChannels.slice(0, 15).map((ch) => (
               <Link key={ch.id} href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
                   <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">

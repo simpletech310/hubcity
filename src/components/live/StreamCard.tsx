@@ -51,9 +51,17 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
         <div
           className={`w-20 h-[60px] rounded-xl bg-gradient-to-br ${gradient} shrink-0 relative overflow-hidden flex items-center justify-center`}
         >
+          {/* Mux thumbnail background when playback ID exists */}
+          {stream.mux_playback_id && (
+            <img
+              src={`https://image.mux.com/${stream.mux_playback_id}/thumbnail.webp?width=160&height=120&time=5`}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          )}
           {isLive ? (
             <>
-              <div className="absolute inset-0 bg-midnight/20" />
+              <div className="absolute inset-0 bg-midnight/30" />
               <div className="relative flex items-center justify-center">
                 <div className="w-10 h-10 rounded-full bg-coral/30 flex items-center justify-center animate-pulse">
                   <svg width="14" height="16" viewBox="0 0 12 14" fill="white">
@@ -68,11 +76,14 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
               </div>
             </>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-              <svg width="12" height="14" viewBox="0 0 12 14" fill="white" opacity={0.5}>
-                <polygon points="0,0 12,7 0,14" />
-              </svg>
-            </div>
+            <>
+              {stream.mux_playback_id && <div className="absolute inset-0 bg-midnight/20" />}
+              <div className="relative w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
+                <svg width="12" height="14" viewBox="0 0 12 14" fill="white" opacity={0.5}>
+                  <polygon points="0,0 12,7 0,14" />
+                </svg>
+              </div>
+            </>
           )}
         </div>
 
