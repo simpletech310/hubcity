@@ -15,7 +15,7 @@ export default async function ChannelDetailPage({
 
   const { data: byId } = await supabase
     .from("channels")
-    .select("*, owner:profiles(id, display_name, avatar_url, role)")
+    .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
     .eq("id", id)
     .single();
 
@@ -24,7 +24,7 @@ export default async function ChannelDetailPage({
   } else {
     const { data: bySlug } = await supabase
       .from("channels")
-      .select("*, owner:profiles(id, display_name, avatar_url, role)")
+      .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
       .eq("slug", id)
       .single();
     channel = (bySlug as Channel) || null;

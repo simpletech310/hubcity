@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("channels")
-      .select("*, owner:profiles(id, display_name, avatar_url, role)")
+      .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
       .eq("is_active", true)
       .order("follower_count", { ascending: false });
 

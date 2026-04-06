@@ -12,14 +12,14 @@ export async function GET(
     // Try by id first, then by slug
     let { data: channel, error } = await supabase
       .from("channels")
-      .select("*, owner:profiles(id, display_name, avatar_url, role)")
+      .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
       .eq("id", id)
       .single();
 
     if (error || !channel) {
       const slugResult = await supabase
         .from("channels")
-        .select("*, owner:profiles(id, display_name, avatar_url, role)")
+        .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
         .eq("slug", id)
         .single();
       channel = slugResult.data;
