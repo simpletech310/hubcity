@@ -16,12 +16,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the application and verify ownership of the listing's business
+    // Get the application and verify ownership via posted_by
     const { data: application } = await supabase
       .from("job_applications")
-      .select(
-        "id, job_listing_id, job_listing:job_listings(business:businesses(owner_id))"
-      )
+      .select("id, job_listing_id")
       .eq("id", applicationId)
       .single();
 
@@ -32,11 +30,15 @@ export async function PATCH(
       );
     }
 
-    const listingArr = application.job_listing as unknown as Array<{ business: Array<{ owner_id: string }> }> | null;
-    const listing = listingArr?.[0] ?? null;
-    const bizOwner = (listing?.business as unknown as Array<{ owner_id: string }>)?.[0] ?? null;
-    if (bizOwner?.owner_id !== user.id) {
-      // Also allow admin
+    // Check if user is the poster of the parent job listing
+    const { data: listing } = await supabase
+      .from("job_listings")
+      .select("id, posted_by")
+      .eq("id", application.job_listing_id)
+      .single();
+
+    const isOwner = listing?.posted_by === user.id;
+    if (!isOwner) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -51,7 +53,10 @@ export async function PATCH(
     const { status, reviewer_notes } = await request.json();
 
     const updates: Record<string, unknown> = {};
-    if (status) updates.status = status;
+    if (status) {
+      updates.status = status;
+      updates.reviewed_at = new Date().toISOString();
+    }
     if (reviewer_notes !== undefined) updates.reviewer_notes = reviewer_notes;
 
     const { data: updated, error } = await supabase

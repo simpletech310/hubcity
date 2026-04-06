@@ -731,14 +731,19 @@ export interface CityService {
 export type Department = CityDepartment;
 
 // === Jobs ===
-export type JobType = 'full_time' | 'part_time' | 'contract' | 'seasonal' | 'internship';
+export type JobType = 'full_time' | 'part_time' | 'contract' | 'seasonal' | 'internship' | 'volunteer';
 export type SalaryType = 'hourly' | 'salary' | 'commission' | 'tips';
 export type JobApplicationStatus = 'submitted' | 'reviewing' | 'interview' | 'offered' | 'rejected' | 'withdrawn';
+export type OrganizationType = 'business' | 'school' | 'city';
 
 export interface JobListing {
   id: string;
-  business_id: string;
+  business_id: string | null;
   business?: Business;
+  posted_by: string | null;
+  poster?: Profile;
+  organization_name: string | null;
+  organization_type: OrganizationType | null;
   title: string;
   slug: string;
   description: string;
@@ -1230,6 +1235,98 @@ export interface CityAlert {
   is_active: boolean;
   created_by: string | null;
   created_at: string;
+}
+
+// ── Compton Museum ────────────────────────────────────
+export type GalleryItemType = 'artwork' | 'photo' | 'artifact' | 'document' | 'poster';
+export type NotablePersonCategory = 'music' | 'sports' | 'politics' | 'activism' | 'arts' | 'business' | 'education' | 'other';
+export type LibraryItemType = 'book' | 'article' | 'documentary' | 'academic' | 'archive';
+
+export interface MuseumExhibit {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle: string | null;
+  description: string | null;
+  cover_image_url: string | null;
+  curator_note: string | null;
+  era: string | null;
+  tags: string[];
+  is_featured: boolean;
+  is_published: boolean;
+  display_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  item_type: GalleryItemType;
+  image_urls: string[];
+  artist_name: string | null;
+  artist_id: string | null;
+  year_created: string | null;
+  medium: string | null;
+  dimensions: string | null;
+  provenance: string | null;
+  exhibit_id: string | null;
+  exhibit?: MuseumExhibit;
+  tags: string[];
+  is_published: boolean;
+  display_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NotablePerson {
+  id: string;
+  name: string;
+  slug: string;
+  title: string | null;
+  bio: string | null;
+  birth_year: number | null;
+  death_year: number | null;
+  category: NotablePersonCategory;
+  portrait_url: string | null;
+  image_urls: string[];
+  notable_achievements: string[];
+  external_links: Record<string, string>;
+  era: string | null;
+  exhibit_id: string | null;
+  exhibit?: MuseumExhibit;
+  tags: string[];
+  is_published: boolean;
+  display_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LibraryItem {
+  id: string;
+  title: string;
+  slug: string;
+  author: string | null;
+  description: string | null;
+  item_type: LibraryItemType;
+  cover_image_url: string | null;
+  isbn: string | null;
+  year_published: number | null;
+  publisher: string | null;
+  external_url: string | null;
+  exhibit_id: string | null;
+  exhibit?: MuseumExhibit;
+  tags: string[];
+  is_published: boolean;
+  display_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 // ── V2: City Meetings ───────────────────────────────

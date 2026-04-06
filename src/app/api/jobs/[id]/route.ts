@@ -9,10 +9,13 @@ export async function GET(
     const { id } = await params;
     const supabase = await createClient();
 
+    const selectFields =
+      "*, business:businesses(id, name, slug, image_urls, address), poster:profiles!job_listings_posted_by_fkey(id, display_name, avatar_url, role)";
+
     // Try slug first, then id
     let { data: job } = await supabase
       .from("job_listings")
-      .select("*, business:businesses(id, name, slug, image_urls, address)")
+      .select(selectFields)
       .eq("slug", id)
       .eq("is_active", true)
       .single();
@@ -20,7 +23,7 @@ export async function GET(
     if (!job) {
       const { data } = await supabase
         .from("job_listings")
-        .select("*, business:businesses(id, name, slug, image_urls, address)")
+        .select(selectFields)
         .eq("id", id)
         .eq("is_active", true)
         .single();
@@ -66,10 +69,10 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get listing and verify ownership
+    // Get listing and verify ownership via posted_by
     const { data: listing } = await supabase
       .from("job_listings")
-      .select("*, business:businesses(owner_id)")
+      .select("id, posted_by")
       .eq("id", id)
       .single();
 
@@ -80,12 +83,43 @@ export async function PATCH(
       );
     }
 
-    const business = listing.business as { owner_id: string } | null;
-    if (business?.owner_id !== user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Check ownership or admin
+    const isOwner = listing.posted_by === user.id;
+    if (!isOwner) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (profile?.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
-    const updates = await request.json();
+    const body = await request.json();
+    const allowedFields = [
+      "title",
+      "description",
+      "requirements",
+      "job_type",
+      "salary_min",
+      "salary_max",
+      "salary_type",
+      "location",
+      "is_remote",
+      "is_active",
+      "application_deadline",
+      "contact_email",
+      "contact_phone",
+      "organization_name",
+    ];
+    const updates: Record<string, unknown> = {};
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updates[field] = body[field];
+      }
+    }
+
     const { data: job, error } = await supabase
       .from("job_listings")
       .update(updates)
@@ -120,10 +154,10 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get listing and verify ownership
+    // Get listing and verify ownership via posted_by
     const { data: listing } = await supabase
       .from("job_listings")
-      .select("*, business:businesses(owner_id)")
+      .select("id, posted_by")
       .eq("id", id)
       .single();
 
@@ -134,9 +168,16 @@ export async function DELETE(
       );
     }
 
-    const business = listing.business as { owner_id: string } | null;
-    if (business?.owner_id !== user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const isOwner = listing.posted_by === user.id;
+    if (!isOwner) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      if (profile?.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     // Soft delete — deactivate

@@ -25,7 +25,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  const allowedRoles = ["business_owner", "city_official", "admin"];
+  const allowedRoles = ["business_owner", "city_official", "city_ambassador", "admin"];
   if (!profile || !allowedRoles.includes(profile.role)) {
     redirect("/");
   }
@@ -41,10 +41,9 @@ export default async function DashboardLayout({
       .eq("owner_id", user.id)
       .single();
 
-    if (!data) {
-      redirect("/business-signup");
+    if (data) {
+      business = data as Business;
     }
-    business = data as Business;
   }
 
   // Fetch resources for city_official / admin

@@ -77,6 +77,14 @@ function SpecialsIcon() {
   );
 }
 
+function JobsIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M20 7H4a1 1 0 00-1 1v10a2 2 0 002 2h14a2 2 0 002-2V8a1 1 0 00-1-1zM16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+    </svg>
+  );
+}
+
 function AnalyticsIcon() {
   return (
     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -106,6 +114,7 @@ export default function DashboardShell({
 }) {
   const pathname = usePathname();
   const isResourceManager = userRole === "city_official" || userRole === "admin";
+  const canPostJobs = ["business_owner", "admin", "city_official", "city_ambassador"].includes(userRole);
 
   const tabs: TabDef[] = useMemo(() => {
     const t: TabDef[] = [];
@@ -125,6 +134,11 @@ export default function DashboardShell({
       t.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
     }
 
+    // Jobs tab for all allowed roles
+    if (canPostJobs) {
+      t.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
+    }
+
     // Resource manager tabs
     if (isResourceManager) {
       t.push({ href: "/dashboard/applications", label: "Apps", icon: <ApplicationsIcon /> });
@@ -135,7 +149,7 @@ export default function DashboardShell({
     t.push({ href: "/dashboard/settings", label: "More", icon: <MoreIcon /> });
 
     return t;
-  }, [business, isResourceManager]);
+  }, [business, isResourceManager, canPostJobs]);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";

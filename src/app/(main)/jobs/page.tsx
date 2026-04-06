@@ -10,6 +10,7 @@ const jobTypes = [
   { label: "All", value: "all", icon: "💼" },
   { label: "Full-Time", value: "full_time", icon: "🏢" },
   { label: "Part-Time", value: "part_time", icon: "🕐" },
+  { label: "Volunteer", value: "volunteer", icon: "🤝" },
   { label: "Contract", value: "contract", icon: "📝" },
   { label: "Seasonal", value: "seasonal", icon: "🌴" },
   { label: "Internship", value: "internship", icon: "🎓" },
@@ -39,9 +40,11 @@ export default function JobsPage() {
     ? jobs.filter((j) => {
         const q = search.toLowerCase();
         const biz = j.business as { name?: string } | null;
+        const orgName = (j.organization_name ?? "").toLowerCase();
         return (
           j.title.toLowerCase().includes(q) ||
-          biz?.name?.toLowerCase().includes(q)
+          biz?.name?.toLowerCase().includes(q) ||
+          orgName.includes(q)
         );
       })
     : jobs;

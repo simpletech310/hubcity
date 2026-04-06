@@ -16,10 +16,10 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verify the user owns the business that posted this job
+    // Verify the user is the poster of this job listing (or admin)
     const { data: listing } = await supabase
       .from("job_listings")
-      .select("id, business:businesses(owner_id)")
+      .select("id, posted_by")
       .eq("id", jobListingId)
       .single();
 
@@ -30,10 +30,8 @@ export async function GET(
       );
     }
 
-    const bizArr = listing.business as unknown as { owner_id: string }[] | null;
-    const business = bizArr?.[0] ?? null;
-    if (business?.owner_id !== user.id) {
-      // Also allow admin
+    const isOwner = listing.posted_by === user.id;
+    if (!isOwner) {
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")

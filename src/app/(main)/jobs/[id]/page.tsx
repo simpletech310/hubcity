@@ -13,6 +13,13 @@ const jobTypeBadge: Record<
   contract: { label: "Contract", variant: "gold" },
   seasonal: { label: "Seasonal", variant: "coral" },
   internship: { label: "Internship", variant: "purple" },
+  volunteer: { label: "Volunteer", variant: "gold" },
+};
+
+const orgTypeIcon: Record<string, string> = {
+  business: "\uD83D\uDCBC",
+  school: "\uD83C\uDF93",
+  city: "\uD83C\uDFDB\uFE0F",
 };
 
 function formatSalary(job: JobListing): string | null {
@@ -43,10 +50,13 @@ export default async function JobDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
+  const selectFields =
+    "*, business:businesses(id, name, slug, image_urls, address), poster:profiles!job_listings_posted_by_fkey(id, display_name, avatar_url, role)";
+
   // Try slug first, then id
   let { data: job } = await supabase
     .from("job_listings")
-    .select("*, business:businesses(id, name, slug, image_urls, address)")
+    .select(selectFields)
     .eq("slug", id)
     .eq("is_active", true)
     .single();
@@ -54,7 +64,7 @@ export default async function JobDetailPage({
   if (!job) {
     const { data } = await supabase
       .from("job_listings")
-      .select("*, business:businesses(id, name, slug, image_urls, address)")
+      .select(selectFields)
       .eq("id", id)
       .eq("is_active", true)
       .single();
@@ -71,9 +81,17 @@ export default async function JobDetailPage({
     image_urls?: string[];
     address?: string;
   } | null;
+  const poster = listing.poster as {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    role: string;
+  } | null;
 
-  // Increment views (fire-and-forget via API)
-  // Server component can't easily do this, handled client-side or via API
+  const isVolunteer = listing.job_type === "volunteer";
+  const displayName = listing.organization_name || business?.name || poster?.display_name || "Organization";
+  const orgIcon = listing.organization_type ? orgTypeIcon[listing.organization_type] ?? "" : "";
+  const businessImage = business?.image_urls?.[0];
 
   // Check if current user has applied
   const {
@@ -95,7 +113,7 @@ export default async function JobDetailPage({
     label: listing.job_type,
     variant: "gold" as const,
   };
-  const salary = formatSalary(listing);
+  const salary = isVolunteer ? null : formatSalary(listing);
 
   return (
     <div className="animate-fade-in pb-24">
@@ -119,23 +137,48 @@ export default async function JobDetailPage({
         </Link>
       </div>
 
-      {/* Business Info */}
+      {/* Volunteer banner */}
+      {isVolunteer && (
+        <div className="mx-5 mb-4 px-4 py-3 rounded-xl bg-gold/10 border border-gold/20">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🤝</span>
+            <div>
+              <p className="text-sm font-bold text-gold">Volunteer Opportunity</p>
+              <p className="text-[11px] text-txt-secondary">
+                Give back to your community
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Organization / Business Info */}
       <div className="px-5 mb-5">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl overflow-hidden relative bg-white/5 flex items-center justify-center shrink-0">
-            {business?.image_urls?.[0] ? (
+            {businessImage ? (
               <img
-                src={business.image_urls[0]}
-                alt={business.name}
+                src={businessImage}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-2xl">💼</span>
+              <span className="text-2xl">{orgIcon || "\uD83D\uDCBC"}</span>
             )}
           </div>
           <div>
             <p className="text-sm text-txt-secondary">
-              {business?.name ?? "Business"}
+              {orgIcon && <span className="mr-1">{orgIcon}</span>}
+              {business?.slug ? (
+                <Link
+                  href={`/business/${business.slug}`}
+                  className="hover:text-gold transition-colors"
+                >
+                  {displayName}
+                </Link>
+              ) : (
+                displayName
+              )}
             </p>
             <h1 className="font-heading text-xl font-bold leading-tight">
               {listing.title}
@@ -148,6 +191,13 @@ export default async function JobDetailPage({
           <Badge label={badge.label} variant={badge.variant} size="md" />
           {listing.is_remote && <Badge label="Remote" variant="cyan" size="md" />}
           {salary && <Badge label={salary} variant="emerald" size="md" />}
+          {listing.organization_type && listing.organization_type !== "business" && (
+            <Badge
+              label={listing.organization_type === "city" ? "City" : "School"}
+              variant="purple"
+              size="md"
+            />
+          )}
         </div>
 
         {/* Details */}
@@ -189,7 +239,37 @@ export default async function JobDetailPage({
             <span>📋</span>
             <span>{listing.application_count} application{listing.application_count !== 1 ? "s" : ""}</span>
           </div>
+          {listing.contact_email && (
+            <div className="flex items-center gap-2 text-sm text-txt-secondary">
+              <span>📧</span>
+              <span>{listing.contact_email}</span>
+            </div>
+          )}
+          {listing.contact_phone && (
+            <div className="flex items-center gap-2 text-sm text-txt-secondary">
+              <span>📞</span>
+              <span>{listing.contact_phone}</span>
+            </div>
+          )}
         </div>
+
+        {/* Posted by */}
+        {poster && (
+          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-white/[0.03]">
+            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center overflow-hidden shrink-0">
+              {poster.avatar_url ? (
+                <img src={poster.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-bold text-txt-secondary">
+                  {poster.display_name?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-txt-secondary">
+              Posted by <span className="text-white font-medium">{poster.display_name}</span>
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Divider */}
@@ -229,14 +309,14 @@ export default async function JobDetailPage({
             href={`/jobs/${listing.slug || listing.id}/apply`}
             className="block w-full py-3 rounded-xl text-center bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold text-sm press hover:opacity-90 transition-all"
           >
-            Apply Now
+            {isVolunteer ? "Volunteer Now" : "Apply Now"}
           </Link>
         ) : (
           <Link
             href={`/login?redirect=/jobs/${listing.slug || listing.id}/apply`}
             className="block w-full py-3 rounded-xl text-center bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold text-sm press hover:opacity-90 transition-all"
           >
-            Sign in to Apply
+            Sign in to {isVolunteer ? "Volunteer" : "Apply"}
           </Link>
         )}
       </div>

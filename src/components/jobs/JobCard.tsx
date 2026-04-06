@@ -9,6 +9,13 @@ const jobTypeBadge: Record<JobType, { label: string; variant: "gold" | "emerald"
   contract: { label: "Contract", variant: "gold" },
   seasonal: { label: "Seasonal", variant: "coral" },
   internship: { label: "Internship", variant: "purple" },
+  volunteer: { label: "Volunteer", variant: "gold" },
+};
+
+const orgTypeIcon: Record<string, string> = {
+  business: "\uD83D\uDCBC",
+  school: "\uD83C\uDF93",
+  city: "\uD83C\uDFDB\uFE0F",
 };
 
 function timeAgo(dateStr: string): string {
@@ -53,23 +60,30 @@ interface JobCardProps {
 
 export default function JobCard({ job }: JobCardProps) {
   const badge = jobTypeBadge[job.job_type] ?? { label: job.job_type, variant: "gold" as const };
-  const salary = formatSalary(job);
+  const salary = job.job_type !== "volunteer" ? formatSalary(job) : null;
   const business = job.business as { id: string; name: string; slug: string; image_urls?: string[] } | null;
+
+  // Organization display: prefer organization_name, fall back to business name
+  const displayName = job.organization_name || business?.name || "Organization";
+  const orgIcon = job.organization_type ? orgTypeIcon[job.organization_type] ?? "" : "";
+  const businessImage = business?.image_urls?.[0];
 
   return (
     <Link href={`/jobs/${job.slug || job.id}`}>
       <Card hover>
         <div className="flex gap-3">
-          {/* Business Logo */}
+          {/* Logo / Icon */}
           <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative bg-white/5 flex items-center justify-center">
-            {business?.image_urls?.[0] ? (
+            {businessImage ? (
               <img
-                src={business.image_urls[0]}
-                alt={business.name}
+                src={businessImage}
+                alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-lg">💼</span>
+              <span className="text-lg">
+                {orgIcon || "\uD83D\uDCBC"}
+              </span>
             )}
           </div>
 
@@ -78,7 +92,8 @@ export default function JobCard({ job }: JobCardProps) {
               {job.title}
             </h3>
             <p className="text-[11px] text-txt-secondary mb-1.5 truncate">
-              {business?.name ?? "Business"}
+              {orgIcon && <span className="mr-1">{orgIcon}</span>}
+              {displayName}
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge label={badge.label} variant={badge.variant} />
