@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// GET /api/surveys — list active surveys
-export async function GET() {
+// GET /api/surveys — list surveys (active by default, or all with ?all=true)
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const showAll = searchParams.get("all") === "true";
 
-    const { data: surveys, error } = await supabase
+    let query = supabase
       .from("surveys")
       .select(
         "*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(20);
+      .order("created_at", { ascending: false });
+
+    if (!showAll) {
+      query = query.eq("status", "active");
+    }
+
+    const { data: surveys, error } = await query.limit(50);
 
     if (error) throw error;
 

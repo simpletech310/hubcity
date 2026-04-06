@@ -39,6 +39,7 @@ const filters = [
   { label: "All", value: "all", icon: "🔥", color: "#F2A900" },
   { label: "City News", value: "city_official", icon: "🏛️", color: "#3B82F6" },
   { label: "Business", value: "business_owner", icon: "🏪", color: "#22C55E" },
+  { label: "Jobs", value: "jobs", icon: "💼", color: "#F59E0B" },
   { label: "Community", value: "citizen", icon: "💬", color: "#8B5CF6" },
   { label: "Polls", value: "polls", icon: "📊", color: "#06B6D4" },
   { label: "Surveys", value: "surveys", icon: "📋", color: "#EC4899" },
@@ -108,7 +109,9 @@ export default function PulseFeed({
   const filteredPosts =
     activeFilter === "all" || activeFilter === "polls" || activeFilter === "surveys"
       ? posts
-      : posts.filter((p) => p.author?.role === activeFilter);
+      : activeFilter === "jobs"
+        ? posts.filter((p) => p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring"))
+        : posts.filter((p) => p.author?.role === activeFilter);
 
   // Build unified feed
   type FeedItem =
@@ -187,6 +190,7 @@ export default function PulseFeed({
             {activeFilter === "all" ? "Latest Feed" :
              activeFilter === "city_official" ? "City News" :
              activeFilter === "business_owner" ? "Business Updates" :
+             activeFilter === "jobs" ? "Jobs & Opportunities" :
              activeFilter === "citizen" ? "Community Voices" :
              activeFilter === "polls" ? "All Polls" :
              "All Surveys"}
@@ -199,7 +203,7 @@ export default function PulseFeed({
             <div className="text-center py-16">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">
-                  {activeFilter === "polls" ? "📊" : activeFilter === "surveys" ? "📋" : "📡"}
+                  {activeFilter === "polls" ? "📊" : activeFilter === "surveys" ? "📋" : activeFilter === "jobs" ? "💼" : "📡"}
                 </span>
               </div>
               <p className="text-sm font-semibold mb-1">
@@ -207,14 +211,18 @@ export default function PulseFeed({
                   ? "No active polls yet"
                   : activeFilter === "surveys"
                     ? "No active surveys yet"
-                    : "No posts yet"}
+                    : activeFilter === "jobs"
+                      ? "No job posts yet"
+                      : "No posts yet"}
               </p>
               <p className="text-xs text-white/30">
                 {activeFilter === "polls"
                   ? "Polls will appear here when created by city officials."
                   : activeFilter === "surveys"
                     ? "Surveys will appear here when created by city officials."
-                    : "Be the first to share something with Compton!"}
+                    : activeFilter === "jobs"
+                      ? "Job and volunteer opportunities will appear here when posted."
+                      : "Be the first to share something with Compton!"}
               </p>
             </div>
           ) : (

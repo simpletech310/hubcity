@@ -1,20 +1,26 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// GET /api/polls — list active polls
-export async function GET() {
+// GET /api/polls — list polls (active by default, or all for officials with ?all=true)
+export async function GET(request: Request) {
   try {
     const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const showAll = searchParams.get("all") === "true";
 
-    const { data: polls, error } = await supabase
+    let query = supabase
       .from("polls")
       .select(
         "*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, verification_status)"
       )
       .eq("is_published", true)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-      .limit(20);
+      .order("created_at", { ascending: false });
+
+    if (!showAll) {
+      query = query.eq("status", "active");
+    }
+
+    const { data: polls, error } = await query.limit(50);
 
     if (error) throw error;
 
