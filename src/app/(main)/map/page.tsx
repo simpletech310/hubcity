@@ -5,7 +5,8 @@ import type { MapPoint } from "@/types/map";
 
 export const metadata: Metadata = {
   title: "Map — Hub City",
-  description: "Explore Compton businesses, events, health resources, and more on an interactive map.",
+  description:
+    "Find schools, health clinics, businesses, parks, and city resources across Compton on an interactive map.",
 };
 
 export default async function MapPage() {
@@ -15,7 +16,9 @@ export default async function MapPage() {
   // Fetch businesses with coordinates
   const { data: businesses } = await supabase
     .from("businesses")
-    .select("id, name, latitude, longitude, address, category, description")
+    .select(
+      "id, name, slug, latitude, longitude, address, category, description, image_urls, rating_avg"
+    )
     .eq("is_published", true)
     .not("latitude", "is", null)
     .not("longitude", "is", null);
@@ -29,19 +32,64 @@ export default async function MapPage() {
         latitude: b.latitude!,
         longitude: b.longitude!,
         metadata: {
+          slug: b.slug,
           address: b.address,
           category: b.category,
           description: b.description,
+          image: b.image_urls?.[0] ?? null,
+          rating: b.rating_avg,
+          link: `/business/${b.slug}`,
+        },
+      });
+    }
+  }
+
+  // Fetch schools with coordinates
+  const { data: schools } = await supabase
+    .from("schools")
+    .select(
+      "id, name, slug, latitude, longitude, address, level, enrollment, rating, image_url"
+    )
+    .eq("is_published", true)
+    .not("latitude", "is", null)
+    .not("longitude", "is", null);
+
+  if (schools) {
+    for (const s of schools) {
+      const levelLabel: Record<string, string> = {
+        high_school: "High School",
+        middle_school: "Middle School",
+        elementary: "Elementary",
+        college: "College",
+      };
+      points.push({
+        id: s.id,
+        type: "school",
+        name: s.name,
+        latitude: s.latitude!,
+        longitude: s.longitude!,
+        metadata: {
+          slug: s.slug,
+          address: s.address,
+          category: levelLabel[s.level] ?? s.level,
+          description: `${s.enrollment?.toLocaleString() ?? "—"} students · ${levelLabel[s.level] ?? s.level}`,
+          image: s.image_url,
+          rating: s.rating,
+          link: `/schools/${s.slug}`,
         },
       });
     }
   }
 
   // Fetch events with coordinates
+  const today = new Date().toISOString().split("T")[0];
   const { data: events } = await supabase
     .from("events")
-    .select("id, title, latitude, longitude, address, location_name, category, description")
+    .select(
+      "id, title, latitude, longitude, address, location_name, category, start_date, image_url"
+    )
     .eq("is_published", true)
+    .gte("start_date", today)
     .not("latitude", "is", null)
     .not("longitude", "is", null);
 
@@ -54,10 +102,14 @@ export default async function MapPage() {
         latitude: e.latitude!,
         longitude: e.longitude!,
         metadata: {
-          address: e.address,
-          location_name: e.location_name,
+          address: e.address || e.location_name,
           category: e.category,
-          description: e.description,
+          description: e.location_name
+            ? `📍 ${e.location_name}`
+            : undefined,
+          image: e.image_url,
+          date: e.start_date,
+          link: `/events/${e.id}`,
         },
       });
     }
@@ -66,7 +118,9 @@ export default async function MapPage() {
   // Fetch health resources with coordinates
   const { data: healthResources } = await supabase
     .from("health_resources")
-    .select("id, name, slug, latitude, longitude, address, category, description, organization")
+    .select(
+      "id, name, slug, latitude, longitude, address, category, description, organization, phone, is_emergency, is_free"
+    )
     .eq("is_published", true)
     .not("latitude", "is", null)
     .not("longitude", "is", null);
@@ -83,36 +137,11 @@ export default async function MapPage() {
           slug: h.slug,
           address: h.address,
           category: h.category,
-          description: h.description,
-          organization: h.organization,
-        },
-      });
-    }
-  }
-
-  // Fetch murals with coordinates
-  const { data: murals } = await supabase
-    .from("murals")
-    .select("id, title, latitude, longitude, address, artist_name, description, year_created, district, image_urls")
-    .eq("is_published", true)
-    .not("latitude", "is", null)
-    .not("longitude", "is", null);
-
-  if (murals) {
-    for (const m of murals) {
-      points.push({
-        id: m.id,
-        type: "mural",
-        name: m.title,
-        latitude: m.latitude!,
-        longitude: m.longitude!,
-        metadata: {
-          address: m.address,
-          artist_name: m.artist_name,
-          description: m.description,
-          year_created: m.year_created,
-          district: m.district,
-          image_url: m.image_urls?.[0],
+          description: h.organization || h.description,
+          phone: h.phone,
+          is_emergency: h.is_emergency,
+          is_free: h.is_free,
+          link: `/health/${h.slug}`,
         },
       });
     }
@@ -121,7 +150,9 @@ export default async function MapPage() {
   // Fetch parks with coordinates
   const { data: parks } = await supabase
     .from("parks")
-    .select("id, name, slug, latitude, longitude, address, description, amenities, district, image_urls")
+    .select(
+      "id, name, slug, latitude, longitude, address, description, amenities, image_urls"
+    )
     .eq("is_published", true)
     .not("latitude", "is", null)
     .not("longitude", "is", null);
@@ -139,37 +170,45 @@ export default async function MapPage() {
           address: p.address,
           description: p.description,
           amenities: p.amenities,
-          district: p.district,
-          image_url: p.image_urls?.[0],
+          image: p.image_urls?.[0],
+          link: `/parks/${p.slug ?? p.id}`,
         },
       });
     }
   }
 
-  // Fetch transit stops with coordinates
-  const { data: transitStops } = await supabase
-    .from("transit_stops")
-    .select("id, name, route_name, route_type, latitude, longitude, gtfs_stop_id")
-    .eq("is_active", true)
+  // Fetch city issues with coordinates
+  const { data: issues } = await supabase
+    .from("city_issues")
+    .select("id, title, latitude, longitude, location_text, type, status")
+    .in("status", ["open", "in_progress"])
     .not("latitude", "is", null)
-    .not("longitude", "is", null);
+    .not("longitude", "is", null)
+    .limit(50);
 
-  if (transitStops) {
-    for (const t of transitStops) {
+  if (issues) {
+    for (const i of issues) {
       points.push({
-        id: t.id,
-        type: "transit",
-        name: t.name,
-        latitude: t.latitude!,
-        longitude: t.longitude!,
+        id: i.id,
+        type: "issue",
+        name: i.title,
+        latitude: i.latitude!,
+        longitude: i.longitude!,
         metadata: {
-          route_name: t.route_name,
-          route_type: t.route_type,
-          gtfs_stop_id: t.gtfs_stop_id,
+          address: i.location_text,
+          category: i.type,
+          status: i.status,
+          link: `/city-hall/issues/${i.id}`,
         },
       });
     }
   }
 
-  return <MapExplorer initialPoints={points} />;
+  // Compute category counts for the UI
+  const counts: Record<string, number> = {};
+  for (const p of points) {
+    counts[p.type] = (counts[p.type] ?? 0) + 1;
+  }
+
+  return <MapExplorer initialPoints={points} categoryCounts={counts} />;
 }
