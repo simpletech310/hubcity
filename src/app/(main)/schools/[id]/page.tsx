@@ -586,6 +586,18 @@ export default async function SchoolDetailPage({
       .single();
 
     if (dbSchool) {
+      // colors is stored as [{hex, name},...] in DB but page expects a string
+      const colorsStr = Array.isArray(dbSchool.colors)
+        ? dbSchool.colors.map((c: { name: string }) => c.name).join(" & ")
+        : dbSchool.colors || null;
+
+      // schoolColors stored in metadata.schoolColors or derive from colors array
+      const meta = dbSchool.metadata as { schoolColors?: [string, string] } | null;
+      const schoolColors: [string, string] = meta?.schoolColors
+        ?? (Array.isArray(dbSchool.colors) && dbSchool.colors.length >= 2
+          ? [dbSchool.colors[0].hex, dbSchool.colors[1].hex]
+          : ["#F2A900", "#3B82F6"]);
+
       school = {
         slug: dbSchool.slug,
         name: dbSchool.name,
@@ -595,8 +607,8 @@ export default async function SchoolDetailPage({
         phone: dbSchool.phone || null,
         district: dbSchool.district || null,
         mascot: dbSchool.mascot || null,
-        colors: dbSchool.colors || null,
-        schoolColors: dbSchool.school_colors || ["#F2A900", "#3B82F6"],
+        colors: colorsStr,
+        schoolColors,
         website: dbSchool.website || null,
         image: dbSchool.image_url || null,
         enrollment: dbSchool.enrollment || 0,
@@ -606,11 +618,11 @@ export default async function SchoolDetailPage({
         programs: dbSchool.programs || [],
         notableAlumni: dbSchool.notable_alumni || undefined,
         established: dbSchool.established || 0,
-        description: dbSchool.description || "",
+        description: dbSchool.metadata?.description || "",
         principal: dbSchool.principal || "",
         athletics: dbSchool.athletics || undefined,
         clubs: dbSchool.clubs || undefined,
-        achievements: dbSchool.achievements || undefined,
+        achievements: dbSchool.metadata?.achievements || undefined,
       };
     }
   } catch {
