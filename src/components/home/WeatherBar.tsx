@@ -6,14 +6,12 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
 interface WeatherData {
-  current: {
-    temp: number;
-    feels_like: number;
-    description: string;
-    humidity: number;
-    wind_speed: number;
-    icon: string;
-  };
+  temp: number;
+  feels_like: number;
+  description: string;
+  humidity: number;
+  wind_speed: number;
+  icon: string;
 }
 
 interface AirQualityData {
@@ -94,7 +92,7 @@ export default function WeatherBar() {
 
   if (!weather) return null;
 
-  const iconName = weatherIconName(weather.current.icon);
+  const iconName = weatherIconName(weather.icon);
 
   return (
     <Link href="/city-data" className="block press">
@@ -106,10 +104,10 @@ export default function WeatherBar() {
 
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
             <span className="font-heading text-[18px] font-bold leading-none">
-              {Math.round(weather.current.temp)}&deg;
+              {Math.round(weather.temp)}&deg;
             </span>
             <span className="text-[12px] text-warm-gray capitalize truncate">
-              {weather.current.description}
+              {weather.description}
             </span>
           </div>
 

@@ -7,14 +7,12 @@ import type { IconName } from "@/components/ui/Icon";
 
 // ─── Types ──────────────────────────────────────────
 interface WeatherData {
-  current: {
-    temp: number;
-    feels_like: number;
-    description: string;
-    humidity: number;
-    wind_speed: number;
-    icon: string;
-  };
+  temp: number;
+  feels_like: number;
+  description: string;
+  humidity: number;
+  wind_speed: number;
+  icon: string;
 }
 
 interface AqiData {
@@ -119,16 +117,16 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
             className="flex items-center gap-2 shrink-0 press"
           >
             <Icon
-              name={weatherIconName(weather.current.icon)}
+              name={weatherIconName(weather.icon)}
               size={16}
               className="text-gold"
             />
             <span className="text-[13px] font-semibold">
-              {Math.round(weather.current.temp)}°
+              {Math.round(weather.temp)}°
             </span>
             <div className="w-px h-4 bg-white/[0.08]" />
             <span className="text-[11px] text-white/50 capitalize">
-              {weather.current.description}
+              {weather.description}
             </span>
           </Link>
         )}
