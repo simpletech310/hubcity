@@ -10,7 +10,9 @@ export type EventCategory =
   | "culture"
   | "community"
   | "school"
-  | "youth";
+  | "youth"
+  | "business"
+  | "networking";
 export type ResourceCategory =
   | "business"
   | "housing"

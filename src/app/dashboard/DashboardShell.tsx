@@ -178,6 +178,7 @@ export default function DashboardShell({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const isResourceManager = userRole === "city_official" || userRole === "admin" || userRole === "resource_provider";
   const isChamberAdmin = userRole === "chamber_admin" || userRole === "admin";
+  const isBusinessOwner = userRole === "business_owner";
   const canPostJobs = ["business_owner", "admin", "city_official", "city_ambassador"].includes(userRole);
 
   // Build flat tabs list (used for active tab detection)
@@ -224,14 +225,18 @@ export default function DashboardShell({
       t.push({ href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> });
     }
 
+    if (isBusinessOwner) {
+      t.push({ href: "/dashboard/chamber-hub", label: "Chamber", icon: <ChamberIcon /> });
+    }
+
     if (isChamberAdmin) {
-      t.push({ href: "/dashboard/chamber", label: "Chamber", icon: <ChamberIcon /> });
+      t.push({ href: "/dashboard/chamber", label: "Chamber Admin", icon: <ChamberIcon /> });
     }
 
     t.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
 
     return t;
-  }, [business, isResourceManager, isChamberAdmin, canPostJobs]);
+  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, canPostJobs]);
 
   // Build grouped sections for the drawer
   const sections: TabSection[] = useMemo(() => {
@@ -306,18 +311,28 @@ export default function DashboardShell({
       });
     }
 
-    // Chamber section
-    if (isChamberAdmin) {
+    // Chamber Hub (business owners)
+    if (isBusinessOwner) {
       s.push({
         title: "Chamber",
         tabs: [
-          { href: "/dashboard/chamber", label: "Chamber", icon: <ChamberIcon /> },
+          { href: "/dashboard/chamber-hub", label: "Chamber Hub", icon: <ChamberIcon /> },
+        ],
+      });
+    }
+
+    // Chamber Admin section
+    if (isChamberAdmin) {
+      s.push({
+        title: "Chamber Admin",
+        tabs: [
+          { href: "/dashboard/chamber", label: "Chamber Mgmt", icon: <ChamberIcon /> },
         ],
       });
     }
 
     return s;
-  }, [business, isResourceManager, isChamberAdmin, canPostJobs]);
+  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, canPostJobs]);
 
   // Settings tab (always at bottom, separate from sections)
   const settingsTab: TabDef = { href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> };
@@ -345,15 +360,22 @@ export default function DashboardShell({
       tabs.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
     }
 
+    if (isBusinessOwner) {
+      tabs.push({ href: "/dashboard/chamber-hub", label: "Chamber", icon: <ChamberIcon /> });
+    }
+
     tabs.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
 
     return tabs;
-  }, [business, canPostJobs]);
+  }, [business, canPostJobs, isBusinessOwner]);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/dashboard/chamber-hub") {
+      return pathname.startsWith("/dashboard/chamber-hub");
+    }
     if (href === "/dashboard/chamber") {
-      return pathname.startsWith("/dashboard/chamber");
+      return pathname === "/dashboard/chamber" || (pathname.startsWith("/dashboard/chamber") && !pathname.startsWith("/dashboard/chamber-hub"));
     }
     if (href === "/dashboard/services") {
       return pathname.startsWith("/dashboard/services");

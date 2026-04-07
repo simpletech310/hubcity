@@ -19,6 +19,8 @@ const categories: { label: string; value: string; icon: IconName }[] = [
   { label: "Sports", value: "sports", icon: "trophy" },
   { label: "Culture", value: "culture", icon: "theater" },
   { label: "Community", value: "community", icon: "handshake" },
+  { label: "Business", value: "business", icon: "briefcase" },
+  { label: "Networking", value: "networking", icon: "handshake" },
   { label: "School", value: "school", icon: "book" },
   { label: "Youth", value: "youth", icon: "sparkle" },
 ];
@@ -30,6 +32,8 @@ const categoryImages: Record<string, string> = {
   city: "/images/city-hall.png",
   youth: "/images/community-event.png",
   school: "/images/community-event.png",
+  business: "/images/community-event.png",
+  networking: "/images/community-event.png",
 };
 
 const categoryBadgeVariant: Record<string, "purple" | "coral" | "cyan" | "gold" | "emerald" | "blue" | "pink"> = {
@@ -39,6 +43,8 @@ const categoryBadgeVariant: Record<string, "purple" | "coral" | "cyan" | "gold" 
   community: "purple",
   school: "blue",
   youth: "gold",
+  business: "gold",
+  networking: "purple",
 };
 
 const categoryColors: Record<string, string> = {
@@ -48,6 +54,8 @@ const categoryColors: Record<string, string> = {
   community: "#8B5CF6",
   school: "#3B82F6",
   youth: "#F2A900",
+  business: "#F2A900",
+  networking: "#8B5CF6",
 };
 
 function formatEventDate(dateStr: string) {
