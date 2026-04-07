@@ -595,6 +595,8 @@ export interface Service {
   description: string | null;
   price: number; // cents
   duration: number; // minutes
+  deposit_amount: number; // cents, 0 = no deposit
+  lead_time_hours: number; // minimum advance booking hours
   is_available: boolean;
   sort_order: number;
   created_at: string;
@@ -1398,6 +1400,8 @@ export interface HashtagAction {
 // ── Cart (client-side only) ────────────────────────────
 export interface CartItem {
   menu_item_id: string;
+  variant_id?: string;
+  variant_name?: string;
   name: string;
   price: number; // cents
   quantity: number;

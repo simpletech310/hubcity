@@ -6,6 +6,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const business_id = searchParams.get("business_id");
     const date = searchParams.get("date");
+    const service_id = searchParams.get("service_id");
 
     if (!business_id || !date) {
       return NextResponse.json(
@@ -15,6 +16,22 @@ export async function GET(request: Request) {
     }
 
     const supabase = await createClient();
+
+    // Fetch lead time from service if provided
+    let leadTimeHours = 0;
+    if (service_id) {
+      const { data: service } = await supabase
+        .from("services")
+        .select("lead_time_hours")
+        .eq("id", service_id)
+        .single();
+      leadTimeHours = service?.lead_time_hours ?? 0;
+    }
+
+    const now = new Date();
+    const earliestAllowed = new Date(now.getTime() + leadTimeHours * 60 * 60 * 1000);
+    const requestedDate = new Date(date + "T00:00:00");
+    const isToday = requestedDate.toDateString() === now.toDateString();
 
     // Get day of week (0=Sun, 6=Sat)
     const dayOfWeek = new Date(date + "T00:00:00").getDay();
@@ -62,6 +79,16 @@ export async function GET(request: Request) {
         const slotStart = minutesToTime(currentStart);
         const slotEnd = minutesToTime(currentStart + slotDuration);
 
+        // Skip slots that violate lead time on today's date
+        let passesLeadTime = true;
+        if (isToday && leadTimeHours > 0) {
+          const slotDateTime = new Date(requestedDate);
+          slotDateTime.setHours(Math.floor(currentStart / 60), currentStart % 60, 0, 0);
+          if (slotDateTime < earliestAllowed) {
+            passesLeadTime = false;
+          }
+        }
+
         // Count overlapping bookings
         const overlapping = (existingBookings || []).filter(
           (b) => b.start_time < slotEnd && b.end_time > slotStart
@@ -70,7 +97,7 @@ export async function GET(request: Request) {
         slots.push({
           start_time: slotStart,
           end_time: slotEnd,
-          available: overlapping < maxBookings,
+          available: passesLeadTime && overlapping < maxBookings,
         });
 
         currentStart += slotDuration;

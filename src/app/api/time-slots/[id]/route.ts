@@ -16,44 +16,38 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the service and verify ownership
-    const { data: service } = await supabase
-      .from("services")
+    const { data: slot } = await supabase
+      .from("time_slots")
       .select("id, business_id")
       .eq("id", id)
       .single();
 
-    if (!service) {
-      return NextResponse.json(
-        { error: "Service not found" },
-        { status: 404 }
-      );
+    if (!slot) {
+      return NextResponse.json({ error: "Time slot not found" }, { status: 404 });
     }
 
     const { data: business } = await supabase
       .from("businesses")
       .select("id")
-      .eq("id", service.business_id)
+      .eq("id", slot.business_id)
       .eq("owner_id", user.id)
       .single();
 
     if (!business) {
       return NextResponse.json(
-        { error: "Not authorized to update this service" },
+        { error: "Not authorized to update this time slot" },
         { status: 403 }
       );
     }
 
     const updates = await request.json();
     const allowedFields = [
-      "name",
-      "description",
-      "price",
-      "duration",
-      "deposit_amount",
-      "lead_time_hours",
-      "is_available",
-      "sort_order",
+      "day_of_week",
+      "start_time",
+      "end_time",
+      "slot_duration",
+      "max_bookings",
+      "is_active",
     ];
     const sanitized: Record<string, unknown> = {};
     for (const key of allowedFields) {
@@ -63,7 +57,7 @@ export async function PATCH(
     }
 
     const { data: updated, error } = await supabase
-      .from("services")
+      .from("time_slots")
       .update(sanitized)
       .eq("id", id)
       .select("*")
@@ -71,11 +65,11 @@ export async function PATCH(
 
     if (error) throw error;
 
-    return NextResponse.json({ service: updated });
+    return NextResponse.json({ slot: updated });
   } catch (error) {
-    console.error("Update service error:", error);
+    console.error("Update time slot error:", error);
     return NextResponse.json(
-      { error: "Failed to update service" },
+      { error: "Failed to update time slot" },
       { status: 500 }
     );
   }
@@ -96,43 +90,38 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the service and verify ownership
-    const { data: service } = await supabase
-      .from("services")
+    const { data: slot } = await supabase
+      .from("time_slots")
       .select("id, business_id")
       .eq("id", id)
       .single();
 
-    if (!service) {
-      return NextResponse.json(
-        { error: "Service not found" },
-        { status: 404 }
-      );
+    if (!slot) {
+      return NextResponse.json({ error: "Time slot not found" }, { status: 404 });
     }
 
     const { data: business } = await supabase
       .from("businesses")
       .select("id")
-      .eq("id", service.business_id)
+      .eq("id", slot.business_id)
       .eq("owner_id", user.id)
       .single();
 
     if (!business) {
       return NextResponse.json(
-        { error: "Not authorized to delete this service" },
+        { error: "Not authorized to delete this time slot" },
         { status: 403 }
       );
     }
 
-    const { error } = await supabase.from("services").delete().eq("id", id);
-
+    const { error } = await supabase.from("time_slots").delete().eq("id", id);
     if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Delete service error:", error);
+    console.error("Delete time slot error:", error);
     return NextResponse.json(
-      { error: "Failed to delete service" },
+      { error: "Failed to delete time slot" },
       { status: 500 }
     );
   }

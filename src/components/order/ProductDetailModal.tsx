@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart";
-import type { MenuItem } from "@/types/database";
+import type { MenuItem, ProductVariant } from "@/types/database";
 
 interface ProductDetailModalProps {
   item: MenuItem | null;
@@ -20,6 +20,11 @@ export default function ProductDetailModal({
   const [activeImage, setActiveImage] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Variant state
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+
   // Build image list: main image + gallery
   const images: string[] = [];
   if (item?.image_url) images.push(item.image_url);
@@ -29,10 +34,25 @@ export default function ProductDetailModal({
     }
   }
 
-  // Reset active image when item changes
+  // Reset state when item changes
   useEffect(() => {
     setActiveImage(0);
+    setSelectedVariant(null);
+    setVariants([]);
     if (scrollRef.current) scrollRef.current.scrollLeft = 0;
+
+    if (!item?.id) return;
+
+    // Fetch variants
+    setVariantsLoading(true);
+    fetch(`/api/products/${item.id}/variants`)
+      .then((res) => res.json())
+      .then((data) => {
+        const v = (data.variants ?? []).filter((v: ProductVariant) => v.is_available);
+        setVariants(v);
+      })
+      .catch(() => setVariants([]))
+      .finally(() => setVariantsLoading(false));
   }, [item?.id]);
 
   // Handle scroll snap to track active image
@@ -44,14 +64,26 @@ export default function ProductDetailModal({
     setActiveImage(idx);
   }
 
+  const displayPrice = selectedVariant?.price_override ?? item?.price ?? 0;
+  const hasVariants = variants.length > 0;
+  const needsVariantSelection = hasVariants && !selectedVariant;
+
+  // Check stock
+  const stockCount = selectedVariant
+    ? selectedVariant.stock_count
+    : item?.stock_count;
+  const isOutOfStock = stockCount !== null && stockCount !== undefined && stockCount <= 0;
+
   function handleAdd() {
-    if (!item) return;
+    if (!item || needsVariantSelection || isOutOfStock) return;
     dispatch({
       type: "ADD_ITEM",
       payload: {
         menu_item_id: item.id,
+        variant_id: selectedVariant?.id,
+        variant_name: selectedVariant?.name,
         name: item.name,
-        price: item.price,
+        price: displayPrice,
         quantity: 1,
       },
     });
@@ -102,7 +134,6 @@ export default function ProductDetailModal({
                     fill
                     className="object-cover"
                   />
-                  {/* Video play overlay on first image if video exists */}
                   {i === 0 && hasVideo && (
                     <a
                       href={
@@ -125,7 +156,6 @@ export default function ProductDetailModal({
               ))}
             </div>
 
-            {/* Dots indicator */}
             {images.length > 1 && (
               <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
                 {images.map((_, i) => (
@@ -141,9 +171,9 @@ export default function ProductDetailModal({
           </div>
         ) : (
           <div className="aspect-[4/3] bg-card flex items-center justify-center">
-            <span className="text-4xl opacity-30">
-              {item.is_digital ? "phone" : "cart"}
-            </span>
+            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1} className="text-white/20">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
           </div>
         )}
 
@@ -153,25 +183,17 @@ export default function ProductDetailModal({
           <div>
             <h2 className="font-heading text-xl font-bold">{item.name}</h2>
             <p className="text-lg font-heading font-bold text-gold mt-1">
-              ${(item.price / 100).toFixed(2)}
+              ${(displayPrice / 100).toFixed(2)}
             </p>
           </div>
 
           {/* SKU + Stock */}
-          {(item.sku || item.stock_count !== null) && (
+          {(item.sku || stockCount !== null) && (
             <div className="flex items-center gap-3 text-xs text-txt-secondary">
-              {item.sku && <span>SKU: {item.sku}</span>}
-              {item.stock_count !== null && item.stock_count !== undefined && (
-                <span
-                  className={
-                    item.stock_count > 0
-                      ? "text-emerald"
-                      : "text-coral"
-                  }
-                >
-                  {item.stock_count > 0
-                    ? `${item.stock_count} in stock`
-                    : "Out of stock"}
+              {item.sku && <span>SKU: {selectedVariant?.sku || item.sku}</span>}
+              {stockCount !== null && stockCount !== undefined && (
+                <span className={stockCount > 0 ? "text-emerald" : "text-coral"}>
+                  {stockCount > 0 ? `${stockCount} in stock` : "Out of stock"}
                 </span>
               )}
               {item.is_digital && (
@@ -237,39 +259,66 @@ export default function ProductDetailModal({
             </div>
           )}
 
-          {/* Size/Variant Placeholder */}
-          <div>
-            <h3 className="text-xs font-bold text-txt-secondary uppercase tracking-wider mb-2">
-              Options
-            </h3>
-            <div className="flex gap-2">
-              {["S", "M", "L", "XL"].map((size) => (
-                <div
-                  key={size}
-                  className="w-10 h-10 rounded-lg border border-border-subtle flex items-center justify-center text-xs font-bold text-txt-secondary opacity-50 cursor-not-allowed"
-                >
-                  {size}
-                </div>
-              ))}
+          {/* Variant Picker */}
+          {variantsLoading ? (
+            <div className="py-2">
+              <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto" />
             </div>
-            <p className="text-[10px] text-txt-secondary mt-1.5 italic">
-              Size selection coming soon
-            </p>
-          </div>
+          ) : hasVariants ? (
+            <div>
+              <h3 className="text-xs font-bold text-txt-secondary uppercase tracking-wider mb-2">
+                Options
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {variants.map((v) => {
+                  const isSelected = selectedVariant?.id === v.id;
+                  const vOutOfStock = v.stock_count !== null && v.stock_count <= 0;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariant(isSelected ? null : v)}
+                      disabled={vOutOfStock}
+                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all press ${
+                        isSelected
+                          ? "bg-gold text-midnight border border-gold"
+                          : vOutOfStock
+                          ? "bg-white/5 text-txt-secondary/40 border border-border-subtle cursor-not-allowed line-through"
+                          : "bg-white/[0.06] text-white border border-border-subtle hover:border-gold/30"
+                      }`}
+                    >
+                      {v.name}
+                      {v.price_override !== null && v.price_override !== item.price && (
+                        <span className="ml-1.5 text-xs opacity-70">
+                          ${(v.price_override / 100).toFixed(2)}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              {needsVariantSelection && (
+                <p className="text-[10px] text-gold/70 mt-1.5">
+                  Please select an option
+                </p>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* Add to Cart fixed bottom */}
         <div className="p-5 pt-3 border-t border-border-subtle bg-deep">
           <button
             onClick={handleAdd}
-            disabled={item.stock_count !== null && item.stock_count !== undefined && item.stock_count <= 0}
+            disabled={isOutOfStock || needsVariantSelection}
             className="w-full bg-gradient-to-r from-gold to-gold-light text-midnight font-bold py-3.5 rounded-xl press disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
               <path d="M9 3v12M3 9h12" />
             </svg>
-            {item.stock_count !== null && item.stock_count !== undefined && item.stock_count <= 0
+            {isOutOfStock
               ? "Out of Stock"
+              : needsVariantSelection
+              ? "Select an Option"
               : "Add to Cart"}
           </button>
         </div>

@@ -58,7 +58,7 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
     setModalOpen(true);
   }
 
-  async function handleCheckout() {
+  async function handleCheckout(opts?: { couponId?: string; discount?: number }) {
     setCheckoutLoading(true);
 
     try {
@@ -71,6 +71,7 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
           type: state.orderType,
           items: state.items.map((item) => ({
             menu_item_id: item.menu_item_id,
+            variant_id: item.variant_id ?? null,
             name: item.name,
             price: item.price,
             quantity: item.quantity,
@@ -79,6 +80,7 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
           delivery_address:
             state.orderType === "delivery" ? "" : null,
           tip: state.tip,
+          coupon_id: opts?.couponId ?? null,
         }),
       });
 

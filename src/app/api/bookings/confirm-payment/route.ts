@@ -13,36 +13,34 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { order_id } = await request.json();
+    const { booking_id } = await request.json();
 
-    if (!order_id) {
+    if (!booking_id) {
       return NextResponse.json(
-        { error: "order_id is required" },
+        { error: "booking_id is required" },
         { status: 400 }
       );
     }
 
-    // Get the order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("id, stripe_payment_intent_id, status, business_id, total, order_number, customer_id")
-      .eq("id", order_id)
+    const { data: booking, error: bookingError } = await supabase
+      .from("bookings")
+      .select("id, stripe_payment_intent_id, status, business_id, customer_id, price, service_name")
+      .eq("id", booking_id)
       .single();
 
-    if (orderError || !order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    if (bookingError || !booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
-    // Verify this is the customer's order
-    if (order.customer_id !== user.id) {
+    if (booking.customer_id !== user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
     // Verify payment with Stripe
-    if (order.stripe_payment_intent_id) {
+    if (booking.stripe_payment_intent_id) {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.retrieve(
-        order.stripe_payment_intent_id
+        booking.stripe_payment_intent_id
       );
 
       if (paymentIntent.status !== "succeeded") {
@@ -53,41 +51,19 @@ export async function POST(request: Request) {
       }
     }
 
-    // Update order to confirmed
+    // Update booking to confirmed
     const { error: updateError } = await supabase
-      .from("orders")
+      .from("bookings")
       .update({ status: "confirmed" })
-      .eq("id", order_id);
+      .eq("id", booking_id);
 
     if (updateError) throw updateError;
-
-    // Decrement stock for each item (fire-and-forget)
-    supabase
-      .from("order_items")
-      .select("menu_item_id, variant_id, quantity")
-      .eq("order_id", order_id)
-      .then(({ data: orderItems }) => {
-        if (!orderItems) return;
-        for (const item of orderItems) {
-          if (item.variant_id) {
-            supabase.rpc("decrement_variant_stock", {
-              v_id: item.variant_id,
-              qty: item.quantity,
-            }).then(() => {});
-          } else if (item.menu_item_id) {
-            supabase.rpc("decrement_item_stock", {
-              item_id: item.menu_item_id,
-              qty: item.quantity,
-            }).then(() => {});
-          }
-        }
-      });
 
     // Track customer (fire-and-forget)
     supabase
       .from("business_customers")
-      .select("id, total_orders, total_spent")
-      .eq("business_id", order.business_id)
+      .select("id, total_bookings, total_spent")
+      .eq("business_id", booking.business_id)
       .eq("customer_id", user.id)
       .single()
       .then(({ data: existing }) => {
@@ -95,8 +71,8 @@ export async function POST(request: Request) {
           supabase
             .from("business_customers")
             .update({
-              total_orders: existing.total_orders + 1,
-              total_spent: existing.total_spent + order.total,
+              total_bookings: (existing.total_bookings ?? 0) + 1,
+              total_spent: existing.total_spent + (booking.price ?? 0),
               last_visit: new Date().toISOString(),
             })
             .eq("id", existing.id)
@@ -105,11 +81,11 @@ export async function POST(request: Request) {
           supabase
             .from("business_customers")
             .insert({
-              business_id: order.business_id,
+              business_id: booking.business_id,
               customer_id: user.id,
-              total_orders: 1,
-              total_bookings: 0,
-              total_spent: order.total,
+              total_orders: 0,
+              total_bookings: 1,
+              total_spent: booking.price ?? 0,
               first_visit: new Date().toISOString(),
               last_visit: new Date().toISOString(),
               tags: [],
@@ -122,7 +98,7 @@ export async function POST(request: Request) {
     supabase
       .from("businesses")
       .select("owner_id, name")
-      .eq("id", order.business_id)
+      .eq("id", booking.business_id)
       .single()
       .then(({ data: biz }) => {
         if (biz?.owner_id) {
@@ -130,21 +106,21 @@ export async function POST(request: Request) {
             .from("notifications")
             .insert({
               user_id: biz.owner_id,
-              type: "order",
-              title: "New order received!",
-              body: `Order ${order.order_number} — $${(order.total / 100).toFixed(2)}`,
-              link_type: "order",
-              link_id: order.id,
+              type: "booking",
+              title: "New booking received!",
+              body: `${booking.service_name} — $${((booking.price ?? 0) / 100).toFixed(2)}`,
+              link_type: "booking",
+              link_id: booking.id,
             })
             .then(() => {});
         }
       });
 
-    return NextResponse.json({ confirmed: true, order_id });
+    return NextResponse.json({ confirmed: true, booking_id });
   } catch (error) {
-    console.error("Order confirm error:", error);
+    console.error("Booking confirm error:", error);
     return NextResponse.json(
-      { error: "Failed to confirm order" },
+      { error: "Failed to confirm booking" },
       { status: 500 }
     );
   }

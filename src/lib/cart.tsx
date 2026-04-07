@@ -19,8 +19,8 @@ interface CartState {
 
 type CartAction =
   | { type: "ADD_ITEM"; payload: CartItem }
-  | { type: "REMOVE_ITEM"; payload: string } // menu_item_id
-  | { type: "UPDATE_QUANTITY"; payload: { menuItemId: string; quantity: number } }
+  | { type: "REMOVE_ITEM"; payload: { menuItemId: string; variantId?: string } }
+  | { type: "UPDATE_QUANTITY"; payload: { menuItemId: string; variantId?: string; quantity: number } }
   | { type: "SET_BUSINESS"; payload: { id: string; name: string } }
   | { type: "SET_ORDER_TYPE"; payload: "pickup" | "delivery" }
   | { type: "SET_TIP"; payload: number }
@@ -35,17 +35,21 @@ const initialState: CartState = {
   tip: 0,
 };
 
+function matchItem(item: CartItem, menuItemId: string, variantId?: string): boolean {
+  return item.menu_item_id === menuItemId && (item.variant_id ?? undefined) === variantId;
+}
+
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case "ADD_ITEM": {
       const existing = state.items.find(
-        (i) => i.menu_item_id === action.payload.menu_item_id
+        (i) => matchItem(i, action.payload.menu_item_id, action.payload.variant_id)
       );
       if (existing) {
         return {
           ...state,
           items: state.items.map((i) =>
-            i.menu_item_id === action.payload.menu_item_id
+            matchItem(i, action.payload.menu_item_id, action.payload.variant_id)
               ? { ...i, quantity: i.quantity + action.payload.quantity }
               : i
           ),
@@ -56,21 +60,23 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "REMOVE_ITEM":
       return {
         ...state,
-        items: state.items.filter((i) => i.menu_item_id !== action.payload),
+        items: state.items.filter(
+          (i) => !matchItem(i, action.payload.menuItemId, action.payload.variantId)
+        ),
       };
     case "UPDATE_QUANTITY":
       if (action.payload.quantity <= 0) {
         return {
           ...state,
           items: state.items.filter(
-            (i) => i.menu_item_id !== action.payload.menuItemId
+            (i) => !matchItem(i, action.payload.menuItemId, action.payload.variantId)
           ),
         };
       }
       return {
         ...state,
         items: state.items.map((i) =>
-          i.menu_item_id === action.payload.menuItemId
+          matchItem(i, action.payload.menuItemId, action.payload.variantId)
             ? { ...i, quantity: action.payload.quantity }
             : i
         ),

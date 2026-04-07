@@ -3,9 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
+import { getStripeClient } from "@/lib/stripe-client";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import Badge from "@/components/ui/Badge";
 import type { Business, Service } from "@/types/database";
 
 interface BookingViewProps {
@@ -13,7 +19,9 @@ interface BookingViewProps {
   services: Service[];
 }
 
-type Step = "service" | "date" | "time" | "confirm" | "success";
+type Step = "service" | "date" | "time" | "confirm" | "payment" | "success";
+
+const STEP_ORDER: Step[] = ["service", "date", "time", "confirm", "payment"];
 
 function getNext14Days(): Date[] {
   const days: Date[] = [];
@@ -32,6 +40,107 @@ const monthAbbrevs = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
+// ── Payment Form (inside Elements) ─────────────────────
+function BookingCheckoutForm({
+  bookingId,
+  chargeAmount,
+  serviceName,
+  onSuccess,
+  onCancel,
+}: {
+  bookingId: string;
+  chargeAmount: number;
+  serviceName: string;
+  onSuccess: (bookingId: string) => void;
+  onCancel: () => void;
+}) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+
+    setLoading(true);
+    setError(null);
+
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setError(submitError.message || "Payment failed");
+      setLoading(false);
+      return;
+    }
+
+    const { error: confirmError, paymentIntent } =
+      await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+      });
+
+    if (confirmError) {
+      setError(confirmError.message || "Payment failed");
+      setLoading(false);
+      return;
+    }
+
+    if (paymentIntent?.status === "succeeded") {
+      try {
+        const res = await fetch("/api/bookings/confirm-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ booking_id: bookingId }),
+        });
+
+        if (!res.ok) throw new Error("Failed to confirm booking");
+        onSuccess(bookingId);
+      } catch {
+        setError("Payment succeeded but booking confirmation failed. Contact support.");
+        setLoading(false);
+      }
+    } else {
+      setError("Payment was not completed. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="flex items-center justify-between px-1 mb-2">
+        <div>
+          <p className="text-xs text-txt-secondary">Service</p>
+          <p className="text-sm font-bold">{serviceName}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs text-txt-secondary">Amount Due</p>
+          <p className="text-lg font-heading font-bold text-gold">
+            ${(chargeAmount / 100).toFixed(2)}
+          </p>
+        </div>
+      </div>
+
+      <PaymentElement options={{ layout: "tabs" }} />
+
+      {error && (
+        <div className="bg-coral/10 border border-coral/20 rounded-xl p-3">
+          <p className="text-xs text-coral">{error}</p>
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
+          Cancel
+        </Button>
+        <Button type="submit" loading={loading} disabled={!stripe} className="flex-1">
+          Pay ${(chargeAmount / 100).toFixed(2)}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+// ── Main BookingView ────────────────────────────────────
 export default function BookingView({ business, services }: BookingViewProps) {
   const router = useRouter();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -44,6 +153,12 @@ export default function BookingView({ business, services }: BookingViewProps) {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
+
+  // Payment state
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [bookingId, setBookingId] = useState<string | null>(null);
+  const [chargeAmount, setChargeAmount] = useState(0);
+
   const [bookingResult, setBookingResult] = useState<{
     id: string;
     date: string;
@@ -68,7 +183,10 @@ export default function BookingView({ business, services }: BookingViewProps) {
     )
       .then((res) => res.json())
       .then((data) => {
-        setAvailableSlots(data.slots ?? []);
+        const slots = (data.slots ?? [])
+          .filter((s: { available: boolean }) => s.available)
+          .map((s: { start_time: string }) => s.start_time);
+        setAvailableSlots(slots);
       })
       .catch(() => {
         setAvailableSlots([]);
@@ -84,43 +202,82 @@ export default function BookingView({ business, services }: BookingViewProps) {
     setLoading(true);
     try {
       const dateStr = selectedDate.toISOString().split("T")[0];
-
-      // Calculate end_time from start_time + service duration
       const [startH, startM] = selectedTime.split(":").map(Number);
       const totalMinutes = startH * 60 + startM + selectedService.duration;
       const endH = Math.floor(totalMinutes / 60) % 24;
       const endM = totalMinutes % 60;
       const end_time = `${String(endH).padStart(2, "0")}:${String(endM).padStart(2, "0")}`;
 
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          business_id: business.id,
-          service_name: selectedService.name,
+      const deposit = selectedService.deposit_amount ?? 0;
+
+      if (deposit > 0) {
+        // Create payment intent for deposit
+        const res = await fetch("/api/bookings/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business_id: business.id,
+            service_id: selectedService.id,
+            date: dateStr,
+            start_time: selectedTime,
+            end_time,
+            notes: notes.trim() || null,
+          }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Failed to create booking");
+        }
+
+        const data = await res.json();
+        setClientSecret(data.client_secret);
+        setBookingId(data.booking_id);
+        setChargeAmount(data.charge_amount);
+        setStep("payment");
+      } else {
+        // No deposit — create booking directly
+        const res = await fetch("/api/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business_id: business.id,
+            service_name: selectedService.name,
+            date: dateStr,
+            start_time: selectedTime,
+            end_time,
+            price: selectedService.price,
+            notes: notes.trim() || null,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to create booking");
+
+        const booking = await res.json();
+        setBookingResult({
+          id: booking.id,
           date: dateStr,
           start_time: selectedTime,
-          end_time,
-          price: selectedService.price,
-          notes: notes.trim() || null,
-        }),
-      });
-
-      if (!res.ok) throw new Error("Failed to create booking");
-
-      const booking = await res.json();
-      setBookingResult({
-        id: booking.id,
-        date: dateStr,
-        start_time: selectedTime,
-        service_name: selectedService.name,
-      });
-      setStep("success");
-    } catch {
-      alert("Something went wrong. Please try again.");
+          service_name: selectedService.name,
+        });
+        setStep("success");
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function handlePaymentSuccess(bId: string) {
+    const dateStr = selectedDate!.toISOString().split("T")[0];
+    setBookingResult({
+      id: bId,
+      date: dateStr,
+      start_time: selectedTime!,
+      service_name: selectedService!.name,
+    });
+    setStep("success");
   }
 
   return (
@@ -153,23 +310,25 @@ export default function BookingView({ business, services }: BookingViewProps) {
       {step !== "success" && (
         <div className="px-5 mb-5">
           <div className="flex items-center gap-2">
-            {(["service", "date", "time", "confirm"] as Step[]).map((s, i) => (
+            {STEP_ORDER.filter((s) => {
+              // Hide payment step if no deposit
+              if (s === "payment" && !(selectedService?.deposit_amount)) return false;
+              return true;
+            }).map((s, i, arr) => (
               <div key={s} className="flex items-center gap-2 flex-1">
                 <div
                   className={`w-2 h-2 rounded-full transition-all ${
                     s === step
                       ? "bg-gold w-3 h-3"
-                      : (["service", "date", "time", "confirm"].indexOf(s) <
-                          ["service", "date", "time", "confirm"].indexOf(step))
+                      : STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
                       ? "bg-gold/50"
                       : "bg-white/10"
                   }`}
                 />
-                {i < 3 && (
+                {i < arr.length - 1 && (
                   <div
                     className={`flex-1 h-px ${
-                      ["service", "date", "time", "confirm"].indexOf(s) <
-                      ["service", "date", "time", "confirm"].indexOf(step)
+                      STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
                         ? "bg-gold/30"
                         : "bg-white/10"
                     }`}
@@ -215,9 +374,16 @@ export default function BookingView({ business, services }: BookingViewProps) {
                           {service.description}
                         </p>
                       )}
-                      <p className="text-xs text-txt-secondary mt-1">
-                        {service.duration} min
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-txt-secondary">
+                          {service.duration} min
+                        </p>
+                        {(service.deposit_amount ?? 0) > 0 && (
+                          <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-full font-medium">
+                            ${((service.deposit_amount ?? 0) / 100).toFixed(2)} deposit
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <span className="font-heading font-bold text-gold text-sm">
                       ${(service.price / 100).toFixed(2)}
@@ -242,7 +408,6 @@ export default function BookingView({ business, services }: BookingViewProps) {
               </button>
             </div>
 
-            {/* Selected service summary */}
             {selectedService && (
               <Card className="bg-white/[0.03]">
                 <div className="flex items-center justify-between text-sm">
@@ -254,7 +419,6 @@ export default function BookingView({ business, services }: BookingViewProps) {
               </Card>
             )}
 
-            {/* Date pills */}
             <div
               ref={scrollRef}
               className="flex gap-2 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2"
@@ -315,7 +479,6 @@ export default function BookingView({ business, services }: BookingViewProps) {
               </button>
             </div>
 
-            {/* Date summary */}
             {selectedDate && (
               <p className="text-sm text-txt-secondary">
                 {selectedDate.toLocaleDateString("en-US", {
@@ -405,11 +568,27 @@ export default function BookingView({ business, services }: BookingViewProps) {
                   <span>{selectedService?.duration} min</span>
                 </div>
                 <div className="border-t border-border-subtle pt-2 flex justify-between font-bold">
-                  <span>Price</span>
+                  <span>Total Price</span>
                   <span className="text-gold">
                     ${((selectedService?.price ?? 0) / 100).toFixed(2)}
                   </span>
                 </div>
+                {(selectedService?.deposit_amount ?? 0) > 0 && (
+                  <>
+                    <div className="flex justify-between text-emerald">
+                      <span>Deposit Due Now</span>
+                      <span className="font-bold">
+                        ${((selectedService?.deposit_amount ?? 0) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-txt-secondary text-xs">
+                      <span>Balance at Appointment</span>
+                      <span>
+                        ${(((selectedService?.price ?? 0) - (selectedService?.deposit_amount ?? 0)) / 100).toFixed(2)}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </Card>
 
@@ -440,9 +619,41 @@ export default function BookingView({ business, services }: BookingViewProps) {
                 loading={loading}
                 className="flex-1"
               >
-                Confirm Booking
+                {(selectedService?.deposit_amount ?? 0) > 0
+                  ? "Confirm & Pay"
+                  : "Confirm Booking"}
               </Button>
             </div>
+          </div>
+        )}
+
+        {/* Step 5: Payment */}
+        {step === "payment" && clientSecret && bookingId && (
+          <div className="space-y-4">
+            <h2 className="font-heading font-bold text-base">Payment</h2>
+            <Elements
+              stripe={getStripeClient()}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: "night",
+                  variables: {
+                    colorPrimary: "#F2A900",
+                    colorBackground: "#16161a",
+                    colorText: "#ffffff",
+                    borderRadius: "12px",
+                  },
+                },
+              }}
+            >
+              <BookingCheckoutForm
+                bookingId={bookingId}
+                chargeAmount={chargeAmount}
+                serviceName={selectedService?.name ?? ""}
+                onSuccess={handlePaymentSuccess}
+                onCancel={() => setStep("confirm")}
+              />
+            </Elements>
           </div>
         )}
 
