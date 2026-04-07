@@ -53,7 +53,7 @@ export default async function BookingDetailPage({
   const { data: booking } = await supabase
     .from("bookings")
     .select(
-      "*, customer:profiles!bookings_customer_id_fkey(display_name, phone)"
+      "*, customer:profiles!bookings_customer_id_fkey(display_name)"
     )
     .eq("id", id)
     .single();
@@ -71,7 +71,7 @@ export default async function BookingDetailPage({
   if (!business) notFound();
 
   const typedBooking = booking as Booking & {
-    customer: { display_name: string; phone: string | null } | null;
+    customer: { display_name: string } | null;
   };
 
   const canRefund =
@@ -155,11 +155,6 @@ export default async function BookingDetailPage({
             <p className="font-medium">
               {typedBooking.customer?.display_name || "Unknown Customer"}
             </p>
-            {typedBooking.customer?.phone && (
-              <p className="text-txt-secondary text-xs mt-0.5">
-                {typedBooking.customer.phone}
-              </p>
-            )}
           </div>
         </div>
       </Card>
@@ -211,6 +206,93 @@ export default async function BookingDetailPage({
               <span className="text-xs text-txt-secondary font-mono">
                 {typedBooking.stripe_payment_intent_id.slice(0, 8)}...{typedBooking.stripe_payment_intent_id.slice(-4)}
               </span>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Timeline */}
+      <Card className="glass-card-elevated">
+        <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+          Timeline
+        </h3>
+        <div className="relative pl-4 space-y-3">
+          <div className="absolute left-[5px] top-1 bottom-1 w-px bg-border-subtle" />
+
+          {/* Booked */}
+          <div className="relative flex items-start gap-3">
+            <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-gold border-2 border-midnight" />
+            <div>
+              <p className="text-sm font-medium">Booking Created</p>
+              <p className="text-xs text-txt-secondary">
+                {new Date(typedBooking.created_at).toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </p>
+            </div>
+          </div>
+
+          {/* Confirmed */}
+          {(typedBooking.status === "confirmed" || typedBooking.status === "completed") && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-emerald border-2 border-midnight" />
+              <div>
+                <p className="text-sm font-medium">Confirmed</p>
+                <p className="text-xs text-txt-secondary">
+                  {typedBooking.stripe_payment_intent_id ? "Payment received" : "Manually confirmed"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Completed */}
+          {typedBooking.status === "completed" && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-cyan border-2 border-midnight" />
+              <div>
+                <p className="text-sm font-medium">Completed</p>
+                <p className="text-xs text-txt-secondary">Service delivered</p>
+              </div>
+            </div>
+          )}
+
+          {/* Cancelled */}
+          {typedBooking.status === "cancelled" && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-coral border-2 border-midnight" />
+              <div>
+                <p className="text-sm font-medium">Cancelled</p>
+                <p className="text-xs text-txt-secondary">
+                  {typedBooking.stripe_payment_intent_id ? "Refund processed" : "Booking cancelled"}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* No Show */}
+          {typedBooking.status === "no_show" && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-coral border-2 border-midnight" />
+              <div>
+                <p className="text-sm font-medium">No Show</p>
+                <p className="text-xs text-txt-secondary">Customer did not arrive</p>
+              </div>
+            </div>
+          )}
+
+          {/* Still pending */}
+          {typedBooking.status === "pending" && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-gold/60 border-2 border-midnight animate-pulse" />
+              <div>
+                <p className="text-sm font-medium">Awaiting Confirmation</p>
+                <p className="text-xs text-txt-secondary">
+                  {typedBooking.stripe_payment_intent_id ? "Payment pending" : "Needs review"}
+                </p>
+              </div>
             </div>
           )}
         </div>

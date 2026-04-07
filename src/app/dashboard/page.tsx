@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ChamberUpdatesWidget from "@/components/dashboard/ChamberUpdatesWidget";
-import type { Order, StripeAccount, GrantApplication, Resource, BusinessType } from "@/types/database";
+import type { Order, Booking, StripeAccount, GrantApplication, Resource, BusinessType } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 
 function formatCents(cents: number) {
@@ -33,6 +33,14 @@ const orderStatusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | 
   delayed: "coral",
   delivered: "emerald",
   cancelled: "coral",
+};
+
+const bookingStatusColors: Record<string, "gold" | "emerald" | "cyan" | "coral"> = {
+  pending: "gold",
+  confirmed: "emerald",
+  completed: "cyan",
+  cancelled: "coral",
+  no_show: "coral",
 };
 
 const appStatusColors: Record<string, "gold" | "emerald" | "cyan" | "coral"> = {
@@ -71,7 +79,10 @@ export default async function DashboardOverview() {
   let totalCustomers = 0;
   let menuItemCount = 0;
   let totalBookings = 0;
+  let todayBookingCount = 0;
+  let bookingRevenue = 0;
   let orders: (Order & { customer: { display_name: string } | null })[] = [];
+  let recentBookings: (Booking & { customer: { display_name: string } | null })[] = [];
   let stripe: StripeAccount | null = null;
 
   if (isBusinessOwner) {
@@ -91,7 +102,7 @@ export default async function DashboardOverview() {
         1
       ).toISOString();
 
-      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount, allOrdersCount, uniqueCustomers, menuItems, allBookingsCount] =
+      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount, allOrdersCount, uniqueCustomers, menuItems, allBookingsCount, bookingsToday, recentBookingsData, monthlyBookings] =
         await Promise.all([
           supabase
             .from("orders")
@@ -135,6 +146,23 @@ export default async function DashboardOverview() {
             .from("bookings")
             .select("id", { count: "exact", head: true })
             .eq("business_id", business.id),
+          supabase
+            .from("bookings")
+            .select("id", { count: "exact", head: true })
+            .eq("business_id", business.id)
+            .eq("date", today),
+          supabase
+            .from("bookings")
+            .select("*, customer:profiles!bookings_customer_id_fkey(display_name)")
+            .eq("business_id", business.id)
+            .order("created_at", { ascending: false })
+            .limit(5),
+          supabase
+            .from("bookings")
+            .select("price")
+            .eq("business_id", business.id)
+            .gte("created_at", monthStart)
+            .in("status", ["confirmed", "completed"]),
         ]);
 
       todayCount = ordersToday.count ?? 0;
@@ -151,6 +179,16 @@ export default async function DashboardOverview() {
       totalCustomers = new Set((uniqueCustomers.data ?? []).map((o: { customer_id: string }) => o.customer_id)).size;
       menuItemCount = menuItems.count ?? 0;
       totalBookings = allBookingsCount.count ?? 0;
+      todayBookingCount = bookingsToday.count ?? 0;
+      recentBookings = (recentBookingsData.data ?? []) as (Booking & {
+        customer: { display_name: string } | null;
+      })[];
+      bookingRevenue = (monthlyBookings.data ?? []).reduce(
+        (sum: number, b: { price: number | null }) => sum + (b.price ?? 0),
+        0
+      );
+      // Combine booking revenue into monthly total
+      monthRevenue += bookingRevenue;
     }
   }
 
@@ -203,43 +241,28 @@ export default async function DashboardOverview() {
       {/* ── Business Owner Stats ─────────────────────────── */}
       {isBusinessOwner && business && (
         <>
-          {/* Today's Snapshot — type-aware */}
-          <div className="grid grid-cols-3 gap-3">
-            {business.business_type === "service" ? (
-              <>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-cyan">{bookingCount}</p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Pending Bookings</p>
-                </Card>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-gold">{totalBookings}</p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Total Bookings</p>
-                </Card>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-emerald">
-                    {formatCents(monthRevenue)}
-                  </p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
-                </Card>
-              </>
-            ) : (
-              <>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-gold">{todayCount}</p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Today&apos;s Orders</p>
-                </Card>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-cyan">{totalOrders}</p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Total Orders</p>
-                </Card>
-                <Card className="text-center">
-                  <p className="text-2xl font-heading font-bold text-emerald">
-                    {formatCents(monthRevenue)}
-                  </p>
-                  <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
-                </Card>
-              </>
+          {/* Today's Snapshot */}
+          <div className={`grid gap-3 ${business.business_type === "service" ? "grid-cols-3" : "grid-cols-4"}`}>
+            {business.business_type !== "service" && (
+              <Card className="text-center">
+                <p className="text-2xl font-heading font-bold text-gold">{todayCount}</p>
+                <p className="text-[10px] text-txt-secondary mt-0.5">Orders Today</p>
+              </Card>
             )}
+            <Card className="text-center">
+              <p className="text-2xl font-heading font-bold text-cyan">{todayBookingCount}</p>
+              <p className="text-[10px] text-txt-secondary mt-0.5">Bookings Today</p>
+            </Card>
+            <Card className="text-center">
+              <p className="text-2xl font-heading font-bold text-gold">{bookingCount}</p>
+              <p className="text-[10px] text-txt-secondary mt-0.5">Pending</p>
+            </Card>
+            <Card className="text-center">
+              <p className="text-2xl font-heading font-bold text-emerald">
+                {formatCents(monthRevenue)}
+              </p>
+              <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
+            </Card>
           </div>
 
           {/* Business Metrics */}
@@ -274,13 +297,11 @@ export default async function DashboardOverview() {
                   <p className="text-xl font-heading font-bold text-emerald">{menuItemCount}</p>
                 </Card>
               )}
-              {(business.business_type === "service" || !business.business_type) && (
-                <Card className="relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-[3px] h-full bg-cyan rounded-r" />
-                  <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Bookings</p>
-                  <p className="text-xl font-heading font-bold text-cyan">{totalBookings}</p>
-                </Card>
-              )}
+              <Card className="relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-[3px] h-full bg-cyan rounded-r" />
+                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Bookings</p>
+                <p className="text-xl font-heading font-bold text-cyan">{totalBookings}</p>
+              </Card>
               <Card className="relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-coral rounded-r" />
                 <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Rating</p>
@@ -306,13 +327,13 @@ export default async function DashboardOverview() {
             </div>
           </div>
 
-          {/* Quick Actions — type-aware */}
+          {/* Quick Actions */}
           <div>
             <h2 className="text-sm font-semibold text-txt-secondary mb-3">
               Quick Actions
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              {/* Orders — food & retail */}
+              {/* Orders — food, retail, and untyped */}
               {business.business_type !== "service" && (
                 <Link href="/dashboard/orders">
                   <Card hover className="flex items-center gap-3">
@@ -325,7 +346,18 @@ export default async function DashboardOverview() {
                   </Card>
                 </Link>
               )}
-              {/* Menu — food */}
+              {/* Bookings — always shown */}
+              <Link href="/dashboard/bookings">
+                <Card hover className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium">Manage Bookings</span>
+                </Card>
+              </Link>
+              {/* Menu / Catalog */}
               {business.business_type === "food" && (
                 <Link href="/dashboard/menu">
                   <Card hover className="flex items-center gap-3">
@@ -338,7 +370,6 @@ export default async function DashboardOverview() {
                   </Card>
                 </Link>
               )}
-              {/* Catalog — retail */}
               {business.business_type === "retail" && (
                 <Link href="/dashboard/menu">
                   <Card hover className="flex items-center gap-3">
@@ -351,47 +382,20 @@ export default async function DashboardOverview() {
                   </Card>
                 </Link>
               )}
-              {/* Bookings — service */}
-              {business.business_type === "service" && (
-                <Link href="/dashboard/bookings">
-                  <Card hover className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
-                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium">Manage Bookings</span>
-                  </Card>
-                </Link>
-              )}
-              {/* Fallback: show both orders + bookings if no type set */}
-              {!business.business_type && (
-                <>
-                  <Link href="/dashboard/orders">
-                    <Card hover className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center text-gold">
-                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium">View Orders</span>
-                    </Card>
-                  </Link>
-                  <Link href="/dashboard/bookings">
-                    <Card hover className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
-                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <span className="text-sm font-medium">Manage Bookings</span>
-                    </Card>
-                  </Link>
-                </>
-              )}
-              <Link href="/dashboard/settings">
+              {/* Services & Staff */}
+              <Link href="/dashboard/services">
                 <Card hover className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-hc-purple">
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-medium">Services & Staff</span>
+                </Card>
+              </Link>
+              <Link href="/dashboard/settings">
+                <Card hover className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-txt-secondary">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -489,6 +493,64 @@ export default async function DashboardOverview() {
                       <span className="text-sm font-semibold text-gold">
                         {formatCents(order.total)}
                       </span>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Recent Bookings */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-txt-secondary">
+                Recent Bookings
+              </h2>
+              <Link
+                href="/dashboard/bookings"
+                className="text-xs text-gold font-medium"
+              >
+                View All
+              </Link>
+            </div>
+            {recentBookings.length === 0 ? (
+              <Card className="text-center py-8">
+                <p className="text-txt-secondary text-sm">No bookings yet</p>
+                <p className="text-xs text-txt-secondary mt-1">
+                  Bookings will appear here when customers schedule appointments
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-2">
+                {recentBookings.map((booking) => (
+                  <Link key={booking.id} href={`/dashboard/bookings/${booking.id}`}>
+                    <Card hover className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-semibold">
+                            {booking.service_name}
+                          </span>
+                          <Badge
+                            label={booking.status.replace("_", " ")}
+                            variant={bookingStatusColors[booking.status] || "gold"}
+                            size="sm"
+                          />
+                        </div>
+                        <p className="text-xs text-txt-secondary mt-0.5">
+                          {booking.customer?.display_name || "Customer"} &middot;{" "}
+                          {new Date(booking.date + "T00:00:00").toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}{" "}
+                          at {booking.start_time.slice(0, 5)}
+                          {booking.staff_name ? ` · ${booking.staff_name}` : ""}
+                        </p>
+                      </div>
+                      {booking.price !== null && (
+                        <span className="text-sm font-semibold text-gold">
+                          {formatCents(booking.price)}
+                        </span>
+                      )}
                     </Card>
                   </Link>
                 ))}

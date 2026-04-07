@@ -50,7 +50,7 @@ export default async function OrderDetailPage({
   const { data: order } = await supabase
     .from("orders")
     .select(
-      "*, customer:profiles!orders_customer_id_fkey(display_name, phone), items:order_items(*)"
+      "*, customer:profiles!orders_customer_id_fkey(display_name), items:order_items(*)"
     )
     .eq("id", id)
     .single();
@@ -68,7 +68,7 @@ export default async function OrderDetailPage({
   if (!business) notFound();
 
   const typedOrder = order as Order & {
-    customer: { display_name: string; phone: string | null } | null;
+    customer: { display_name: string } | null;
     items: OrderItem[];
   };
 
@@ -178,14 +178,6 @@ export default async function OrderDetailPage({
         <p className="text-sm font-medium">
           {typedOrder.customer?.display_name || "Unknown"}
         </p>
-        {typedOrder.customer?.phone && (
-          <a
-            href={`tel:${typedOrder.customer.phone}`}
-            className="text-xs text-gold hover:underline mt-0.5 inline-block"
-          >
-            {typedOrder.customer.phone}
-          </a>
-        )}
         <div className="flex items-center gap-2 mt-1.5">
           <Badge
             label={typedOrder.type}

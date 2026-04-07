@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { getStripe } from "@/lib/stripe";
+import { getStripe, calculatePlatformFee } from "@/lib/stripe";
 
 export async function POST(request: Request) {
   try {
@@ -70,12 +70,20 @@ export async function POST(request: Request) {
     const chargeAmount =
       (service.deposit_amount ?? 0) > 0 ? service.deposit_amount : service.price;
 
-    // Get business name
+    // Get business name + Stripe Connect account
     const { data: business } = await supabase
       .from("businesses")
       .select("name")
       .eq("id", business_id)
       .single();
+
+    const { data: stripeAccount } = await supabase
+      .from("stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("business_id", business_id)
+      .single();
+
+    const platformFee = calculatePlatformFee(chargeAmount);
 
     // Create booking with pending status
     const { data: booking, error: bookingError } = await supabase
@@ -98,7 +106,7 @@ export async function POST(request: Request) {
 
     if (bookingError) throw bookingError;
 
-    // Create Stripe PaymentIntent
+    // Create Stripe PaymentIntent (with Connect if business has Stripe account)
     const stripe = getStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: chargeAmount,
@@ -111,6 +119,12 @@ export async function POST(request: Request) {
       },
       description: `Booking: ${service.name} at ${business?.name || "Hub City Business"}`,
       automatic_payment_methods: { enabled: true },
+      ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
+        ? {
+            application_fee_amount: platformFee,
+            transfer_data: { destination: stripeAccount.stripe_account_id },
+          }
+        : {}),
     });
 
     // Save payment intent on booking

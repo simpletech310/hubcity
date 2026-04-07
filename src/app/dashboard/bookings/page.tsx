@@ -59,6 +59,9 @@ export default async function DashboardBookingsPage({
   const today = new Date().toISOString().split("T")[0];
   const pendingCount = allBookings.filter((b) => b.status === "pending").length;
   const todayCount = allBookings.filter((b) => b.date === today).length;
+  const todayRevenue = allBookings
+    .filter((b) => b.date === today && (b.status === "confirmed" || b.status === "completed"))
+    .reduce((sum, b) => sum + (b.price ?? 0), 0);
 
   // Filter bookings
   const filteredBookings = allBookings.filter((b) => {
@@ -84,18 +87,22 @@ export default async function DashboardBookingsPage({
       </div>
 
       {/* Stat Bar */}
-      <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-xl bg-white/[0.03] border border-border-subtle p-3 text-center">
+      <div className="grid grid-cols-4 gap-2">
+        <div className="rounded-xl bg-white/[0.03] border border-border-subtle p-2.5 text-center">
           <p className="text-lg font-bold">{allBookings.length}</p>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wider">Total</p>
         </div>
-        <div className="rounded-xl bg-gold/5 border border-gold/15 p-3 text-center">
+        <div className="rounded-xl bg-gold/5 border border-gold/15 p-2.5 text-center">
           <p className="text-lg font-bold text-gold">{pendingCount}</p>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wider">Pending</p>
         </div>
-        <div className="rounded-xl bg-cyan/5 border border-cyan/15 p-3 text-center">
+        <div className="rounded-xl bg-cyan/5 border border-cyan/15 p-2.5 text-center">
           <p className="text-lg font-bold text-cyan">{todayCount}</p>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wider">Today</p>
+        </div>
+        <div className="rounded-xl bg-emerald/5 border border-emerald/15 p-2.5 text-center">
+          <p className="text-lg font-bold text-emerald">{formatCents(todayRevenue)}</p>
+          <p className="text-[10px] text-txt-secondary uppercase tracking-wider">Revenue</p>
         </div>
       </div>
 

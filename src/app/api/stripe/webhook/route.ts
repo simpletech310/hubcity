@@ -98,6 +98,77 @@ export async function POST(request: Request) {
               await supabase.from("tickets").insert(tickets);
             }
           }
+        } else if (paymentIntent.metadata?.booking_id) {
+          // Booking flow — confirm booking after payment
+          const bookingId = paymentIntent.metadata.booking_id;
+          const { data: booking } = await supabase
+            .from("bookings")
+            .select("id, customer_id, business_id, status")
+            .eq("id", bookingId)
+            .single();
+
+          if (booking && booking.status === "pending") {
+            await supabase
+              .from("bookings")
+              .update({ status: "confirmed" })
+              .eq("id", booking.id);
+
+            // Update business_customers tracking (fire-and-forget)
+            try {
+              const { data: existing } = await supabase
+                .from("business_customers")
+                .select("id, total_bookings, total_spent")
+                .eq("business_id", booking.business_id)
+                .eq("customer_id", booking.customer_id)
+                .single();
+
+              if (existing) {
+                await supabase
+                  .from("business_customers")
+                  .update({
+                    total_bookings: existing.total_bookings + 1,
+                    total_spent: existing.total_spent + (paymentIntent.amount || 0),
+                    last_visit: new Date().toISOString(),
+                  })
+                  .eq("id", existing.id);
+              } else {
+                await supabase.from("business_customers").insert({
+                  business_id: booking.business_id,
+                  customer_id: booking.customer_id,
+                  total_orders: 0,
+                  total_bookings: 1,
+                  total_spent: paymentIntent.amount || 0,
+                  first_visit: new Date().toISOString(),
+                  last_visit: new Date().toISOString(),
+                  tags: [],
+                });
+              }
+            } catch (custErr) {
+              console.error("Business customer update error (non-fatal):", custErr);
+            }
+
+            // Notify business owner (fire-and-forget)
+            try {
+              const { data: biz } = await supabase
+                .from("businesses")
+                .select("owner_id")
+                .eq("id", booking.business_id)
+                .single();
+
+              if (biz?.owner_id) {
+                await supabase.from("notifications").insert({
+                  user_id: biz.owner_id,
+                  type: "booking",
+                  title: "Booking payment confirmed",
+                  body: `Payment received for ${paymentIntent.metadata.service_name || "booking"}`,
+                  link_type: "booking",
+                  link_id: booking.id,
+                });
+              }
+            } catch (notifErr) {
+              console.error("Booking notification error (non-fatal):", notifErr);
+            }
+          }
         } else {
           // Regular order flow — confirm and earn loyalty points
           const { data: order } = await supabase

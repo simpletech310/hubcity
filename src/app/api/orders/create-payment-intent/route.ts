@@ -125,11 +125,17 @@ export async function POST(request: Request) {
     const total = Math.max(subtotal + tax + tip - discount_amount, 0);
     const order_number = generateOrderNumber();
 
-    // Get business name for Stripe description
+    // Get business name + Stripe Connect account
     const { data: business } = await supabase
       .from("businesses")
       .select("name")
       .eq("id", business_id)
+      .single();
+
+    const { data: stripeAccount } = await supabase
+      .from("stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("business_id", business_id)
       .single();
 
     // Create order with pending status
@@ -173,7 +179,7 @@ export async function POST(request: Request) {
 
     if (itemsError) throw itemsError;
 
-    // Create Stripe PaymentIntent
+    // Create Stripe PaymentIntent (with Connect if business has Stripe account)
     const stripe = getStripe();
     const paymentIntent = await stripe.paymentIntents.create({
       amount: total,
@@ -186,6 +192,12 @@ export async function POST(request: Request) {
       },
       description: `Order ${order_number} at ${business?.name || "Hub City Business"}`,
       automatic_payment_methods: { enabled: true },
+      ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
+        ? {
+            application_fee_amount: platform_fee,
+            transfer_data: { destination: stripeAccount.stripe_account_id },
+          }
+        : {}),
     });
 
     // Save payment intent ID on order
