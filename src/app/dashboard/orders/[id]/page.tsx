@@ -5,9 +5,20 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { Order, OrderItem } from "@/types/database";
 import OrderStatusUpdater from "./OrderStatusUpdater";
+import RefundButton from "./RefundButton";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 const statusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | "purple"> = {
@@ -61,6 +72,11 @@ export default async function OrderDetailPage({
     items: OrderItem[];
   };
 
+  const canRefund =
+    typedOrder.status !== "cancelled" &&
+    typedOrder.status !== "pending" &&
+    !!typedOrder.stripe_payment_intent_id;
+
   return (
     <div className="px-4 py-5 space-y-4">
       {/* Back button */}
@@ -81,13 +97,7 @@ export default async function OrderDetailPage({
             Order #{typedOrder.order_number}
           </h1>
           <p className="text-xs text-txt-secondary mt-0.5">
-            {new Date(typedOrder.created_at).toLocaleDateString("en-US", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-              hour: "numeric",
-              minute: "2-digit",
-            })}
+            {formatDate(typedOrder.created_at)}
           </p>
         </div>
         <Badge
@@ -104,8 +114,17 @@ export default async function OrderDetailPage({
         orderType={typedOrder.type === "delivery" ? "delivery" : "pickup"}
       />
 
+      {/* Refund */}
+      {canRefund && (
+        <RefundButton
+          orderId={typedOrder.id}
+          total={typedOrder.total}
+          paymentIntentId={typedOrder.stripe_payment_intent_id}
+        />
+      )}
+
       {/* Customer Info */}
-      <Card>
+      <Card className="glass-card-elevated">
         <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
           Customer
         </h3>
@@ -137,7 +156,7 @@ export default async function OrderDetailPage({
       </Card>
 
       {/* Items */}
-      <Card>
+      <Card className="glass-card-elevated">
         <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
           Items
         </h3>
@@ -163,7 +182,7 @@ export default async function OrderDetailPage({
       </Card>
 
       {/* Totals */}
-      <Card>
+      <Card className="glass-card-elevated">
         <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
           Order Total
         </h3>
@@ -186,10 +205,97 @@ export default async function OrderDetailPage({
               <span>{formatCents(typedOrder.tip)}</span>
             </div>
           )}
+          {typedOrder.discount_amount > 0 && (
+            <div className="flex justify-between">
+              <span className="text-txt-secondary">Discount</span>
+              <span className="text-emerald-400">-{formatCents(typedOrder.discount_amount)}</span>
+            </div>
+          )}
           <div className="border-t border-border-subtle pt-1.5 flex justify-between font-semibold">
             <span>Total</span>
             <span className="text-gold">{formatCents(typedOrder.total)}</span>
           </div>
+        </div>
+      </Card>
+
+      {/* Payment Info */}
+      <Card className="glass-card-elevated">
+        <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+          Payment
+        </h3>
+        <div className="space-y-1.5 text-sm">
+          <div className="flex justify-between">
+            <span className="text-txt-secondary">Method</span>
+            <span>{typedOrder.stripe_payment_intent_id ? "Stripe" : "N/A"}</span>
+          </div>
+          {typedOrder.stripe_payment_intent_id && (
+            <div className="flex justify-between">
+              <span className="text-txt-secondary">Payment ID</span>
+              <span className="text-xs text-txt-secondary font-mono">
+                {typedOrder.stripe_payment_intent_id.slice(0, 8)}...{typedOrder.stripe_payment_intent_id.slice(-4)}
+              </span>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Order Timeline */}
+      <Card className="glass-card-elevated">
+        <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+          Timeline
+        </h3>
+        <div className="relative pl-4 space-y-3">
+          {/* Vertical line */}
+          <div className="absolute left-[5px] top-1 bottom-1 w-px bg-border-subtle" />
+
+          {/* Created */}
+          <div className="relative flex items-start gap-3">
+            <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-gold border-2 border-midnight" />
+            <div>
+              <p className="text-sm font-medium">Order Placed</p>
+              <p className="text-xs text-txt-secondary">
+                {formatDate(typedOrder.created_at)}
+              </p>
+            </div>
+          </div>
+
+          {/* Completed / Cancelled */}
+          {typedOrder.completed_at && (
+            <div className="relative flex items-start gap-3">
+              <div
+                className={`absolute -left-4 top-1 w-2.5 h-2.5 rounded-full border-2 border-midnight ${
+                  typedOrder.status === "cancelled" ? "bg-coral" : "bg-emerald-400"
+                }`}
+              />
+              <div>
+                <p className="text-sm font-medium">
+                  {typedOrder.status === "cancelled"
+                    ? "Cancelled / Refunded"
+                    : typedOrder.status === "delivered"
+                    ? "Delivered"
+                    : typedOrder.status === "picked_up"
+                    ? "Picked Up"
+                    : "Completed"}
+                </p>
+                <p className="text-xs text-txt-secondary">
+                  {formatDate(typedOrder.completed_at)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Current status if still in progress */}
+          {!typedOrder.completed_at && typedOrder.status !== "pending" && (
+            <div className="relative flex items-start gap-3">
+              <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full bg-cyan-400 border-2 border-midnight animate-pulse" />
+              <div>
+                <p className="text-sm font-medium capitalize">
+                  {typedOrder.status.replace(/_/g, " ")}
+                </p>
+                <p className="text-xs text-txt-secondary">In progress</p>
+              </div>
+            </div>
+          )}
         </div>
       </Card>
     </div>

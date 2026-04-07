@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { MenuItem } from "@/types/database";
 import MenuAvailabilityToggle from "./MenuAvailabilityToggle";
+import MenuItemDeleteButton from "./MenuItemDeleteButton";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -20,11 +22,15 @@ export default async function DashboardMenuPage() {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, category")
     .eq("owner_id", user.id)
     .single();
 
   if (!business) return null;
+
+  const isRetail = business.category === "retail";
+  const label = isRetail ? "Products" : "Menu";
+  const itemLabel = isRetail ? "product" : "item";
 
   const { data: menuItems } = await supabase
     .from("menu_items")
@@ -48,9 +54,9 @@ export default async function DashboardMenuPage() {
   return (
     <div className="px-4 py-5 space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-xl font-bold">Menu</h1>
+        <h1 className="font-heading text-xl font-bold">{label}</h1>
         <span className="text-xs text-txt-secondary">
-          {items.length} item{items.length !== 1 ? "s" : ""}
+          {items.length} {itemLabel}{items.length !== 1 ? "s" : ""}
         </span>
       </div>
 
@@ -61,15 +67,15 @@ export default async function DashboardMenuPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
           </div>
-          <p className="text-sm font-medium mb-1">No menu items yet</p>
+          <p className="text-sm font-medium mb-1">No {itemLabel}s yet</p>
           <p className="text-xs text-txt-secondary mb-4">
-            Add items so customers can place orders
+            Add {itemLabel}s so customers can place orders
           </p>
           <Link
             href="/dashboard/menu/new"
             className="inline-flex px-4 py-2 bg-gradient-to-r from-gold to-gold-light text-midnight text-sm font-semibold rounded-xl"
           >
-            Add First Item
+            Add First {isRetail ? "Product" : "Item"}
           </Link>
         </Card>
       ) : (
@@ -82,8 +88,31 @@ export default async function DashboardMenuPage() {
               <div className="space-y-2">
                 {grouped[category].map((item) => (
                   <Card key={item.id} hover>
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0 mr-3">
+                    <Link
+                      href={`/dashboard/menu/${item.id}/edit`}
+                      className="flex items-center gap-3"
+                    >
+                      {/* Thumbnail */}
+                      {item.image_url ? (
+                        <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-white/5">
+                          <Image
+                            src={item.image_url}
+                            alt={item.name}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-white/5 border border-border-subtle flex items-center justify-center shrink-0">
+                          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-txt-secondary">
+                            <path d="M2 14l4-4 3 3 4-5 3 3" strokeLinecap="round" strokeLinejoin="round" />
+                            <rect x="1" y="1" width="16" height="16" rx="2" />
+                          </svg>
+                        </div>
+                      )}
+
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-medium truncate">
                             {item.name}
@@ -101,6 +130,18 @@ export default async function DashboardMenuPage() {
                           {formatCents(item.price)}
                         </p>
                       </div>
+
+                      {/* Edit icon */}
+                      <div className="shrink-0 w-7 h-7 rounded-lg bg-white/5 flex items-center justify-center">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-txt-secondary">
+                          <path d="M8.5 2.5l3 3M1 10l7-7 3 3-7 7H1v-3z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    </Link>
+
+                    {/* Actions row below the link */}
+                    <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border-subtle">
+                      <MenuItemDeleteButton itemId={item.id} />
                       <MenuAvailabilityToggle
                         itemId={item.id}
                         isAvailable={item.is_available}

@@ -1,6 +1,59 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: menuItem, error } = await supabase
+      .from("menu_items")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !menuItem) {
+      return NextResponse.json(
+        { error: "Menu item not found" },
+        { status: 404 }
+      );
+    }
+
+    // Verify ownership
+    const { data: business } = await supabase
+      .from("businesses")
+      .select("id")
+      .eq("id", menuItem.business_id)
+      .eq("owner_id", user.id)
+      .single();
+
+    if (!business) {
+      return NextResponse.json(
+        { error: "Not authorized to view this menu item" },
+        { status: 403 }
+      );
+    }
+
+    return NextResponse.json({ menu_item: menuItem });
+  } catch (error) {
+    console.error("Get menu item error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch menu item" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -50,9 +103,14 @@ export async function PATCH(
       "description",
       "price",
       "image_url",
+      "gallery_urls",
+      "video_url",
       "category",
       "sort_order",
       "is_available",
+      "sku",
+      "stock_count",
+      "is_digital",
     ];
     const sanitized: Record<string, unknown> = {};
     for (const key of allowedFields) {

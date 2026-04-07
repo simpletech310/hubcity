@@ -39,7 +39,16 @@ type OrderWithRelations = Order & {
   items: { id: string; name: string; quantity: number }[];
 };
 
-const FILTERS = ["All", "Pending", "Preparing", "Ready"] as const;
+const FILTERS = ["All", "Pending", "Active", "Ready", "Completed", "Cancelled"] as const;
+
+const FILTER_STATUSES: Record<string, string[]> = {
+  All: [],
+  Pending: ["pending"],
+  Active: ["confirmed", "preparing"],
+  Ready: ["ready"],
+  Completed: ["picked_up", "delivered"],
+  Cancelled: ["cancelled"],
+};
 
 export default function OrderFilters({
   orders,
@@ -51,8 +60,8 @@ export default function OrderFilters({
   const filtered =
     filter === "All"
       ? orders
-      : orders.filter(
-          (o) => o.status.toLowerCase() === filter.toLowerCase()
+      : orders.filter((o) =>
+          FILTER_STATUSES[filter]?.includes(o.status)
         );
 
   return (

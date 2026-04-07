@@ -2,13 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import type { Business, Resource } from "@/types/database";
 
 interface TabDef {
   href: string;
   label: string;
   icon: React.ReactNode;
+}
+
+interface TabSection {
+  title: string;
+  tabs: TabDef[];
 }
 
 // ── Icon components ─────────────────────────────────────
@@ -117,6 +122,31 @@ function ChamberIcon() {
   );
 }
 
+function SettingsIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+}
+
+function HamburgerIcon() {
+  return (
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
 export default function DashboardShell({
   business,
   resources,
@@ -129,21 +159,20 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const isResourceManager = userRole === "city_official" || userRole === "admin" || userRole === "resource_provider";
   const isChamberAdmin = userRole === "chamber_admin" || userRole === "admin";
   const canPostJobs = ["business_owner", "admin", "city_official", "city_ambassador"].includes(userRole);
 
-  const tabs: TabDef[] = useMemo(() => {
+  // Build flat tabs list (used for active tab detection)
+  const allTabs: TabDef[] = useMemo(() => {
     const t: TabDef[] = [];
     const bizType = business?.business_type;
 
-    // Overview is always first
     t.push({ href: "/dashboard", label: "Overview", icon: <OverviewIcon /> });
 
-    // Business-type-specific tabs
     if (business) {
       if (bizType === "food") {
-        // Food businesses: orders, menu, specials, location (trucks/carts)
         t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
         t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
         t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
@@ -151,15 +180,12 @@ export default function DashboardShell({
           t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
         }
       } else if (bizType === "retail") {
-        // Retail businesses: orders, catalog (reuse menu), coupons
         t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
         t.push({ href: "/dashboard/menu", label: "Catalog", icon: <MenuIcon /> });
         t.push({ href: "/dashboard/coupons", label: "Coupons", icon: <SpecialsIcon /> });
       } else if (bizType === "service") {
-        // Service businesses: bookings, services
         t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
       } else {
-        // Fallback: show all common tabs for businesses without a type yet
         t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
         t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
         t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
@@ -171,12 +197,10 @@ export default function DashboardShell({
       t.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
     }
 
-    // Jobs tab for all allowed roles
     if (canPostJobs) {
       t.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
     }
 
-    // Official/admin tabs: Polls & Surveys
     if (isResourceManager) {
       t.push({ href: "/dashboard/polls", label: "Polls", icon: <PollsIcon /> });
       t.push({ href: "/dashboard/surveys", label: "Surveys", icon: <ApplicationsIcon /> });
@@ -184,16 +208,97 @@ export default function DashboardShell({
       t.push({ href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> });
     }
 
-    // Chamber admin tabs
     if (isChamberAdmin) {
       t.push({ href: "/dashboard/chamber", label: "Chamber", icon: <ChamberIcon /> });
     }
 
-    // Settings always last
-    t.push({ href: "/dashboard/settings", label: "More", icon: <MoreIcon /> });
+    t.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
 
     return t;
   }, [business, isResourceManager, isChamberAdmin, canPostJobs]);
+
+  // Build grouped sections for the drawer
+  const sections: TabSection[] = useMemo(() => {
+    const s: TabSection[] = [];
+    const bizType = business?.business_type;
+
+    // Main section
+    const mainTabs: TabDef[] = [
+      { href: "/dashboard", label: "Overview", icon: <OverviewIcon /> },
+    ];
+    if (business) {
+      if (bizType === "food") {
+        mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        mainTabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+      } else if (bizType === "retail") {
+        mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        mainTabs.push({ href: "/dashboard/menu", label: "Catalog", icon: <MenuIcon /> });
+      } else if (bizType === "service") {
+        mainTabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      } else {
+        mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        mainTabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+        mainTabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      }
+    }
+    s.push({ title: "Main", tabs: mainTabs });
+
+    // Marketing section
+    if (business) {
+      const marketingTabs: TabDef[] = [];
+      if (bizType === "food") {
+        marketingTabs.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
+      } else if (bizType === "retail") {
+        marketingTabs.push({ href: "/dashboard/coupons", label: "Coupons", icon: <SpecialsIcon /> });
+      } else if (bizType !== "service") {
+        marketingTabs.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
+      }
+      marketingTabs.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
+      if (marketingTabs.length > 0) {
+        s.push({ title: "Marketing", tabs: marketingTabs });
+      }
+    }
+
+    // Manage section
+    const manageTabs: TabDef[] = [];
+    if (canPostJobs) {
+      manageTabs.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
+    }
+    if (business && (business.is_mobile_vendor || business.business_sub_type === "food_truck" || business.business_sub_type === "cart")) {
+      manageTabs.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+    }
+    if (manageTabs.length > 0) {
+      s.push({ title: "Manage", tabs: manageTabs });
+    }
+
+    // Admin section (officials)
+    if (isResourceManager) {
+      s.push({
+        title: "Admin",
+        tabs: [
+          { href: "/dashboard/polls", label: "Polls", icon: <PollsIcon /> },
+          { href: "/dashboard/surveys", label: "Surveys", icon: <ApplicationsIcon /> },
+          { href: "/dashboard/applications", label: "Applications", icon: <ResourcesIcon /> },
+          { href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> },
+        ],
+      });
+    }
+
+    // Chamber section
+    if (isChamberAdmin) {
+      s.push({
+        title: "Chamber",
+        tabs: [
+          { href: "/dashboard/chamber", label: "Chamber", icon: <ChamberIcon /> },
+        ],
+      });
+    }
+
+    return s;
+  }, [business, isResourceManager, isChamberAdmin, canPostJobs]);
+
+  // Settings tab (always at bottom, separate from sections)
+  const settingsTab: TabDef = { href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> };
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -213,12 +318,43 @@ export default function DashboardShell({
     return pathname.startsWith(href);
   }
 
+  // Find the active tab label for the header
+  const activeTabLabel = useMemo(() => {
+    const active = allTabs.find((tab) => isActive(tab.href));
+    return active?.label ?? "Overview";
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, allTabs]);
+
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+
+  // Close drawer on Escape key
+  useEffect(() => {
+    if (!drawerOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setDrawerOpen(false);
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [drawerOpen]);
+
+  // Prevent body scroll when drawer is open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
+
   const headerTitle = business ? business.name : isChamberAdmin ? "Chamber of Commerce" : isResourceManager ? "Resource Manager" : "Dashboard";
 
   return (
     <div className="max-w-[430px] mx-auto min-h-dvh relative bg-midnight">
       {/* Top Header */}
-      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-deep/95 backdrop-blur-md border-b border-border-subtle px-4 py-3">
+      <header className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 bg-deep/95 backdrop-blur-md border-b border-border-subtle px-4 py-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-xs text-midnight">
@@ -228,7 +364,7 @@ export default function DashboardShell({
               <h1 className="font-heading font-bold text-sm leading-tight truncate max-w-[200px]">
                 {headerTitle}
               </h1>
-              <p className="text-[10px] text-txt-secondary">Dashboard</p>
+              <p className="text-[10px] text-gold/80 font-medium">{activeTabLabel}</p>
             </div>
           </div>
           <Link
@@ -241,30 +377,106 @@ export default function DashboardShell({
       </header>
 
       {/* Main Content */}
-      <main className="pt-[68px] pb-[80px] overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <main className="pt-[60px] pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden scrollbar-hide">
         {children}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-deep/95 backdrop-blur-md border-t border-border-subtle px-2 pb-safe">
-        <div className="flex items-center overflow-x-auto scrollbar-hide py-2 gap-0.5">
-          {tabs.map((tab) => {
-            const active = isActive(tab.href);
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors min-w-fit shrink-0 ${
-                  active ? "text-gold" : "text-txt-secondary hover:text-white"
-                }`}
-              >
-                {tab.icon}
-                <span className="text-[10px] font-medium">{tab.label}</span>
-              </Link>
-            );
-          })}
+      {/* Drawer Backdrop */}
+      {drawerOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 transition-opacity"
+          onClick={closeDrawer}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Navigation Drawer */}
+      <nav
+        className={`fixed top-0 left-0 bottom-0 w-64 z-50 glass-card-elevated border-r border-border-subtle transform transition-transform duration-300 ease-in-out ${
+          drawerOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-border-subtle">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-[10px] text-midnight">
+              HC
+            </div>
+            <span className="font-heading font-bold text-sm text-white truncate max-w-[140px]">
+              {headerTitle}
+            </span>
+          </div>
+          <button
+            onClick={closeDrawer}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-txt-secondary hover:text-white hover:bg-white/10 transition-colors"
+            aria-label="Close navigation"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+
+        {/* Drawer Scrollable Content */}
+        <div className="flex-1 overflow-y-auto py-3 px-3 h-[calc(100dvh-120px)] scrollbar-hide">
+          {sections.map((section) => (
+            <div key={section.title} className="mb-3">
+              <p className="text-[10px] font-semibold text-txt-secondary uppercase tracking-wider px-2 mb-1">
+                {section.title}
+              </p>
+              {section.tabs.map((tab) => {
+                const active = isActive(tab.href);
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    onClick={closeDrawer}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors mb-0.5 ${
+                      active
+                        ? "bg-gold/15 text-gold"
+                        : "text-txt-secondary hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    {tab.icon}
+                    <span className="text-sm font-medium">{tab.label}</span>
+                    {active && (
+                      <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold" />
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+
+          {/* Divider before Settings */}
+          <div className="border-t border-border-subtle my-3" />
+
+          {/* Settings tab */}
+          <Link
+            href={settingsTab.href}
+            onClick={closeDrawer}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors ${
+              isActive(settingsTab.href)
+                ? "bg-gold/15 text-gold"
+                : "text-txt-secondary hover:text-white hover:bg-white/5"
+            }`}
+          >
+            {settingsTab.icon}
+            <span className="text-sm font-medium">{settingsTab.label}</span>
+            {isActive(settingsTab.href) && (
+              <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold" />
+            )}
+          </Link>
         </div>
       </nav>
+
+      {/* Floating Menu Button */}
+      <button
+        onClick={() => setDrawerOpen((prev) => !prev)}
+        className="fixed z-30 left-4 w-12 h-12 glass-card-elevated rounded-full flex items-center justify-center text-gold shadow-lg active:scale-95 transition-transform border border-gold/20"
+        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
+        aria-label="Toggle navigation menu"
+      >
+        <HamburgerIcon />
+      </button>
     </div>
   );
 }

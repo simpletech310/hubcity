@@ -14,6 +14,7 @@ import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
+import type { IconName } from "@/components/ui/Icon";
 
 function timeAgo(dateStr: string): string {
   return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
@@ -26,6 +27,15 @@ function getGreeting(): string {
   return "Good evening";
 }
 
+const quickActions: { label: string; href: string; icon: IconName }[] = [
+  { label: "Order Food", href: "/food", icon: "utensils" },
+  { label: "Find Jobs", href: "/jobs", icon: "briefcase" },
+  { label: "Events", href: "/events", icon: "calendar" },
+  { label: "Report Issue", href: "/city-hall/issues", icon: "alert" },
+  { label: "Parks", href: "/parks", icon: "tree" },
+  { label: "Health", href: "/health", icon: "heart-pulse" },
+  { label: "City Hall", href: "/city-hall", icon: "landmark" },
+];
 
 export default async function HomePage() {
   const supabase = await createClient();
@@ -42,6 +52,8 @@ export default async function HomePage() {
     { data: cityAlerts },
     { data: upcomingMeetings },
     { data: trafficAlerts },
+    { data: foodVendors },
+    { data: recentJobs },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
@@ -106,18 +118,53 @@ export default async function HomePage() {
       .eq("alert_type", "traffic")
       .order("created_at", { ascending: false })
       .limit(3),
+    supabase
+      .from("businesses")
+      .select("id, name, slug, image_urls, category, business_sub_type, rating_avg, is_open")
+      .eq("is_published", true)
+      .eq("business_type", "food")
+      .order("rating_avg", { ascending: false })
+      .limit(6),
+    supabase
+      .from("jobs")
+      .select("id, title, company_name, location, salary_min, salary_max, salary_type, employment_type, created_at")
+      .eq("is_published", true)
+      .eq("status", "open")
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
-  // Get user profile for greeting
+  // Get user profile for greeting + role
   let displayName = "Compton";
+  let userRole: string | null = null;
+  let dashboardStats: { orders?: number; issues?: number } | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name")
+      .select("display_name, role")
       .eq("id", user.id)
       .single();
     if (profile?.display_name) {
       displayName = profile.display_name.split(" ")[0];
+    }
+    userRole = profile?.role ?? null;
+
+    // Fetch dashboard quick stats for business owners
+    if (userRole === "business_owner") {
+      const { data: biz } = await supabase
+        .from("businesses")
+        .select("id")
+        .eq("owner_id", user.id)
+        .single();
+      if (biz) {
+        const { count: pendingOrders } = await supabase
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("business_id", biz.id)
+          .eq("status", "pending");
+        dashboardStats = { orders: pendingOrders ?? 0 };
+      }
     }
   }
 
@@ -125,17 +172,15 @@ export default async function HomePage() {
   const greeting = getGreeting();
   const featuredArt = getFeaturedArt();
 
-  // Pick best content for the featured section
-  const featuredEvent = events?.[0] ?? null;
   const featuredBusiness = businesses?.[0] ?? null;
   const hasLive = liveStreams && liveStreams.length > 0;
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* -- Full-Screen Art Hero -- */}
+      {/* -- 1. Art Hero (65vh) -- */}
       <section className="relative">
         <Link href={`/art/${featuredArt.slug}`} className="block press">
-          <div className="relative w-full h-screen">
+          <div className="relative w-full h-[65vh]">
             <Image
               src={featuredArt.imageUrl}
               alt={featuredArt.title}
@@ -181,7 +226,7 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* -- Greeting + Search -- */}
+      {/* -- 2. Greeting + Search -- */}
       <section className="px-5 -mt-1 space-y-3">
         <div>
           <h1 className="font-display text-[26px] leading-tight">
@@ -194,12 +239,64 @@ export default async function HomePage() {
         <AISearchButton />
       </section>
 
-      {/* -- Weather + AQI Bar -- */}
+      {/* -- 3. Dashboard Card (business owners) -- */}
+      {userRole === "business_owner" && dashboardStats && (
+        <section className="px-5">
+          <Link href="/dashboard" className="block press">
+            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                <Icon name="bolt" size={18} className="text-gold" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold">Go to Dashboard</p>
+                <p className="text-[11px] text-white/50">
+                  {dashboardStats.orders ? `${dashboardStats.orders} pending order${dashboardStats.orders > 1 ? "s" : ""}` : "All caught up"}
+                </p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-gold/50" />
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* -- 4. Quick Actions Grid -- */}
+      <section className="px-5">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-5 px-5">
+          {quickActions.map((action) => (
+            <Link key={action.href} href={action.href} className="press shrink-0">
+              <div className="bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] rounded-full px-3.5 py-2 flex items-center gap-2 shrink-0">
+                <Icon name={action.icon} size={14} className="text-gold" />
+                <span className="text-[12px] font-medium text-white/80">{action.label}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* -- 5. Weather + AQI Bar -- */}
       <section className="px-5">
         <WeatherBar />
       </section>
 
-      {/* -- Traffic Alert Banner -- */}
+      {/* -- 6. Active Polls Banner -- */}
+      {(activePollsCount ?? 0) > 0 && (
+        <section className="px-5">
+          <Link href="/pulse" className="block press">
+            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                <Icon name="chart" size={18} className="text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold text-white">Your voice matters</p>
+                <p className="text-[11px] text-white/50">{activePollsCount} active poll{activePollsCount! > 1 ? "s" : ""} — tap to vote</p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-gold/50" />
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* -- 7. Traffic Alert Banner -- */}
       {trafficAlerts && trafficAlerts.length > 0 && (
         <section className="px-5">
           <Card variant="glass" padding={false}>
@@ -227,7 +324,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- City Alerts -- */}
+      {/* -- 8. City Alerts -- */}
       {cityAlerts && cityAlerts.length > 0 && (
         <section className="px-5">
           <div className="flex flex-col gap-2">
@@ -255,52 +352,120 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- Live Now Banner -- */}
-      {hasLive && <LiveNowBanner streams={liveStreams} />}
-
-      {/* -- Featured Section (mixed content) -- */}
-      <section className="px-5 space-y-3">
-        <EditorialHeader kicker="HIGHLIGHTS" title="Featured" subtitle="Highlights from Compton" />
-
-        {/* Featured event - large card */}
-        {featuredEvent && (
-          <Link href={`/events/${featuredEvent.id}`} className="block press">
-            <Card variant="glass" hover padding={false}>
-              <div className="p-4 flex items-start gap-3.5">
-                <div className="flex flex-col items-center bg-gold/10 rounded-xl px-3 py-2 min-w-[52px]">
-                  <span className="font-heading text-[20px] font-bold leading-none text-gold">
-                    {new Date(featuredEvent.start_date).getDate()}
-                  </span>
-                  <span className="text-[10px] font-semibold text-warm-gray tracking-wide uppercase">
-                    {new Date(featuredEvent.start_date).toLocaleDateString("en-US", { month: "short" })}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-0.5">
-                    Upcoming Event
-                  </p>
-                  <h3 className="font-heading text-[15px] font-bold leading-snug line-clamp-2 mb-1">
-                    {featuredEvent.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-warm-gray">
-                    {featuredEvent.location_name && (
-                      <span className="inline-flex items-center gap-1 truncate">
-                        <Icon name="map-pin" size={11} className="text-warm-gray shrink-0" />
-                        {featuredEvent.location_name}
-                      </span>
-                    )}
-                    <span>
-                      {new Date(featuredEvent.start_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+      {/* -- 9. Upcoming City Meetings -- */}
+      {upcomingMeetings && upcomingMeetings.length > 0 && (
+        <section className="px-5 space-y-2">
+          <SectionHeader title="City Meetings" linkText="View All" linkHref="/city-data/meetings" compact />
+          {upcomingMeetings.slice(0, 2).map((meeting) => (
+            <Link key={meeting.id} href="/city-data/meetings" className="block press">
+              <Card variant="glass" hover padding={false}>
+                <div className="p-3 flex items-center gap-3">
+                  <div className="flex flex-col items-center bg-cyan/10 rounded-lg px-2.5 py-1.5 min-w-[44px]">
+                    <span className="text-[14px] font-bold text-cyan leading-none">
+                      {new Date(meeting.date).getDate()}
+                    </span>
+                    <span className="text-[9px] font-semibold text-cyan/60 uppercase">
+                      {new Date(meeting.date).toLocaleDateString("en-US", { month: "short" })}
                     </span>
                   </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-[12px] font-bold truncate">{meeting.title}</h3>
+                    <p className="text-[10px] text-warm-gray truncate">
+                      {meeting.start_time} · {meeting.location || "City Hall"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </Link>
-        )}
+              </Card>
+            </Link>
+          ))}
+        </section>
+      )}
 
-        {/* Featured business - compact card */}
-        {featuredBusiness && (
+      {/* -- 10. Live Now Banner -- */}
+      {hasLive && <LiveNowBanner streams={liveStreams} />}
+
+      {/* -- 11. Events Horizontal Carousel -- */}
+      {events && events.length > 0 && (
+        <section className="space-y-3">
+          <div className="px-5">
+            <SectionHeader title="Upcoming Events" linkText="See All" linkHref="/events" compact />
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {events.slice(0, 5).map((event) => (
+              <Link key={event.id} href={`/events/${event.id}`} className="shrink-0 w-[200px] press">
+                <div className="glass-card-elevated rounded-xl overflow-hidden">
+                  <div className="relative h-[120px] bg-royal">
+                    {event.cover_image_url ? (
+                      <Image src={event.cover_image_url} alt={event.title} fill className="object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Icon name="calendar" size={28} className="text-white/20" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute top-2 left-2">
+                      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                        <p className="text-[10px] font-bold text-gold uppercase leading-none">
+                          {new Date(event.start_date).toLocaleDateString("en-US", { month: "short" })}
+                        </p>
+                        <p className="text-[16px] font-bold leading-none mt-0.5">
+                          {new Date(event.start_date).getDate()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-[13px] font-bold leading-snug line-clamp-2 mb-1">{event.title}</h3>
+                    {event.location_name && (
+                      <p className="text-[11px] text-warm-gray truncate flex items-center gap-1">
+                        <Icon name="map-pin" size={10} className="text-warm-gray shrink-0" />
+                        {event.location_name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- 12. Food Vendors Row -- */}
+      {foodVendors && foodVendors.length > 0 && (
+        <section className="space-y-3">
+          <div className="px-5">
+            <SectionHeader title="Order Food" linkText="See All" linkHref="/food" compact />
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {foodVendors.map((vendor) => (
+              <Link key={vendor.id} href={`/food/vendor/${vendor.id}`} className="shrink-0 w-[140px] press">
+                <div className="glass-card-elevated rounded-xl overflow-hidden">
+                  <div className="relative h-[100px] bg-royal">
+                    {vendor.image_urls?.[0] ? (
+                      <img src={vendor.image_urls[0]} alt={vendor.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Icon name="utensils" size={24} className="text-white/20" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-2.5">
+                    <h3 className="text-[12px] font-bold truncate">{vendor.name}</h3>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <Icon name="star" size={10} className="text-gold" />
+                      <span className="text-[10px] text-warm-gray">{Number(vendor.rating_avg || 0).toFixed(1)}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- 13. Featured Business Card -- */}
+      {featuredBusiness && (
+        <section className="px-5">
           <Link href={`/business/${featuredBusiness.slug}`} className="block press">
             <Card variant="glass" hover padding={false}>
               <div className="p-4 flex items-center gap-3.5">
@@ -338,42 +503,44 @@ export default async function HomePage() {
               </div>
             </Card>
           </Link>
-        )}
+        </section>
+      )}
 
-        {/* Live stream card (if available and not already shown via banner) */}
-        {hasLive && liveStreams[0] && (
-          <Link href="/live" className="block press">
-            <Card variant="glass" hover padding={false}>
-              <div className="p-4 flex items-center gap-3.5">
-                <div className="w-[52px] h-[52px] rounded-xl bg-compton-red/15 border border-compton-red/30 flex items-center justify-center shrink-0">
-                  <Icon name="video" size={22} className="text-compton-red" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-compton-red uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-                      Live Now
-                    </span>
+      {/* -- 14. Jobs Teaser -- */}
+      {recentJobs && recentJobs.length > 0 && (
+        <section className="px-5 space-y-3">
+          <SectionHeader title="Now Hiring" linkText="All Jobs" linkHref="/jobs" compact />
+          <div className="space-y-2">
+            {recentJobs.map((job) => (
+              <Link key={job.id} href={`/jobs/${job.id}`} className="block press">
+                <Card variant="glass" hover padding={false}>
+                  <div className="p-3.5 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
+                      <Icon name="briefcase" size={18} className="text-gold" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[13px] font-bold truncate">{job.title}</h3>
+                      <p className="text-[11px] text-warm-gray truncate">{job.company_name}</p>
+                    </div>
+                    {job.salary_min && (
+                      <span className="text-[11px] font-semibold text-emerald shrink-0">
+                        ${Math.round(job.salary_min / 1000)}k{job.salary_max ? `–${Math.round(job.salary_max / 1000)}k` : "+"}
+                      </span>
+                    )}
                   </div>
-                  <h3 className="font-heading text-[14px] font-bold leading-snug truncate">
-                    {liveStreams[0].title}
-                  </h3>
-                  <p className="text-[11px] text-warm-gray">
-                    {liveStreams[0].viewer_count ?? 0} watching &middot; {liveStreams[0].category ?? "HubTV"}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </Link>
-        )}
-      </section>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* -- Ad Zone -- */}
+      {/* -- 15. Ad Zone -- */}
       <div className="px-5">
         <AdZone zone="feed_banner" />
       </div>
 
-      {/* -- What's New Feed -- */}
+      {/* -- 16. Pulse Feed -- */}
       {pulsePosts.length > 0 && (
         <section className="px-5 space-y-3">
           <EditorialHeader kicker="THE PULSE" title="What's New" subtitle="Latest from your city" />
@@ -423,7 +590,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- Bottom CTA -- */}
+      {/* -- 17. Bottom CTA -- */}
       <section className="px-5 pb-6">
         <Link
           href="/map"
