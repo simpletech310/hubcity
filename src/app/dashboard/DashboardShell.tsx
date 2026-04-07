@@ -300,6 +300,34 @@ export default function DashboardShell({
   // Settings tab (always at bottom, separate from sections)
   const settingsTab: TabDef = { href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> };
 
+  // Bottom tab bar — core 3-4 tabs always visible
+  const bottomTabs: TabDef[] = useMemo(() => {
+    const bizType = business?.business_type;
+    const tabs: TabDef[] = [
+      { href: "/dashboard", label: "Overview", icon: <OverviewIcon /> },
+    ];
+
+    if (business) {
+      if (bizType === "food" || bizType === "retail") {
+        tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        tabs.push({ href: "/dashboard/menu", label: bizType === "retail" ? "Catalog" : "Menu", icon: <MenuIcon /> });
+      } else if (bizType === "service") {
+        tabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      } else {
+        tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        tabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      }
+    }
+
+    if (canPostJobs && !business) {
+      tabs.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
+    }
+
+    tabs.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
+
+    return tabs;
+  }, [business, canPostJobs]);
+
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
     if (href === "/dashboard/chamber") {
@@ -377,7 +405,7 @@ export default function DashboardShell({
       </header>
 
       {/* Main Content */}
-      <main className="pt-[60px] pb-[env(safe-area-inset-bottom)] overflow-y-auto overflow-x-hidden scrollbar-hide">
+      <main className="pt-[60px] pb-[72px] overflow-y-auto overflow-x-hidden scrollbar-hide">
         {children}
       </main>
 
@@ -468,15 +496,37 @@ export default function DashboardShell({
         </div>
       </nav>
 
-      {/* Floating Menu Button */}
-      <button
-        onClick={() => setDrawerOpen((prev) => !prev)}
-        className="fixed z-30 left-4 w-12 h-12 glass-card-elevated rounded-full flex items-center justify-center text-gold shadow-lg active:scale-95 transition-transform border border-gold/20"
-        style={{ bottom: "calc(1.5rem + env(safe-area-inset-bottom, 0px))" }}
-        aria-label="Toggle navigation menu"
+      {/* Bottom Tab Bar */}
+      <div
+        className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-30 bg-deep/95 backdrop-blur-md border-t border-border-subtle"
+        style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
       >
-        <HamburgerIcon />
-      </button>
+        <div className="flex items-center justify-around h-[56px]">
+          {bottomTabs.map((tab) => {
+            const active = isActive(tab.href);
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full transition-colors ${
+                  active ? "text-gold" : "text-txt-secondary"
+                }`}
+              >
+                {tab.icon}
+                <span className="text-[10px] font-medium leading-tight">{tab.label}</span>
+              </Link>
+            );
+          })}
+          <button
+            onClick={() => setDrawerOpen((prev) => !prev)}
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-txt-secondary transition-colors"
+            aria-label="More navigation options"
+          >
+            <MoreIcon />
+            <span className="text-[10px] font-medium leading-tight">More</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
