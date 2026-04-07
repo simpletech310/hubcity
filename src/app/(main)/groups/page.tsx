@@ -9,6 +9,7 @@ import Button from "@/components/ui/Button";
 import type { CommunityGroup } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import { CATEGORY_COLORS } from "@/lib/constants";
 
 const CATEGORY_ICONS: Record<string, string> = {
   neighborhood: "house",
@@ -24,11 +25,22 @@ const CATEGORIES = [
   "all", "neighborhood", "interest", "school", "faith", "sports", "business",
 ];
 
+const CATEGORY_BADGE_VARIANT: Record<string, "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink"> = {
+  neighborhood: "cyan",
+  interest: "purple",
+  school: "blue",
+  faith: "pink",
+  sports: "emerald",
+  business: "gold",
+  other: "coral",
+};
+
 export default function GroupsPage() {
   const [groups, setGroups] = useState<CommunityGroup[]>([]);
   const [myGroups, setMyGroups] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [category, setCategory] = useState("all");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
 
@@ -55,6 +67,14 @@ export default function GroupsPage() {
     }
     load();
   }, [category]);
+
+  const filteredGroups = search.trim()
+    ? groups.filter(
+        (g) =>
+          g.name.toLowerCase().includes(search.toLowerCase()) ||
+          (g.description && g.description.toLowerCase().includes(search.toLowerCase()))
+      )
+    : groups;
 
   async function handleJoin(groupId: string) {
     setJoining(groupId);
@@ -161,9 +181,36 @@ export default function GroupsPage() {
         </div>
       )}
 
+      {/* Search */}
+      <div className="px-5 mb-4">
+        <div className="relative">
+          <svg
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-txt-secondary"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Search groups..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-white/[0.05] border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 transition-colors"
+          />
+        </div>
+      </div>
+
       {/* Category Filters */}
       <div className="px-5 mb-5">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {CATEGORIES.map((c) => (
             <Chip
               key={c}
@@ -184,30 +231,48 @@ export default function GroupsPage() {
           </div>
         )}
 
-        {!loading && groups.length === 0 && (
+        {!loading && filteredGroups.length === 0 && (
           <Card>
             <div className="text-center py-8">
               <p className="text-3xl mb-3"><Icon name="handshake" size={28} /></p>
-              <p className="text-sm font-semibold">No groups yet</p>
+              <p className="text-sm font-semibold">No groups found</p>
               <p className="text-xs text-txt-secondary mt-1">
-                Be the first to create one!
+                {search.trim() ? "Try adjusting your search." : "Be the first to create one!"}
               </p>
             </div>
           </Card>
         )}
 
-        {groups.map((group) => {
+        {filteredGroups.map((group) => {
           const isMember = myGroups.includes(group.id);
+          const color = CATEGORY_COLORS[group.category] || "coral";
+          const badgeVariant = CATEGORY_BADGE_VARIANT[group.category] || "coral";
+
           return (
-            <Card key={group.id} hover>
+            <Card key={group.id} hover className="relative overflow-hidden">
+              {/* Category accent line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px]"
+                style={{
+                  background: `linear-gradient(90deg, var(--color-${color}) 0%, transparent 100%)`,
+                  opacity: 0.4,
+                }}
+              />
+
               <div className="flex items-start gap-3">
-                <Link href={`/groups/${group.id}`} className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+                <Link
+                  href={`/groups/${group.id}`}
+                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: `color-mix(in srgb, var(--color-${color}) 12%, transparent)`,
+                  }}
+                >
                   <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={24} />
                 </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
                     <Link href={`/groups/${group.id}`} className="text-sm font-bold truncate hover:text-gold transition-colors">{group.name}</Link>
-                    <Badge label={group.category} variant="purple" />
+                    <Badge label={group.category} variant={badgeVariant} />
                   </div>
                   {group.description && (
                     <p className="text-xs text-txt-secondary line-clamp-2 mb-2">
@@ -215,23 +280,28 @@ export default function GroupsPage() {
                     </p>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-txt-secondary">
-                      <Icon name="users" size={16} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
+                    <span className="text-xs text-txt-secondary flex items-center gap-1">
+                      <Icon name="users" size={14} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
                     </span>
                     <button
                       onClick={() => handleJoin(group.id)}
                       disabled={joining === group.id}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold press transition-all ${
+                      className={`px-4 py-1.5 rounded-lg text-xs font-bold press transition-all flex items-center gap-1.5 ${
                         isMember
                           ? "bg-emerald/20 text-emerald border border-emerald/30"
                           : "bg-gold/20 text-gold border border-gold/30"
                       }`}
                     >
-                      {joining === group.id
-                        ? "..."
-                        : isMember
-                          ? "check Joined"
-                          : "Join"}
+                      {joining === group.id ? (
+                        "..."
+                      ) : isMember ? (
+                        <>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                          Joined
+                        </>
+                      ) : (
+                        "Join"
+                      )}
                     </button>
                   </div>
                 </div>

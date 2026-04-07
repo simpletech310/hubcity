@@ -19,7 +19,6 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
     new Set(userReactions)
   );
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [commentCount, setCommentCount] = useState(post.comment_count || 0);
 
@@ -78,13 +77,35 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
   };
 
   const emojis = Object.keys(REACTION_EMOJI_MAP) as ReactionEmoji[];
-  const visibleEmojis = expanded ? emojis : emojis.slice(0, 3);
   const totalReactions = Object.values(counts).reduce((a, b) => a + (b || 0), 0);
 
   return (
     <>
-      <div className="flex items-center gap-1 pt-3 border-t border-border-subtle">
-        {visibleEmojis.map((emoji) => {
+      {/* Reaction summary line */}
+      {totalReactions > 0 && (
+        <div className="flex items-center gap-1.5 mb-2">
+          <div className="flex -space-x-1">
+            {emojis
+              .filter((e) => (counts[e] || 0) > 0)
+              .slice(0, 3)
+              .map((e) => (
+                <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
+              ))}
+          </div>
+          <span className="text-[11px] text-white/30 tabular-nums">{totalReactions}</span>
+          {commentCount > 0 && (
+            <>
+              <span className="text-white/10 mx-1">&middot;</span>
+              <span className="text-[11px] text-white/30 tabular-nums">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Action row */}
+      <div className="flex items-center gap-0.5 pt-2 border-t border-white/[0.04]">
+        {/* All 5 emoji reactions always visible */}
+        {emojis.map((emoji) => {
           const isActive = activeReactions.has(emoji);
           const count = counts[emoji] || 0;
           const colors = REACTION_COLORS[emoji];
@@ -94,43 +115,28 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
               key={emoji}
               onClick={() => toggleReaction(emoji)}
               disabled={!userId}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs press transition-all ${
+              className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all ${
                 isActive
-                  ? `${colors.bg} ${colors.text} font-semibold`
-                  : "text-txt-secondary hover:bg-white/5"
-              } ${!userId ? "opacity-50 cursor-default" : ""}`}
+                  ? `${colors.bg} ${colors.text} font-semibold scale-105`
+                  : "text-white/40 hover:bg-white/[0.04] hover:text-white/60"
+              } ${!userId ? "opacity-40 cursor-default" : "press"}`}
             >
-              <span className="text-sm">{REACTION_EMOJI_MAP[emoji]}</span>
-              {count > 0 && <span>{count}</span>}
+              <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
+              {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
             </button>
           );
         })}
 
-        {!expanded && (
-          <button
-            onClick={() => setExpanded(true)}
-            className="flex items-center justify-center w-7 h-7 rounded-full text-txt-secondary hover:bg-white/5 press transition-all text-xs"
-          >
-            +
-          </button>
-        )}
-
-        {/* Comment count — now clickable */}
+        {/* Comment button */}
         <button
           onClick={() => setCommentsOpen(true)}
-          className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-txt-secondary hover:bg-white/5 rounded-full press transition-all ml-auto"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all ml-auto press"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
-          {commentCount}
+          <span className="tabular-nums">{commentCount}</span>
         </button>
-
-        {totalReactions > 0 && (
-          <span className="text-[10px] text-txt-secondary tabular-nums">
-            {totalReactions}
-          </span>
-        )}
       </div>
 
       <CommentsSheet

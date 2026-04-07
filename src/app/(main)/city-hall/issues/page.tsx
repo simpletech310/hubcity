@@ -219,7 +219,7 @@ export default function CityIssuesPage() {
 
       {/* Type Filters */}
       <div className="px-5 mb-3">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {ISSUE_TYPES.map((t) => (
             <Chip
               key={t}
@@ -237,7 +237,7 @@ export default function CityIssuesPage() {
 
       {/* Status Filters */}
       <div className="px-5 mb-5">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
           {STATUS_FILTERS.map((s) => (
             <Chip
               key={s}

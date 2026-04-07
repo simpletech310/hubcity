@@ -108,7 +108,7 @@ export default function ChannelPage({
   return (
     <div className="animate-fade-in">
       {/* ── Banner ──────────────────────────────────────── */}
-      <div className="relative h-36 overflow-hidden">
+      <div className="relative h-44 overflow-hidden">
         {channel.banner_url ? (
           <img
             src={channel.banner_url}
@@ -165,6 +165,9 @@ export default function ChannelPage({
                 {followerCount} followers
               </span>
             </div>
+            {channel.description && (
+              <p className="text-[11px] text-white/40 line-clamp-2 mt-1.5">{channel.description}</p>
+            )}
           </div>
         </div>
 
@@ -205,8 +208,8 @@ export default function ChannelPage({
             onClick={() => setActiveTab(tab.id)}
             className={`flex-1 py-2 text-center rounded-xl text-[13px] font-semibold transition-all press ${
               activeTab === tab.id
-                ? "bg-gold/15 text-gold"
-                : "text-txt-secondary hover:text-white"
+                ? "bg-gold/15 text-gold border border-gold/25"
+                : "text-txt-secondary hover:text-white border border-transparent"
             }`}
           >
             {tab.label}
@@ -333,12 +336,12 @@ export default function ChannelPage({
         <div className="animate-fade-in px-5 space-y-5">
           {/* Description */}
           {channel.description && (
-            <div>
+            <Card variant="glass">
               <h3 className="font-heading font-bold text-sm mb-2 text-txt-secondary uppercase tracking-wider">
                 About
               </h3>
               <p className="text-sm leading-relaxed">{channel.description}</p>
-            </div>
+            </Card>
           )}
 
           {/* Schedule */}
@@ -378,7 +381,7 @@ export default function ChannelPage({
           )}
 
           {/* Channel info */}
-          <div>
+          <Card variant="glass">
             <h3 className="font-heading font-bold text-sm mb-2 text-txt-secondary uppercase tracking-wider">
               Details
             </h3>
@@ -389,11 +392,11 @@ export default function ChannelPage({
               </div>
               <div className="flex justify-between">
                 <span className="text-txt-secondary">Followers</span>
-                <span>{followerCount}</span>
+                <span className="tabular-nums">{followerCount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-txt-secondary">Videos</span>
-                <span>{videos.length}</span>
+                <span className="tabular-nums">{videos.length}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-txt-secondary">Joined</span>
@@ -405,7 +408,7 @@ export default function ChannelPage({
                 </span>
               </div>
             </div>
-          </div>
+          </Card>
         </div>
       )}
     </div>

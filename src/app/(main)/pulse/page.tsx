@@ -15,6 +15,7 @@ export default async function PulsePage() {
     { data: rawEvents },
     { data: rawPromos },
     { count: trafficAlertCount },
+    { data: rawSuggestedProfiles },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -71,6 +72,12 @@ export default async function PulsePage() {
       .select("id", { count: "exact", head: true })
       .eq("type", "traffic")
       .eq("is_active", true),
+    // Suggested profiles — notable roles for "People to follow"
+    supabase
+      .from("profiles")
+      .select("id, display_name, handle, avatar_url, role, verification_status, bio")
+      .in("role", ["content_creator", "creator", "city_ambassador", "city_official", "business_owner"])
+      .limit(10),
   ]);
 
   const posts: Post[] = (rawPosts as Post[]) || [];
@@ -79,6 +86,7 @@ export default async function PulsePage() {
   const surveys: Survey[] = (rawSurveys as Survey[]) || [];
   const events = rawEvents || [];
   const promotions = rawPromos || [];
+  const suggestedProfiles = rawSuggestedProfiles || [];
 
   // Get current user
   const {
@@ -168,6 +176,7 @@ export default async function PulsePage() {
       events={events}
       promotions={promotions}
       trafficAlertCount={trafficAlertCount ?? 0}
+      suggestedProfiles={suggestedProfiles}
     />
   );
 }

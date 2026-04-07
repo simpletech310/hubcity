@@ -98,6 +98,16 @@ const CATEGORY_BADGE: Record<string, "gold" | "emerald" | "cyan" | "purple" | "c
   other: "coral",
 };
 
+const CATEGORY_GRADIENT_COLORS: Record<string, string> = {
+  neighborhood: "#06B6D4",
+  interest: "#8B5CF6",
+  school: "#3B82F6",
+  faith: "#EC4899",
+  sports: "#10B981",
+  business: "#F2A900",
+  other: "#F87171",
+};
+
 const REACTION_EMOJIS = [
   { key: "heart", display: "\u2764\uFE0F" },
   { key: "fire", display: "\uD83D\uDD25" },
@@ -525,13 +535,22 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
           </div>
         ) : (
-          <div className="h-[100px] bg-gradient-to-br from-purple/20 via-midnight to-midnight" />
+          <div
+            className="h-[120px]"
+            style={{
+              background: `linear-gradient(135deg, ${CATEGORY_GRADIENT_COLORS[group.category] || "#8B5CF6"}25 0%, var(--color-midnight) 60%, ${CATEGORY_GRADIENT_COLORS[group.category] || "#8B5CF6"}10 100%)`,
+            }}
+          />
         )}
 
         <div className="relative px-5 -mt-8 pb-4">
           {/* Group icon + title row */}
           <div className="flex items-end gap-3">
-            <div className="w-16 h-16 rounded-2xl bg-deep border-2 border-border-subtle flex items-center justify-center shrink-0 shadow-lg">
+            <div
+              className={`w-16 h-16 rounded-2xl bg-deep border-2 flex items-center justify-center shrink-0 shadow-lg ${
+                isAdminOrMod ? "border-gold/30" : "border-border-subtle"
+              }`}
+            >
               <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={28} />
             </div>
             <div className="flex-1 min-w-0 pb-1">
@@ -692,7 +711,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           const myPostReactions = userReactions[post.id] || [];
 
           return (
-            <Card key={post.id}>
+            <Card key={post.id} className={`relative overflow-hidden ${post.is_pinned ? "border-gold/15" : ""}`}>
+              {/* Pinned accent bar */}
+              {post.is_pinned && (
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-gold to-gold/20 rounded-full" />
+              )}
               <div className="space-y-2">
                 {/* Pinned indicator */}
                 {post.is_pinned && (
@@ -706,7 +729,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
                 {/* Author + menu */}
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-white/10 ring-1 ring-white/[0.06] flex items-center justify-center overflow-hidden shrink-0">
                     {post.author?.avatar_url ? (
                       <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
@@ -1003,7 +1026,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             const d = formatEventDate(ev.start_date);
             return (
               <Link key={ev.id} href={`/events/${ev.id}`}>
-                <Card hover>
+                <Card hover className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <div className="flex gap-3">
                     <div className="w-12 h-14 rounded-xl bg-gold/10 flex flex-col items-center justify-center shrink-0">
                       <span className="text-[9px] font-bold text-gold tracking-wider">{d.month}</span>
@@ -1069,9 +1093,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                     {m.role === "member" && (
                       <button
                         onClick={() => handleChangeRole(m.user!.id, "moderator")}
-                        className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors"
+                        className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors flex items-center gap-1"
                       >
-                        Make Mod
+                        <Icon name="crown" size={10} /> Mod
                       </button>
                     )}
                     {m.role === "moderator" && (
@@ -1085,9 +1109,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                     {m.role !== "admin" && (
                       <button
                         onClick={() => handleRemoveMember(m.user!.id, m.user!.display_name)}
-                        className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors"
+                        className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors flex items-center gap-1"
                       >
-                        Remove
+                        <Icon name="trash" size={10} /> Remove
                       </button>
                     )}
                   </div>
@@ -1144,9 +1168,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                         {m.role === "member" && (
                           <button
                             onClick={() => handleChangeRole(m.user!.id, "moderator")}
-                            className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors"
+                            className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors flex items-center gap-1"
                           >
-                            Make Mod
+                            <Icon name="crown" size={10} /> Mod
                           </button>
                         )}
                         {m.role === "moderator" && (
@@ -1160,9 +1184,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                         {m.role !== "admin" && (
                           <button
                             onClick={() => handleRemoveMember(m.user!.id, m.user!.display_name)}
-                            className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors"
+                            className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors flex items-center gap-1"
                           >
-                            Remove
+                            <Icon name="trash" size={10} /> Remove
                           </button>
                         )}
                       </div>

@@ -40,6 +40,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const [deleted, setDeleted] = useState(false);
   const [currentBody, setCurrentBody] = useState(post.body);
   const [editedAt, setEditedAt] = useState(post.edited_at);
+  const [bodyExpanded, setBodyExpanded] = useState(false);
   const author = post.author;
   const initials = author?.display_name
     ?.split(" ")
@@ -61,222 +62,253 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const canDelete = isAuthor;
   const showMenuButton = userId && (isAuthor || userId !== post.author_id);
 
+  const isLongBody = currentBody.length > 280;
+
   if (deleted) return null;
 
   return (
-    <Card hover className={post.is_pinned ? "border-gold/20 relative overflow-hidden" : ""}>
+    <Card className={`!p-0 overflow-hidden ${post.is_pinned ? "border-gold/20 relative" : ""}`}>
       {/* Pinned accent */}
       {post.is_pinned && (
-        <>
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/40 via-gold/20 to-transparent" />
-          <div className="flex items-center gap-1.5 text-[10px] text-gold font-semibold mb-2.5">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/50 via-gold/25 to-transparent z-10" />
+      )}
+
+      <div className="p-4">
+        {/* Pinned label */}
+        {post.is_pinned && (
+          <div className="flex items-center gap-1.5 text-[10px] text-gold font-semibold mb-3">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
             </svg>
             Pinned Post
           </div>
-        </>
-      )}
+        )}
 
-      {/* Author row */}
-      <div className="flex items-start gap-3 mb-3">
-        <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0 mt-0.5">
-          {author?.avatar_url ? (
-            <Image
-              src={author.avatar_url}
-              alt={author.display_name}
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-white/5"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/5">
-              {initials}
+        {/* Author row */}
+        <div className="flex items-center gap-3 mb-3">
+          <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0">
+            {author?.avatar_url ? (
+              <Image
+                src={author.avatar_url}
+                alt={author.display_name}
+                width={44}
+                height={44}
+                className="w-11 h-11 rounded-full object-cover ring-2 ring-white/[0.06]"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/[0.06]">
+                {initials}
+              </div>
+            )}
+          </Link>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="text-[13px] font-bold truncate hover:underline">
+                {author?.display_name || "Unknown"}
+              </Link>
+              {isVerified && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              )}
+              {roleBadge && (
+                <Badge label={roleBadge.label} variant={roleBadge.variant} />
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-0.5">
+              {author?.handle && (
+                <span className="text-[11px] text-white/30">@{author.handle}</span>
+              )}
+              <span className="text-[10px] text-white/20">&middot;</span>
+              <span className="text-[10px] text-white/30">{timeAgo}</span>
+              {editedAt && (
+                <span className="text-[10px] text-white/20 italic">edited</span>
+              )}
+            </div>
+          </div>
+          {/* More menu */}
+          {showMenuButton && (
+            <div className="relative">
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                aria-label="Post options"
+                className="p-1.5 rounded-lg hover:bg-white/5 text-txt-secondary hover:text-white transition-colors"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
+              </button>
+              {showMenu && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                  <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 w-40">
+                    {canEdit && (
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          setEditBody(currentBody);
+                          setIsEditing(true);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-white hover:bg-white/5 flex items-center gap-2"
+                      >
+                        <Icon name="edit" size={16} /> Edit Post
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={async () => {
+                          setShowMenu(false);
+                          if (!confirm("Delete this post? This cannot be undone.")) return;
+                          try {
+                            const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+                            if (res.ok) setDeleted(true);
+                          } catch {
+                            // silent fail
+                          }
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
+                      >
+                        <Icon name="trash" size={16} /> Delete Post
+                      </button>
+                    )}
+                    {!isAuthor && (
+                      <button
+                        onClick={() => {
+                          setShowMenu(false);
+                          setShowReport(true);
+                        }}
+                        className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
+                      >
+                        <Icon name="flag" size={16} /> Report Post
+                      </button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           )}
-        </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="text-[13px] font-bold truncate hover:underline">
-              {author?.display_name || "Unknown"}
-            </Link>
-            {isVerified && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
-                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-              </svg>
-            )}
-          </div>
-          <div className="flex items-center gap-2 mt-0.5">
-            {roleBadge && (
-              <Badge label={roleBadge.label} variant={roleBadge.variant} />
-            )}
-            <p className="text-[10px] text-txt-secondary">{timeAgo}</p>
-          </div>
         </div>
-        {/* More menu */}
-        {showMenuButton && (
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              aria-label="Post options"
-              className="p-1.5 rounded-lg hover:bg-white/5 text-txt-secondary hover:text-white transition-colors"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <circle cx="12" cy="5" r="2" />
-                <circle cx="12" cy="12" r="2" />
-                <circle cx="12" cy="19" r="2" />
-              </svg>
-            </button>
-            {showMenu && (
-              <>
-                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 w-40">
-                  {canEdit && (
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        setEditBody(currentBody);
-                        setIsEditing(true);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-white hover:bg-white/5 flex items-center gap-2"
-                    >
-                      <Icon name="edit" size={16} /> Edit Post
-                    </button>
-                  )}
-                  {canDelete && (
-                    <button
-                      onClick={async () => {
-                        setShowMenu(false);
-                        if (!confirm("Delete this post? This cannot be undone.")) return;
-                        try {
-                          const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
-                          if (res.ok) setDeleted(true);
-                        } catch {
-                          // silent fail
-                        }
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
-                    >
-                      <Icon name="trash" size={16} /> Delete Post
-                    </button>
-                  )}
-                  {!isAuthor && (
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        setShowReport(true);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
-                    >
-                      <Icon name="flag" size={16} /> Report Post
-                    </button>
-                  )}
-                </div>
-              </>
+
+        {/* Content */}
+        {isEditing ? (
+          <div className="mb-3">
+            <textarea
+              value={editBody}
+              onChange={(e) => setEditBody(e.target.value)}
+              className="w-full bg-white/5 border border-gold/30 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/50 min-h-[80px] resize-none leading-relaxed"
+              autoFocus
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={async () => {
+                  if (!editBody.trim() || saving) return;
+                  setSaving(true);
+                  try {
+                    const res = await fetch(`/api/posts/${post.id}`, {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ body: editBody }),
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      setCurrentBody(data.post.body);
+                      setEditedAt(data.post.edited_at);
+                      setIsEditing(false);
+                    } else {
+                      const data = await res.json();
+                      alert(data.error || "Failed to save edit");
+                    }
+                  } catch {
+                    alert("Failed to save edit");
+                  }
+                  setSaving(false);
+                }}
+                disabled={saving || !editBody.trim()}
+                className="px-3 py-1.5 rounded-lg bg-gold text-midnight text-[11px] font-bold disabled:opacity-40"
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+              <button
+                onClick={() => setIsEditing(false)}
+                className="px-3 py-1.5 rounded-lg bg-white/5 text-txt-secondary text-[11px] font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mb-3">
+            <p className={`text-[14px] text-white/80 leading-relaxed whitespace-pre-wrap ${isLongBody && !bodyExpanded ? "line-clamp-4" : ""}`}>
+              {currentBody}
+            </p>
+            {isLongBody && (
+              <button
+                onClick={() => setBodyExpanded(!bodyExpanded)}
+                className="text-[12px] text-gold font-semibold mt-1 hover:underline"
+              >
+                {bodyExpanded ? "Show less" : "Read more"}
+              </button>
             )}
+          </div>
+        )}
+
+        {/* Hashtags */}
+        {post.hashtags && post.hashtags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {post.hashtags.map((tag: string) => (
+              <span key={tag} className="text-[12px] font-medium text-gold/70 hover:text-gold transition-colors cursor-pointer">
+                #{tag}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Content */}
-      {isEditing ? (
-        <div className="mb-3">
-          <textarea
-            value={editBody}
-            onChange={(e) => setEditBody(e.target.value)}
-            className="w-full bg-white/5 border border-gold/30 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/50 min-h-[80px] resize-none leading-relaxed"
-            autoFocus
-          />
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={async () => {
-                if (!editBody.trim() || saving) return;
-                setSaving(true);
-                try {
-                  const res = await fetch(`/api/posts/${post.id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ body: editBody }),
-                  });
-                  if (res.ok) {
-                    const data = await res.json();
-                    setCurrentBody(data.post.body);
-                    setEditedAt(data.post.edited_at);
-                    setIsEditing(false);
-                  } else {
-                    const data = await res.json();
-                    alert(data.error || "Failed to save edit");
-                  }
-                } catch {
-                  alert("Failed to save edit");
-                }
-                setSaving(false);
-              }}
-              disabled={saving || !editBody.trim()}
-              className="px-3 py-1.5 rounded-lg bg-gold text-midnight text-[11px] font-bold disabled:opacity-40"
-            >
-              {saving ? "Saving..." : "Save"}
-            </button>
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-3 py-1.5 rounded-lg bg-white/5 text-txt-secondary text-[11px] font-medium"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="mb-3">
-          <p className="text-sm text-txt-secondary leading-relaxed">
-            {currentBody}
-          </p>
-          {editedAt && (
-            <span className="text-[10px] text-white/25 italic mt-1 inline-block">edited</span>
-          )}
-        </div>
-      )}
-
-      {/* Media */}
+      {/* Media — full bleed */}
       {post.media_type === "image" && post.image_url && (
-        <div className="relative rounded-xl overflow-hidden mb-3 -mx-1">
+        <div className="relative overflow-hidden">
           <Image
             src={post.image_url}
             alt="Post image"
-            width={400}
-            height={400}
-            className="w-full h-auto max-h-[400px] object-cover"
+            width={430}
+            height={430}
+            className="w-full h-auto max-h-[420px] object-cover"
           />
         </div>
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && post.mux_playback_id && (
-        <div className="rounded-xl overflow-hidden mb-3 -mx-1">
+        <div className="overflow-hidden">
           <MuxPlayer
             playbackId={post.mux_playback_id}
             streamType="on-demand"
             accentColor="#D4A017"
-            style={{ aspectRatio: "16/9", width: "100%", borderRadius: "0.75rem" }}
+            style={{ aspectRatio: "16/9", width: "100%" }}
             metadata={{ video_title: "Hub City Post" }}
           />
         </div>
       )}
 
       {post.media_type === "video" && post.video_status === "preparing" && (
-        <div className="rounded-xl bg-white/5 border border-border-subtle mb-3 -mx-1 flex flex-col items-center justify-center py-10 gap-2">
+        <div className="bg-white/5 border-t border-b border-border-subtle flex flex-col items-center justify-center py-10 gap-2">
           <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
           <p className="text-xs text-txt-secondary">Video processing...</p>
         </div>
       )}
 
       {post.media_type === "video" && post.video_status === "errored" && (
-        <div className="rounded-xl bg-coral/5 border border-coral/20 mb-3 -mx-1 flex items-center justify-center py-6">
+        <div className="bg-coral/5 border-t border-b border-coral/20 flex items-center justify-center py-6">
           <p className="text-xs text-coral">Video failed to process</p>
         </div>
       )}
 
       {/* Reactions */}
-      <ReactionBar post={post} userReactions={userReactions} userId={userId} />
+      <div className="px-4 pb-3 pt-1">
+        <ReactionBar post={post} userReactions={userReactions} userId={userId} />
+      </div>
 
       {/* Report Modal */}
       {showReport && (

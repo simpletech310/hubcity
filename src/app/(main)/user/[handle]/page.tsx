@@ -72,21 +72,34 @@ export default async function PublicProfilePage({
 
   const roleColors: Record<string, string> = {
     city_official: "#F2A900",
+    city_ambassador: "#8B5CF6",
     business_owner: "#3B82F6",
     community_leader: "#22C55E",
     admin: "#8B5CF6",
     content_creator: "#EC4899",
+    creator: "#EC4899",
+    chamber_admin: "#8B5CF6",
+    resource_provider: "#06B6D4",
+    school: "#22C55E",
   };
   const accentColor = profile.role ? (roleColors[profile.role] || "#F2A900") : "#F2A900";
 
   const roleIcons: Record<string, IconName> = {
     city_official: "landmark",
+    city_ambassador: "flag",
     business_owner: "store",
     community_leader: "tree",
     admin: "settings",
     content_creator: "film",
+    creator: "film",
+    chamber_admin: "landmark",
+    resource_provider: "briefcase",
+    school: "graduation",
   };
   const roleIcon: IconName = profile.role ? (roleIcons[profile.role] || "chat") : "chat";
+
+  // Parse social links
+  const socialLinks = profile.social_links as Record<string, string> | null;
 
   // Separate posts with images for Instagram grid
   const postsWithImages = userPosts.filter((p) => p.image_url);
@@ -167,22 +180,68 @@ export default async function PublicProfilePage({
           {profile.bio && (
             <p className="text-sm text-white/60 leading-relaxed">{profile.bio}</p>
           )}
+
+          {/* Social Links */}
+          {(socialLinks && Object.keys(socialLinks).length > 0 || profile.website_url) && (
+            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.04]">
+              {profile.website_url && (
+                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+                  <Icon name="globe" size={14} />
+                </a>
+              )}
+              {socialLinks?.instagram && (
+                <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-pink transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                </a>
+              )}
+              {(socialLinks?.twitter || socialLinks?.x) && (
+                <a href={`https://x.com/${socialLinks.twitter || socialLinks.x}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-white transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                </a>
+              )}
+              {socialLinks?.facebook && (
+                <a href={`https://facebook.com/${socialLinks.facebook}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-blue transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </a>
+              )}
+              {socialLinks?.tiktok && (
+                <a href={`https://tiktok.com/@${socialLinks.tiktok}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-white transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.98a8.21 8.21 0 004.76 1.52V7.05a4.84 4.84 0 01-1-.36z"/></svg>
+                </a>
+              )}
+              {socialLinks?.youtube && (
+                <a href={`https://youtube.com/${socialLinks.youtube}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-coral transition-colors">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                </a>
+              )}
+            </div>
+          )}
         </Card>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-3 mb-4">
+          <button className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press">
+            Follow
+          </button>
+          <button className="flex-1 py-2.5 rounded-xl bg-white/[0.06] border border-border-subtle text-white font-semibold text-sm press hover:bg-white/[0.08] transition-colors">
+            Message
+          </button>
+        </div>
 
         {/* Stats row */}
         <div className="flex items-center gap-3 mb-4">
           <Card variant="glass" className="flex-1 text-center !py-3">
-            <p className="font-heading font-bold text-lg">{postCount ?? 0}</p>
+            <p className="font-heading font-bold text-lg tabular-nums">{postCount ?? 0}</p>
             <p className="text-[10px] text-white/40 uppercase tracking-wider">Posts</p>
           </Card>
           {channel && (
             <Card variant="glass" className="flex-1 text-center !py-3">
-              <p className="font-heading font-bold text-lg">{channel.follower_count?.toLocaleString()}</p>
+              <p className="font-heading font-bold text-lg tabular-nums">{channel.follower_count?.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">Followers</p>
             </Card>
           )}
           <Card variant="glass" className="flex-1 text-center !py-3">
-            <p className="font-heading font-bold text-lg">
+            <p className="font-heading font-bold text-lg tabular-nums">
               {userPosts.reduce((sum, p) => sum + (p.like_count ?? 0), 0).toLocaleString()}
             </p>
             <p className="text-[10px] text-white/40 uppercase tracking-wider">Likes</p>
@@ -236,7 +295,7 @@ export default async function PublicProfilePage({
           <>
             {/* Instagram-style 3-col image grid */}
             {postsWithImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden mb-4">
+              <div className="grid grid-cols-3 gap-0.5 rounded-xl overflow-hidden mb-4">
                 {postsWithImages.map((post) => (
                   <div key={post.id} className="relative aspect-square group">
                     <Image
