@@ -15,12 +15,54 @@ export async function GET(
       .select("*, author:profiles!group_posts_author_id_fkey(id, display_name, avatar_url, handle, role)")
       .eq("group_id", id)
       .eq("is_published", true)
+      .order("is_pinned", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(50);
 
     if (error) throw error;
 
-    return NextResponse.json({ posts: posts || [] });
+    // Get current user's role + reactions
+    let myRole: string | null = null;
+    let userReactions: Record<string, string[]> = {};
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data: membership } = await supabase
+        .from("group_members")
+        .select("role")
+        .eq("group_id", id)
+        .eq("user_id", user.id)
+        .single();
+
+      myRole = membership?.role ?? null;
+
+      // Fetch user's reactions for these posts
+      if (posts && posts.length > 0) {
+        const postIds = posts.map((p: { id: string }) => p.id);
+        const { data: reactions } = await supabase
+          .from("group_post_reactions")
+          .select("group_post_id, emoji")
+          .eq("user_id", user.id)
+          .in("group_post_id", postIds);
+
+        if (reactions) {
+          for (const r of reactions) {
+            if (!userReactions[r.group_post_id]) userReactions[r.group_post_id] = [];
+            userReactions[r.group_post_id].push(r.emoji);
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({
+      posts: posts || [],
+      my_role: myRole,
+      user_reactions: userReactions,
+      user_id: user?.id ?? null,
+    });
   } catch (error) {
     console.error("Fetch group posts error:", error);
     return NextResponse.json(

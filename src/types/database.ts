@@ -1211,11 +1211,19 @@ export interface GroupPost {
   body: string;
   image_url: string | null;
   is_published: boolean;
+  is_pinned: boolean;
   reaction_counts: Record<string, number>;
   comment_count: number;
   created_at: string;
   updated_at: string;
   author?: Profile;
+}
+
+export interface GroupPostReaction {
+  group_post_id: string;
+  user_id: string;
+  emoji: string;
+  created_at: string;
 }
 
 export interface GroupPostComment {
