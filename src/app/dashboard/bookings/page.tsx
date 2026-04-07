@@ -5,6 +5,8 @@ import Badge from "@/components/ui/Badge";
 import type { Booking } from "@/types/database";
 import BookingActions from "./BookingActions";
 import BookingFilters from "./BookingFilters";
+import BookingViewToggle from "./BookingViewToggle";
+import BookingCalendar from "./BookingCalendar";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -21,9 +23,9 @@ const statusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | "purp
 export default async function DashboardBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; view?: string }>;
 }) {
-  const { filter = "all" } = await searchParams;
+  const { filter = "all", view = "list" } = await searchParams;
   const supabase = await createClient();
 
   const {
@@ -78,9 +80,7 @@ export default async function DashboardBookingsPage({
     <div className="px-4 py-5 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="font-heading text-xl font-bold">Bookings</h1>
-        <span className="text-xs text-txt-secondary">
-          {allBookings.length} total
-        </span>
+        <BookingViewToggle currentView={view} />
       </div>
 
       {/* Stat Bar */}
@@ -99,10 +99,24 @@ export default async function DashboardBookingsPage({
         </div>
       </div>
 
-      {/* Filter Row */}
-      <BookingFilters currentFilter={filter} />
+      {/* Filter Row (list view only) */}
+      {view !== "calendar" && <BookingFilters currentFilter={filter} />}
 
-      {filteredBookings.length === 0 ? (
+      {view === "calendar" ? (
+        <BookingCalendar
+          bookings={allBookings.map((b) => ({
+            id: b.id,
+            service_name: b.service_name,
+            date: b.date,
+            start_time: b.start_time,
+            end_time: b.end_time,
+            status: b.status,
+            price: b.price,
+            staff_name: b.staff_name ?? null,
+            customer_name: b.customer?.display_name || "Customer",
+          }))}
+        />
+      ) : filteredBookings.length === 0 ? (
         <Card className="text-center py-10">
           <div className="w-12 h-12 rounded-full bg-cyan/10 flex items-center justify-center mx-auto mb-3">
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-cyan">
@@ -128,6 +142,7 @@ export default async function DashboardBookingsPage({
                     <p className="text-sm font-semibold">{booking.service_name}</p>
                     <p className="text-xs text-txt-secondary mt-0.5">
                       {booking.customer?.display_name || "Customer"}
+                      {booking.staff_name ? ` · ${booking.staff_name}` : ""}
                     </p>
                   </div>
                   <Badge

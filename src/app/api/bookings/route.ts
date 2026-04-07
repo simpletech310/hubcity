@@ -21,6 +21,8 @@ export async function POST(request: Request) {
       price,
       notes,
       stripe_payment_intent_id,
+      staff_id,
+      staff_name,
     } = await request.json();
 
     if (!business_id || !service_name || !date || !start_time || !end_time) {
@@ -64,6 +66,8 @@ export async function POST(request: Request) {
         price: price || null,
         stripe_payment_intent_id: stripe_payment_intent_id || null,
         notes: notes || null,
+        staff_id: staff_id || null,
+        staff_name: staff_name || null,
       })
       .select("*")
       .single();

@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import type { CityIssue } from "@/types/database";
+import type { MapPoint } from "@/types/map";
+
+const MapView = dynamic(() => import("@/components/ui/MapView"), { ssr: false });
 
 const ISSUE_ICONS: Record<string, IconName> = {
   pothole: "alert",
@@ -69,6 +73,7 @@ export default function CityIssuesPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   useEffect(() => {
     async function load() {
@@ -87,6 +92,27 @@ export default function CityIssuesPage() {
     }
     load();
   }, [typeFilter, statusFilter]);
+
+  const mapPoints: MapPoint[] = useMemo(
+    () =>
+      issues
+        .filter((i) => i.latitude && i.longitude)
+        .map((i) => ({
+          id: i.id,
+          type: "issue" as const,
+          name: i.title,
+          latitude: i.latitude!,
+          longitude: i.longitude!,
+          color:
+            STATUS_CONFIG[i.status]?.color || "#F2A900",
+          metadata: {
+            status: i.status,
+            issueType: i.type,
+            upvotes: i.upvote_count,
+          },
+        })),
+    [issues]
+  );
 
   function daysSince(date: string) {
     const d = Math.floor(
@@ -167,6 +193,30 @@ export default function CityIssuesPage() {
         </div>
       </div>
 
+      {/* View Toggle */}
+      <div className="px-5 mb-3 flex gap-2">
+        <button
+          onClick={() => setViewMode("list")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            viewMode === "list"
+              ? "bg-gold/15 text-gold border border-gold/30"
+              : "bg-white/5 text-txt-secondary border border-border-subtle"
+          }`}
+        >
+          <Icon name="document" size={12} /> List
+        </button>
+        <button
+          onClick={() => setViewMode("map")}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+            viewMode === "map"
+              ? "bg-gold/15 text-gold border border-gold/30"
+              : "bg-white/5 text-txt-secondary border border-border-subtle"
+          }`}
+        >
+          <Icon name="pin" size={12} /> Map
+        </button>
+      </div>
+
       {/* Type Filters */}
       <div className="px-5 mb-3">
         <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
@@ -199,8 +249,28 @@ export default function CityIssuesPage() {
         </div>
       </div>
 
+      {/* Map View */}
+      {viewMode === "map" && (
+        <div className="px-5 mb-5">
+          <div className="rounded-2xl overflow-hidden border border-border-subtle">
+            <MapView
+              points={mapPoints}
+              height="400px"
+              onPointClick={(point) => {
+                window.location.href = `/city-hall/issues/${point.id}`;
+              }}
+            />
+          </div>
+          {mapPoints.length === 0 && !loading && (
+            <p className="text-xs text-txt-secondary text-center mt-2">
+              No issues with location data to display on the map.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Issues List */}
-      <div className="px-5 space-y-3">
+      <div className={`px-5 space-y-3 ${viewMode === "map" ? "hidden" : ""}`}>
         {loading && (
           <div className="flex justify-center py-12">
             <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -280,7 +350,17 @@ export default function CityIssuesPage() {
                         <span>{issue.assigned_department}</span>
                       )}
                     </div>
-                    <span>{daysSince(issue.created_at)}</span>
+                    <div className="flex items-center gap-2">
+                      {issue.sla_deadline && !["resolved", "closed"].includes(issue.status) && (() => {
+                        const hoursLeft = Math.round(
+                          (new Date(issue.sla_deadline).getTime() - Date.now()) / (1000 * 60 * 60)
+                        );
+                        if (hoursLeft < 0) return <span className="text-coral font-semibold">Overdue</span>;
+                        if (hoursLeft <= 12) return <span className="text-gold font-semibold">{hoursLeft}h left</span>;
+                        return null;
+                      })()}
+                      <span>{daysSince(issue.created_at)}</span>
+                    </div>
                   </div>
                 </div>
               </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
@@ -97,8 +98,14 @@ export default function AdminIssuesPage() {
         </p>
       </div>
 
-      {/* Export */}
+      {/* Actions */}
       <div className="mb-4 flex gap-2">
+        <Link
+          href="/admin/issues/analytics"
+          className="px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/20 text-xs font-semibold text-gold hover:bg-gold/15 transition-colors"
+        >
+          <Icon name="trending" size={12} className="inline mr-1" />Analytics
+        </Link>
         <a
           href="/api/admin/export/issues"
           className="px-3 py-1.5 rounded-lg bg-white/5 border border-border-subtle text-xs font-semibold text-txt-secondary hover:text-white transition-colors"
@@ -172,6 +179,14 @@ export default function AdminIssuesPage() {
                     {issue.assigned_department && (
                       <span>→ {issue.assigned_department}</span>
                     )}
+                    {issue.sla_deadline && !["resolved", "closed"].includes(issue.status) && (() => {
+                      const hoursLeft = Math.round(
+                        (new Date(issue.sla_deadline).getTime() - Date.now()) / (1000 * 60 * 60)
+                      );
+                      if (hoursLeft < 0) return <span className="text-coral font-semibold">SLA overdue</span>;
+                      if (hoursLeft <= 24) return <span className="text-gold font-semibold">SLA: {hoursLeft}h</span>;
+                      return null;
+                    })()}
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">

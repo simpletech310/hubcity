@@ -164,6 +164,21 @@ export default async function BookingDetailPage({
         </div>
       </Card>
 
+      {/* Provider */}
+      {typedBooking.staff_name && (
+        <Card className="glass-card-elevated">
+          <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+            Provider
+          </h3>
+          <div className="flex items-center gap-3 text-sm">
+            <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0 text-gold font-bold">
+              {typedBooking.staff_name.charAt(0)}
+            </div>
+            <p className="font-medium">{typedBooking.staff_name}</p>
+          </div>
+        </Card>
+      )}
+
       {/* Notes */}
       {typedBooking.notes && (
         <Card className="glass-card-elevated">

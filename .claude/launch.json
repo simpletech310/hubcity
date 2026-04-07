@@ -3,11 +3,8 @@
   "configurations": [
     {
       "name": "hubcity-dev",
-      "env": {
-        "PATH": "/Users/tj/.nvm/versions/node/v20.19.1/bin:/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin"
-      },
-      "runtimeExecutable": "/Users/tj/.nvm/versions/node/v20.19.1/bin/node",
-      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "--turbopack", "-p", "3000"],
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "export PATH=/Users/tj/.nvm/versions/node/v20.19.1/bin:$PATH && cd '/Users/tj/Documents/Claude/Projects/HubCity MVP/hubcity-app' && node node_modules/next/dist/bin/next dev --turbopack -p 3000"],
       "port": 3000
     }
   ]

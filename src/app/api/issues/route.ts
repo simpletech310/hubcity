@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
-import { ISSUE_DEPARTMENT_MAP } from "@/lib/hashtags";
+import { ISSUE_DEPARTMENT_MAP, ISSUE_SLA_HOURS } from "@/lib/hashtags";
+import { sendEmail, notificationEmailTemplate } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
   try {
@@ -145,6 +146,10 @@ export async function POST(request: Request) {
     const departmentEmail =
       hashtagAction?.department_email || staticDept?.email || null;
 
+    // Calculate SLA
+    const slaHours = ISSUE_SLA_HOURS[type] ?? 120;
+    const slaDeadline = new Date(Date.now() + slaHours * 60 * 60 * 1000).toISOString();
+
     const { data: issue, error } = await supabase
       .from("city_issues")
       .insert({
@@ -160,11 +165,42 @@ export async function POST(request: Request) {
         reported_by: user.id,
         assigned_department: assignedDepartment,
         department_email: departmentEmail,
+        sla_hours: slaHours,
+        sla_deadline: slaDeadline,
       })
       .select("*")
       .single();
 
     if (error) throw error;
+
+    // Forward email to department (fire-and-forget)
+    if (departmentEmail) {
+      const issueUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://hubcityapp.com"}/city-hall/issues/${issue.id}`;
+      const emailHtml = notificationEmailTemplate(
+        `New ${type.charAt(0).toUpperCase() + type.slice(1)} Report`,
+        `<strong>${issue.title}</strong><br/><br/>${
+          issue.description ? `${issue.description}<br/><br/>` : ""
+        }${issue.location_text ? `📍 Location: ${issue.location_text}<br/>` : ""}${
+          issue.district ? `District: ${issue.district}<br/>` : ""
+        }Priority: ${issue.priority}<br/>SLA: ${slaHours} hours (due ${new Date(slaDeadline).toLocaleDateString()})`,
+        issueUrl,
+        "View Issue Details"
+      );
+
+      sendEmail({
+        to: departmentEmail,
+        subject: `[Hub City] New ${type} report: ${issue.title}`,
+        html: emailHtml,
+      }).then((sent) => {
+        if (sent) {
+          supabase
+            .from("city_issues")
+            .update({ email_forwarded_at: new Date().toISOString() })
+            .eq("id", issue.id)
+            .then(() => {});
+        }
+      });
+    }
 
     // Notify city officials about the new issue
     try {

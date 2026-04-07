@@ -12,7 +12,7 @@ import {
 import { getStripeClient } from "@/lib/stripe-client";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
-import type { Business, Service } from "@/types/database";
+import type { Business, Service, BusinessStaff } from "@/types/database";
 
 interface BookingViewProps {
   business: Business;
@@ -154,6 +154,11 @@ export default function BookingView({ business, services }: BookingViewProps) {
   const [loading, setLoading] = useState(false);
   const [slotsLoading, setSlotsLoading] = useState(false);
 
+  // Staff/provider state
+  const [staffList, setStaffList] = useState<(BusinessStaff & { staff_services: { service_id: string }[] })[]>([]);
+  const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
+  const [staffLoaded, setStaffLoaded] = useState(false);
+
   // Payment state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bookingId, setBookingId] = useState<string | null>(null);
@@ -167,6 +172,22 @@ export default function BookingView({ business, services }: BookingViewProps) {
   } | null>(null);
 
   const dates = getNext14Days();
+
+  // Fetch staff for this business
+  useEffect(() => {
+    fetch(`/api/staff?business_id=${business.id}`)
+      .then((r) => r.json())
+      .then((d) => setStaffList((d.staff ?? []).filter((s: { is_active: boolean }) => s.is_active)))
+      .catch(() => {})
+      .finally(() => setStaffLoaded(true));
+  }, [business.id]);
+
+  // Get providers available for selected service
+  const serviceProviders = selectedService
+    ? staffList.filter((s) =>
+        s.staff_services.some((ss) => ss.service_id === selectedService.id)
+      )
+    : [];
 
   // Fetch available slots when date changes
   useEffect(() => {
@@ -222,6 +243,8 @@ export default function BookingView({ business, services }: BookingViewProps) {
             start_time: selectedTime,
             end_time,
             notes: notes.trim() || null,
+            staff_id: selectedStaff?.id || null,
+            staff_name: selectedStaff?.name || null,
           }),
         });
 
@@ -248,6 +271,8 @@ export default function BookingView({ business, services }: BookingViewProps) {
             end_time,
             price: selectedService.price,
             notes: notes.trim() || null,
+            staff_id: selectedStaff?.id || null,
+            staff_name: selectedStaff?.name || null,
           }),
         });
 
@@ -591,6 +616,43 @@ export default function BookingView({ business, services }: BookingViewProps) {
                 )}
               </div>
             </Card>
+
+            {/* Provider Selection */}
+            {serviceProviders.length > 0 && (
+              <div>
+                <label className="block text-sm font-medium text-txt-secondary mb-2">
+                  Preferred Provider (optional)
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => setSelectedStaff(null)}
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      !selectedStaff
+                        ? "bg-gold/15 text-gold border border-gold/30"
+                        : "bg-white/5 text-txt-secondary border border-border-subtle"
+                    }`}
+                  >
+                    Any Available
+                  </button>
+                  {serviceProviders.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedStaff(s)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                        selectedStaff?.id === s.id
+                          ? "bg-gold/15 text-gold border border-gold/30"
+                          : "bg-white/5 text-txt-secondary border border-border-subtle"
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center text-[10px] font-bold text-gold">
+                        {s.name.charAt(0)}
+                      </div>
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Notes */}
             <div>

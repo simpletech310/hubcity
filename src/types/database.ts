@@ -625,11 +625,30 @@ export interface Booking {
   price: number | null; // cents
   stripe_payment_intent_id: string | null;
   notes: string | null;
+  staff_id: string | null;
+  staff_name: string | null;
   created_at: string;
   updated_at: string;
   business?: Business;
   customer?: Profile;
   service?: Service;
+  staff?: BusinessStaff;
+}
+
+// ── Business Staff ─────────────────────────────────
+export interface BusinessStaff {
+  id: string;
+  business_id: string;
+  name: string;
+  role: string;
+  email: string | null;
+  phone: string | null;
+  avatar_url: string | null;
+  specialties: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  services?: Service[];
 }
 
 // ── Grant Applications ─────────────────────────────────
@@ -1108,6 +1127,9 @@ export interface CityIssue {
   resolved_at: string | null;
   resolution_notes: string | null;
   resolved_by: string | null;
+  sla_hours: number | null;
+  sla_deadline: string | null;
+  email_forwarded_at: string | null;
   created_at: string;
   updated_at: string;
   reporter?: Profile;

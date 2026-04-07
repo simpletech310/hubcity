@@ -83,6 +83,26 @@ export function generateIssueTitle(
 }
 
 /**
+ * SLA hours per issue type (expected resolution time)
+ */
+export const ISSUE_SLA_HOURS: Record<string, number> = {
+  pothole: 72,        // 3 days
+  streetlight: 48,    // 2 days
+  graffiti: 120,      // 5 days
+  trash: 48,          // 2 days
+  flooding: 24,       // 1 day (urgent)
+  parking: 72,        // 3 days
+  noise: 48,          // 2 days
+  sidewalk: 168,      // 7 days
+  tree: 168,          // 7 days
+  parks: 120,         // 5 days
+  water: 24,          // 1 day (urgent)
+  stray: 24,          // 1 day (urgent)
+  safety: 12,         // 12 hours (critical)
+  other: 120,         // 5 days
+};
+
+/**
  * Department email mapping for issue types
  */
 export const ISSUE_DEPARTMENT_MAP: Record<

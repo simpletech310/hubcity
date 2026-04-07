@@ -13,7 +13,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { business_id, service_id, date, start_time, end_time, notes } =
+    const { business_id, service_id, date, start_time, end_time, notes, staff_id, staff_name } =
       await request.json();
 
     if (!business_id || !service_id || !date || !start_time || !end_time) {
@@ -90,6 +90,8 @@ export async function POST(request: Request) {
         price: service.price,
         notes: notes || null,
         status: "pending",
+        staff_id: staff_id || null,
+        staff_name: staff_name || null,
       })
       .select("id")
       .single();

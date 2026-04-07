@@ -271,6 +271,11 @@ export default function IssueDetailPage() {
               Assigned Department
             </h3>
             <p className="text-sm font-semibold">{issue.assigned_department}</p>
+            {issue.email_forwarded_at && (
+              <p className="text-xs text-emerald mt-1">
+                Emailed {formatDate(issue.email_forwarded_at)}
+              </p>
+            )}
             {issue.forwarded_at && (
               <p className="text-xs text-emerald mt-1">
                 <Icon name="check" size={16} /> Forwarded {formatDate(issue.forwarded_at)}
@@ -278,6 +283,37 @@ export default function IssueDetailPage() {
             )}
           </Card>
         )}
+
+        {/* SLA Tracking */}
+        {issue.sla_deadline && !["resolved", "closed"].includes(issue.status) && (() => {
+          const deadline = new Date(issue.sla_deadline);
+          const now = new Date();
+          const hoursLeft = Math.round((deadline.getTime() - now.getTime()) / (1000 * 60 * 60));
+          const isOverdue = hoursLeft < 0;
+          const isUrgent = hoursLeft >= 0 && hoursLeft <= 12;
+
+          return (
+            <Card className={`mb-4 ${isOverdue ? "border-coral/30" : isUrgent ? "border-gold/30" : ""}`}>
+              <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+                Expected Resolution
+              </h3>
+              <div className="flex items-center justify-between">
+                <p className="text-sm">
+                  {formatDate(issue.sla_deadline)}
+                </p>
+                <Badge
+                  label={isOverdue ? `${Math.abs(hoursLeft)}h overdue` : `${hoursLeft}h remaining`}
+                  variant={isOverdue ? "coral" : isUrgent ? "gold" : "emerald"}
+                />
+              </div>
+              {issue.sla_hours && (
+                <p className="text-[11px] text-txt-secondary mt-1">
+                  SLA: {issue.sla_hours < 24 ? `${issue.sla_hours} hours` : `${Math.round(issue.sla_hours / 24)} days`}
+                </p>
+              )}
+            </Card>
+          );
+        })()}
 
         {/* Resolution */}
         {issue.resolution_notes && (

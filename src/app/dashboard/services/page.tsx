@@ -4,6 +4,7 @@ import Badge from "@/components/ui/Badge";
 import type { Service, TimeSlot } from "@/types/database";
 import ServiceActions from "./ServiceActions";
 import ScheduleEditor from "./ScheduleEditor";
+import StaffManager from "./StaffManager";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -111,6 +112,17 @@ export default async function DashboardServicesPage() {
         )}
 
         <ServiceActions businessId={business.id} isAddButton />
+      </div>
+
+      {/* Team Section */}
+      <div className="space-y-3">
+        <div className="border-t border-border-subtle pt-5">
+          <h2 className="font-heading text-lg font-bold">Team Members</h2>
+          <p className="text-xs text-txt-secondary mt-0.5">
+            Add your staff so customers know who provides each service
+          </p>
+        </div>
+        <StaffManager businessId={business.id} services={allServices} />
       </div>
 
       {/* Schedule Section */}

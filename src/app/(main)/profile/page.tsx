@@ -696,6 +696,8 @@ export default async function ProfilePage() {
       <div className="px-5 space-y-1">
         <p className="text-[10px] text-txt-secondary font-semibold uppercase tracking-wider mb-2">Account & Settings</p>
         {([
+          { label: "My Orders", icon: "receipt" as IconName, href: "/orders" },
+          { label: "My Bookings", icon: "calendar" as IconName, href: "/bookings" },
           { label: "Saved Items", icon: "bookmark" as IconName, href: "/profile/saved", count: savedCount ?? 0 },
           { label: "My Applications", icon: "document" as IconName, href: "/profile/applications" },
           { label: "My Job Applications", icon: "briefcase" as IconName, href: "/profile/jobs" },
