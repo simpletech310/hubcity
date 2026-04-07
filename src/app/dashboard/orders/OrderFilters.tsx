@@ -34,7 +34,9 @@ const statusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | "purp
   cancelled: "coral",
 };
 
-type OrderWithRelations = Order & {
+const ACTIVE_STATUSES = ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delayed"];
+
+export type OrderWithRelations = Order & {
   customer: { display_name: string } | null;
   items: { id: string; name: string; quantity: number }[];
 };
@@ -90,9 +92,17 @@ export default function OrderFilters({
                 .map((i) => `${i.quantity}x ${i.name}`)
                 .join(", ") + (order.items.length > 3 ? "..." : "");
 
+            const isActive = ACTIVE_STATUSES.includes(order.status);
+
             return (
               <Link key={order.id} href={`/dashboard/orders/${order.id}`}>
-                <Card hover>
+                <div
+                  className={`rounded-2xl border p-4 transition-all duration-150 active:scale-[0.97] active:brightness-90 ${
+                    isActive
+                      ? "bg-white/[0.05] border-gold/20 hover:border-gold/40"
+                      : "bg-white/[0.03] border-border-subtle hover:border-white/10"
+                  }`}
+                >
                   <div className="flex items-start justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold">
@@ -103,10 +113,29 @@ export default function OrderFilters({
                         variant={statusColors[order.status] || "gold"}
                         size="sm"
                       />
+                      {order.type === "delivery" && (
+                        <span className="text-[10px] text-cyan-400 font-medium uppercase tracking-wider">
+                          Delivery
+                        </span>
+                      )}
                     </div>
-                    <span className="text-sm font-semibold text-gold">
-                      {formatCents(order.total)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-semibold text-gold">
+                        {formatCents(order.total)}
+                      </span>
+                      {/* Chevron indicator */}
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        className="text-txt-secondary/50 flex-shrink-0"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
                   </div>
                   <p className="text-xs text-txt-secondary">
                     {order.customer?.display_name || "Customer"} &middot;{" "}
@@ -117,7 +146,13 @@ export default function OrderFilters({
                       {itemSummary}
                     </p>
                   )}
-                </Card>
+                  {/* Action hint for active orders */}
+                  {isActive && (
+                    <p className="text-[10px] text-gold/70 mt-2 font-medium">
+                      Tap to manage order
+                    </p>
+                  )}
+                </div>
               </Link>
             );
           })}

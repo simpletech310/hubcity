@@ -71,7 +71,7 @@ export async function POST(
         applicant_id: user.id,
         full_name,
         email,
-        phone: phone || null,
+        phone: phone || "",
         is_us_citizen: is_us_citizen ?? false,
         is_compton_resident: is_compton_resident ?? false,
         resume_url: resume_url || null,

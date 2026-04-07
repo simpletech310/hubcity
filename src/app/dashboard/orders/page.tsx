@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Order } from "@/types/database";
-import OrderFilters from "./OrderFilters";
+import OrderTabs from "./OrderTabs";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -39,6 +39,11 @@ export default async function DashboardOrdersPage() {
   // Compute stats
   const totalCount = allOrders.length;
   const pendingCount = allOrders.filter((o) => o.status === "pending").length;
+  const activeDeliveryCount = allOrders.filter(
+    (o) =>
+      o.type === "delivery" &&
+      ["pending", "confirmed", "preparing", "ready", "out_for_delivery", "delayed"].includes(o.status)
+  ).length;
 
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
@@ -78,7 +83,7 @@ export default async function DashboardOrdersPage() {
         </div>
       </div>
 
-      <OrderFilters orders={allOrders} />
+      <OrderTabs orders={allOrders} activeDeliveryCount={activeDeliveryCount} />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
         body: JSON.stringify({
           full_name: fullName,
           email,
-          phone: phone || null,
+          phone: phone || "",
           is_us_citizen: isUsCitizen,
           is_compton_resident: isComptonResident,
           resume_url,

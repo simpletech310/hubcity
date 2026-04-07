@@ -107,20 +107,67 @@ export default async function OrderDetailPage({
         />
       </div>
 
-      {/* Status Updater */}
-      <OrderStatusUpdater
-        orderId={typedOrder.id}
-        currentStatus={typedOrder.status}
-        orderType={typedOrder.type === "delivery" ? "delivery" : "pickup"}
-      />
-
-      {/* Refund */}
-      {canRefund && (
-        <RefundButton
+      {/* Status Updater - prominent card */}
+      <div className="rounded-2xl bg-gold/[0.08] border border-gold/20 p-4 space-y-3">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+          <h3 className="text-xs font-semibold text-gold uppercase tracking-wider">
+            Order Actions
+          </h3>
+        </div>
+        <OrderStatusUpdater
           orderId={typedOrder.id}
-          total={typedOrder.total}
-          paymentIntentId={typedOrder.stripe_payment_intent_id}
+          currentStatus={typedOrder.status}
+          orderType={typedOrder.type === "delivery" ? "delivery" : "pickup"}
         />
+        {canRefund && (
+          <RefundButton
+            orderId={typedOrder.id}
+            total={typedOrder.total}
+            paymentIntentId={typedOrder.stripe_payment_intent_id}
+          />
+        )}
+      </div>
+
+      {/* Delivery Info - only for delivery orders */}
+      {typedOrder.type === "delivery" && (
+        <Card className="glass-card-elevated border-cyan-500/20">
+          <div className="flex items-center gap-2 mb-3">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="text-cyan-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+            </svg>
+            <h3 className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+              Delivery Info
+            </h3>
+            {typedOrder.status === "out_for_delivery" && (
+              <Badge label="In Transit" variant="cyan" size="sm" />
+            )}
+            {typedOrder.status === "delayed" && (
+              <Badge label="Delayed" variant="coral" size="sm" />
+            )}
+          </div>
+          {typedOrder.delivery_address && (
+            <div className="mb-2">
+              <p className="text-[10px] text-txt-secondary uppercase tracking-wider mb-0.5">Address</p>
+              <p className="text-sm font-medium">{typedOrder.delivery_address}</p>
+            </div>
+          )}
+          {typedOrder.delivery_notes && (
+            <div className="mb-2">
+              <p className="text-[10px] text-txt-secondary uppercase tracking-wider mb-0.5">Notes</p>
+              <p className="text-sm text-txt-secondary italic">{typedOrder.delivery_notes}</p>
+            </div>
+          )}
+          {typedOrder.estimated_delivery_at && (
+            <div>
+              <p className="text-[10px] text-txt-secondary uppercase tracking-wider mb-0.5">Estimated Delivery</p>
+              <p className="text-sm font-medium">{formatDate(typedOrder.estimated_delivery_at)}</p>
+            </div>
+          )}
+          {!typedOrder.delivery_address && !typedOrder.delivery_notes && !typedOrder.estimated_delivery_at && (
+            <p className="text-xs text-txt-secondary">No delivery details provided</p>
+          )}
+        </Card>
       )}
 
       {/* Customer Info */}
@@ -132,9 +179,12 @@ export default async function OrderDetailPage({
           {typedOrder.customer?.display_name || "Unknown"}
         </p>
         {typedOrder.customer?.phone && (
-          <p className="text-xs text-txt-secondary mt-0.5">
+          <a
+            href={`tel:${typedOrder.customer.phone}`}
+            className="text-xs text-gold hover:underline mt-0.5 inline-block"
+          >
             {typedOrder.customer.phone}
-          </p>
+          </a>
         )}
         <div className="flex items-center gap-2 mt-1.5">
           <Badge
@@ -143,16 +193,6 @@ export default async function OrderDetailPage({
             size="sm"
           />
         </div>
-        {typedOrder.delivery_address && (
-          <p className="text-xs text-txt-secondary mt-2">
-            Delivery: {typedOrder.delivery_address}
-          </p>
-        )}
-        {typedOrder.delivery_notes && (
-          <p className="text-xs text-txt-secondary mt-1 italic">
-            Note: {typedOrder.delivery_notes}
-          </p>
-        )}
       </Card>
 
       {/* Items */}
