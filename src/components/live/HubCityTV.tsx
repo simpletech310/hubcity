@@ -58,54 +58,17 @@ const TYPE_BADGE: Record<
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAY_NAMES_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// ── Hub City Originals (curated showcase content) ──────────
-const ORIGINALS = [
-  {
-    title: "Compton Rising",
-    desc: "Five young creators. One city. Unlimited potential.",
-    genre: "Documentary Series",
-    episodes: 6,
-    gradient: "from-compton-red/80 via-compton-red/30 to-transparent",
-    accent: "#EF4444",
-    playbackId: "uV00dB900ydiHbaZ3ytSRUUmWK01S00mLQqL6hNYzPcSUzM",
-  },
-  {
-    title: "Block Beats",
-    desc: "The sounds that shaped a city. Music, culture, legacy.",
-    genre: "Music · Culture",
-    episodes: 12,
-    gradient: "from-hc-purple/80 via-hc-purple/30 to-transparent",
-    accent: "#8B5CF6",
-    playbackId: "djIRWA5IxCqF00raJ3hjIMd488F69sRhhF00xolcpwQGI",
-  },
-  {
-    title: "Friday Night Lights",
-    desc: "High school football in Compton. Under the lights, everything matters.",
-    genre: "Live Sports",
-    episodes: 8,
-    gradient: "from-emerald/80 via-emerald/30 to-transparent",
-    accent: "#22C55E",
-    playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY",
-  },
-  {
-    title: "The Real Compton",
-    desc: "Stories from the streets. Unscripted. Unfiltered. Real.",
-    genre: "Talk Show",
-    episodes: 10,
-    gradient: "from-gold/80 via-gold/30 to-transparent",
-    accent: "#F2A900",
-    playbackId: "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo",
-  },
-  {
-    title: "Compton Cooks",
-    desc: "Local chefs, legendary recipes, and the food that built us.",
-    genre: "Food · Lifestyle",
-    episodes: 4,
-    gradient: "from-coral/80 via-coral/30 to-transparent",
-    accent: "#FF6B6B",
-    playbackId: "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA",
-  },
-];
+// ── Accent colors for hero rotation ──────────────────────
+const HERO_ACCENTS = ["#F2A900", "#EF4444", "#8B5CF6", "#22C55E", "#FF6B6B", "#06B6D4", "#EC4899", "#F59E0B", "#3B82F6"];
+
+const VIDEO_TYPE_LABEL: Record<string, string> = {
+  featured: "Featured",
+  original: "Original",
+  city_hall: "City Hall",
+  on_demand: "On Demand",
+  podcast: "Podcast",
+  replay: "Replay",
+};
 
 // ── Compton Stars ──────────────────────────────────────────
 const COMPTON_STARS = [
@@ -204,13 +167,20 @@ export default function HubCityTV({
   const [pendingVideo, setPendingVideo] = useState<ChannelVideo | null>(null);
   const [pendingStream, setPendingStream] = useState<LiveStream | null>(null);
 
+  // Build hero videos from real data (featured first, then recent with playback IDs)
+  const heroVideos = [
+    ...featuredVideos.filter((v) => v.mux_playback_id),
+    ...recentVideos.filter((v) => v.mux_playback_id && !featuredVideos.some((f) => f.id === v.id)),
+  ].slice(0, 9);
+
   // Auto-rotate hero every 6 seconds
   useEffect(() => {
+    if (heroVideos.length === 0) return;
     heroTimerRef.current = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % ORIGINALS.length);
+      setHeroIndex((prev) => (prev + 1) % heroVideos.length);
     }, 6000);
     return () => { if (heroTimerRef.current) clearInterval(heroTimerRef.current); };
-  }, []);
+  }, [heroVideos.length]);
 
   const activeStreams = streams.filter((s) => s.status === "active");
   const upcomingStreams = streams.filter((s) => s.status === "idle");
@@ -301,7 +271,8 @@ export default function HubCityTV({
     }
   }, [pendingVideo, pendingStream]);
 
-  const currentHero = ORIGINALS[heroIndex];
+  const currentHero = heroVideos[heroIndex] || null;
+  const heroAccent = HERO_ACCENTS[heroIndex % HERO_ACCENTS.length];
 
   // ── Pre-Roll Ad ─────────────────────────────────────────
   if (preRollAd && preRollAd.mux_playback_id) {
@@ -428,15 +399,17 @@ export default function HubCityTV({
       <div className="relative -mt-[72px] pt-[72px]">
         {/* Background video poster */}
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={`https://image.mux.com/${currentHero.playbackId}/thumbnail.webp?width=960&height=540&time=8`}
-            alt=""
-            className="w-full h-full object-cover transition-opacity duration-700"
-          />
+          {currentHero?.mux_playback_id && (
+            <img
+              src={`https://image.mux.com/${currentHero.mux_playback_id}/thumbnail.webp?width=960&height=540&time=8`}
+              alt=""
+              className="w-full h-full object-cover transition-opacity duration-700"
+            />
+          )}
         </div>
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-t from-[var(--color-midnight)] via-[var(--color-midnight)]/70 to-[var(--color-midnight)]/40" />
-        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 20% 50%, ${currentHero.accent}20 0%, transparent 60%)` }} />
+        <div className="absolute inset-0" style={{ background: `radial-gradient(ellipse at 20% 50%, ${heroAccent}20 0%, transparent 60%)` }} />
 
         <div className="relative z-10 px-5 pt-6 pb-8">
           {/* Brand tag */}
@@ -453,55 +426,62 @@ export default function HubCityTV({
             </div>
           )}
 
-          <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
-            {currentHero.title}
-          </h1>
-          <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
-            {currentHero.desc}
-          </p>
-          <p className="text-[12px] text-txt-secondary mb-1">{currentHero.genre} · {currentHero.episodes} episodes</p>
+          {currentHero ? (
+            <>
+              <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
+                {currentHero.title}
+              </h1>
+              {currentHero.description && (
+                <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
+                  {currentHero.description}
+                </p>
+              )}
+              <div className="flex items-center gap-2 text-[12px] text-txt-secondary mb-1">
+                <span>{VIDEO_TYPE_LABEL[currentHero.video_type] || currentHero.video_type}</span>
+                {currentHero.duration && <><span>·</span><span>{formatDuration(currentHero.duration)}</span></>}
+                {currentHero.view_count > 0 && <><span>·</span><span>{formatViews(currentHero.view_count)} views</span></>}
+              </div>
 
-          {/* CTA Buttons */}
-          <div className="flex gap-3 mt-5">
-            <button
-              onClick={() => {
-                const demoVideo = {
-                  id: `original-hero-${heroIndex}`,
-                  channel_id: "demo",
-                  title: currentHero.title,
-                  description: currentHero.desc,
-                  mux_playback_id: currentHero.playbackId,
-                  mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
-                  video_type: "original", duration: 300, view_count: 5000 + heroIndex * 1200,
-                  is_published: true, is_featured: true, status: "ready",
-                  published_at: new Date().toISOString(), created_at: new Date().toISOString(),
-                  channel: null,
-                } as unknown as ChannelVideo;
-                playVideo(demoVideo);
-              }}
-              className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-              Watch Now
-            </button>
-            <button className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-              My List
-            </button>
-          </div>
+              {/* CTA Buttons */}
+              <div className="flex gap-3 mt-5">
+                <button
+                  onClick={() => playVideo(currentHero)}
+                  className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  Watch Now
+                </button>
+                <button className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                  My List
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
+                Hub City TV
+              </h1>
+              <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
+                Compton&apos;s community television
+              </p>
+            </>
+          )}
 
           {/* Hero pagination dots */}
-          <div className="flex gap-2 mt-6">
-            {ORIGINALS.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setHeroIndex(i); if (heroTimerRef.current) clearInterval(heroTimerRef.current); }}
-                className={`h-[3px] rounded-full transition-all duration-500 ${
-                  i === heroIndex ? "w-8 bg-gold" : "w-3 bg-white/20 hover:bg-white/40"
-                }`}
-              />
-            ))}
-          </div>
+          {heroVideos.length > 1 && (
+            <div className="flex gap-2 mt-6">
+              {heroVideos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setHeroIndex(i); if (heroTimerRef.current) clearInterval(heroTimerRef.current); }}
+                  className={`h-[3px] rounded-full transition-all duration-500 ${
+                    i === heroIndex ? "w-8 bg-gold" : "w-3 bg-white/20 hover:bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -593,54 +573,54 @@ export default function HubCityTV({
           )}
 
           {/* ── Hub City Originals ── */}
-          <section className="mb-8">
-            <div className="flex items-center justify-between px-5 mb-3">
-              <h2 className="font-heading font-bold text-[18px]">
-                <span className="text-gold">Hub City</span> Originals
-              </h2>
-              <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
-            </div>
-            <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-              {ORIGINALS.map((show, i) => (
-                <button key={i} className="shrink-0 w-[140px] text-left press group" onClick={() => {
-                  playVideo({
-                    id: `original-card-${i}`, channel_id: "demo", title: show.title,
-                    description: show.desc, mux_playback_id: show.playbackId,
-                    mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
-                    video_type: "original", duration: 300, view_count: 3000 + i * 800,
-                    is_published: true, is_featured: true, status: "ready",
-                    published_at: new Date().toISOString(), created_at: new Date().toISOString(),
-                    channel: null,
-                  } as unknown as ChannelVideo);
-                }}>
-                  <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
-                    style={{ background: `linear-gradient(180deg, ${show.accent}20 0%, var(--color-midnight) 100%)` }}>
-                    <img
-                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=280&height=373&time=5`}
-                      alt={show.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0" style={{
-                      background: `linear-gradient(180deg, ${show.accent}30 0%, transparent 30%, transparent 50%, ${show.accent}15 100%)`,
-                    }} />
-                    <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-midnight to-transparent" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-12 h-12 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+          {originals.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between px-5 mb-3">
+                <h2 className="font-heading font-bold text-[18px]">
+                  <span className="text-gold">Hub City</span> Originals
+                </h2>
+                <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+                {originals.map((video, i) => {
+                  const accent = HERO_ACCENTS[i % HERO_ACCENTS.length];
+                  return (
+                    <button key={video.id} className="shrink-0 w-[140px] text-left press group" onClick={() => playVideo(video)}>
+                      <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
+                        style={{ background: `linear-gradient(180deg, ${accent}20 0%, var(--color-midnight) 100%)` }}>
+                        {video.mux_playback_id ? (
+                          <img
+                            src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=280&height=373&time=5`}
+                            alt={video.title}
+                            className="absolute inset-0 w-full h-full object-cover"
+                          />
+                        ) : video.thumbnail_url ? (
+                          <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+                        ) : null}
+                        <div className="absolute bottom-0 inset-x-0 h-1/2 bg-gradient-to-t from-midnight to-transparent" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-12 h-12 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          </div>
+                        </div>
+                        <div className="absolute top-2.5 left-2.5">
+                          <span className="px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Original</span>
+                        </div>
+                        <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                          <h3 className="font-heading font-bold text-[14px] leading-tight text-white drop-shadow-lg">{video.title}</h3>
+                        </div>
                       </div>
-                    </div>
-                    <div className="absolute top-2.5 left-2.5">
-                      <span className="px-2 py-0.5 rounded-md text-[8px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>Original</span>
-                    </div>
-                    <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                      <h3 className="font-heading font-bold text-[14px] leading-tight text-white drop-shadow-lg">{show.title}</h3>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-warm-gray">{show.genre} · {show.episodes} ep</p>
-                </button>
-              ))}
-            </div>
-          </section>
+                      <div className="flex items-center gap-1 text-[10px] text-warm-gray">
+                        {video.duration && <span>{formatDuration(video.duration)}</span>}
+                        {video.duration && video.view_count > 0 && <span>·</span>}
+                        {video.view_count > 0 && <span>{formatViews(video.view_count)} views</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* ── Compton Stars ── */}
           <section className="mb-8">
@@ -883,56 +863,68 @@ export default function HubCityTV({
 
           {/* Originals grid */}
           <div className="px-5 space-y-4 mb-8">
-            {ORIGINALS.map((show, i) => (
-              <button key={i} className="w-full text-left press group" onClick={() => {
-                playVideo({
-                  id: `original-full-${i}`, channel_id: "demo", title: show.title,
-                  description: show.desc, mux_playback_id: show.playbackId,
-                  mux_asset_id: null, mux_upload_id: null, thumbnail_url: null,
-                  video_type: "original", duration: 300, view_count: 3000 + i * 800,
-                  is_published: true, is_featured: true, status: "ready",
-                  published_at: new Date().toISOString(), created_at: new Date().toISOString(),
-                  channel: null,
-                } as unknown as ChannelVideo);
-              }}>
-                <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-                  <div className="h-[200px] relative overflow-hidden">
-                    <img
-                      src={`https://image.mux.com/${show.playbackId}/thumbnail.webp?width=800&height=400&time=10`}
-                      alt={show.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0" style={{
-                      background: `linear-gradient(180deg, transparent 0%, ${show.accent}15 60%, var(--color-card) 100%)`,
-                    }} />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            {originals.length > 0 ? originals.map((video, i) => {
+              const accent = HERO_ACCENTS[i % HERO_ACCENTS.length];
+              return (
+                <button key={video.id} className="w-full text-left press group" onClick={() => playVideo(video)}>
+                  <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
+                    <div className="h-[200px] relative overflow-hidden">
+                      {video.mux_playback_id ? (
+                        <img
+                          src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=800&height=400&time=10`}
+                          alt={video.title}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                      ) : video.thumbnail_url ? (
+                        <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-midnight to-deep" />
+                      )}
+                      <div className="absolute inset-0" style={{
+                        background: `linear-gradient(180deg, transparent 0%, ${accent}15 60%, var(--color-card) 100%)`,
+                      }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-lg opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-1"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                        </div>
+                      </div>
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Hub City Original</span>
+                      </div>
+                      {video.duration && (
+                        <div className="absolute bottom-3 right-3 bg-black/70 rounded px-1.5 py-0.5 text-[10px] font-mono text-white">
+                          {formatDuration(video.duration)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-heading text-[18px] font-bold mb-1">{video.title}</h3>
+                      {video.description && <p className="text-[13px] text-warm-gray leading-relaxed mb-2">{video.description}</p>}
+                      <div className="flex items-center gap-2 text-[11px] text-txt-secondary">
+                        <span>{VIDEO_TYPE_LABEL[video.video_type] || video.video_type}</span>
+                        {video.view_count > 0 && <><span>·</span><span>{formatViews(video.view_count)} views</span></>}
+                        {video.published_at && <><span>·</span><span>{timeAgo(video.published_at)}</span></>}
                       </div>
                     </div>
-                    <div className="absolute top-3 left-3">
-                      <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${show.accent}CC` }}>Hub City Original</span>
-                    </div>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-heading text-[18px] font-bold mb-1">{show.title}</h3>
-                    <p className="text-[13px] text-warm-gray leading-relaxed mb-2">{show.desc}</p>
-                    <p className="text-[11px] text-txt-secondary">{show.genre} · {show.episodes} episodes</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            }) : (
+              <div className="text-center py-12">
+                <p className="text-txt-secondary text-sm">No original content yet</p>
+              </div>
+            )}
           </div>
 
-          {/* Real original videos from DB */}
-          {originals.length > 0 && (
+          {/* Non-original recent videos */}
+          {recentVideos.filter((v) => v.video_type !== "original").length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-base">Community Originals</h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">Created by Compton channels</p>
+                <h2 className="font-heading font-bold text-base">All Videos</h2>
+                <p className="text-[12px] text-warm-gray mt-0.5">Latest from Hub City TV</p>
               </div>
               <div className="px-5 space-y-3">
-                {originals.map((video) => (
+                {recentVideos.filter((v) => v.video_type !== "original").map((video) => (
                   <VideoCardRow key={video.id} video={video} onPlay={() => playVideo(video)} />
                 ))}
               </div>

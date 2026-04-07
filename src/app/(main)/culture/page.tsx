@@ -301,11 +301,27 @@ export default async function CulturePage() {
             Compton Art & History Museum
           </h3>
           <p className="text-xs text-txt-secondary mt-1">
-            106 W Compton Blvd, Compton, CA
+            306 W Compton Blvd. #104, Compton, CA 90220
           </p>
+          <div className="flex items-center justify-center gap-3 mt-2">
+            <span className="text-[10px] text-gold/70 font-semibold">Tue–Sat 10am–3pm</span>
+            <span className="text-white/10">|</span>
+            <span className="text-[10px] text-txt-secondary">(310) 627-9022</span>
+          </div>
           <p className="text-[11px] text-txt-secondary mt-3 max-w-xs mx-auto leading-relaxed">
-            The digital home of Compton culture. Curated with love for the Hub City community.
+            A community-based, community-centered museum amplifying the culture of Compton and greater South Los Angeles.
           </p>
+          <div className="flex items-center justify-center gap-3 mt-3">
+            <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+            </a>
+            <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
+            <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+              <Icon name="globe" size={12} />
+            </a>
+          </div>
         </div>
       </section>
     </div>

@@ -138,6 +138,7 @@ export interface Business {
   vote_count: number;
   is_featured: boolean;
   is_published: boolean;
+  account_type?: "standard" | "ads_only";
   accepts_orders: boolean;
   accepts_bookings: boolean;
   delivery_enabled: boolean;
@@ -255,6 +256,7 @@ export interface Post {
   mux_asset_id: string | null;
   mux_playback_id: string | null;
   mux_upload_id: string | null;
+  video_url: string | null;
   video_status: VideoStatus | null;
   reaction_counts: Partial<Record<ReactionEmoji, number>>;
   like_count: number;

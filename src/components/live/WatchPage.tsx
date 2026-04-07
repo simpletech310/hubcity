@@ -103,7 +103,8 @@ export default function WatchPage({ video, moreVideos, userId }: WatchPageProps)
             <MuxPlayer
               playbackId={video.mux_playback_id}
               streamType="on-demand"
-              autoPlay={adComplete ? "muted" : false}
+              autoPlay={adComplete ? true : false}
+              muted={false}
               accentColor="#D4A017"
               style={{ aspectRatio: "16/9", width: "100%" }}
               metadata={{

@@ -280,7 +280,19 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         </div>
       )}
 
-      {post.media_type === "video" && post.video_status === "ready" && post.mux_playback_id && (
+      {post.media_type === "video" && post.video_status === "ready" && post.video_url && (
+        <div className="overflow-hidden">
+          <video
+            src={post.video_url}
+            controls
+            playsInline
+            className="w-full"
+            style={{ aspectRatio: "16/9" }}
+          />
+        </div>
+      )}
+
+      {post.media_type === "video" && post.video_status === "ready" && !post.video_url && post.mux_playback_id && (
         <div className="overflow-hidden">
           <MuxPlayer
             playbackId={post.mux_playback_id}

@@ -4,13 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
-import { uploadPostImage } from "@/lib/upload";
-import dynamic from "next/dynamic";
-
-const MuxUploader = dynamic(
-  () => import("@mux/mux-uploader-react").then((mod) => mod.default || mod),
-  { ssr: false }
-);
+import { uploadPostImage, uploadPostVideo } from "@/lib/upload";
 
 interface ComposeModalProps {
   isOpen: boolean;
@@ -23,12 +17,13 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [muxUploadId, setMuxUploadId] = useState<string | null>(null);
-  const [muxUploadUrl, setMuxUploadUrl] = useState<string | null>(null);
-  const [videoAttached, setVideoAttached] = useState(false);
+  const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -52,9 +47,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
     }
 
     // Clear video if set
-    setMuxUploadId(null);
-    setMuxUploadUrl(null);
-    setVideoAttached(false);
+    setVideoUrl(null);
+    setVideoPreview(null);
 
     // Show preview
     const reader = new FileReader();
@@ -75,25 +69,39 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
     }
   };
 
-  const handleVideoAttach = async () => {
+  const handleVideoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Video must be under 50MB");
+      return;
+    }
+
     // Clear image if set
     setImageUrl(null);
     setImagePreview(null);
-    setError("");
 
+    // Show preview
+    const url = URL.createObjectURL(file);
+    setVideoPreview(url);
+
+    // Upload
+    setUploading(true);
+    setError("");
     try {
-      const res = await fetch("/api/mux/upload", { method: "POST" });
-      if (!res.ok) throw new Error("Failed to get upload URL");
-      const data = await res.json();
-      setMuxUploadUrl(data.upload_url);
-      setMuxUploadId(data.upload_id);
+      const uploaded = await uploadPostVideo(file, userId);
+      setVideoUrl(uploaded);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Video setup failed");
+      setError(err instanceof Error ? err.message : "Video upload failed");
+      setVideoPreview(null);
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!body.trim() && !imageUrl && !muxUploadId) {
+    if (!body.trim() && !imageUrl && !videoUrl) {
       setError("Write something or attach media");
       return;
     }
@@ -108,7 +116,7 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
         body: JSON.stringify({
           body: body.trim() || (imageUrl ? "Shared a photo" : "Shared a video"),
           image_url: imageUrl,
-          mux_upload_id: muxUploadId,
+          video_url: videoUrl,
         }),
       });
 
@@ -121,9 +129,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
       setBody("");
       setImageUrl(null);
       setImagePreview(null);
-      setMuxUploadId(null);
-      setMuxUploadUrl(null);
-      setVideoAttached(false);
+      setVideoUrl(null);
+      setVideoPreview(null);
       onClose();
       router.refresh();
     } catch (err) {
@@ -138,9 +145,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
       setBody("");
       setImageUrl(null);
       setImagePreview(null);
-      setMuxUploadId(null);
-      setMuxUploadUrl(null);
-      setVideoAttached(false);
+      setVideoUrl(null);
+      setVideoPreview(null);
       setError("");
       onClose();
     }
@@ -225,21 +231,37 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           </div>
         )}
 
-        {/* Mux Uploader */}
-        {muxUploadUrl && (
-          <div className="mx-5 mb-3 rounded-xl overflow-hidden border border-border-subtle bg-white/5 p-4">
-            <MuxUploader
-              endpoint={muxUploadUrl}
-              onSuccess={() => setVideoAttached(true)}
+        {/* Video preview */}
+        {videoPreview && (
+          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden border border-border-subtle bg-white/5">
+            <video
+              src={videoPreview}
+              controls
+              playsInline
+              className="w-full max-h-[200px] object-contain bg-black"
             />
-            {videoAttached && (
-              <p className="text-xs text-emerald mt-2 flex items-center gap-1">
+            {uploading && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+              </div>
+            )}
+            {videoUrl && !uploading && (
+              <p className="text-xs text-emerald px-3 py-2 flex items-center gap-1">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                Video uploaded — will process after posting
+                Video ready
               </p>
             )}
+            <button
+              onClick={() => {
+                setVideoPreview(null);
+                setVideoUrl(null);
+              }}
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white text-sm press"
+            >
+              x
+            </button>
           </div>
         )}
 
@@ -264,9 +286,16 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
             </svg>
             Photo
           </button>
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/mp4,video/quicktime,video/webm,video/mov"
+            className="hidden"
+            onChange={handleVideoSelect}
+          />
           <button
-            onClick={handleVideoAttach}
-            disabled={uploading || submitting || !!muxUploadUrl}
+            onClick={() => videoInputRef.current?.click()}
+            disabled={uploading || submitting || !!videoPreview}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-coral hover:bg-coral/10 press transition-all disabled:opacity-40"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

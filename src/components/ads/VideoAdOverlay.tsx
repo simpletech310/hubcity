@@ -129,7 +129,6 @@ export default function VideoAdOverlay({
             ref={videoRef}
             src={ad.video_url}
             autoPlay
-            muted
             playsInline
             className="w-full h-full object-contain"
             onEnded={handleSkip}

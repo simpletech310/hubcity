@@ -897,6 +897,12 @@ function BusinessRow({ biz }: { biz: Business }) {
             {/* Bottom row: category + badges + actions */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <Badge label={biz.category} variant={variant} />
+              {biz.account_type === "ads_only" && (
+                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold border bg-white/5 border-white/10 text-txt-secondary">
+                  <Icon name="globe" size={9} />
+                  Chain
+                </span>
+              )}
               {biz.badges?.slice(0, 2).map((badge) => (
                 <span
                   key={badge}

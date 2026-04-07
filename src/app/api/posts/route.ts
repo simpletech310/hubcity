@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     const {
       body,
       image_url,
+      video_url,
       mux_upload_id,
       location_text: inputLocation,
       latitude,
@@ -85,6 +86,9 @@ export async function POST(request: Request) {
 
     if (image_url) {
       media_type = "image";
+    } else if (video_url) {
+      media_type = "video";
+      video_status = "ready";
     } else if (mux_upload_id) {
       media_type = "video";
       video_status = "preparing";
@@ -100,6 +104,7 @@ export async function POST(request: Request) {
         author_id: user.id,
         body: body.trim(),
         image_url: image_url || null,
+        video_url: video_url || null,
         media_type,
         mux_upload_id: mux_upload_id || null,
         video_status,

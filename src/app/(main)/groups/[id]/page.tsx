@@ -7,6 +7,8 @@ import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import { REACTION_EMOJI_MAP, REACTION_COLORS, ROLE_BADGE_MAP } from "@/lib/constants";
+import type { ReactionEmoji } from "@/types/database";
 
 // ── Types ───────────────────────────────────────────────
 interface GroupInfo {
@@ -163,6 +165,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [newBody, setNewBody] = useState("");
   const [posting, setPosting] = useState(false);
 
+  // Post state
+  const [expandedBodies, setExpandedBodies] = useState<Set<string>>(new Set());
+
   // Comments
   const [expandedPost, setExpandedPost] = useState<string | null>(null);
   const [comments, setComments] = useState<Record<string, PostComment[]>>({});
@@ -199,6 +204,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editPublic, setEditPublic] = useState(true);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [editImageFile, setEditImageFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
 
   // ── Load group + posts ────────────────────────────────
@@ -455,11 +462,30 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     setEditName(group.name);
     setEditDesc(group.description || "");
     setEditPublic(group.is_public);
+    setEditImagePreview(group.image_url);
+    setEditImageFile(null);
     setShowEditModal(true);
   }, [group]);
 
   const handleSaveEdit = useCallback(async () => {
     setSaving(true);
+    let imageUrl = group?.image_url ?? null;
+
+    // Upload new image if selected
+    if (editImageFile) {
+      const formData = new FormData();
+      formData.append("file", editImageFile);
+      formData.append("groupId", id);
+      const uploadRes = await fetch("/api/upload/group-image", {
+        method: "POST",
+        body: formData,
+      });
+      if (uploadRes.ok) {
+        const uploadData = await uploadRes.json();
+        imageUrl = uploadData.url;
+      }
+    }
+
     const res = await fetch(`/api/groups/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -467,6 +493,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         name: editName.trim(),
         description: editDesc.trim() || null,
         is_public: editPublic,
+        image_url: imageUrl,
       }),
     });
     if (res.ok) {
@@ -475,7 +502,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       setShowEditModal(false);
     }
     setSaving(false);
-  }, [id, editName, editDesc, editPublic]);
+  }, [id, editName, editDesc, editPublic, editImageFile, group?.image_url]);
 
   // ── Share ─────────────────────────────────────────────
   const handleShare = useCallback(() => {
@@ -709,17 +736,22 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           const isMyPost = post.author?.id === userId;
           const canModerate = isAdminOrMod || isMyPost;
           const myPostReactions = userReactions[post.id] || [];
+          const reactionEmojis = Object.keys(REACTION_EMOJI_MAP) as ReactionEmoji[];
+          const totalReactions = Object.values(post.reaction_counts || {}).reduce((a, b) => a + (b || 0), 0);
+          const isLong = post.body.length > 280;
 
           return (
-            <Card key={post.id} className={`relative overflow-hidden ${post.is_pinned ? "border-gold/15" : ""}`}>
+            <Card key={post.id} className={`!p-0 relative overflow-hidden ${post.is_pinned ? "border-gold/15" : ""}`}>
               {/* Pinned accent bar */}
               {post.is_pinned && (
-                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-gold to-gold/20 rounded-full" />
+                <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-gold to-gold/20 rounded-full z-10" />
               )}
-              <div className="space-y-2">
+
+              {/* Author header */}
+              <div className="p-4 pb-0">
                 {/* Pinned indicator */}
                 {post.is_pinned && (
-                  <div className="flex items-center gap-1 text-gold text-[10px] font-semibold -mt-1 mb-1">
+                  <div className="flex items-center gap-1 text-gold text-[10px] font-semibold mb-2">
                     <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
                     </svg>
@@ -727,21 +759,28 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
 
-                {/* Author + menu */}
-                <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-full bg-white/10 ring-1 ring-white/[0.06] flex items-center justify-center overflow-hidden shrink-0">
+                <div className="flex items-center gap-3">
+                  <Link
+                    href={post.author?.handle ? `/user/${post.author.handle}` : "#"}
+                    className="w-11 h-11 rounded-full bg-white/10 ring-1 ring-white/[0.06] flex items-center justify-center overflow-hidden shrink-0"
+                  >
                     {post.author?.avatar_url ? (
                       <img src={post.author.avatar_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <span className="text-xs font-bold text-txt-secondary">
+                      <span className="text-sm font-bold text-txt-secondary">
                         {post.author?.display_name?.charAt(0) || "?"}
                       </span>
                     )}
-                  </div>
+                  </Link>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold truncate">{post.author?.display_name || "Unknown"}</p>
-                    <p className="text-[10px] text-txt-secondary">
-                      {post.author?.handle ? `@${post.author.handle}` : ""} &middot; {timeAgo(post.created_at)}
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold truncate">{post.author?.display_name || "Unknown"}</p>
+                      {post.author?.role && ROLE_BADGE_MAP[post.author.role] && (
+                        <Badge variant={ROLE_BADGE_MAP[post.author.role].variant} size="sm" label={ROLE_BADGE_MAP[post.author.role].label} />
+                      )}
+                    </div>
+                    <p className="text-[11px] text-txt-secondary">
+                      {post.author?.handle ? `@${post.author.handle}` : ""}{post.author?.handle ? " · " : ""}{timeAgo(post.created_at)}
                     </p>
                   </div>
                   {/* Three-dot menu */}
@@ -779,64 +818,93 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   )}
                 </div>
 
-                {/* Body */}
-                <p className="text-sm text-white/90 whitespace-pre-wrap">{post.body}</p>
+                {/* Body with read more */}
+                <div className="mt-3">
+                  <p className="text-sm text-white/90 whitespace-pre-wrap leading-relaxed">
+                    {isLong && !expandedBodies.has(post.id) ? post.body.slice(0, 280) + "..." : post.body}
+                  </p>
+                  {isLong && !expandedBodies.has(post.id) && (
+                    <button
+                      onClick={() => setExpandedBodies((prev) => new Set(prev).add(post.id))}
+                      className="text-gold text-xs font-semibold mt-1"
+                    >
+                      Read more
+                    </button>
+                  )}
+                </div>
+              </div>
 
-                {/* Image */}
-                {post.image_url && (
-                  <img src={post.image_url} alt="" className="w-full rounded-2xl max-h-64 object-cover" />
-                )}
+              {/* Full-bleed image */}
+              {post.image_url && (
+                <div className="mt-3">
+                  <img src={post.image_url} alt="" className="w-full max-h-[400px] object-cover" />
+                </div>
+              )}
 
-                {/* Reactions */}
-                {isMember && (
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {REACTION_EMOJIS.map((r) => {
-                      const count = post.reaction_counts?.[r.key] || 0;
-                      const isActive = myPostReactions.includes(r.key);
-                      return (
-                        <button
-                          key={r.key}
-                          onClick={() => handleReact(post.id, r.key)}
-                          disabled={reactingPost === post.id}
-                          className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all ${
-                            isActive
-                              ? "bg-gold/20 border border-gold/30"
-                              : "bg-white/5 border border-transparent hover:bg-white/10"
-                          }`}
-                        >
-                          <span>{r.display}</span>
-                          {count > 0 && <span className={isActive ? "text-gold font-semibold" : "text-txt-secondary"}>{count}</span>}
-                        </button>
-                      );
-                    })}
+              {/* Reactions + comments */}
+              <div className="px-4 pb-3 pt-2.5">
+                {/* Reaction summary line */}
+                {totalReactions > 0 && (
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="flex -space-x-1">
+                      {reactionEmojis
+                        .filter((e) => (post.reaction_counts?.[e] || 0) > 0)
+                        .slice(0, 3)
+                        .map((e) => (
+                          <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
+                        ))}
+                    </div>
+                    <span className="text-[11px] text-white/30 tabular-nums">{totalReactions}</span>
+                    {(post.comment_count || 0) > 0 && (
+                      <>
+                        <span className="text-white/10 mx-1">&middot;</span>
+                        <span className="text-[11px] text-white/30 tabular-nums">
+                          {post.comment_count} comment{post.comment_count !== 1 ? "s" : ""}
+                        </span>
+                      </>
+                    )}
                   </div>
                 )}
 
-                {/* Non-member reaction display */}
-                {!isMember && Object.keys(post.reaction_counts || {}).length > 0 && (
-                  <div className="flex gap-1.5 pt-1">
-                    {REACTION_EMOJIS.filter((r) => (post.reaction_counts?.[r.key] || 0) > 0).map((r) => (
-                      <span key={r.key} className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 text-[11px] text-txt-secondary">
-                        {r.display} {post.reaction_counts[r.key]}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {/* Action row — all 5 emojis always visible */}
+                <div className="flex items-center gap-0.5 pt-2 border-t border-white/[0.04]">
+                  {reactionEmojis.map((emoji) => {
+                    const isActive = myPostReactions.includes(emoji);
+                    const count = post.reaction_counts?.[emoji] || 0;
+                    const colors = REACTION_COLORS[emoji];
 
-                {/* Comment toggle */}
-                <button
-                  onClick={() => toggleComments(post.id)}
-                  className="flex items-center gap-1.5 text-xs text-txt-secondary hover:text-white transition-colors pt-1"
-                >
-                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                  {post.comment_count || 0} comment{(post.comment_count || 0) !== 1 ? "s" : ""}
-                </button>
+                    return (
+                      <button
+                        key={emoji}
+                        onClick={() => isMember && handleReact(post.id, emoji)}
+                        disabled={!isMember || reactingPost === post.id}
+                        className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all ${
+                          isActive
+                            ? `${colors.bg} ${colors.text} font-semibold scale-105`
+                            : "text-white/40 hover:bg-white/[0.04] hover:text-white/60"
+                        } ${!isMember ? "opacity-40 cursor-default" : "press"}`}
+                      >
+                        <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
+                        {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
+                      </button>
+                    );
+                  })}
+
+                  {/* Comment button */}
+                  <button
+                    onClick={() => toggleComments(post.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all ml-auto press"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                    <span className="tabular-nums">{post.comment_count || 0}</span>
+                  </button>
+                </div>
 
                 {/* Expanded Comments */}
                 {expandedPost === post.id && (
-                  <div className="border-t border-border-subtle pt-3 mt-1 space-y-3">
+                  <div className="border-t border-border-subtle pt-3 mt-2 space-y-3">
                     {loadingComments === post.id ? (
                       <div className="flex justify-center py-3">
                         <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -850,8 +918,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                         {(comments[post.id] || []).map((c) => {
                           const canDeleteComment = isAdminOrMod || c.author?.id === userId;
                           return (
-                            <div key={c.id} className="flex gap-2 group">
-                              <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center shrink-0 overflow-hidden">
+                            <div key={c.id} className="flex gap-2.5 group">
+                              <div className="w-7 h-7 rounded-full bg-white/10 ring-1 ring-white/[0.06] flex items-center justify-center shrink-0 overflow-hidden">
                                 {c.author?.avatar_url ? (
                                   <img src={c.author.avatar_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
@@ -860,17 +928,17 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                                   </span>
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
+                              <div className="flex-1 min-w-0 bg-white/[0.03] rounded-xl px-3 py-2">
                                 <p className="text-xs">
-                                  <span className="font-semibold">{c.author?.display_name || "Unknown"}</span>
-                                  <span className="text-txt-secondary ml-1.5">{timeAgo(c.created_at)}</span>
+                                  <span className="font-bold">{c.author?.display_name || "Unknown"}</span>
+                                  <span className="text-txt-secondary ml-1.5 text-[10px]">{timeAgo(c.created_at)}</span>
                                 </p>
-                                <p className="text-xs text-white/80 mt-0.5">{c.body}</p>
+                                <p className="text-xs text-white/80 mt-0.5 leading-relaxed">{c.body}</p>
                               </div>
                               {canDeleteComment && (
                                 <button
                                   onClick={() => handleDeleteComment(post.id, c.id)}
-                                  className="opacity-0 group-hover:opacity-100 p-1 text-txt-secondary hover:text-coral transition-all shrink-0"
+                                  className="opacity-0 group-hover:opacity-100 p-1 text-txt-secondary hover:text-coral transition-all shrink-0 self-center"
                                   title="Delete comment"
                                 >
                                   <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -896,12 +964,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                                   handleComment(post.id);
                                 }
                               }}
-                              className="flex-1 bg-white/5 border border-border-subtle rounded-lg px-3 py-2 text-xs text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+                              className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
                             />
                             <button
                               onClick={() => handleComment(post.id)}
                               disabled={!commentBody.trim() || submittingComment}
-                              className="px-3 py-2 rounded-lg bg-gold/20 text-gold text-xs font-semibold disabled:opacity-40 transition-opacity"
+                              className="px-3 py-2.5 rounded-xl bg-gold/20 text-gold text-xs font-semibold disabled:opacity-40 transition-opacity press"
                             >
                               {submittingComment ? "..." : "Reply"}
                             </button>
@@ -1212,7 +1280,44 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </svg>
               </button>
             </div>
-            <div className="px-5 py-4 space-y-3">
+            <div className="px-5 py-4 space-y-3 max-h-[70vh] overflow-y-auto">
+              {/* Group Image */}
+              <div>
+                <label className="text-[10px] font-semibold text-txt-secondary uppercase tracking-wider">Group Image</label>
+                <div
+                  onClick={() => document.getElementById("group-image-input")?.click()}
+                  className="mt-1.5 relative w-full h-32 rounded-xl bg-white/5 border border-dashed border-border-subtle overflow-hidden cursor-pointer hover:border-gold/30 transition-colors group"
+                >
+                  {editImagePreview ? (
+                    <>
+                      <img src={editImagePreview} alt="" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <span className="text-xs font-semibold text-white">Change Image</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full gap-1.5">
+                      <Icon name="photo" size={20} className="text-txt-secondary" />
+                      <span className="text-[11px] text-txt-secondary">Tap to upload</span>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="group-image-input"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setEditImageFile(file);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => setEditImagePreview(ev.target?.result as string);
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </div>
+
               <div>
                 <label className="text-[10px] font-semibold text-txt-secondary uppercase tracking-wider">Name</label>
                 <input
@@ -1241,7 +1346,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </button>
               </div>
               <Button onClick={handleSaveEdit} loading={saving} disabled={!editName.trim()} className="w-full">
-                Save Changes
+                {editImageFile ? "Upload & Save" : "Save Changes"}
               </Button>
             </div>
           </div>

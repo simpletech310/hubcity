@@ -222,6 +222,19 @@ export default async function BusinessDetailPage({
         </div>
       )}
 
+      {/* ── Chain / Ads-Only Notice ── */}
+      {biz.account_type === "ads_only" && (
+        <div className="px-5 mt-4">
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white/[0.03] border border-border-subtle">
+            <Icon name="globe" size={16} className="text-txt-secondary shrink-0" />
+            <div>
+              <p className="text-[11px] font-semibold text-txt-secondary">National Chain</p>
+              <p className="text-[10px] text-muted-gray">Visit their website or app for ordering & reservations</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Quick Actions Grid ── */}
       <div className="px-5 mt-4">
         <div className="grid grid-cols-4 gap-2">
