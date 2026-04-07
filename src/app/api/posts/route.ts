@@ -64,6 +64,7 @@ export async function POST(request: Request) {
       image_url,
       video_url,
       mux_upload_id,
+      is_highlight,
       location_text: inputLocation,
       latitude,
       longitude,
@@ -83,6 +84,13 @@ export async function POST(request: Request) {
     // Determine media type
     let media_type: string | null = null;
     let video_status: string | null = null;
+
+    if (is_highlight && !video_url) {
+      return NextResponse.json(
+        { error: "Highlights require a video" },
+        { status: 400 }
+      );
+    }
 
     if (image_url) {
       media_type = "image";
@@ -109,6 +117,7 @@ export async function POST(request: Request) {
         mux_upload_id: mux_upload_id || null,
         video_status,
         reaction_counts: {},
+        is_highlight: is_highlight || false,
         is_published: true,
         hashtags: hashtagStrings,
         location_text: extractedLocation || null,

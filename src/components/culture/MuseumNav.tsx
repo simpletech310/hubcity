@@ -11,11 +11,9 @@ const wings = [
   { href: "/culture/gallery", label: "Gallery", icon: "frame" },
   { href: "/culture/people", label: "People", icon: "person" },
   { href: "/culture/history", label: "History", icon: "scroll" },
-  { href: "/culture/media", label: "Media", icon: "film" },
   { href: "/culture/library", label: "Library", icon: "book" },
-  { href: "/culture/discussions", label: "Discuss", icon: "chat" },
-  { href: "/culture/murals", label: "Murals", icon: "theater" },
-  { href: "/culture/calendar", label: "Events", icon: "calendar" },
+  { href: "/culture/events", label: "Events", icon: "calendar" },
+  { href: "/culture/landmarks", label: "Landmarks", icon: "map-pin" },
 ];
 
 export default function MuseumNav() {

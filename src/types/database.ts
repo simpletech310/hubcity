@@ -267,6 +267,7 @@ export interface Post {
   longitude: number | null;
   edited_at: string | null;
   school_id: string | null;
+  is_highlight: boolean;
   is_pinned: boolean;
   is_published: boolean;
   created_at: string;

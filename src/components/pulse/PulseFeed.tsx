@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PostCard from "./PostCard";
@@ -10,6 +10,8 @@ import ComposeModal from "./ComposeModal";
 import CreatePollModal from "./CreatePollModal";
 import CreateSurveyModal from "./CreateSurveyModal";
 import PulseLiveCard from "./PulseLiveCard";
+import HighlightCard from "./HighlightCard";
+import HighlightViewer from "./HighlightViewer";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
@@ -48,6 +50,20 @@ interface SuggestedProfile {
   role: string;
   verification_status: string;
   bio: string | null;
+}
+
+interface HighlightData {
+  id: string;
+  body: string;
+  video_url: string | null;
+  created_at: string;
+  author: {
+    id: string;
+    display_name: string;
+    handle: string | null;
+    avatar_url: string | null;
+    role: string;
+  } | null;
 }
 
 const filters = [
@@ -267,11 +283,18 @@ export default function PulseFeed({
 }: PulseFeedProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [composeOpen, setComposeOpen] = useState(false);
+  const [composeHighlight, setComposeHighlight] = useState(false);
   const [pollOpen, setPollOpen] = useState(false);
   const [surveyOpen, setSurveyOpen] = useState(false);
-  const [fabExpanded, setFabExpanded] = useState(false);
 
   const isOfficial = userRole === "city_official" || userRole === "admin";
+  const canPost = userId && userRole !== "citizen";
+
+  // Highlights
+  const [highlights, setHighlights] = useState<HighlightData[]>([]);
+  const [viewedIds, setViewedIds] = useState<Set<string>>(new Set());
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [viewerIndex, setViewerIndex] = useState(0);
 
   // Trending hashtags
   const [trendingHashtags, setTrendingHashtags] = useState<{ hashtag: string; count: number }[]>([]);
@@ -285,6 +308,40 @@ export default function PulseFeed({
       .catch(() => {});
   }, []);
 
+  // Fetch highlights
+  useEffect(() => {
+    fetch("/api/highlights")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.highlights) setHighlights(data.highlights);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Load viewed highlights from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("hc_viewed_highlights");
+      if (stored) setViewedIds(new Set(JSON.parse(stored)));
+    } catch {}
+  }, []);
+
+  const markViewed = useCallback((id: string) => {
+    setViewedIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        localStorage.setItem("hc_viewed_highlights", JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const openHighlight = (index: number) => {
+    setViewerIndex(index);
+    setViewerOpen(true);
+  };
+
   // Filter logic
   const showPolls = activeFilter === "all" || activeFilter === "polls";
   const showSurveys = activeFilter === "all" || activeFilter === "surveys";
@@ -292,10 +349,10 @@ export default function PulseFeed({
 
   const filteredPosts =
     activeFilter === "all" || activeFilter === "polls" || activeFilter === "surveys"
-      ? posts
+      ? posts.filter((p) => !p.is_highlight)
       : activeFilter === "jobs"
-        ? posts.filter((p) => p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring"))
-        : posts.filter((p) => p.author?.role === activeFilter);
+        ? posts.filter((p) => !p.is_highlight && (p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring")))
+        : posts.filter((p) => !p.is_highlight && p.author?.role === activeFilter);
 
   // Build unified feed
   type FeedItem =
@@ -328,7 +385,6 @@ export default function PulseFeed({
   });
 
   // Determine insertion positions for inline cards
-  // Insert suggested profiles after item 3, events after item 7, deals after item 12
   const PROFILES_INSERT_AT = 3;
   const EVENTS_INSERT_AT = 7;
   const DEALS_INSERT_AT = 12;
@@ -340,6 +396,89 @@ export default function PulseFeed({
       <div className="pt-4">
         <CityPulseBar trafficAlertCount={trafficAlertCount} />
       </div>
+
+      {/* ─── Inline Compose Bar ─── */}
+      {canPost && (
+        <div className="mx-5 mb-3">
+          <div className="flex items-center gap-3 bg-card border border-border-subtle rounded-2xl px-4 py-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-xs ring-2 ring-white/5 shrink-0">
+              {userName
+                .split(" ")
+                .map((w) => w[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+            <button
+              onClick={() => { setComposeHighlight(false); setComposeOpen(true); }}
+              className="flex-1 text-left text-sm text-white/30 press"
+            >
+              What&apos;s happening in Compton?
+            </button>
+            <div className="flex items-center gap-1">
+              {isOfficial && (
+                <>
+                  <button
+                    onClick={() => setPollOpen(true)}
+                    className="w-8 h-8 rounded-full bg-cyan/10 flex items-center justify-center press hover:bg-cyan/20 transition-colors"
+                    title="New Poll"
+                  >
+                    <Icon name="chart" size={14} className="text-cyan" />
+                  </button>
+                  <button
+                    onClick={() => setSurveyOpen(true)}
+                    className="w-8 h-8 rounded-full bg-hc-purple/10 flex items-center justify-center press hover:bg-hc-purple/20 transition-colors"
+                    title="New Survey"
+                  >
+                    <Icon name="document" size={14} className="text-hc-purple" />
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => { setComposeHighlight(true); setComposeOpen(true); }}
+                className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center press hover:bg-gold/20 transition-colors"
+                title="City Highlight"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Highlights Strip ─── */}
+      {highlights.length > 0 && activeFilter === "all" && (
+        <div className="mb-4">
+          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
+            {/* New highlight button */}
+            {canPost && (
+              <button
+                onClick={() => { setComposeHighlight(true); setComposeOpen(true); }}
+                className="flex flex-col items-center gap-1.5 shrink-0 w-[68px] press"
+              >
+                <div className="w-[60px] h-[60px] rounded-full border-2 border-dashed border-gold/30 flex items-center justify-center bg-gold/5">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </div>
+                <span className="text-[10px] font-medium text-gold/60">New</span>
+              </button>
+            )}
+            {highlights.map((h, i) => (
+              <HighlightCard
+                key={h.id}
+                id={h.id}
+                authorName={h.author?.display_name || "Unknown"}
+                authorAvatar={h.author?.avatar_url || null}
+                isViewed={viewedIds.has(h.id)}
+                onClick={() => openHighlight(i)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* ─── Filter Chips ─── */}
       <div className="flex gap-2 px-5 mb-3 overflow-x-auto scrollbar-hide pb-1">
@@ -501,65 +640,33 @@ export default function PulseFeed({
       {/* Bottom spacer */}
       <div className="h-8" />
 
-      {/* ─── FAB — only for non-citizen roles ─── */}
-      {userId && userRole !== "citizen" && (
-        <>
-          {fabExpanded && (
-            <div className="fixed inset-0 z-30" onClick={() => setFabExpanded(false)} />
-          )}
-
-          {fabExpanded && (
-            <div className="fixed right-5 bottom-40 z-40 flex flex-col gap-2 items-end animate-fade-in">
-              <button
-                onClick={() => { setFabExpanded(false); setComposeOpen(true); }}
-                className="flex items-center gap-2 bg-card border border-border-subtle rounded-full pl-4 pr-3 py-2.5 press hover:border-gold/30 transition-colors shadow-lg"
-              >
-                <span className="text-[12px] font-semibold">New Post</span>
-                <Icon name="edit" size={16} className="text-gold" />
-              </button>
-              {(userRole === "city_official" || userRole === "admin") && (
-                <>
-                  <button
-                    onClick={() => { setFabExpanded(false); setPollOpen(true); }}
-                    className="flex items-center gap-2 bg-card border border-cyan/20 rounded-full pl-4 pr-3 py-2.5 press hover:border-cyan/40 transition-colors shadow-lg"
-                  >
-                    <span className="text-[12px] font-semibold text-cyan">New Poll</span>
-                    <Icon name="chart" size={16} className="text-cyan" />
-                  </button>
-                  <button
-                    onClick={() => { setFabExpanded(false); setSurveyOpen(true); }}
-                    className="flex items-center gap-2 bg-card border border-hc-purple/20 rounded-full pl-4 pr-3 py-2.5 press hover:border-hc-purple/40 transition-colors shadow-lg"
-                  >
-                    <span className="text-[12px] font-semibold text-hc-purple">New Survey</span>
-                    <Icon name="document" size={16} className="text-hc-purple" />
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-
-          <button
-            onClick={() => setFabExpanded(!fabExpanded)}
-            className={`fixed right-5 bottom-28 w-14 h-14 rounded-full bg-gradient-to-br from-gold to-gold-light shadow-lg shadow-gold/30 flex items-center justify-center text-midnight press z-40 hover:scale-105 transition-transform ${fabExpanded ? "rotate-45" : ""}`}
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-        </>
-      )}
-
       {/* Modals */}
-      {userId && userRole !== "citizen" && (
+      {canPost && (
         <>
-          <ComposeModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} userId={userId} userName={userName} />
-          {(userRole === "city_official" || userRole === "admin") && (
+          <ComposeModal
+            isOpen={composeOpen}
+            onClose={() => { setComposeOpen(false); setComposeHighlight(false); }}
+            userId={userId}
+            userName={userName}
+            initialHighlight={composeHighlight}
+          />
+          {isOfficial && (
             <>
               <CreatePollModal isOpen={pollOpen} onClose={() => setPollOpen(false)} />
               <CreateSurveyModal isOpen={surveyOpen} onClose={() => setSurveyOpen(false)} />
             </>
           )}
         </>
+      )}
+
+      {/* Highlight Viewer */}
+      {viewerOpen && highlights.length > 0 && (
+        <HighlightViewer
+          highlights={highlights}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerOpen(false)}
+          onViewed={markViewed}
+        />
       )}
     </div>
   );

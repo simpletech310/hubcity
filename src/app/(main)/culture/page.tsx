@@ -1,11 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import SectionHeader from "@/components/layout/SectionHeader";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
 import MuseumHero from "@/components/culture/MuseumHero";
-import MuseumNav from "@/components/culture/MuseumNav";
 import MuseumWingCard from "@/components/culture/MuseumWingCard";
 import ExhibitCard from "@/components/culture/ExhibitCard";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
@@ -26,16 +24,12 @@ export default async function CulturePage() {
     exhibitsRes,
     galleryRes,
     peopleRes,
-    libraryRes,
-    muralsRes,
     eventsRes,
     exhibitCountRes,
     galleryCountRes,
     peopleCountRes,
     libraryCountRes,
-    muralsCountRes,
   ] = await Promise.all([
-    // Featured exhibit
     supabase
       .from("museum_exhibits")
       .select("*")
@@ -43,30 +37,18 @@ export default async function CulturePage() {
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(3),
-    // Recent gallery items
     supabase
       .from("gallery_items")
       .select("*")
       .eq("is_published", true)
       .order("created_at", { ascending: false })
       .limit(6),
-    // Featured people
     supabase
       .from("notable_people")
       .select("*")
       .eq("is_published", true)
       .order("display_order", { ascending: true })
       .limit(4),
-    // Library count
-    supabase
-      .from("library_items")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true),
-    // Murals
-    supabase
-      .from("murals")
-      .select("id", { count: "exact", head: true }),
-    // Upcoming cultural events
     supabase
       .from("events")
       .select("id, title, start_date, location_name")
@@ -74,12 +56,10 @@ export default async function CulturePage() {
       .gte("start_date", new Date().toISOString())
       .order("start_date", { ascending: true })
       .limit(3),
-    // Counts for wing cards
     supabase.from("museum_exhibits").select("id", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("gallery_items").select("id", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("notable_people").select("id", { count: "exact", head: true }).eq("is_published", true),
     supabase.from("library_items").select("id", { count: "exact", head: true }).eq("is_published", true),
-    supabase.from("murals").select("id", { count: "exact", head: true }),
   ]);
 
   const exhibits = exhibitsRes.data ?? [];
@@ -92,7 +72,6 @@ export default async function CulturePage() {
     gallery: galleryCountRes.count ?? 0,
     people: peopleCountRes.count ?? 0,
     library: libraryCountRes.count ?? 0,
-    murals: muralsCountRes.count ?? 0,
   };
 
   return (
@@ -100,42 +79,13 @@ export default async function CulturePage() {
       {/* Museum Hero */}
       <MuseumHero />
 
-      {/* Museum Navigation */}
-      <div className="px-5">
-        <MuseumNav />
-      </div>
-
-      {/* Featured Exhibit */}
-      {exhibits.length > 0 && (
-        <section className="px-5">
-          <EditorialHeader kicker="NOW SHOWING" title="Current Exhibits" />
-          <div className="space-y-3">
-            {exhibits.slice(0, 1).map((exhibit) => (
-              <FeaturedCard
-                key={exhibit.id}
-                title={exhibit.title}
-                subtitle={exhibit.description?.slice(0, 120)}
-                imageUrl={exhibit.cover_image_url}
-                badge={exhibit.is_featured ? { label: "Featured", variant: "gold" as const } : undefined}
-                href={`/culture/exhibits/${exhibit.slug || exhibit.id}`}
-                kicker={exhibit.wing ?? "Exhibit"}
-              />
-            ))}
-            {exhibits.length > 1 && (
-              <div className="grid grid-cols-2 gap-3">
-                {exhibits.slice(1, 3).map((exhibit) => (
-                  <ExhibitCard key={exhibit.id} exhibit={exhibit} />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* Museum Wings Grid */}
+      {/* Wing Navigation Cards — title above */}
       <section className="px-5">
-        <SectionHeader title="Explore the Museum" />
-        <div className="grid grid-cols-3 gap-2.5">
+        <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 rounded-full bg-gold" />
+          Museum Wings
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
           <MuseumWingCard
             href="/culture/exhibits"
             icon="palette"
@@ -164,12 +114,6 @@ export default async function CulturePage() {
             subtitle="Compton timeline"
           />
           <MuseumWingCard
-            href="/culture/media"
-            icon="film"
-            title="Media"
-            subtitle="Videos & films"
-          />
-          <MuseumWingCard
             href="/culture/library"
             icon="book"
             title="Library"
@@ -177,26 +121,46 @@ export default async function CulturePage() {
             count={counts.library}
           />
           <MuseumWingCard
-            href="/culture/discussions"
-            icon="chat"
-            title="Discuss"
-            subtitle="Community talks"
-          />
-          <MuseumWingCard
-            href="/culture/murals"
-            icon="theater"
-            title="Murals"
-            subtitle="Street art"
-            count={counts.murals}
-          />
-          <MuseumWingCard
-            href="/culture/calendar"
+            href="/culture/events"
             icon="calendar"
             title="Events"
             subtitle="Cultural calendar"
           />
+          <MuseumWingCard
+            href="/culture/landmarks"
+            icon="map-pin"
+            title="Landmarks"
+            subtitle="Historic sites"
+          />
         </div>
       </section>
+
+      {/* Featured Exhibit */}
+      {exhibits.length > 0 && (
+        <section className="px-5">
+          <EditorialHeader kicker="NOW SHOWING" title="Current Exhibits" />
+          <div className="space-y-3">
+            {exhibits.slice(0, 1).map((exhibit) => (
+              <FeaturedCard
+                key={exhibit.id}
+                title={exhibit.title}
+                subtitle={exhibit.description?.slice(0, 120)}
+                imageUrl={exhibit.cover_image_url}
+                badge={exhibit.is_featured ? { label: "Featured", variant: "gold" as const } : undefined}
+                href={`/culture/exhibits/${exhibit.slug || exhibit.id}`}
+                kicker={exhibit.wing ?? "Exhibit"}
+              />
+            ))}
+            {exhibits.length > 1 && (
+              <div className="grid grid-cols-2 gap-3">
+                {exhibits.slice(1, 3).map((exhibit) => (
+                  <ExhibitCard key={exhibit.id} exhibit={exhibit} />
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Gallery Preview */}
       {galleryItems.length > 0 && (
@@ -235,7 +199,7 @@ export default async function CulturePage() {
           href="/culture/history"
           className="block group relative overflow-hidden rounded-2xl border border-border-subtle p-6 card-glow transition-all duration-300 hover:border-gold/20"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-purple-900/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/3" />
           <div className="pattern-chevron absolute inset-0 opacity-5 pointer-events-none" />
           <div className="relative z-10">
             <span className="text-xs font-semibold text-gold uppercase tracking-wider">
@@ -257,11 +221,15 @@ export default async function CulturePage() {
       {/* Upcoming Cultural Events */}
       {events.length > 0 && (
         <section className="px-5">
-          <SectionHeader
-            title="Upcoming Events"
-            linkText="Full Calendar"
-            linkHref="/culture/calendar"
-          />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-heading font-bold text-base flex items-center gap-2">
+              <div className="w-1 h-5 rounded-full bg-gold" />
+              Upcoming Events
+            </h2>
+            <Link href="/culture/events" className="text-[11px] text-gold font-semibold press">
+              All Events
+            </Link>
+          </div>
           <div className="space-y-2">
             {events.map((event) => (
               <Card key={event.id} hover padding>
@@ -304,7 +272,7 @@ export default async function CulturePage() {
             306 W Compton Blvd. #104, Compton, CA 90220
           </p>
           <div className="flex items-center justify-center gap-3 mt-2">
-            <span className="text-[10px] text-gold/70 font-semibold">Tue–Sat 10am–3pm</span>
+            <span className="text-[10px] text-gold/70 font-semibold">Tue-Sat 10am-3pm</span>
             <span className="text-white/10">|</span>
             <span className="text-[10px] text-txt-secondary">(310) 627-9022</span>
           </div>

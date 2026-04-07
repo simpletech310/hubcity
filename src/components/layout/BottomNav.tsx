@@ -22,6 +22,7 @@ const serviceItems: { href: string; label: string; iconName: IconName }[] = [
   { href: "/people", label: "People", iconName: "person" },
   { href: "/resources", label: "Resources", iconName: "book" },
   { href: "/district", label: "District", iconName: "grid" },
+  { href: "/live", label: "Hub TV", iconName: "film" },
 ];
 
 /* ── Nav tab icons ── */
