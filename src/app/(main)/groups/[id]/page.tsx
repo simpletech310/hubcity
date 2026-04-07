@@ -63,6 +63,21 @@ interface GroupMemberInfo {
   } | null;
 }
 
+interface GroupEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  start_date: string;
+  start_time: string | null;
+  end_date: string | null;
+  end_time: string | null;
+  location_name: string | null;
+  rsvp_count: number;
+}
+
+type GroupTab = "posts" | "events" | "members";
+
 const CATEGORY_ICONS: Record<string, string> = {
   neighborhood: "house",
   interest: "lightbulb",
@@ -107,6 +122,22 @@ function formatCreatedDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
+function formatEventDate(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return {
+    month: d.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+    day: d.getDate().toString(),
+  };
+}
+
+function formatTime(time: string) {
+  const [h, m] = time.split(":");
+  const hour = parseInt(h);
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const display = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${display}:${m} ${ampm}`;
+}
+
 // ── Main Component ──────────────────────────────────────
 export default function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -141,6 +172,19 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [showEditModal, setShowEditModal] = useState(false);
   const [postMenu, setPostMenu] = useState<string | null>(null);
 
+  // Tab navigation
+  const [activeTab, setActiveTab] = useState<GroupTab>("posts");
+
+  // Events
+  const [groupEvents, setGroupEvents] = useState<GroupEvent[]>([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [eventForm, setEventForm] = useState({
+    title: "", description: "", category: "community",
+    start_date: "", start_time: "", location_name: "",
+  });
+  const [creatingEvent, setCreatingEvent] = useState(false);
+
   // Edit form
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
@@ -161,8 +205,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         setIsMember(!!data.my_role);
       }
 
-      // Fetch posts
-      const postsRes = await fetch(`/api/groups/${id}/posts`);
+      // Fetch posts + members + events in parallel
+      const [postsRes, membersRes, eventsRes] = await Promise.all([
+        fetch(`/api/groups/${id}/posts`),
+        fetch(`/api/groups/${id}/members`),
+        fetch(`/api/groups/${id}/events`),
+      ]);
+
       if (postsRes.ok) {
         const data = await postsRes.json();
         setPosts(data.posts ?? []);
@@ -170,6 +219,17 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         setUserReactions(data.user_reactions ?? {});
         setUserId(data.user_id ?? null);
         if (data.my_role) setIsMember(true);
+      }
+
+      if (membersRes.ok) {
+        const data = await membersRes.json();
+        setMembers(data.members ?? []);
+      }
+
+      if (eventsRes.ok) {
+        const data = await eventsRes.json();
+        setGroupEvents(data.events ?? []);
+        setEventsLoaded(true);
       }
 
       setLoading(false);
@@ -416,6 +476,24 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     }
   }, [group]);
 
+  // ── Create event ───────────────────────────────────
+  const handleCreateEvent = useCallback(async () => {
+    if (!eventForm.title.trim() || !eventForm.start_date) return;
+    setCreatingEvent(true);
+    const res = await fetch(`/api/groups/${id}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(eventForm),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setGroupEvents((prev) => [...prev, data.event]);
+      setShowCreateEvent(false);
+      setEventForm({ title: "", description: "", category: "community", start_date: "", start_time: "", location_name: "" });
+    }
+    setCreatingEvent(false);
+  }, [id, eventForm]);
+
   const isAdminOrMod = myRole === "admin" || myRole === "moderator";
 
   // ── Loading ───────────────────────────────────────────
@@ -502,13 +580,10 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Action buttons */}
           <div className="flex items-center gap-2 mt-3">
-            <button
-              onClick={loadMembers}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-xs text-txt-secondary hover:text-white transition-colors"
-            >
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 text-xs text-txt-secondary">
               <Icon name="users" size={14} />
               {group.member_count} member{group.member_count !== 1 ? "s" : ""}
-            </button>
+            </span>
             <button
               onClick={handleJoin}
               disabled={joining}
@@ -532,6 +607,32 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       </div>
 
+      {/* ═══════ TABS ═══════ */}
+      <div className="flex gap-1 px-5 mt-3 mb-3 border-b border-border-subtle">
+        {(["posts", "events", "members"] as GroupTab[]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveTab(t)}
+            className={`px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2 ${
+              activeTab === t
+                ? "border-gold text-gold"
+                : "border-transparent text-txt-secondary hover:text-white"
+            }`}
+          >
+            {t}
+            {t === "events" && groupEvents.length > 0 && (
+              <span className="ml-1.5 text-[9px] bg-gold/20 text-gold px-1.5 py-0.5 rounded-full">{groupEvents.length}</span>
+            )}
+            {t === "members" && (
+              <span className="ml-1.5 text-[9px] bg-white/10 px-1.5 py-0.5 rounded-full">{group.member_count}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* ═══════ POSTS TAB ═══════ */}
+      {activeTab === "posts" && (
+        <>
       {/* ═══════ POST COMPOSER ═══════ */}
       {isMember && (
         <div className="px-5 mt-2 mb-4">
@@ -793,7 +894,211 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         })}
       </div>
 
-      {/* ═══════ MEMBERS MODAL ═══════ */}
+        </>
+      )}
+
+      {/* ═══════ EVENTS TAB ═══════ */}
+      {activeTab === "events" && (
+        <div className="px-5 space-y-3">
+          {/* Create Event button for admin/mod */}
+          {isAdminOrMod && (
+            <button
+              onClick={() => setShowCreateEvent(!showCreateEvent)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-gold/30 text-gold text-xs font-semibold hover:bg-gold/5 transition-colors"
+            >
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+              </svg>
+              Create Event
+            </button>
+          )}
+
+          {/* Create Event Form */}
+          {showCreateEvent && isAdminOrMod && (
+            <Card>
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold">New Event</h3>
+                <input
+                  type="text"
+                  placeholder="Event title"
+                  value={eventForm.title}
+                  onChange={(e) => setEventForm({ ...eventForm, title: e.target.value })}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+                />
+                <textarea
+                  placeholder="Description (optional)"
+                  value={eventForm.description}
+                  onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })}
+                  rows={2}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 resize-none"
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Date</label>
+                    <input
+                      type="date"
+                      value={eventForm.start_date}
+                      onChange={(e) => setEventForm({ ...eventForm, start_date: e.target.value })}
+                      className="w-full mt-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold/40"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Time</label>
+                    <input
+                      type="time"
+                      value={eventForm.start_time}
+                      onChange={(e) => setEventForm({ ...eventForm, start_time: e.target.value })}
+                      className="w-full mt-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold/40"
+                    />
+                  </div>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Location (optional)"
+                  value={eventForm.location_name}
+                  onChange={(e) => setEventForm({ ...eventForm, location_name: e.target.value })}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+                />
+                <select
+                  value={eventForm.category}
+                  onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
+                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold/40"
+                >
+                  <option value="community">Community</option>
+                  <option value="sports">Sports</option>
+                  <option value="business">Business</option>
+                  <option value="networking">Networking</option>
+                  <option value="culture">Culture</option>
+                  <option value="youth">Youth</option>
+                </select>
+                <div className="flex gap-2">
+                  <Button onClick={handleCreateEvent} loading={creatingEvent} disabled={!eventForm.title.trim() || !eventForm.start_date}>
+                    Create Event
+                  </Button>
+                  <button
+                    onClick={() => setShowCreateEvent(false)}
+                    className="px-4 py-2 text-xs text-txt-secondary hover:text-white transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Events list */}
+          {groupEvents.length === 0 && eventsLoaded && (
+            <Card>
+              <div className="text-center py-8">
+                <p className="text-3xl mb-2">📅</p>
+                <p className="text-sm font-semibold">No events yet</p>
+                <p className="text-xs text-txt-secondary mt-1">
+                  {isAdminOrMod ? "Create your first event above!" : "Events will appear here"}
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {groupEvents.map((ev) => {
+            const d = formatEventDate(ev.start_date);
+            return (
+              <Link key={ev.id} href={`/events/${ev.id}`}>
+                <Card hover>
+                  <div className="flex gap-3">
+                    <div className="w-12 h-14 rounded-xl bg-gold/10 flex flex-col items-center justify-center shrink-0">
+                      <span className="text-[9px] font-bold text-gold tracking-wider">{d.month}</span>
+                      <span className="text-lg font-bold text-white leading-tight">{d.day}</span>
+                    </div>
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <h3 className="text-sm font-semibold truncate">{ev.title}</h3>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Badge label={ev.category} variant={CATEGORY_BADGE[ev.category] || "gold"} />
+                        {ev.location_name && (
+                          <span className="text-[10px] text-txt-secondary truncate">{ev.location_name}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {ev.start_time && (
+                          <span className="text-[10px] text-txt-secondary">{formatTime(ev.start_time)}</span>
+                        )}
+                        {ev.rsvp_count > 0 && (
+                          <span className="text-[10px] text-emerald">{ev.rsvp_count} going</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ═══════ MEMBERS TAB ═══════ */}
+      {activeTab === "members" && (
+        <div className="px-5 space-y-2">
+          {members.length === 0 ? (
+            <div className="flex justify-center py-8">
+              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            members.map((m) => (
+              <div key={m.user?.id} className="flex items-center gap-3 py-2.5 border-b border-border-subtle last:border-0">
+                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                  {m.user?.avatar_url ? (
+                    <img src={m.user.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-sm font-bold text-txt-secondary">
+                      {m.user?.display_name?.charAt(0) || "?"}
+                    </span>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-semibold truncate">{m.user?.display_name || "Unknown"}</p>
+                    {m.role === "admin" && <Badge label="Admin" variant="gold" />}
+                    {m.role === "moderator" && <Badge label="Mod" variant="purple" />}
+                  </div>
+                  {m.user?.handle && (
+                    <p className="text-[10px] text-txt-secondary">@{m.user.handle}</p>
+                  )}
+                </div>
+                {/* Admin actions */}
+                {myRole === "admin" && m.user?.id !== userId && (
+                  <div className="flex items-center gap-1">
+                    {m.role === "member" && (
+                      <button
+                        onClick={() => handleChangeRole(m.user!.id, "moderator")}
+                        className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors"
+                      >
+                        Make Mod
+                      </button>
+                    )}
+                    {m.role === "moderator" && (
+                      <button
+                        onClick={() => handleChangeRole(m.user!.id, "member")}
+                        className="px-2 py-1 text-[9px] bg-white/5 text-txt-secondary rounded-lg hover:bg-white/10 transition-colors"
+                      >
+                        Demote
+                      </button>
+                    )}
+                    {m.role !== "admin" && (
+                      <button
+                        onClick={() => handleRemoveMember(m.user!.id, m.user!.display_name)}
+                        className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {/* ═══════ MEMBERS MODAL (kept for backward compat) ═══════ */}
       {showMembers && (
         <>
           <div className="fixed inset-0 bg-black/60 z-40" onClick={() => setShowMembers(false)} />

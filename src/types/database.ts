@@ -183,6 +183,7 @@ export interface Event {
   ticket_sales_start: string | null;
   ticket_sales_end: string | null;
   max_tickets_per_person: number;
+  group_id: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
