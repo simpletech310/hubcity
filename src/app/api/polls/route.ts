@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   }
 }
 
-// POST /api/polls — create a poll (city_official/admin only)
+// POST /api/polls — create a poll (city_official and admin only)
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check role
+    // Only city officials and admins can create polls
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 
     if (!profile || !["city_official", "admin"].includes(profile.role)) {
       return NextResponse.json(
-        { error: "Only city officials and admins can create polls" },
+        { error: "Only city officials can create polls" },
         { status: 403 }
       );
     }

@@ -16,16 +16,12 @@ const statusConfig: Record<
   { label: string; color: string; dot: string }
 > = {
   active: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
-  en_route: {
-    label: "En Route",
-    color: "text-gold",
-    dot: "bg-gold",
-  },
-  inactive: {
-    label: "Offline",
-    color: "text-txt-secondary",
-    dot: "bg-txt-secondary",
-  },
+  open: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
+  en_route: { label: "En Route", color: "text-gold", dot: "bg-gold" },
+  inactive: { label: "Offline", color: "text-txt-secondary", dot: "bg-txt-secondary" },
+  closed: { label: "Closed", color: "text-txt-secondary", dot: "bg-txt-secondary" },
+  sold_out: { label: "Sold Out", color: "text-coral", dot: "bg-coral" },
+  cancelled: { label: "Cancelled", color: "text-coral", dot: "bg-coral" },
 };
 
 function timeAgo(dateStr: string | null): string {

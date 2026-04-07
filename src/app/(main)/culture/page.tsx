@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import SectionHeader from "@/components/layout/SectionHeader";
+import EditorialHeader from "@/components/ui/EditorialHeader";
+import FeaturedCard from "@/components/ui/FeaturedCard";
+import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
 import MuseumHero from "@/components/culture/MuseumHero";
 import MuseumNav from "@/components/culture/MuseumNav";
@@ -104,14 +107,18 @@ export default async function CulturePage() {
       {/* Featured Exhibit */}
       {exhibits.length > 0 && (
         <section className="px-5">
-          <SectionHeader
-            title="Current Exhibits"
-            linkText="View All"
-            linkHref="/culture/exhibits"
-          />
+          <EditorialHeader kicker="NOW SHOWING" title="Current Exhibits" />
           <div className="space-y-3">
             {exhibits.slice(0, 1).map((exhibit) => (
-              <ExhibitCard key={exhibit.id} exhibit={exhibit} featured />
+              <FeaturedCard
+                key={exhibit.id}
+                title={exhibit.title}
+                subtitle={exhibit.description?.slice(0, 120)}
+                imageUrl={exhibit.cover_image_url}
+                badge={exhibit.is_featured ? { label: "Featured", variant: "gold" as const } : undefined}
+                href={`/culture/exhibits/${exhibit.slug || exhibit.id}`}
+                kicker={exhibit.wing ?? "Exhibit"}
+              />
             ))}
             {exhibits.length > 1 && (
               <div className="grid grid-cols-2 gap-3">
@@ -193,11 +200,7 @@ export default async function CulturePage() {
       {/* Gallery Preview */}
       {galleryItems.length > 0 && (
         <section className="px-5">
-          <SectionHeader
-            title="From the Gallery"
-            linkText="View All"
-            linkHref="/culture/gallery"
-          />
+          <EditorialHeader kicker="THE COLLECTION" title="Gallery" />
           <div className="grid grid-cols-3 gap-2">
             {galleryItems.slice(0, 6).map((item) => (
               <GalleryItemCard key={item.id} item={item} />
@@ -206,14 +209,15 @@ export default async function CulturePage() {
         </section>
       )}
 
+      {/* Ad Zone */}
+      <div className="px-5">
+        <AdZone zone="feed_banner" />
+      </div>
+
       {/* Notable People */}
       {people.length > 0 && (
         <section className="px-5">
-          <SectionHeader
-            title="Notable People"
-            linkText="View All"
-            linkHref="/culture/people"
-          />
+          <EditorialHeader kicker="COMPTON LEGENDS" title="Notable People" />
           <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2">
             {people.map((person) => (
               <div key={person.id} className="min-w-[160px] max-w-[170px] shrink-0">

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
+import EditorialHeader from "@/components/ui/EditorialHeader";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import DepartmentCard from "@/components/city-hall/DepartmentCard";
@@ -156,7 +157,7 @@ export default async function CityHallPage() {
       {/* City Council Members */}
       {councilMembers && councilMembers.length > 0 && (
         <section className="px-5 mb-8">
-          <SectionHeader title="City Council" subtitle="Your elected representatives" compact />
+          <EditorialHeader kicker="YOUR GOVERNMENT" title="City Council" subtitle="Your elected representatives" />
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
             {councilMembers.map((member) => (
               <Link
@@ -229,12 +230,7 @@ export default async function CityHallPage() {
       {/* City News — Posts from City Officials */}
       {posts.length > 0 && (
         <section className="px-5 mb-8">
-          <SectionHeader
-            title="City News"
-            linkText="View All"
-            linkHref="/pulse"
-            compact
-          />
+          <EditorialHeader kicker="LATEST UPDATES" title="City News" />
           <div className="space-y-3 stagger">
             {posts.map((post) => {
               const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;

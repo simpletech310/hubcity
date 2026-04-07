@@ -11,6 +11,9 @@
  * - live_overlay: banner overlay during live streams
  * - feed_banner: native ad cards in Pulse feed
  * - event_banner: sponsored banner on event pages
+ * - section_hero: full-width hero banner at top of section pages
+ * - mid_feed: inline ad between content sections
+ * - sidebar_promo: smaller promo card in detail pages
  */
 
 const KEVEL_NETWORK_ID = process.env.KEVEL_NETWORK_ID;
@@ -19,11 +22,12 @@ const KEVEL_API_KEY = process.env.KEVEL_API_KEY;
 const KEVEL_DECISION_URL = "https://e-1.adzerk.net/api/v2";
 
 // Zone ID mapping - configure these in Kevel dashboard
-export type AdZone = "podcast_preroll" | "podcast_midroll" | "video_preroll" | "live_overlay" | "feed_banner" | "event_banner";
+export type AdZone = "podcast_preroll" | "podcast_midroll" | "video_preroll" | "live_overlay" | "feed_banner" | "event_banner" | "section_hero" | "mid_feed" | "sidebar_promo";
 
 const VALID_ZONES = new Set<string>([
   "podcast_preroll", "podcast_midroll", "video_preroll",
   "live_overlay", "feed_banner", "event_banner",
+  "section_hero", "mid_feed", "sidebar_promo",
 ]);
 
 export function isValidAdZone(zone: string): zone is AdZone {
@@ -37,6 +41,9 @@ const ZONE_MAP: Record<string, number> = {
   live_overlay: parseInt(process.env.KEVEL_ZONE_LIVE_OVERLAY || "0"),
   feed_banner: parseInt(process.env.KEVEL_ZONE_FEED_BANNER || "0"),
   event_banner: parseInt(process.env.KEVEL_ZONE_EVENT_BANNER || "0"),
+  section_hero: parseInt(process.env.KEVEL_ZONE_SECTION_HERO || "0"),
+  mid_feed: parseInt(process.env.KEVEL_ZONE_MID_FEED || "0"),
+  sidebar_promo: parseInt(process.env.KEVEL_ZONE_SIDEBAR_PROMO || "0"),
 };
 
 export interface KevelDecision {
@@ -174,6 +181,9 @@ async function getLocalAdDecision(
       live_overlay: ["overlay", "banner"],
       feed_banner: ["banner"],
       event_banner: ["banner"],
+      section_hero: ["banner"],
+      mid_feed: ["banner"],
+      sidebar_promo: ["banner"],
     };
 
     const types = adTypeMap[req.zone] || ["banner"];
@@ -220,6 +230,9 @@ function getAdTypeForZone(zone: string): number {
     live_overlay: 3, // image
     feed_banner: 3,
     event_banner: 3,
+    section_hero: 3,
+    mid_feed: 3,
+    sidebar_promo: 3,
   };
   return map[zone] || 3;
 }

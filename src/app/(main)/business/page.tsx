@@ -6,6 +6,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
+import EditorialHeader from "@/components/ui/EditorialHeader";
 import { createClient } from "@/lib/supabase/client";
 import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
 
@@ -314,11 +315,10 @@ export default function BusinessPage() {
             <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">Shop Local</p>
           </div>
 
-          <h1 className="font-heading text-[28px] font-bold leading-tight mb-1">
-            Support Compton<br />
-            <span className="text-gold-gradient">Businesses</span>
+          <h1 className="font-display text-[28px] font-bold leading-tight mb-1">
+            Compton <span className="text-gold-gradient">Businesses</span>
           </h1>
-          <p className="font-display italic text-sm text-txt-secondary mb-5">
+          <p className="text-sm text-txt-secondary mb-5">
             Deals, specials & the city&apos;s best — all in one place.
           </p>
 
@@ -469,8 +469,7 @@ export default function BusinessPage() {
           {activeCategory === "all" && featured.length > 0 && !quickFilter && (
             <section className="mb-6">
               <div className="px-5 flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-gold" />
-                <h2 className="font-heading font-bold text-base">Featured</h2>
+                <EditorialHeader kicker="SHOP LOCAL" title="Featured" />
                 <span className="text-xs text-txt-secondary ml-auto">{featured.length} businesses</span>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">

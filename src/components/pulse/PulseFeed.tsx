@@ -417,8 +417,8 @@ export default function PulseFeed({
       {/* Bottom spacer */}
       <div className="h-8" />
 
-      {/* ─── FAB ─── */}
-      {userId && (
+      {/* ─── FAB — only for non-citizen roles (business_owner, city_official, admin, etc.) ─── */}
+      {userId && userRole !== "citizen" && (
         <>
           {fabExpanded && (
             <div className="fixed inset-0 z-30" onClick={() => setFabExpanded(false)} />
@@ -433,7 +433,7 @@ export default function PulseFeed({
                 <span className="text-[12px] font-semibold">New Post</span>
                 <span className="text-base">📝</span>
               </button>
-              {isOfficial && (
+              {(userRole === "city_official" || userRole === "admin") && (
                 <>
                   <button
                     onClick={() => { setFabExpanded(false); setPollOpen(true); }}
@@ -455,10 +455,7 @@ export default function PulseFeed({
           )}
 
           <button
-            onClick={() => {
-              if (isOfficial) setFabExpanded(!fabExpanded);
-              else setComposeOpen(true);
-            }}
+            onClick={() => setFabExpanded(!fabExpanded)}
             className={`fixed right-5 bottom-28 w-14 h-14 rounded-full bg-gradient-to-br from-gold to-gold-light shadow-lg shadow-gold/30 flex items-center justify-center text-midnight press z-40 hover:scale-105 transition-transform ${fabExpanded ? "rotate-45" : ""}`}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -468,11 +465,11 @@ export default function PulseFeed({
         </>
       )}
 
-      {/* Modals */}
-      {userId && (
+      {/* Modals — only for non-citizen roles */}
+      {userId && userRole !== "citizen" && (
         <>
           <ComposeModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} userId={userId} userName={userName} />
-          {isOfficial && (
+          {(userRole === "city_official" || userRole === "admin") && (
             <>
               <CreatePollModal isOpen={pollOpen} onClose={() => setPollOpen(false)} />
               <CreateSurveyModal isOpen={surveyOpen} onClose={() => setSurveyOpen(false)} />

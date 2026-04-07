@@ -6,6 +6,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
+import EditorialHeader from "@/components/ui/EditorialHeader";
+import AdZone from "@/components/ui/AdZone";
 import { createClient } from "@/lib/supabase/client";
 import type { Event } from "@/types/database";
 
@@ -325,12 +327,7 @@ export default function EventsPage() {
           {featured.length > 0 && activeCategory === "all" && (
             <section className="px-5 mb-8">
               <div className="mb-3">
-                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  Can&apos;t Miss
-                </h2>
+                <EditorialHeader kicker="WHAT'S HAPPENING" title="Can't Miss" />
               </div>
               <div className="space-y-3">
                 {featured.slice(0, 3).map((event) => (
@@ -374,6 +371,11 @@ export default function EventsPage() {
               </div>
             </section>
           )}
+
+          {/* Ad Zone */}
+          <div className="px-5 mb-8">
+            <AdZone zone="feed_banner" />
+          </div>
 
           {/* ══════════════════════════════════════════════════
               ALL UPCOMING — Timeline-style list

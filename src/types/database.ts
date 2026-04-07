@@ -1,4 +1,4 @@
-export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator" | "city_ambassador";
+export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator" | "city_ambassador" | "chamber_admin" | "resource_provider";
 export type VerificationStatus =
   | "unverified"
   | "pending"
@@ -45,12 +45,18 @@ export type NotificationType =
   | "message"
   | "mention";
 
+export type BusinessType = "food" | "retail" | "service";
+export type BusinessSubType = "brick_and_mortar" | "food_truck" | "cart" | "digital" | "general";
+export type ChamberStatus = "active" | "paused" | "removed";
+
 export type OrderStatus =
   | "pending"
   | "confirmed"
   | "preparing"
   | "ready"
   | "picked_up"
+  | "out_for_delivery"
+  | "delayed"
   | "delivered"
   | "cancelled";
 
@@ -68,7 +74,11 @@ export type ApplicationStatus =
   | "under_review"
   | "approved"
   | "denied"
-  | "waitlisted";
+  | "waitlisted"
+  | "referred"
+  | "enrolled"
+  | "completed"
+  | "withdrawn";
 
 export interface Profile {
   id: string;
@@ -138,6 +148,11 @@ export interface Business {
   location_updated_at: string | null;
   vendor_route: VendorRouteStop[] | null;
   vendor_status: VendorStatus;
+  business_type: BusinessType | null;
+  business_sub_type: BusinessSubType | null;
+  chamber_status: ChamberStatus;
+  chamber_paused_at: string | null;
+  chamber_notes: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -193,6 +208,11 @@ export interface Resource {
   is_published: boolean;
   accepts_applications: boolean;
   application_fields: ApplicationField[];
+  max_spots: number | null;
+  filled_spots: number;
+  provider_notes: string | null;
+  contact_email: string | null;
+  contact_name: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -410,7 +430,11 @@ export interface Order {
   delivery_address: string | null;
   delivery_notes: string | null;
   estimated_ready_at: string | null;
+  estimated_delivery_at: string | null;
+  delivery_status_updated_at: string | null;
   completed_at: string | null;
+  coupon_id: string | null;
+  discount_amount: number;
   created_at: string;
   updated_at: string;
   business?: Business;
@@ -426,6 +450,141 @@ export interface OrderItem {
   price: number; // cents
   quantity: number;
   special_instructions: string | null;
+}
+
+// ── Vendor Daily Slots ────────────────────────────────
+export type VendorSlotStatus = "scheduled" | "active" | "sold_out" | "cancelled" | "completed";
+
+export interface VendorDailySlot {
+  id: string;
+  business_id: string;
+  date: string;
+  start_time: string;
+  end_time: string;
+  location_name: string;
+  location_address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  status: VendorSlotStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Product Variants ──────────────────────────────────
+export interface ProductVariant {
+  id: string;
+  menu_item_id: string;
+  name: string;
+  sku: string | null;
+  price_override: number | null;
+  stock_count: number;
+  attributes: Record<string, string>;
+  sort_order: number;
+  is_available: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Coupons ───────────────────────────────────────────
+export type CouponDiscountType = "percent" | "fixed_amount" | "free_shipping";
+export type CouponAppliesTo = "all" | "category" | "item";
+
+export interface Coupon {
+  id: string;
+  business_id: string;
+  code: string;
+  title: string;
+  description: string | null;
+  discount_type: CouponDiscountType;
+  discount_value: number;
+  min_order_amount: number;
+  max_uses: number | null;
+  current_uses: number;
+  max_uses_per_customer: number;
+  applies_to: CouponAppliesTo;
+  applies_to_ids: string[] | null;
+  valid_from: string;
+  valid_until: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// ── Chamber of Commerce ───────────────────────────────
+export type ChamberUpdateCategory = "event" | "resource" | "grant" | "networking" | "policy" | "general";
+
+export interface ChamberUpdate {
+  id: string;
+  author_id: string;
+  title: string;
+  body: string;
+  category: ChamberUpdateCategory;
+  image_url: string | null;
+  target_business_types: string[] | null;
+  is_pinned: boolean;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  author?: { display_name: string; avatar_url: string | null };
+}
+
+// ── Loyalty Program ───────────────────────────────────
+export type LoyaltyTransactionType = "earn" | "redeem" | "bonus" | "adjustment" | "expire";
+export type LoyaltyRewardType = "discount_fixed" | "discount_percent" | "free_item" | "custom";
+
+export interface LoyaltyBalance {
+  user_id: string;
+  points: number;
+  lifetime_points: number;
+  updated_at: string;
+}
+
+export interface LoyaltyTransaction {
+  id: string;
+  user_id: string;
+  business_id: string | null;
+  order_id: string | null;
+  booking_id: string | null;
+  type: LoyaltyTransactionType;
+  points: number;
+  description: string | null;
+  created_at: string;
+}
+
+export interface LoyaltyReward {
+  id: string;
+  business_id: string;
+  name: string;
+  description: string | null;
+  points_required: number;
+  reward_type: LoyaltyRewardType;
+  reward_value: number;
+  reward_item_id: string | null;
+  is_active: boolean;
+  max_redemptions_per_user: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VerifiedResidentDiscount {
+  id: string;
+  business_id: string;
+  discount_percent: number;
+  applies_to_categories: string[] | null;
+  description: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LoyaltyConfig {
+  id: number;
+  points_per_dollar: number;
+  points_to_dollar_ratio: number;
+  min_redemption_points: number;
+  max_daily_earn: number;
+  updated_at: string;
 }
 
 // ── Services & Bookings ────────────────────────────────
@@ -481,6 +640,10 @@ export interface GrantApplication {
   reviewer_notes: string | null;
   reviewed_by: string | null;
   reviewed_at: string | null;
+  status_note: string | null;
+  referred_to: string | null;
+  follow_up_date: string | null;
+  internal_notes: string | null;
   created_at: string;
   updated_at: string;
   resource?: Resource;
@@ -814,7 +977,7 @@ export interface HealthResource {
 }
 
 // === Food ===
-export type VendorStatus = 'active' | 'inactive' | 'en_route';
+export type VendorStatus = 'active' | 'inactive' | 'en_route' | 'open' | 'sold_out' | 'closed' | 'cancelled';
 export type FoodPromoType = 'discount' | 'bogo' | 'free_item' | 'bundle' | 'loyalty';
 export type FoodChallengeType = 'eating' | 'collection' | 'photo';
 
@@ -1012,6 +1175,31 @@ export interface GroupMember {
   user_id: string;
   role: "member" | "moderator" | "admin";
   joined_at: string;
+}
+
+// ── Group Posts ──────────────────────────────────────
+export interface GroupPost {
+  id: string;
+  group_id: string;
+  author_id: string;
+  body: string;
+  image_url: string | null;
+  is_published: boolean;
+  reaction_counts: Record<string, number>;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+  author?: Profile;
+}
+
+export interface GroupPostComment {
+  id: string;
+  group_post_id: string;
+  author_id: string;
+  body: string;
+  is_published: boolean;
+  created_at: string;
+  author?: Profile;
 }
 
 // ── Citizen Badges ───────────────────────────────────

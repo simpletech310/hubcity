@@ -109,6 +109,14 @@ function MoreIcon() {
   );
 }
 
+function ChamberIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+  );
+}
+
 export default function DashboardShell({
   business,
   resources,
@@ -121,23 +129,44 @@ export default function DashboardShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const isResourceManager = userRole === "city_official" || userRole === "admin";
+  const isResourceManager = userRole === "city_official" || userRole === "admin" || userRole === "resource_provider";
+  const isChamberAdmin = userRole === "chamber_admin" || userRole === "admin";
   const canPostJobs = ["business_owner", "admin", "city_official", "city_ambassador"].includes(userRole);
 
   const tabs: TabDef[] = useMemo(() => {
     const t: TabDef[] = [];
+    const bizType = business?.business_type;
 
     // Overview is always first
     t.push({ href: "/dashboard", label: "Overview", icon: <OverviewIcon /> });
 
-    // Business-owner tabs
+    // Business-type-specific tabs
     if (business) {
-      t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-      t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
-      t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
-      t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
-      if (business.is_mobile_vendor) {
-        t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+      if (bizType === "food") {
+        // Food businesses: orders, menu, specials, location (trucks/carts)
+        t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+        t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
+        if (business.is_mobile_vendor || business.business_sub_type === "food_truck" || business.business_sub_type === "cart") {
+          t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+        }
+      } else if (bizType === "retail") {
+        // Retail businesses: orders, catalog (reuse menu), coupons
+        t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        t.push({ href: "/dashboard/menu", label: "Catalog", icon: <MenuIcon /> });
+        t.push({ href: "/dashboard/coupons", label: "Coupons", icon: <SpecialsIcon /> });
+      } else if (bizType === "service") {
+        // Service businesses: bookings, services
+        t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      } else {
+        // Fallback: show all common tabs for businesses without a type yet
+        t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
+        t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+        t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+        t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
+        if (business.is_mobile_vendor) {
+          t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+        }
       }
       t.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
     }
@@ -155,26 +184,36 @@ export default function DashboardShell({
       t.push({ href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> });
     }
 
+    // Chamber admin tabs
+    if (isChamberAdmin) {
+      t.push({ href: "/dashboard/chamber", label: "Chamber", icon: <ChamberIcon /> });
+    }
+
     // Settings always last
     t.push({ href: "/dashboard/settings", label: "More", icon: <MoreIcon /> });
 
     return t;
-  }, [business, isResourceManager, canPostJobs]);
+  }, [business, isResourceManager, isChamberAdmin, canPostJobs]);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
+    if (href === "/dashboard/chamber") {
+      return pathname.startsWith("/dashboard/chamber");
+    }
     if (href === "/dashboard/settings") {
       return (
         pathname.startsWith("/dashboard/settings") ||
         pathname.startsWith("/dashboard/services") ||
         pathname.startsWith("/dashboard/customers") ||
-        pathname.startsWith("/dashboard/messages")
+        pathname.startsWith("/dashboard/messages") ||
+        pathname.startsWith("/dashboard/inventory") ||
+        pathname.startsWith("/dashboard/loyalty")
       );
     }
     return pathname.startsWith(href);
   }
 
-  const headerTitle = business ? business.name : "Resource Manager";
+  const headerTitle = business ? business.name : isChamberAdmin ? "Chamber of Commerce" : isResourceManager ? "Resource Manager" : "Dashboard";
 
   return (
     <div className="max-w-[430px] mx-auto min-h-dvh relative bg-midnight">
@@ -208,14 +247,14 @@ export default function DashboardShell({
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] z-50 bg-deep/95 backdrop-blur-md border-t border-border-subtle px-2 pb-safe">
-        <div className="flex items-center justify-around py-2">
+        <div className="flex items-center overflow-x-auto scrollbar-hide py-2 gap-0.5">
           {tabs.map((tab) => {
             const active = isActive(tab.href);
             return (
               <Link
                 key={tab.href}
                 href={tab.href}
-                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl transition-colors min-w-fit shrink-0 ${
                   active ? "text-gold" : "text-txt-secondary hover:text-white"
                 }`}
               >

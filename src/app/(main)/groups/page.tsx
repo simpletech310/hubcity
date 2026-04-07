@@ -25,6 +25,7 @@ const CATEGORIES = [
 export default function GroupsPage() {
   const [groups, setGroups] = useState<CommunityGroup[]>([]);
   const [myGroups, setMyGroups] = useState<string[]>([]);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState<string | null>(null);
@@ -46,6 +47,7 @@ export default function GroupsPage() {
         const data = await res.json();
         setGroups(data.groups);
         setMyGroups(data.my_groups);
+        setUserRole(data.user_role);
       }
       setLoading(false);
     }
@@ -107,15 +109,17 @@ export default function GroupsPage() {
         </div>
       </div>
 
-      {/* Create CTA */}
-      <div className="px-5 -mt-3 mb-5">
-        <button
-          onClick={() => setShowCreate(!showCreate)}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press"
-        >
-          + Create a Group
-        </button>
-      </div>
+      {/* Create CTA - only for officials */}
+      {userRole && ["city_ambassador", "city_official", "admin"].includes(userRole) && (
+        <div className="px-5 -mt-3 mb-5">
+          <button
+            onClick={() => setShowCreate(!showCreate)}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press"
+          >
+            + Create a Group
+          </button>
+        </div>
+      )}
 
       {/* Create Form */}
       {showCreate && (
@@ -193,14 +197,14 @@ export default function GroupsPage() {
           return (
             <Card key={group.id} hover>
               <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
+                <Link href={`/groups/${group.id}`} className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
                   <span className="text-xl">
                     {CATEGORY_ICONS[group.category] || "🤝"}
                   </span>
-                </div>
+                </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
-                    <p className="text-sm font-bold truncate">{group.name}</p>
+                    <Link href={`/groups/${group.id}`} className="text-sm font-bold truncate hover:text-gold transition-colors">{group.name}</Link>
                     <Badge label={group.category} variant="purple" />
                   </div>
                   {group.description && (

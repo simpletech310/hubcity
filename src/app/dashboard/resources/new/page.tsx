@@ -75,6 +75,9 @@ export default function NewResourcePage() {
   const [district, setDistrict] = useState("");
   const [acceptsApplications, setAcceptsApplications] = useState(false);
   const [applicationFields, setApplicationFields] = useState<ApplicationField[]>([]);
+  const [maxSpots, setMaxSpots] = useState("");
+  const [contactName, setContactName] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
 
   function addField() {
     setApplicationFields((prev) => [
@@ -143,6 +146,9 @@ export default function NewResourcePage() {
         accepts_applications: acceptsApplications,
         application_fields: acceptsApplications ? applicationFields : [],
         is_published: false,
+        max_spots: maxSpots ? parseInt(maxSpots) : null,
+        contact_name: contactName.trim() || null,
+        contact_email: contactEmail.trim() || null,
       };
 
       const res = await fetch("/api/resources", {
@@ -348,6 +354,46 @@ export default function NewResourcePage() {
                 value={hours}
                 onChange={(e) => setHours(e.target.value)}
                 placeholder="Mon-Fri 9am-5pm"
+                className={inputClass()}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Program Capacity */}
+        <Card>
+          <p className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+            Program Capacity
+          </p>
+          <div className="space-y-3">
+            <div>
+              <label className={labelClass()}>Max Spots (leave blank for unlimited)</label>
+              <input
+                type="number"
+                value={maxSpots}
+                onChange={(e) => setMaxSpots(e.target.value)}
+                placeholder="e.g. 50"
+                className={inputClass()}
+                min="1"
+              />
+            </div>
+            <div>
+              <label className={labelClass()}>Contact Name</label>
+              <input
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                placeholder="Program coordinator name"
+                className={inputClass()}
+              />
+            </div>
+            <div>
+              <label className={labelClass()}>Contact Email</label>
+              <input
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                placeholder="coordinator@org.com"
                 className={inputClass()}
               />
             </div>

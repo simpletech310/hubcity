@@ -37,6 +37,20 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only non-citizen roles can create posts
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || profile.role === "citizen") {
+      return NextResponse.json(
+        { error: "Citizens cannot create posts. Only official accounts, businesses, and creators can post." },
+        { status: 403 }
+      );
+    }
+
     const rl = await checkRateLimit(getStrictRateLimiter(), user.id);
     if (!rl.success) {
       return NextResponse.json(

@@ -81,9 +81,21 @@ export async function GET(request: Request) {
       .single();
 
     const isAdmin =
-      profile?.role === "admin" || profile?.role === "city_official";
+      profile?.role === "admin" || profile?.role === "city_official" || profile?.role === "resource_provider";
 
     if (isAdmin && resource_id) {
+      // For resource_providers, verify they own this resource
+      if (profile?.role === "resource_provider") {
+        const { data: resource } = await supabase
+          .from("resources")
+          .select("created_by")
+          .eq("id", resource_id)
+          .single();
+        if (resource?.created_by !== user.id) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+      }
+
       // Admins can see all applications for a resource
       const { data: applications, error } = await supabase
         .from("grant_applications")

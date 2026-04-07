@@ -54,15 +54,15 @@ export async function PATCH(
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "city_official" && profile?.role !== "city_ambassador") {
+    if (!["admin", "city_official", "city_ambassador", "resource_provider"].includes(profile?.role || "")) {
       return NextResponse.json(
         { error: "Only admins and city officials can update resources" },
         { status: 403 }
       );
     }
 
-    // If city_official, verify ownership
-    if (profile.role === "city_official") {
+    // If city_official or resource_provider, verify ownership
+    if (profile?.role === "city_official" || profile?.role === "resource_provider") {
       const { data: existing } = await supabase
         .from("resources")
         .select("created_by")
@@ -97,6 +97,11 @@ export async function PATCH(
       "is_published",
       "accepts_applications",
       "application_fields",
+      "max_spots",
+      "filled_spots",
+      "provider_notes",
+      "contact_email",
+      "contact_name",
     ];
 
     const updates: Record<string, unknown> = {};

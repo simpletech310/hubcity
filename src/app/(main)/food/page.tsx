@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import EditorialHeader from "@/components/ui/EditorialHeader";
 import type {
   Business,
   FoodSpecial,
@@ -489,7 +490,7 @@ export default function FoodPage() {
             )}
           </div>
           <h1 className="font-display text-3xl font-bold leading-tight mb-1">
-            What are you <span className="text-gold-gradient">craving?</span>
+            Food & <span className="text-gold-gradient">Flavor</span>
           </h1>
           <p className="text-sm text-white/50">
             Discover the best food in Compton — from brick & mortar to rolling kitchens
@@ -648,10 +649,7 @@ export default function FoodPage() {
       {!search && featuredSpots.length > 0 && (
         <section className="mb-6">
           <div className="px-5 mb-3">
-            <h2 className="font-heading font-bold text-base flex items-center gap-2">
-              <span className="text-gold">⭐</span> Featured
-            </h2>
-            <p className="text-[11px] text-white/30">Community favorites you can&apos;t miss</p>
+            <EditorialHeader kicker="COMPTON EATS" title="Featured" subtitle="Community favorites you can't miss" />
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
             {featuredSpots.map((biz) => (

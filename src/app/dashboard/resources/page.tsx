@@ -21,7 +21,7 @@ export default async function ResourcesPage() {
     .single();
 
   const userRole = profile?.role;
-  if (userRole !== "admin" && userRole !== "city_official") {
+  if (userRole !== "admin" && userRole !== "city_official" && userRole !== "resource_provider") {
     redirect("/dashboard");
   }
 
@@ -31,7 +31,7 @@ export default async function ResourcesPage() {
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (userRole === "city_official") {
+  if (userRole === "city_official" || userRole === "resource_provider") {
     query = query.eq("created_by", user.id);
   }
 

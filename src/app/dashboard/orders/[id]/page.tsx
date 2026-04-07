@@ -16,6 +16,8 @@ const statusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | "purp
   preparing: "purple",
   ready: "emerald",
   picked_up: "emerald",
+  out_for_delivery: "cyan",
+  delayed: "coral",
   delivered: "emerald",
   cancelled: "coral",
 };
@@ -99,6 +101,7 @@ export default async function OrderDetailPage({
       <OrderStatusUpdater
         orderId={typedOrder.id}
         currentStatus={typedOrder.status}
+        orderType={typedOrder.type === "delivery" ? "delivery" : "pickup"}
       />
 
       {/* Customer Info */}

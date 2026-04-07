@@ -34,9 +34,20 @@ export async function GET(request: NextRequest) {
       myGroups = (memberships ?? []).map((m) => m.group_id);
     }
 
+    let userRole = null;
+    if (user) {
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      userRole = prof?.role || null;
+    }
+
     return NextResponse.json({
       groups: data ?? [],
       my_groups: myGroups,
+      user_role: userRole,
     });
   } catch (error) {
     console.error("Fetch groups error:", error);
@@ -56,6 +67,20 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Only city_ambassador, city_official, admin can create groups
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile || !["city_ambassador", "city_official", "admin"].includes(profile.role)) {
+      return NextResponse.json(
+        { error: "Only city ambassadors and officials can create groups" },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();

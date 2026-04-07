@@ -15,12 +15,17 @@ export function getStripe(): Stripe {
   return stripeInstance;
 }
 
+// Platform fee: 1.5% of transaction + $0.75 flat fee per transaction
 export const PLATFORM_FEE_PERCENT = Number(
-  process.env.STRIPE_PLATFORM_FEE_PERCENT || "5"
+  process.env.STRIPE_PLATFORM_FEE_PERCENT || "1.5"
+);
+
+export const PLATFORM_FEE_FLAT_CENTS = Number(
+  process.env.STRIPE_PLATFORM_FEE_FLAT_CENTS || "75"
 );
 
 export function calculatePlatformFee(amount: number): number {
-  return Math.round(amount * (PLATFORM_FEE_PERCENT / 100));
+  return Math.round(amount * (PLATFORM_FEE_PERCENT / 100)) + PLATFORM_FEE_FLAT_CENTS;
 }
 
 export function generateOrderNumber(): string {

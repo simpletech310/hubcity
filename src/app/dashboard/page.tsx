@@ -2,7 +2,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
-import type { Order, StripeAccount, GrantApplication, Resource } from "@/types/database";
+import ChamberUpdatesWidget from "@/components/dashboard/ChamberUpdatesWidget";
+import type { Order, StripeAccount, GrantApplication, Resource, BusinessType } from "@/types/database";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -27,6 +28,8 @@ const orderStatusColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | 
   preparing: "purple",
   ready: "emerald",
   picked_up: "emerald",
+  out_for_delivery: "cyan",
+  delayed: "coral",
   delivered: "emerald",
   cancelled: "coral",
 };
@@ -59,7 +62,7 @@ export default async function DashboardOverview() {
   const isResourceManager = userRole === "city_official" || userRole === "admin";
 
   // ── Business owner data ─────────────────────────────────
-  let business: { id: string; name: string; rating_avg: number; rating_count: number } | null = null;
+  let business: { id: string; name: string; rating_avg: number; rating_count: number; business_type: BusinessType | null } | null = null;
   let todayCount = 0;
   let bookingCount = 0;
   let monthRevenue = 0;
@@ -73,7 +76,7 @@ export default async function DashboardOverview() {
   if (isBusinessOwner) {
     const { data: biz } = await supabase
       .from("businesses")
-      .select("id, name, rating_avg, rating_count")
+      .select("id, name, rating_avg, rating_count, business_type")
       .eq("owner_id", user.id)
       .single();
 
@@ -199,22 +202,43 @@ export default async function DashboardOverview() {
       {/* ── Business Owner Stats ─────────────────────────── */}
       {isBusinessOwner && business && (
         <>
-          {/* Today's Snapshot */}
+          {/* Today's Snapshot — type-aware */}
           <div className="grid grid-cols-3 gap-3">
-            <Card className="text-center">
-              <p className="text-2xl font-heading font-bold text-gold">{todayCount}</p>
-              <p className="text-[10px] text-txt-secondary mt-0.5">Today&apos;s Orders</p>
-            </Card>
-            <Card className="text-center">
-              <p className="text-2xl font-heading font-bold text-cyan">{bookingCount}</p>
-              <p className="text-[10px] text-txt-secondary mt-0.5">Pending Bookings</p>
-            </Card>
-            <Card className="text-center">
-              <p className="text-2xl font-heading font-bold text-emerald">
-                {formatCents(monthRevenue)}
-              </p>
-              <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
-            </Card>
+            {business.business_type === "service" ? (
+              <>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-cyan">{bookingCount}</p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Pending Bookings</p>
+                </Card>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-gold">{totalBookings}</p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Total Bookings</p>
+                </Card>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-emerald">
+                    {formatCents(monthRevenue)}
+                  </p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
+                </Card>
+              </>
+            ) : (
+              <>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-gold">{todayCount}</p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Today&apos;s Orders</p>
+                </Card>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-cyan">{totalOrders}</p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">Total Orders</p>
+                </Card>
+                <Card className="text-center">
+                  <p className="text-2xl font-heading font-bold text-emerald">
+                    {formatCents(monthRevenue)}
+                  </p>
+                  <p className="text-[10px] text-txt-secondary mt-0.5">This Month</p>
+                </Card>
+              </>
+            )}
           </div>
 
           {/* Business Metrics */}
@@ -223,26 +247,39 @@ export default async function DashboardOverview() {
               Business Metrics
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              <Card className="relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-[3px] h-full bg-gold rounded-r" />
-                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Total Orders</p>
-                <p className="text-xl font-heading font-bold text-gold">{totalOrders}</p>
-              </Card>
+              {business.business_type !== "service" && (
+                <Card className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-[3px] h-full bg-gold rounded-r" />
+                  <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Total Orders</p>
+                  <p className="text-xl font-heading font-bold text-gold">{totalOrders}</p>
+                </Card>
+              )}
               <Card className="relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-hc-purple rounded-r" />
                 <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Customers</p>
                 <p className="text-xl font-heading font-bold text-hc-purple">{totalCustomers}</p>
               </Card>
-              <Card className="relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-[3px] h-full bg-emerald rounded-r" />
-                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Menu Items</p>
-                <p className="text-xl font-heading font-bold text-emerald">{menuItemCount}</p>
-              </Card>
-              <Card className="relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-[3px] h-full bg-cyan rounded-r" />
-                <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Bookings</p>
-                <p className="text-xl font-heading font-bold text-cyan">{totalBookings}</p>
-              </Card>
+              {business.business_type === "food" && (
+                <Card className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-[3px] h-full bg-emerald rounded-r" />
+                  <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Menu Items</p>
+                  <p className="text-xl font-heading font-bold text-emerald">{menuItemCount}</p>
+                </Card>
+              )}
+              {business.business_type === "retail" && (
+                <Card className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-[3px] h-full bg-emerald rounded-r" />
+                  <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Products</p>
+                  <p className="text-xl font-heading font-bold text-emerald">{menuItemCount}</p>
+                </Card>
+              )}
+              {(business.business_type === "service" || !business.business_type) && (
+                <Card className="relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-[3px] h-full bg-cyan rounded-r" />
+                  <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Bookings</p>
+                  <p className="text-xl font-heading font-bold text-cyan">{totalBookings}</p>
+                </Card>
+              )}
               <Card className="relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-coral rounded-r" />
                 <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Rating</p>
@@ -268,42 +305,89 @@ export default async function DashboardOverview() {
             </div>
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions — type-aware */}
           <div>
             <h2 className="text-sm font-semibold text-txt-secondary mb-3">
               Quick Actions
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/dashboard/orders">
-                <Card hover className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center text-gold">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium">View Orders</span>
-                </Card>
-              </Link>
-              <Link href="/dashboard/menu">
-                <Card hover className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald/10 flex items-center justify-center text-emerald">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium">Edit Menu</span>
-                </Card>
-              </Link>
-              <Link href="/dashboard/bookings">
-                <Card hover className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
-                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <span className="text-sm font-medium">Manage Bookings</span>
-                </Card>
-              </Link>
+              {/* Orders — food & retail */}
+              {business.business_type !== "service" && (
+                <Link href="/dashboard/orders">
+                  <Card hover className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center text-gold">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">View Orders</span>
+                  </Card>
+                </Link>
+              )}
+              {/* Menu — food */}
+              {business.business_type === "food" && (
+                <Link href="/dashboard/menu">
+                  <Card hover className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald/10 flex items-center justify-center text-emerald">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">Edit Menu</span>
+                  </Card>
+                </Link>
+              )}
+              {/* Catalog — retail */}
+              {business.business_type === "retail" && (
+                <Link href="/dashboard/menu">
+                  <Card hover className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-emerald/10 flex items-center justify-center text-emerald">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">Edit Catalog</span>
+                  </Card>
+                </Link>
+              )}
+              {/* Bookings — service */}
+              {business.business_type === "service" && (
+                <Link href="/dashboard/bookings">
+                  <Card hover className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium">Manage Bookings</span>
+                  </Card>
+                </Link>
+              )}
+              {/* Fallback: show both orders + bookings if no type set */}
+              {!business.business_type && (
+                <>
+                  <Link href="/dashboard/orders">
+                    <Card hover className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-gold/10 flex items-center justify-center text-gold">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium">View Orders</span>
+                    </Card>
+                  </Link>
+                  <Link href="/dashboard/bookings">
+                    <Card hover className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-cyan/10 flex items-center justify-center text-cyan">
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <span className="text-sm font-medium">Manage Bookings</span>
+                    </Card>
+                  </Link>
+                </>
+              )}
               <Link href="/dashboard/settings">
                 <Card hover className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-hc-purple">
@@ -411,6 +495,11 @@ export default async function DashboardOverview() {
             )}
           </div>
         </>
+      )}
+
+      {/* ── Chamber Updates for Business Owners ────────── */}
+      {isBusinessOwner && (
+        <ChamberUpdatesWidget />
       )}
 
       {/* ── Resource Manager Stats ───────────────────────── */}

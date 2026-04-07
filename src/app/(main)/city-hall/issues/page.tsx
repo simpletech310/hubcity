@@ -148,19 +148,16 @@ export default function CityIssuesPage() {
               <span className="text-lg">📢</span>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold">Report an Issue</p>
+              <p className="text-sm font-bold">See a problem?</p>
               <p className="text-xs text-txt-secondary">
-                Use <span className="text-gold font-semibold">#pothole</span>,{" "}
-                <span className="text-gold font-semibold">#streetlight</span>,{" "}
-                <span className="text-gold font-semibold">#graffiti</span> in
-                your Pulse posts to auto-report!
+                Report potholes, broken streetlights, graffiti, and more. Your reports help the city take action.
               </p>
             </div>
             <Link
-              href="/pulse"
+              href="/city-hall/issues/new"
               className="px-3 py-1.5 bg-coral text-white text-xs font-bold rounded-lg press shrink-0"
             >
-              Post
+              Report Issue
             </Link>
           </div>
         </div>

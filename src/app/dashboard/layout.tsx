@@ -25,7 +25,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  const allowedRoles = ["business_owner", "city_official", "city_ambassador", "admin"];
+  const allowedRoles = ["business_owner", "city_official", "city_ambassador", "admin", "chamber_admin", "resource_provider"];
   if (!profile || !allowedRoles.includes(profile.role)) {
     redirect("/");
   }
@@ -54,7 +54,7 @@ export default async function DashboardLayout({
       .select("*")
       .order("created_at", { ascending: false });
     resources = (data ?? []) as Resource[];
-  } else if (userRole === "city_official") {
+  } else if (userRole === "city_official" || userRole === "resource_provider") {
     const { data } = await supabase
       .from("resources")
       .select("*")

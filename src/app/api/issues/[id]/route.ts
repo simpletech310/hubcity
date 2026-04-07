@@ -112,6 +112,57 @@ export async function PATCH(
       details: updates,
     });
 
+    // Notify reporter and upvoters when status changes
+    if (body.status && issue) {
+      const newStatus = body.status;
+      const notifications: Array<{
+        user_id: string;
+        type: string;
+        title: string;
+        body: string;
+        link_type: string;
+        link_id: string;
+      }> = [];
+
+      // Notify the issue reporter
+      if (issue.reported_by && issue.reported_by !== user.id) {
+        notifications.push({
+          user_id: issue.reported_by,
+          type: "system",
+          title: `Your ${issue.type} report was ${newStatus.replace("_", " ")}`,
+          body: `Issue: ${issue.title}`,
+          link_type: "issue",
+          link_id: issue.id,
+        });
+      }
+
+      // Notify all users who upvoted (excluding reporter and actor)
+      const { data: upvoters } = await supabase
+        .from("city_issue_upvotes")
+        .select("user_id")
+        .eq("issue_id", id)
+        .neq("user_id", user.id);
+
+      if (upvoters) {
+        for (const upvoter of upvoters) {
+          if (upvoter.user_id !== issue.reported_by) {
+            notifications.push({
+              user_id: upvoter.user_id,
+              type: "system",
+              title: `A ${issue.type} issue you upvoted was ${newStatus.replace("_", " ")}`,
+              body: `Issue: ${issue.title}`,
+              link_type: "issue",
+              link_id: issue.id,
+            });
+          }
+        }
+      }
+
+      if (notifications.length > 0) {
+        await supabase.from("notifications").insert(notifications);
+      }
+    }
+
     return NextResponse.json({ issue });
   } catch (error) {
     console.error("Update issue error:", error);

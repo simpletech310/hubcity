@@ -99,14 +99,101 @@ export async function POST(request: Request) {
             }
           }
         } else {
-          // Existing food order flow
-          const { error } = await supabase
+          // Regular order flow — confirm and earn loyalty points
+          const { data: order } = await supabase
             .from("orders")
-            .update({ status: "confirmed" })
-            .eq("stripe_payment_intent_id", paymentIntent.id);
+            .select("id, customer_id, business_id, total")
+            .eq("stripe_payment_intent_id", paymentIntent.id)
+            .single();
 
-          if (error) {
-            console.error("Failed to update order status:", error);
+          if (order) {
+            await supabase
+              .from("orders")
+              .update({ status: "confirmed" })
+              .eq("id", order.id);
+
+            // Award loyalty points (fire-and-forget)
+            try {
+              const { data: config } = await supabase
+                .from("loyalty_config")
+                .select("points_per_dollar, max_daily_earn")
+                .eq("id", 1)
+                .single();
+
+              const pointsPerDollar = config?.points_per_dollar || 10;
+              const maxDailyEarn = config?.max_daily_earn || 500;
+              const orderDollars = order.total / 100;
+              let pointsToEarn = Math.floor(orderDollars * pointsPerDollar);
+
+              // Check daily cap
+              const todayStart = new Date();
+              todayStart.setHours(0, 0, 0, 0);
+
+              const { data: todayTx } = await supabase
+                .from("loyalty_transactions")
+                .select("points")
+                .eq("user_id", order.customer_id)
+                .eq("type", "earn")
+                .gte("created_at", todayStart.toISOString());
+
+              const earnedToday = (todayTx || []).reduce((s, t) => s + t.points, 0);
+              const remaining = Math.max(0, maxDailyEarn - earnedToday);
+              pointsToEarn = Math.min(pointsToEarn, remaining);
+
+              if (pointsToEarn > 0) {
+                // Insert transaction
+                await supabase.from("loyalty_transactions").insert({
+                  user_id: order.customer_id,
+                  business_id: order.business_id,
+                  order_id: order.id,
+                  type: "earn",
+                  points: pointsToEarn,
+                  description: `Earned from order`,
+                });
+
+                // Upsert balance
+                const { data: existing } = await supabase
+                  .from("loyalty_balances")
+                  .select("points, lifetime_points")
+                  .eq("user_id", order.customer_id)
+                  .single();
+
+                if (existing) {
+                  await supabase
+                    .from("loyalty_balances")
+                    .update({
+                      points: existing.points + pointsToEarn,
+                      lifetime_points: existing.lifetime_points + pointsToEarn,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq("user_id", order.customer_id);
+                } else {
+                  await supabase.from("loyalty_balances").insert({
+                    user_id: order.customer_id,
+                    points: pointsToEarn,
+                    lifetime_points: pointsToEarn,
+                  });
+                }
+
+                // Update order with points earned
+                await supabase
+                  .from("orders")
+                  .update({ loyalty_points_earned: pointsToEarn })
+                  .eq("id", order.id);
+              }
+            } catch (loyaltyErr) {
+              console.error("Loyalty points error (non-fatal):", loyaltyErr);
+            }
+          } else {
+            // Fallback: try by payment intent ID
+            const { error } = await supabase
+              .from("orders")
+              .update({ status: "confirmed" })
+              .eq("stripe_payment_intent_id", paymentIntent.id);
+
+            if (error) {
+              console.error("Failed to update order status:", error);
+            }
           }
         }
         break;

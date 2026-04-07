@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "city_official" && profile?.role !== "city_ambassador") {
+    if (!["admin", "city_official", "city_ambassador", "resource_provider"].includes(profile?.role || "")) {
       return NextResponse.json(
         { error: "Only admins and city officials can create resources" },
         { status: 403 }
@@ -45,6 +45,9 @@ export async function POST(request: Request) {
       accepts_applications,
       application_fields,
       is_published,
+      max_spots,
+      contact_email,
+      contact_name,
     } = body;
 
     if (!name || !description) {
@@ -81,6 +84,10 @@ export async function POST(request: Request) {
         is_published: is_published ?? false,
         accepts_applications: accepts_applications ?? false,
         application_fields: application_fields || [],
+        max_spots: max_spots || null,
+        filled_spots: 0,
+        contact_email: contact_email || null,
+        contact_name: contact_name || null,
         created_by: user.id,
       })
       .select("*")
@@ -115,7 +122,7 @@ export async function GET(request: Request) {
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "city_official" && profile?.role !== "city_ambassador") {
+    if (!["admin", "city_official", "city_ambassador", "resource_provider"].includes(profile?.role || "")) {
       return NextResponse.json(
         { error: "Only admins and city officials can list managed resources" },
         { status: 403 }
@@ -127,7 +134,7 @@ export async function GET(request: Request) {
       .select("*")
       .order("created_at", { ascending: false });
 
-    if (profile.role === "city_official") {
+    if (profile?.role === "city_official" || profile?.role === "resource_provider") {
       query = query.eq("created_by", user.id);
     }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import EditorialHeader from "@/components/ui/EditorialHeader";
 import EmergencyBanner from "@/components/health/EmergencyBanner";
 import { createClient } from "@/lib/supabase/client";
 import type { HealthResource, HealthCategory } from "@/types/database";
@@ -320,12 +321,7 @@ export default function HealthPage() {
               Health & Fitness
             </span>
           </div>
-          <h1 className="font-display text-3xl font-bold leading-tight mb-1">
-            Your <span className="text-gold-gradient">Wellness</span> Hub
-          </h1>
-          <p className="text-sm text-white/50 leading-relaxed max-w-[320px]">
-            Healthcare, fitness, community events — everything to keep Compton healthy and thriving
-          </p>
+          <EditorialHeader kicker="WELLNESS & CARE" title="Health Resources" subtitle="Healthcare, fitness, community events — everything to keep Compton healthy and thriving" />
         </div>
       </div>
 

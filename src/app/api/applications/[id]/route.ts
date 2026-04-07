@@ -23,14 +23,14 @@ export async function PATCH(
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "admin" && profile?.role !== "city_official" && profile?.role !== "city_ambassador") {
+    if (!["admin", "city_official", "city_ambassador", "resource_provider"].includes(profile?.role || "")) {
       return NextResponse.json(
         { error: "Only admins can review applications" },
         { status: 403 }
       );
     }
 
-    const { status, reviewer_notes } = await request.json();
+    const { status, reviewer_notes, status_note, referred_to, follow_up_date, internal_notes } = await request.json();
 
     const { data: application, error } = await supabase
       .from("grant_applications")
@@ -39,6 +39,10 @@ export async function PATCH(
         reviewer_notes: reviewer_notes || null,
         reviewed_by: user.id,
         reviewed_at: new Date().toISOString(),
+        ...(status_note !== undefined && { status_note }),
+        ...(referred_to !== undefined && { referred_to }),
+        ...(follow_up_date !== undefined && { follow_up_date }),
+        ...(internal_notes !== undefined && { internal_notes }),
       })
       .eq("id", id)
       .select("*")
@@ -51,6 +55,10 @@ export async function PATCH(
       under_review: "Your application is under review",
       approved: "Your application has been approved!",
       denied: "Your application was not approved",
+      waitlisted: "You've been waitlisted",
+      referred: "You've been referred to another provider",
+      enrolled: "You've been enrolled in the program!",
+      completed: "Your case has been marked as completed",
     };
 
     if (appStatusMessages[status]) {

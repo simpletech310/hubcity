@@ -45,8 +45,13 @@ export async function PATCH(
 
     const updateData: Record<string, unknown> = { status };
 
-    if (status === "ready" || status === "delivered") {
+    if (status === "ready" || status === "delivered" || status === "picked_up") {
       updateData.completed_at = new Date().toISOString();
+    }
+
+    // Track delivery status changes
+    if (["out_for_delivery", "delayed", "delivered"].includes(status)) {
+      updateData.delivery_status_updated_at = new Date().toISOString();
     }
 
     const { data: updated, error: updateError } = await supabase
@@ -63,7 +68,10 @@ export async function PATCH(
       confirmed: "Your order has been confirmed!",
       preparing: "Your order is being prepared",
       ready: "Your order is ready for pickup!",
+      out_for_delivery: "Your order is out for delivery!",
+      delayed: "Your order has been delayed",
       delivered: "Your order has been delivered",
+      picked_up: "Your order has been picked up",
       cancelled: "Your order has been cancelled",
     };
 

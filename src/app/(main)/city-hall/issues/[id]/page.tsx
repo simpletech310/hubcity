@@ -24,6 +24,28 @@ const STATUS_LABELS: Record<string, string> = {
   in_progress: "In Progress", resolved: "Resolved", closed: "Closed",
 };
 
+interface IssueComment {
+  id: string;
+  issue_id: string;
+  author_id: string;
+  body: string;
+  is_official: boolean;
+  created_at: string;
+  author: {
+    id: string;
+    display_name: string;
+    avatar_url: string | null;
+    role: string;
+  };
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  city_official: "City Official",
+  city_ambassador: "Ambassador",
+  citizen: "Citizen",
+};
+
 export default function IssueDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -33,20 +55,46 @@ export default function IssueDetailPage() {
   const [userUpvoted, setUserUpvoted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [upvoting, setUpvoting] = useState(false);
+  const [comments, setComments] = useState<IssueComment[]>([]);
+  const [commentBody, setCommentBody] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useEffect(() => {
     if (!issueId) return;
     async function load() {
-      const res = await fetch(`/api/issues/${issueId}`);
-      if (res.ok) {
-        const data = await res.json();
+      const [issueRes, commentsRes] = await Promise.all([
+        fetch(`/api/issues/${issueId}`),
+        fetch(`/api/issues/${issueId}/comments`),
+      ]);
+      if (issueRes.ok) {
+        const data = await issueRes.json();
         setIssue(data.issue);
         setUserUpvoted(data.user_upvoted);
+      }
+      if (commentsRes.ok) {
+        const data = await commentsRes.json();
+        setComments(data.comments);
       }
       setLoading(false);
     }
     load();
   }, [issueId]);
+
+  async function handleAddComment() {
+    if (!commentBody.trim() || submittingComment) return;
+    setSubmittingComment(true);
+    const res = await fetch(`/api/issues/${issueId}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: commentBody }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setComments((prev) => [...prev, data.comment]);
+      setCommentBody("");
+    }
+    setSubmittingComment(false);
+  }
 
   async function handleUpvote() {
     if (upvoting) return;
@@ -266,6 +314,79 @@ export default function IssueDetailPage() {
               💬 View Post
             </Link>
           )}
+        </div>
+
+        {/* Updates / Comments Section */}
+        <div className="mt-8">
+          <h2 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-4">
+            Updates & Comments
+          </h2>
+
+          {comments.length === 0 && (
+            <p className="text-sm text-txt-secondary mb-4">
+              No updates yet. Be the first to comment.
+            </p>
+          )}
+
+          <div className="space-y-3 mb-6">
+            {comments.map((comment) => (
+              <Card
+                key={comment.id}
+                className={comment.is_official ? "border-gold/30" : ""}
+              >
+                <div className="flex items-start gap-3">
+                  {comment.author?.avatar_url ? (
+                    <img
+                      src={comment.author.avatar_url}
+                      alt=""
+                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                      {comment.author?.display_name?.[0]?.toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-sm font-semibold truncate">
+                        {comment.author?.display_name || "Unknown"}
+                      </span>
+                      {comment.is_official && (
+                        <Badge label={ROLE_LABELS[comment.author?.role] || "Official"} variant="gold" />
+                      )}
+                      {!comment.is_official && comment.author?.role && comment.author.role !== "citizen" && (
+                        <Badge label={ROLE_LABELS[comment.author.role] || comment.author.role} variant="cyan" />
+                      )}
+                    </div>
+                    <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
+                    <p className="text-[11px] text-txt-secondary mt-1.5">
+                      {formatDate(comment.created_at)}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Comment Input */}
+          <Card>
+            <textarea
+              value={commentBody}
+              onChange={(e) => setCommentBody(e.target.value)}
+              placeholder="Add an update or comment..."
+              rows={3}
+              className="w-full bg-transparent text-sm resize-none outline-none placeholder:text-txt-secondary/50 mb-3"
+            />
+            <div className="flex justify-end">
+              <Button
+                variant="primary"
+                onClick={handleAddComment}
+                disabled={!commentBody.trim() || submittingComment}
+              >
+                {submittingComment ? "Posting..." : "Post Comment"}
+              </Button>
+            </div>
+          </Card>
         </div>
       </div>
     </div>

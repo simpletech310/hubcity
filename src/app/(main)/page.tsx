@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
+import EditorialHeader from "@/components/ui/EditorialHeader";
+import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import AISearchButton from "@/components/home/AISearchButton";
@@ -215,7 +217,7 @@ export default async function HomePage() {
 
       {/* ── Featured Section (mixed content) ── */}
       <section className="px-5 space-y-3">
-        <SectionHeader title="Featured" subtitle="Highlights from Compton" compact />
+        <EditorialHeader kicker="HIGHLIGHTS" title="Featured" subtitle="Highlights from Compton" />
 
         {/* Featured event — large card */}
         {featuredEvent && (
@@ -317,16 +319,15 @@ export default async function HomePage() {
         )}
       </section>
 
+      {/* ── Ad Zone ── */}
+      <div className="px-5">
+        <AdZone zone="feed_banner" />
+      </div>
+
       {/* ── What's New Feed ── */}
       {pulsePosts.length > 0 && (
         <section className="px-5 space-y-3">
-          <SectionHeader
-            title="What's New"
-            subtitle="Latest from your city"
-            linkText="All updates"
-            linkHref="/pulse"
-            compact
-          />
+          <EditorialHeader kicker="THE PULSE" title="What's New" subtitle="Latest from your city" />
           <div className="flex flex-col divide-y divide-border-subtle rounded-2xl bg-royal border border-border-subtle overflow-hidden">
             {pulsePosts.map((post) => {
               const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;

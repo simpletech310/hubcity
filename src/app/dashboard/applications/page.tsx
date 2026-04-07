@@ -19,13 +19,13 @@ export default async function ApplicationsPage() {
     .single();
 
   const userRole = profile?.role;
-  if (userRole !== "admin" && userRole !== "city_official") {
+  if (userRole !== "admin" && userRole !== "city_official" && userRole !== "resource_provider") {
     redirect("/dashboard");
   }
 
   // Get resource IDs for this manager
   let resourceQuery = supabase.from("resources").select("id");
-  if (userRole === "city_official") {
+  if (userRole === "city_official" || userRole === "resource_provider") {
     resourceQuery = resourceQuery.eq("created_by", user.id);
   }
   const { data: resourceRows } = await resourceQuery;

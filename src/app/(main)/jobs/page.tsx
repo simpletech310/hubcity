@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Chip from "@/components/ui/Chip";
+import EditorialHeader from "@/components/ui/EditorialHeader";
 import JobCard from "@/components/jobs/JobCard";
 import type { JobListing } from "@/types/database";
 
@@ -63,10 +64,7 @@ export default function JobsPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/80 to-midnight" />
 
         <div className="relative z-10 px-5 pt-4 pb-5">
-          <h1 className="font-heading text-2xl font-bold mb-1">Job Board</h1>
-          <p className="text-sm text-txt-secondary mb-4">
-            Find opportunities in Compton.
-          </p>
+          <EditorialHeader kicker="OPPORTUNITY AWAITS" title="Jobs in Compton" subtitle="Find opportunities in Compton." />
 
           {/* Search */}
           <div className="flex items-center gap-3 bg-white/[0.04] border border-border-subtle rounded-2xl px-4 py-3.5 focus-within:border-gold/30 focus-within:bg-white/[0.06] transition-all backdrop-blur-sm">

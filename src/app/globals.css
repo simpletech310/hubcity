@@ -489,7 +489,8 @@ img {
   .pulse-glow,
   .pulse-gold,
   .animate-gradient,
-  .badge-shine::after {
+  .badge-shine::after,
+  .ken-burns {
     animation: none !important;
   }
 
@@ -531,6 +532,45 @@ img {
 .card-lift:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(242, 169, 0, 0.08);
+}
+
+/* ── Magazine / Editorial Utilities ───────────────────── */
+
+/* Drop cap for article-style first letters */
+.drop-cap::first-letter {
+  float: left;
+  font-family: var(--font-display);
+  font-size: 3.5em;
+  line-height: 0.8;
+  color: var(--color-gold);
+  padding-right: 8px;
+  padding-top: 4px;
+}
+
+/* Ken Burns slow zoom effect for hero images */
+@keyframes kenBurns {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+.ken-burns {
+  animation: kenBurns 20s ease-in-out infinite alternate;
+}
+
+/* Editorial kicker text (small caps label above headlines) */
+.editorial-kicker {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-gold);
+}
+
+/* Magazine image treatment */
+.img-magazine {
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
 }
 
 /* Gradient text utilities */

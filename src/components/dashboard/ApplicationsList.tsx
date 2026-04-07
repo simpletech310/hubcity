@@ -16,7 +16,11 @@ const statusColors: Record<string, "gold" | "emerald" | "cyan" | "coral"> = {
   under_review: "cyan",
   approved: "emerald",
   denied: "coral",
-  waitlisted: "purple" as "gold", // fallback
+  waitlisted: "gold",
+  referred: "cyan",
+  enrolled: "emerald",
+  completed: "emerald",
+  withdrawn: "coral",
 };
 
 const filterOptions: { label: string; value: string }[] = [
@@ -24,7 +28,12 @@ const filterOptions: { label: string; value: string }[] = [
   { label: "Submitted", value: "submitted" },
   { label: "Under Review", value: "under_review" },
   { label: "Approved", value: "approved" },
+  { label: "Enrolled", value: "enrolled" },
+  { label: "Waitlisted", value: "waitlisted" },
+  { label: "Referred", value: "referred" },
   { label: "Denied", value: "denied" },
+  { label: "Completed", value: "completed" },
+  { label: "Withdrawn", value: "withdrawn" },
 ];
 
 function timeAgo(date: string) {
@@ -49,6 +58,8 @@ export default function ApplicationsList({
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [statusNotes, setStatusNotes] = useState<Record<string, string>>({});
+  const [internalNotes, setInternalNotes] = useState<Record<string, string>>({});
   const [updating, setUpdating] = useState<string | null>(null);
 
   const filtered =
@@ -59,6 +70,8 @@ export default function ApplicationsList({
   async function updateStatus(id: string, status: ApplicationStatus) {
     setUpdating(id);
     const reviewerNotes = notes[id] || null;
+    const statusNote = statusNotes[id] || null;
+    const internalNote = internalNotes[id] || null;
 
     // Optimistic update
     setApplications((prev) =>
@@ -68,6 +81,8 @@ export default function ApplicationsList({
               ...a,
               status,
               reviewer_notes: reviewerNotes ?? a.reviewer_notes,
+              status_note: statusNote ?? a.status_note,
+              internal_notes: internalNote ?? a.internal_notes,
               reviewed_at: new Date().toISOString(),
             }
           : a
@@ -78,7 +93,12 @@ export default function ApplicationsList({
       const res = await fetch(`/api/applications/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status, reviewer_notes: reviewerNotes }),
+        body: JSON.stringify({
+          status,
+          reviewer_notes: reviewerNotes,
+          status_note: statusNote,
+          internal_notes: internalNote,
+        }),
       });
 
       if (!res.ok) {
@@ -212,9 +232,44 @@ export default function ApplicationsList({
                       </div>
                     )}
 
+                    {/* Status Note */}
+                    {app.status_note && (
+                      <div>
+                        <p className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-1">
+                          Status Note
+                        </p>
+                        <p className="text-sm text-txt-secondary">
+                          {app.status_note}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Internal Notes */}
+                    {app.internal_notes && (
+                      <div>
+                        <p className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-1">
+                          Internal Notes
+                        </p>
+                        <p className="text-sm text-txt-secondary">
+                          {app.internal_notes}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Referred To */}
+                    {app.referred_to && (
+                      <div>
+                        <p className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-1">
+                          Referred To
+                        </p>
+                        <p className="text-sm text-txt-secondary">
+                          {app.referred_to}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Actions */}
-                    {(app.status === "submitted" ||
-                      app.status === "under_review") && (
+                    {app.status !== "completed" && app.status !== "withdrawn" && (
                       <div className="space-y-3">
                         <textarea
                           placeholder="Add reviewer notes..."
@@ -228,7 +283,31 @@ export default function ApplicationsList({
                           className="w-full bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/40 resize-none"
                           rows={2}
                         />
-                        <div className="flex gap-2">
+                        <textarea
+                          placeholder="Status note (visible to applicant)..."
+                          value={statusNotes[app.id] ?? ""}
+                          onChange={(e) =>
+                            setStatusNotes((prev) => ({
+                              ...prev,
+                              [app.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/40 resize-none"
+                          rows={2}
+                        />
+                        <textarea
+                          placeholder="Internal notes (not visible to applicant)..."
+                          value={internalNotes[app.id] ?? ""}
+                          onChange={(e) =>
+                            setInternalNotes((prev) => ({
+                              ...prev,
+                              [app.id]: e.target.value,
+                            }))
+                          }
+                          className="w-full bg-deep border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/40 resize-none"
+                          rows={2}
+                        />
+                        <div className="flex gap-2 flex-wrap">
                           {app.status === "submitted" && (
                             <Button
                               variant="outline"
@@ -241,25 +320,87 @@ export default function ApplicationsList({
                               Review
                             </Button>
                           )}
+                          {(app.status === "submitted" || app.status === "under_review") && (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                loading={updating === app.id}
+                                onClick={() =>
+                                  updateStatus(app.id, "approved")
+                                }
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                loading={updating === app.id}
+                                onClick={() =>
+                                  updateStatus(app.id, "denied")
+                                }
+                              >
+                                Deny
+                              </Button>
+                            </>
+                          )}
+                          {(app.status === "submitted" || app.status === "under_review" || app.status === "waitlisted") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              loading={updating === app.id}
+                              onClick={() =>
+                                updateStatus(app.id, "waitlisted")
+                              }
+                            >
+                              Waitlist
+                            </Button>
+                          )}
+                          {(app.status !== "enrolled" && app.status !== "denied") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              loading={updating === app.id}
+                              onClick={() =>
+                                updateStatus(app.id, "referred")
+                              }
+                            >
+                              Refer
+                            </Button>
+                          )}
+                          {(app.status === "approved" || app.status === "waitlisted") && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              loading={updating === app.id}
+                              onClick={() =>
+                                updateStatus(app.id, "enrolled")
+                              }
+                            >
+                              Enroll
+                            </Button>
+                          )}
+                          {app.status === "enrolled" && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              loading={updating === app.id}
+                              onClick={() =>
+                                updateStatus(app.id, "completed")
+                              }
+                            >
+                              Complete
+                            </Button>
+                          )}
                           <Button
-                            variant="primary"
+                            variant="outline"
                             size="sm"
                             loading={updating === app.id}
                             onClick={() =>
-                              updateStatus(app.id, "approved")
+                              updateStatus(app.id, "withdrawn")
                             }
                           >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            loading={updating === app.id}
-                            onClick={() =>
-                              updateStatus(app.id, "denied")
-                            }
-                          >
-                            Deny
+                            Withdraw
                           </Button>
                         </div>
                       </div>
