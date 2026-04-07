@@ -3,6 +3,7 @@ import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Media | The Compton Museum | Hub City",
@@ -65,7 +66,7 @@ export default async function MediaPage() {
                     {typeof video.thumbnail_url === "string" && video.thumbnail_url ? (
                       <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"><span className="text-2xl">🎬</span></div>
+                      <div className="w-full h-full flex items-center justify-center"><span className="text-2xl"><Icon name="film" size={24} /></span></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -101,7 +102,7 @@ export default async function MediaPage() {
                         {stream.thumbnail_url ? (
                           <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><span className="text-xl">📺</span></div>
+                          <div className="w-full h-full flex items-center justify-center"><span className="text-xl"><Icon name="live" size={20} /></span></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -122,7 +123,7 @@ export default async function MediaPage() {
       {/* Empty state */}
       {videos.length === 0 && liveStreams.length === 0 && (
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">🎬</span>
+          <span className="text-5xl block mb-3"><Icon name="film" size={28} /></span>
           <p className="text-sm font-medium mb-1">Media collection coming soon</p>
           <p className="text-xs text-txt-secondary">
             Documentaries, interviews, and cultural films are being curated for the Museum.

@@ -10,11 +10,11 @@ interface CreateStreamModalProps {
 }
 
 const CATEGORIES = [
-  { value: "sports", label: "🏈 Sports" },
-  { value: "government", label: "🏛️ Government" },
-  { value: "education", label: "📚 Education" },
-  { value: "culture", label: "🎨 Culture" },
-  { value: "community", label: "👥 Community" },
+  { value: "sports", label: "• Sports" },
+  { value: "government", label: "landmark Government" },
+  { value: "education", label: "book Education" },
+  { value: "culture", label: "palette Culture" },
+  { value: "community", label: "users Community" },
 ];
 
 export default function CreateStreamModal({

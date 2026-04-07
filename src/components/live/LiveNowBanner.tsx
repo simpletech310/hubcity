@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import dynamic from "next/dynamic";
+import Icon from "@/components/ui/Icon";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
@@ -107,7 +108,7 @@ export default function LiveNowBanner({ streams }: LiveNowBannerProps) {
                         variant="coral"
                       />
                       <span className="text-[10px] text-txt-secondary">
-                        🔴 Broadcasting live
+                        <Icon name="live" size={16} /> Broadcasting live
                       </span>
                     </div>
                   </div>

@@ -7,6 +7,8 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import CreatorBadge from "@/components/creators/CreatorBadge";
 
@@ -141,11 +143,11 @@ export default function CreatorDashboardPage() {
     recent_earnings: [],
   };
 
-  const kpis = [
-    { label: "Total Earnings", value: formatCurrency(earningsData.total_earnings), color: "#F2A900", icon: "💰" },
-    { label: "This Month", value: formatCurrency(earningsData.this_month), color: "#22C55E", icon: "📈" },
-    { label: "Pending Payout", value: formatCurrency(earningsData.pending_payout), color: "#8B5CF6", icon: "⏳" },
-    { label: "Content Count", value: String(earningsData.content_count), color: "#3B82F6", icon: "🎬" },
+  const kpis: { label: string; value: string; color: string; iconName: IconName }[] = [
+    { label: "Total Earnings", value: formatCurrency(earningsData.total_earnings), color: "#F2A900", iconName: "dollar" },
+    { label: "This Month", value: formatCurrency(earningsData.this_month), color: "#22C55E", iconName: "trending" },
+    { label: "Pending Payout", value: formatCurrency(earningsData.pending_payout), color: "#8B5CF6", iconName: "clock" },
+    { label: "Content Count", value: String(earningsData.content_count), color: "#3B82F6", iconName: "film" },
   ];
 
   return (
@@ -186,14 +188,14 @@ export default function CreatorDashboardPage() {
       <section className="px-5 mb-6">
         <div className="grid grid-cols-2 gap-3">
           {kpis.map((kpi) => (
-            <Card key={kpi.label} className="relative overflow-hidden">
+            <Card key={kpi.label} variant="glass" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: kpi.color }} />
               <div className="flex items-center gap-2.5">
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${kpi.color}12` }}
                 >
-                  <span className="text-lg">{kpi.icon}</span>
+                  <Icon name={kpi.iconName} size={20} style={{ color: kpi.color }} />
                 </div>
                 <div className="min-w-0">
                   <p className="font-heading font-bold text-lg leading-none" style={{ color: kpi.color }}>
@@ -222,7 +224,7 @@ export default function CreatorDashboardPage() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
-                    <span className="text-xl">📺</span>
+                    <Icon name="live" size={22} className="text-gold" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -290,7 +292,7 @@ export default function CreatorDashboardPage() {
         ) : (
           <Card>
             <div className="text-center py-6">
-              <span className="text-3xl block mb-2">📊</span>
+              <span className="block mb-2"><Icon name="chart" size={28} className="text-txt-secondary" /></span>
               <p className="text-xs text-txt-secondary">
                 Earnings will appear here once you start creating content
               </p>
@@ -306,19 +308,19 @@ export default function CreatorDashboardPage() {
           <h2 className="font-heading font-bold text-base">Quick Actions</h2>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          {[
-            { label: "Go Live", icon: "🔴", color: "#FF6B6B", href: "/live" },
-            { label: "Upload Video", icon: "📹", color: "#3B82F6", href: channel ? `/live/channel/${channel.id}` : "/live" },
-            { label: "Podcasts", icon: "🎙️", color: "#8B5CF6", href: "/podcasts" },
-          ].map((action) => (
+          {([
+            { label: "Go Live", iconName: "live-dot" as IconName, color: "#FF6B6B", href: "/live" },
+            { label: "Upload Video", iconName: "video" as IconName, color: "#3B82F6", href: channel ? `/live/channel/${channel.id}` : "/live" },
+            { label: "Podcasts", iconName: "podcast" as IconName, color: "#8B5CF6", href: "/podcasts" },
+          ]).map((action) => (
             <Link key={action.label} href={action.href}>
-              <Card hover className="relative overflow-hidden text-center">
+              <Card hover variant="glass" className="relative overflow-hidden text-center">
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: action.color }} />
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-2"
                   style={{ background: `${action.color}12` }}
                 >
-                  <span className="text-xl">{action.icon}</span>
+                  <Icon name={action.iconName} size={22} style={{ color: action.color }} />
                 </div>
                 <p className="text-[11px] font-bold">{action.label}</p>
               </Card>

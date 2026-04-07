@@ -3,6 +3,7 @@ import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import type { JobListing, JobType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const jobTypeBadge: Record<
   JobType,
@@ -141,7 +142,7 @@ export default async function JobDetailPage({
       {isVolunteer && (
         <div className="mx-5 mb-4 px-4 py-3 rounded-xl bg-gold/10 border border-gold/20">
           <div className="flex items-center gap-2">
-            <span className="text-lg">🤝</span>
+            <span className="text-lg"><Icon name="handshake" size={20} /></span>
             <div>
               <p className="text-sm font-bold text-gold">Volunteer Opportunity</p>
               <p className="text-[11px] text-txt-secondary">
@@ -204,12 +205,12 @@ export default async function JobDetailPage({
         <div className="space-y-2 mb-5">
           {(listing.location || business?.address) && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>📍</span>
+              <span><Icon name="pin" size={16} /></span>
               <span>{listing.location || business?.address?.split(",")[0]}</span>
             </div>
           )}
           <div className="flex items-center gap-2 text-sm text-txt-secondary">
-            <span>📅</span>
+            <span><Icon name="calendar" size={16} /></span>
             <span>
               Posted{" "}
               {new Date(listing.created_at).toLocaleDateString("en-US", {
@@ -221,7 +222,7 @@ export default async function JobDetailPage({
           </div>
           {listing.application_deadline && (
             <div className="flex items-center gap-2 text-sm text-coral">
-              <span>⏰</span>
+              <span><Icon name="clock" size={16} /></span>
               <span>
                 Deadline:{" "}
                 {new Date(listing.application_deadline).toLocaleDateString(
@@ -236,18 +237,18 @@ export default async function JobDetailPage({
             </div>
           )}
           <div className="flex items-center gap-2 text-sm text-txt-secondary">
-            <span>📋</span>
+            <span><Icon name="document" size={16} /></span>
             <span>{listing.application_count} application{listing.application_count !== 1 ? "s" : ""}</span>
           </div>
           {listing.contact_email && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>📧</span>
+              <span><Icon name="mail" size={16} /></span>
               <span>{listing.contact_email}</span>
             </div>
           )}
           {listing.contact_phone && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>📞</span>
+              <span><Icon name="phone" size={16} /></span>
               <span>{listing.contact_phone}</span>
             </div>
           )}
@@ -302,7 +303,7 @@ export default async function JobDetailPage({
       <div className="px-5 mt-6">
         {hasApplied ? (
           <div className="w-full py-3 rounded-xl text-center bg-emerald/20 text-emerald border border-emerald/30 font-semibold text-sm">
-            Applied ✓
+            Applied <Icon name="check" size={16} />
           </div>
         ) : user ? (
           <Link

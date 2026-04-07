@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import type { LibraryItem, LibraryItemType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const typeBadge: Record<LibraryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   book: { label: "Book", variant: "gold" },
@@ -32,7 +33,7 @@ export default function LibraryItemCard({ item }: LibraryItemCardProps) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold/10 to-purple-900/10 flex items-center justify-center">
-            <span className="text-2xl">📖</span>
+            <span className="text-2xl"><Icon name="book" size={24} /></span>
           </div>
         )}
       </div>

@@ -6,14 +6,16 @@ import MuseumNav from "@/components/culture/MuseumNav";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
 import Chip from "@/components/ui/Chip";
 import type { GalleryItem } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const itemTypes = [
-  { label: "All", value: "all", icon: "🖼️" },
-  { label: "Artwork", value: "artwork", icon: "🎨" },
-  { label: "Photos", value: "photo", icon: "📷" },
-  { label: "Artifacts", value: "artifact", icon: "🏺" },
-  { label: "Documents", value: "document", icon: "📜" },
-  { label: "Posters", value: "poster", icon: "🪧" },
+  { label: "All", value: "all", icon: "frame" },
+  { label: "Artwork", value: "artwork", icon: "palette" },
+  { label: "Photos", value: "photo", icon: "film" },
+  { label: "Artifacts", value: "artifact", icon: "museum" },
+  { label: "Documents", value: "document", icon: "scroll" },
+  { label: "Posters", value: "poster", icon: "frame" },
 ];
 
 export default function GalleryPage() {
@@ -48,7 +50,7 @@ export default function GalleryPage() {
           <Chip
             key={type.value}
             label={type.label}
-            icon={<span className="text-sm">{type.icon}</span>}
+            icon={<Icon name={type.icon as IconName} size={14} />}
             active={activeType === type.value}
             onClick={() => setActiveType(type.value)}
           />
@@ -71,7 +73,7 @@ export default function GalleryPage() {
         </section>
       ) : (
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">🖼️</span>
+          <span className="text-5xl block mb-3"><Icon name="frame" size={28} /></span>
           <p className="text-sm font-medium mb-1">Gallery coming soon</p>
           <p className="text-xs text-txt-secondary">
             Artworks and artifacts are being digitized for the collection.

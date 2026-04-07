@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface ProductWithVariants {
   id: string;
@@ -121,7 +122,7 @@ export default function InventoryPage() {
         </div>
       ) : filteredProducts.length === 0 ? (
         <Card className="text-center py-10">
-          <p className="text-3xl mb-2">📦</p>
+          <p className="text-3xl mb-2"><Icon name="cart" size={28} /></p>
           <p className="text-sm text-txt-secondary">
             {filter === "all" ? "No products yet" : `No ${filter === "low" ? "low stock" : "out of stock"} items`}
           </p>

@@ -105,7 +105,7 @@ export default async function MapPage() {
           address: e.address || e.location_name,
           category: e.category,
           description: e.location_name
-            ? `📍 ${e.location_name}`
+            ? `pin ${e.location_name}`
             : undefined,
           image: e.image_url,
           date: e.start_date,

@@ -2,6 +2,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import AdminPollActions from "./AdminPollActions";
+import Icon from "@/components/ui/Icon";
 
 interface PollOption {
   id: string;
@@ -137,7 +138,7 @@ export default async function AdminPollsPage() {
 
         {polls.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-4xl mb-3">📊</p>
+            <p className="text-4xl mb-3"><Icon name="chart" size={28} /></p>
             <p className="text-sm text-txt-secondary">No polls yet</p>
           </div>
         )}

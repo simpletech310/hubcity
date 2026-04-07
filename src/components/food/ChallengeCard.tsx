@@ -1,6 +1,7 @@
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { FoodChallenge } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const typeLabels: Record<string, string> = {
   eating: "Eating Challenge",
@@ -41,10 +42,10 @@ export default function ChallengeCard({
         <div className="w-14 h-14 rounded-xl shrink-0 bg-gradient-to-br from-coral/20 to-gold/10 flex items-center justify-center">
           <span className="text-2xl">
             {challenge.challenge_type === "eating"
-              ? "🏆"
+              ? "trophy"
               : challenge.challenge_type === "collection"
-              ? "📸"
-              : "⭐"}
+              ? "film"
+              : "star"}
           </span>
         </div>
 
@@ -68,16 +69,16 @@ export default function ChallengeCard({
 
           <div className="flex items-center gap-3 text-[10px] text-txt-secondary">
             <span>
-              📅 {startDate} - {endDate}
+              <Icon name="calendar" size={16} /> {startDate} - {endDate}
             </span>
             {challenge.participant_count > 0 && (
-              <span>👥 {challenge.participant_count}</span>
+              <span><Icon name="users" size={16} /> {challenge.participant_count}</span>
             )}
           </div>
 
           {challenge.prize_description && (
             <p className="text-[11px] text-gold font-semibold mt-1.5">
-              🎁 {challenge.prize_description}
+              <Icon name="sparkle" size={16} /> {challenge.prize_description}
             </p>
           )}
         </div>

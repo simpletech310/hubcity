@@ -11,6 +11,7 @@ import ExhibitCard from "@/components/culture/ExhibitCard";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
 import PersonCard from "@/components/culture/PersonCard";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "The Compton Museum | Hub City",
@@ -137,60 +138,60 @@ export default async function CulturePage() {
         <div className="grid grid-cols-3 gap-2.5">
           <MuseumWingCard
             href="/culture/exhibits"
-            icon="🎨"
+            icon="palette"
             title="Exhibits"
             subtitle="Curated collections"
             count={counts.exhibits}
           />
           <MuseumWingCard
             href="/culture/gallery"
-            icon="🖼️"
+            icon="frame"
             title="Gallery"
             subtitle="Art & artifacts"
             count={counts.gallery}
           />
           <MuseumWingCard
             href="/culture/people"
-            icon="👤"
+            icon="person"
             title="People"
             subtitle="Notable figures"
             count={counts.people}
           />
           <MuseumWingCard
             href="/culture/history"
-            icon="📜"
+            icon="scroll"
             title="History"
             subtitle="Compton timeline"
           />
           <MuseumWingCard
             href="/culture/media"
-            icon="🎬"
+            icon="film"
             title="Media"
             subtitle="Videos & films"
           />
           <MuseumWingCard
             href="/culture/library"
-            icon="📚"
+            icon="book"
             title="Library"
             subtitle="Books & reads"
             count={counts.library}
           />
           <MuseumWingCard
             href="/culture/discussions"
-            icon="💬"
+            icon="chat"
             title="Discuss"
             subtitle="Community talks"
           />
           <MuseumWingCard
             href="/culture/murals"
-            icon="🎭"
+            icon="theater"
             title="Murals"
             subtitle="Street art"
             count={counts.murals}
           />
           <MuseumWingCard
             href="/culture/calendar"
-            icon="📅"
+            icon="calendar"
             title="Events"
             subtitle="Cultural calendar"
           />
@@ -295,7 +296,7 @@ export default async function CulturePage() {
       {/* Museum Footer */}
       <section className="px-5">
         <div className="rounded-2xl bg-white/[0.02] border border-border-subtle p-5 text-center">
-          <span className="text-2xl">🏛️</span>
+          <span className="text-2xl"><Icon name="landmark" size={24} /></span>
           <h3 className="font-display text-lg text-white mt-2">
             Compton Art & History Museum
           </h3>

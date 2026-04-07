@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export default function EmergencyBanner() {
   return (
@@ -8,7 +9,7 @@ export default function EmergencyBanner() {
 
       <div className="flex items-center gap-3">
         <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center shrink-0">
-          <span className="text-2xl">🚨</span>
+          <span className="text-2xl"><Icon name="alert" size={24} /></span>
         </div>
         <div className="flex-1">
           <p className="text-sm font-bold text-red-400 mb-0.5">

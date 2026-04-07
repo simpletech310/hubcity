@@ -1,6 +1,8 @@
 import Card from "@/components/ui/Card";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import SparkLine from "@/components/charts/SparkLine";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function AdminDashboard() {
@@ -22,13 +24,13 @@ export default async function AdminDashboard() {
     supabase.from("surveys").select("*", { count: "exact", head: true }),
   ]);
 
-  const stats = [
-    { label: "Businesses", value: businessCount ?? 0, icon: "🏪", change: "Live", color: "#F2A900", spark: [3, 5, 4, 7, 6, 8, 9] },
-    { label: "Events", value: eventCount ?? 0, icon: "📅", change: "Active", color: "#22C55E", spark: [2, 4, 3, 6, 5, 7, 8] },
-    { label: "Resources", value: resourceCount ?? 0, icon: "💡", change: "Published", color: "#06B6D4", spark: [1, 3, 2, 4, 5, 4, 6] },
-    { label: "Posts", value: postCount ?? 0, icon: "📢", change: "Feed", color: "#8B5CF6", spark: [5, 7, 6, 9, 8, 11, 12] },
-    { label: "Polls", value: pollCount ?? 0, icon: "📊", change: "Pulse", color: "#FF6B6B", spark: [1, 2, 1, 3, 2, 4, 3] },
-    { label: "Surveys", value: surveyCount ?? 0, icon: "📋", change: "Pulse", color: "#3B82F6", spark: [2, 1, 3, 2, 4, 3, 5] },
+  const stats: { label: string; value: number; iconName: IconName; change: string; color: string; spark: number[] }[] = [
+    { label: "Businesses", value: businessCount ?? 0, iconName: "store", change: "Live", color: "#F2A900", spark: [3, 5, 4, 7, 6, 8, 9] },
+    { label: "Events", value: eventCount ?? 0, iconName: "calendar", change: "Active", color: "#22C55E", spark: [2, 4, 3, 6, 5, 7, 8] },
+    { label: "Resources", value: resourceCount ?? 0, iconName: "lightbulb", change: "Published", color: "#06B6D4", spark: [1, 3, 2, 4, 5, 4, 6] },
+    { label: "Posts", value: postCount ?? 0, iconName: "megaphone", change: "Feed", color: "#8B5CF6", spark: [5, 7, 6, 9, 8, 11, 12] },
+    { label: "Polls", value: pollCount ?? 0, iconName: "chart", change: "Pulse", color: "#FF6B6B", spark: [1, 2, 1, 3, 2, 4, 3] },
+    { label: "Surveys", value: surveyCount ?? 0, iconName: "document", change: "Pulse", color: "#3B82F6", spark: [2, 1, 3, 2, 4, 3, 5] },
   ];
 
   return (
@@ -44,8 +46,8 @@ export default async function AdminDashboard() {
           <Card key={stat.label} className="card-lift">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-xl">
-                  {stat.icon}
+                <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
+                  <Icon name={stat.iconName} size={22} style={{ color: stat.color }} />
                 </div>
                 <div>
                   <p className="font-heading text-2xl font-bold tabular-nums" style={{ color: stat.color }}>
@@ -65,19 +67,19 @@ export default async function AdminDashboard() {
       {/* Quick Actions */}
       <h2 className="font-heading font-semibold text-lg mb-3">Quick Actions</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        {[
-          { label: "Add Business", icon: "🏪", href: "/admin/businesses" },
-          { label: "Create Event", icon: "📅", href: "/admin/events" },
-          { label: "Add Resource", icon: "💡", href: "/admin/resources" },
-          { label: "Manage Posts", icon: "📢", href: "/admin/posts" },
-          { label: "Manage Polls", icon: "📊", href: "/admin/polls" },
-          { label: "Manage Surveys", icon: "📋", href: "/admin/surveys" },
-          { label: "Send Notification", icon: "🔔", href: "/admin/notifications" },
-        ].map((action) => (
+        {([
+          { label: "Add Business", iconName: "store" as IconName, href: "/admin/businesses" },
+          { label: "Create Event", iconName: "calendar" as IconName, href: "/admin/events" },
+          { label: "Add Resource", iconName: "lightbulb" as IconName, href: "/admin/resources" },
+          { label: "Manage Posts", iconName: "megaphone" as IconName, href: "/admin/posts" },
+          { label: "Manage Polls", iconName: "chart" as IconName, href: "/admin/polls" },
+          { label: "Manage Surveys", iconName: "document" as IconName, href: "/admin/surveys" },
+          { label: "Send Notification", iconName: "bell" as IconName, href: "/admin/notifications" },
+        ]).map((action) => (
           <a key={action.label} href={action.href}>
             <Card hover>
               <div className="flex items-center gap-3">
-                <span className="text-xl">{action.icon}</span>
+                <Icon name={action.iconName} size={22} className="text-gold" />
                 <span className="text-sm font-semibold">{action.label}</span>
               </div>
             </Card>

@@ -51,7 +51,7 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-3xl opacity-20">
-                {item.is_digital ? "📱" : "📦"}
+                {item.is_digital ? "phone" : "cart"}
               </span>
             </div>
           )}

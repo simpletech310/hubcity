@@ -94,7 +94,7 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
           </h3>
           {scheduledDate && (
             <p className="text-[11px] text-txt-secondary mb-1.5">
-              {isLive ? "🔴 Started " : "📅 "}
+              {isLive ? "live Started " : "calendar "}
               {scheduledDate}
             </p>
           )}
@@ -102,7 +102,7 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
             <Badge label={badge.label} variant={badge.variant} />
             {isLive && (
               <span className="text-[10px] text-coral font-semibold">
-                ● Tap to watch
+                • Tap to watch
               </span>
             )}
             {stream.creator?.display_name && (

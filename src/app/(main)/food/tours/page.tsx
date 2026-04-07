@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import TourCard from "@/components/food/TourCard";
 import type { FoodTour } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default async function FoodToursPage() {
   const supabase = await createClient();
@@ -48,7 +49,7 @@ export default async function FoodToursPage() {
           ))
         ) : (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">🗺️</span>
+            <span className="text-5xl block mb-3"><Icon name="globe" size={28} /></span>
             <p className="text-sm font-medium mb-1">No tours yet</p>
             <p className="text-xs text-txt-secondary">
               Food tours are coming soon. Check back later!

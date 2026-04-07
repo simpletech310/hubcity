@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import type { NotablePerson, NotablePersonCategory } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   music: { label: "Music", variant: "gold" },
@@ -36,7 +37,7 @@ export default function PersonCardFeatured({ person }: Props) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center aspect-[3/4]">
-            <span className="text-4xl">👤</span>
+            <span className="text-4xl"><Icon name="person" size={28} /></span>
           </div>
         )}
       </div>

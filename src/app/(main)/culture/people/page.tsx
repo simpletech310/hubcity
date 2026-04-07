@@ -6,20 +6,21 @@ import PersonCard from "@/components/culture/PersonCard";
 import PersonCardFeatured from "@/components/culture/PersonCardFeatured";
 import Spotlight from "@/components/ui/Spotlight";
 import EditorialHeader from "@/components/ui/EditorialHeader";
-import PullQuote from "@/components/ui/PullQuote";
 import AdZone from "@/components/ui/AdZone";
 import Chip from "@/components/ui/Chip";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { NotablePerson, NotablePersonCategory } from "@/types/database";
 
-const categories = [
-  { label: "All", value: "all", icon: "👤" },
-  { label: "Music", value: "music", icon: "🎵" },
-  { label: "Sports", value: "sports", icon: "🏆" },
-  { label: "Politics", value: "politics", icon: "🏛️" },
-  { label: "Activism", value: "activism", icon: "✊" },
-  { label: "Arts", value: "arts", icon: "🎨" },
-  { label: "Business", value: "business", icon: "💼" },
-  { label: "Education", value: "education", icon: "🎓" },
+const categories: { label: string; value: string; iconName: IconName }[] = [
+  { label: "All", value: "all", iconName: "person" },
+  { label: "Music", value: "music", iconName: "music" },
+  { label: "Sports", value: "sports", iconName: "trophy" },
+  { label: "Politics", value: "politics", iconName: "landmark" },
+  { label: "Activism", value: "activism", iconName: "megaphone" },
+  { label: "Arts", value: "arts", iconName: "palette" },
+  { label: "Business", value: "business", iconName: "briefcase" },
+  { label: "Education", value: "education", iconName: "graduation" },
 ];
 
 const CATEGORY_ORDER: NotablePersonCategory[] = [
@@ -84,32 +85,8 @@ export default function PeoplePage() {
     load();
   }, [activeCategory]);
 
-  // Group people by category for the "All" view
-  const grouped = useMemo(() => {
-    if (activeCategory !== "all") return null;
-    const map: Partial<Record<NotablePersonCategory, NotablePerson[]>> = {};
-    for (const person of people) {
-      const cat = person.category;
-      if (!map[cat]) map[cat] = [];
-      map[cat]!.push(person);
-    }
-    return map;
-  }, [people, activeCategory]);
-
   // Hero person is the first in the list (highest display_order from API)
   const heroPerson = people[0] ?? null;
-
-  // Pull quote: grab first achievement from a music person (index 1 or fallback)
-  const pullQuotePerson = useMemo(() => {
-    if (activeCategory !== "all") return null;
-    const musicPeople = people.filter((p) => p.category === "music");
-    // Try second music person, fallback to first
-    const candidate = musicPeople[1] ?? musicPeople[0] ?? null;
-    if (!candidate) return null;
-    const achievements = (candidate.notable_achievements ?? []) as string[];
-    if (achievements.length === 0) return null;
-    return { quote: achievements[0], name: candidate.name };
-  }, [people, activeCategory]);
 
   return (
     <div className="space-y-6 pb-20">
@@ -148,7 +125,7 @@ export default function PeoplePage() {
           <Chip
             key={cat.value}
             label={cat.label}
-            icon={<span className="text-sm">{cat.icon}</span>}
+            iconName={cat.iconName}
             active={activeCategory === cat.value}
             onClick={() => setActiveCategory(cat.value)}
           />
@@ -159,67 +136,44 @@ export default function PeoplePage() {
       {loading && (
         <div className="px-5 space-y-4">
           <div className="skeleton h-[200px] rounded-2xl" />
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="skeleton aspect-[3/4] rounded-2xl" />
+          <div className="grid grid-cols-3 gap-1">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="skeleton aspect-square rounded-xl" />
             ))}
           </div>
         </div>
       )}
 
-      {/* "All" view — magazine editorial sections */}
-      {!loading && activeCategory === "all" && grouped && (
-        <div className="space-y-10">
-          {CATEGORY_ORDER.map((cat, catIndex) => {
-            const catPeople = grouped[cat];
-            if (!catPeople || catPeople.length === 0) return null;
-
-            const [featured, ...rest] = catPeople;
-
-            return (
-              <div key={cat}>
-                <section className="px-5 space-y-4">
-                  <EditorialHeader
-                    kicker={CATEGORY_KICKERS[cat]}
-                    title={CATEGORY_TITLES[cat]}
-                  />
-
-                  {/* Featured person — horizontal card */}
-                  <PersonCardFeatured person={featured} />
-
-                  {/* Remaining people in 2-col grid */}
-                  {rest.length > 0 && (
-                    <div className="grid grid-cols-2 gap-3">
-                      {rest.map((person) => (
-                        <PersonCard key={person.id} person={person} />
-                      ))}
-                    </div>
-                  )}
-                </section>
-
-                {/* PullQuote between music and sports sections */}
-                {cat === "music" && pullQuotePerson && (
-                  <div className="px-5 py-6">
-                    <PullQuote
-                      quote={pullQuotePerson.quote}
-                      attribution={pullQuotePerson.name}
-                    />
-                  </div>
-                )}
-
-                {/* AdZone after sports section */}
-                {cat === "sports" && (
-                  <div className="px-5 pt-2">
-                    <AdZone zone="feed_banner" />
-                  </div>
-                )}
+      {/* "All" view — Instagram Explorer-style 3-column grid */}
+      {!loading && activeCategory === "all" && (
+        <div className="space-y-6">
+          {/* Explorer grid — all people in tight 3-col layout */}
+          <section className="px-3">
+            {people.length > 1 ? (
+              <div className="grid grid-cols-3 gap-1">
+                {people.slice(1).map((person) => (
+                  <PersonCard key={person.id} person={person} compact />
+                ))}
               </div>
-            );
-          })}
+            ) : people.length === 0 ? (
+              <div className="text-center py-16">
+                <Icon name="person" size={48} className="text-txt-secondary mx-auto mb-3" />
+                <p className="text-sm font-medium mb-1">People profiles coming soon</p>
+                <p className="text-xs text-txt-secondary">
+                  We&apos;re documenting the stories of Compton&apos;s most influential figures.
+                </p>
+              </div>
+            ) : null}
+          </section>
+
+          {/* AdZone in explorer view */}
+          <div className="px-5">
+            <AdZone zone="feed_banner" />
+          </div>
         </div>
       )}
 
-      {/* Filtered category view — flat 2-col grid */}
+      {/* Filtered category view — 2-col grid with full cards */}
       {!loading && activeCategory !== "all" && (
         <section className="px-5">
           {people.length > 0 ? (
@@ -230,7 +184,7 @@ export default function PeoplePage() {
             </div>
           ) : (
             <div className="text-center py-16">
-              <span className="text-5xl block mb-3">👤</span>
+              <Icon name="person" size={48} className="text-txt-secondary mx-auto mb-3" />
               <p className="text-sm font-medium mb-1">People profiles coming soon</p>
               <p className="text-xs text-txt-secondary">
                 We&apos;re documenting the stories of Compton&apos;s most influential figures.

@@ -4,6 +4,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import type { Event } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default async function AdminEventsPage() {
   const supabase = await createClient();
@@ -36,10 +37,10 @@ export default async function AdminEventsPage() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge label={event.category} variant="purple" />
                   <span className="text-xs text-txt-secondary">
-                    📅 {new Date(event.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                    <Icon name="calendar" size={16} /> {new Date(event.start_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                   </span>
                   <span className="text-xs text-txt-secondary">
-                    👥 {event.rsvp_count} RSVPs
+                    <Icon name="users" size={16} /> {event.rsvp_count} RSVPs
                   </span>
                 </div>
               </div>

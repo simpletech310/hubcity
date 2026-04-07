@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
 import type { Post, Channel } from "@/types/database";
@@ -18,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
     .single();
 
   return {
-    title: profile ? `${profile.display_name} — Hub City` : "Profile — Hub City",
+    title: profile ? `${profile.display_name} -- Hub City` : "Profile -- Hub City",
   };
 }
 
@@ -77,18 +79,22 @@ export default async function PublicProfilePage({
   };
   const accentColor = profile.role ? (roleColors[profile.role] || "#F2A900") : "#F2A900";
 
-  const roleIcons: Record<string, string> = {
-    city_official: "🏛️",
-    business_owner: "🏪",
-    community_leader: "🌿",
-    admin: "⚙️",
-    content_creator: "🎬",
+  const roleIcons: Record<string, IconName> = {
+    city_official: "landmark",
+    business_owner: "store",
+    community_leader: "tree",
+    admin: "settings",
+    content_creator: "film",
   };
-  const roleIcon = profile.role ? (roleIcons[profile.role] || "💬") : "💬";
+  const roleIcon: IconName = profile.role ? (roleIcons[profile.role] || "chat") : "chat";
+
+  // Separate posts with images for Instagram grid
+  const postsWithImages = userPosts.filter((p) => p.image_url);
+  const postsTextOnly = userPosts.filter((p) => !p.image_url);
 
   return (
     <div className="animate-fade-in pb-24">
-      {/* ─── Cover / Header ─── */}
+      {/* --- Cover / Header --- */}
       <div className="relative">
         {/* Banner gradient */}
         <div
@@ -136,86 +142,90 @@ export default async function PublicProfilePage({
       {/* Spacer for avatar overlap */}
       <div className="h-14" />
 
-      {/* ─── Profile Info ─── */}
+      {/* --- Profile Info --- */}
       <div className="px-5 mb-6">
-        <div className="flex items-center gap-2 mb-1">
-          <h1 className="font-heading font-bold text-xl">{profile.display_name}</h1>
-          {profile.verification_status === "verified" && (
-            <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `${accentColor}25` }}>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill={accentColor}>
-                <path d="M6 0L7.5 2.5L10.5 1.5L10 4.5L12 6L10 7.5L10.5 10.5L7.5 9.5L6 12L4.5 9.5L1.5 10.5L2 7.5L0 6L2 4.5L1.5 1.5L4.5 2.5Z" />
-              </svg>
-            </span>
-          )}
-        </div>
+        <Card variant="glass-elevated" padding={false} className="p-5 mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="font-heading font-bold text-xl">{profile.display_name}</h1>
+            {profile.verification_status === "verified" && (
+              <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `${accentColor}25` }}>
+                <Icon name="verified" size={12} style={{ color: accentColor }} strokeWidth={2} />
+              </span>
+            )}
+          </div>
 
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm text-white/40">@{profile.handle}</span>
-          {badge && <Badge label={badge.label} variant={badge.variant} />}
-          {profile.district && (
-            <span className="text-[10px] font-semibold text-white/30 bg-white/[0.06] rounded-full px-2 py-0.5">
-              District {profile.district}
-            </span>
-          )}
-        </div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-sm text-white/40">@{profile.handle}</span>
+            {badge && <Badge label={badge.label} variant={badge.variant} />}
+            {profile.district && (
+              <span className="text-[10px] font-semibold text-white/30 bg-white/[0.06] rounded-full px-2 py-0.5">
+                District {profile.district}
+              </span>
+            )}
+          </div>
 
-        {profile.bio && (
-          <p className="text-sm text-white/60 leading-relaxed mb-4">{profile.bio}</p>
-        )}
+          {profile.bio && (
+            <p className="text-sm text-white/60 leading-relaxed">{profile.bio}</p>
+          )}
+        </Card>
 
         {/* Stats row */}
-        <div className="flex items-center gap-5 mb-4">
-          <div className="text-center">
+        <div className="flex items-center gap-3 mb-4">
+          <Card variant="glass" className="flex-1 text-center !py-3">
             <p className="font-heading font-bold text-lg">{postCount ?? 0}</p>
             <p className="text-[10px] text-white/40 uppercase tracking-wider">Posts</p>
-          </div>
+          </Card>
           {channel && (
-            <div className="text-center">
+            <Card variant="glass" className="flex-1 text-center !py-3">
               <p className="font-heading font-bold text-lg">{channel.follower_count?.toLocaleString()}</p>
               <p className="text-[10px] text-white/40 uppercase tracking-wider">Followers</p>
-            </div>
+            </Card>
           )}
-          <div className="text-center">
+          <Card variant="glass" className="flex-1 text-center !py-3">
             <p className="font-heading font-bold text-lg">
               {userPosts.reduce((sum, p) => sum + (p.like_count ?? 0), 0).toLocaleString()}
             </p>
             <p className="text-[10px] text-white/40 uppercase tracking-wider">Likes</p>
-          </div>
+          </Card>
         </div>
 
         {/* Channel link */}
         {channel && (
           <Link
             href={`/live/channel/${channel.slug}`}
-            className="flex items-center gap-3 bg-royal border border-border-subtle rounded-xl p-3 press hover:border-white/10 transition-colors mb-4"
+            className="block mb-4"
           >
-            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-              {channel.avatar_url ? (
-                <img src={channel.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-white/[0.06] flex items-center justify-center text-lg">📺</div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-semibold truncate">{channel.name}</p>
-              <p className="text-[11px] text-white/40">
-                {channel.follower_count?.toLocaleString()} followers · {channel.type}
-              </p>
-            </div>
-            <span
-              className="text-[11px] font-bold px-3 py-1.5 rounded-full shrink-0"
-              style={{ background: `${accentColor}18`, color: accentColor, border: `1px solid ${accentColor}25` }}
-            >
-              View Channel
-            </span>
+            <Card variant="glass" className="flex items-center gap-3 press hover:border-white/10 transition-colors">
+              <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
+                {channel.avatar_url ? (
+                  <img src={channel.avatar_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-white/[0.06] flex items-center justify-center">
+                    <Icon name="live" size={18} className="text-white/40" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[13px] font-semibold truncate">{channel.name}</p>
+                <p className="text-[11px] text-white/40">
+                  {channel.follower_count?.toLocaleString()} followers &middot; {channel.type}
+                </p>
+              </div>
+              <span
+                className="text-[11px] font-bold px-3 py-1.5 rounded-full shrink-0"
+                style={{ background: `${accentColor}18`, color: accentColor, border: `1px solid ${accentColor}25` }}
+              >
+                View Channel
+              </span>
+            </Card>
           </Link>
         )}
       </div>
 
-      {/* ─── Posts Feed ─── */}
+      {/* --- Posts Feed --- */}
       <div className="px-5">
-        <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3">
-          {roleIcon} Recent Posts
+        <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
+          <Icon name={roleIcon} size={16} style={{ color: accentColor }} /> Recent Posts
         </h2>
 
         {userPosts.length === 0 ? (
@@ -223,57 +233,86 @@ export default async function PublicProfilePage({
             No posts yet
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            {userPosts.map((post) => {
-              const totalReactions = post.reaction_counts
-                ? Object.values(post.reaction_counts).reduce((sum, n) => sum + ((n as number) ?? 0), 0)
-                : 0;
-
-              return (
-                <Card key={post.id} className="relative overflow-hidden">
-                  {/* Top accent line */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-[2px] opacity-40"
-                    style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
-                  />
-
-                  <p className="text-[13px] leading-relaxed mb-2.5">{post.body}</p>
-
-                  {post.image_url && (
-                    <div className="relative h-[180px] rounded-xl overflow-hidden mb-2.5">
-                      <Image src={post.image_url} alt="" fill className="object-cover" />
-                    </div>
-                  )}
-
-                  {/* Hashtags */}
-                  {post.hashtags && post.hashtags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-2.5">
-                      {post.hashtags.map((tag: string) => (
-                        <span key={tag} className="text-[11px] font-medium" style={{ color: accentColor }}>
-                          {tag}
+          <>
+            {/* Instagram-style 3-col image grid */}
+            {postsWithImages.length > 0 && (
+              <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden mb-4">
+                {postsWithImages.map((post) => (
+                  <div key={post.id} className="relative aspect-square group">
+                    <Image
+                      src={post.image_url!}
+                      alt={"Post"}
+                      fill
+                      className="object-cover transition-opacity group-hover:opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                      <div className="flex items-center gap-3 w-full">
+                        <span className="text-[10px] text-white flex items-center gap-1">
+                          <Icon name="heart-pulse" size={10} className="text-white" />
+                          {post.reaction_counts
+                            ? Object.values(post.reaction_counts).reduce((sum, n) => sum + ((n as number) ?? 0), 0)
+                            : 0}
                         </span>
-                      ))}
+                        <span className="text-[10px] text-white flex items-center gap-1">
+                          <Icon name="chat" size={10} className="text-white" />
+                          {post.comment_count ?? 0}
+                        </span>
+                      </div>
                     </div>
-                  )}
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.04]">
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-white/40 flex items-center gap-1">
-                        ❤️ {totalReactions}
-                      </span>
-                      <span className="text-xs text-white/40 flex items-center gap-1">
-                        💬 {post.comment_count ?? 0}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-white/25">
-                      {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                    </span>
                   </div>
-                </Card>
-              );
-            })}
-          </div>
+                ))}
+              </div>
+            )}
+
+            {/* Text-only posts as cards */}
+            {postsTextOnly.length > 0 && (
+              <div className="flex flex-col gap-3">
+                {postsTextOnly.map((post) => {
+                  const totalReactions = post.reaction_counts
+                    ? Object.values(post.reaction_counts).reduce((sum, n) => sum + ((n as number) ?? 0), 0)
+                    : 0;
+
+                  return (
+                    <Card key={post.id} variant="glass" className="relative overflow-hidden">
+                      {/* Top accent line */}
+                      <div
+                        className="absolute top-0 left-0 right-0 h-[2px] opacity-40"
+                        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
+                      />
+
+                      <p className="text-[13px] leading-relaxed mb-2.5">{post.body}</p>
+
+                      {/* Hashtags */}
+                      {post.hashtags && post.hashtags.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mb-2.5">
+                          {post.hashtags.map((tag: string) => (
+                            <span key={tag} className="text-[11px] font-medium" style={{ color: accentColor }}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.04]">
+                        <div className="flex items-center gap-4">
+                          <span className="text-xs text-white/40 flex items-center gap-1">
+                            <Icon name="heart-pulse" size={12} className="text-white/40" /> {totalReactions}
+                          </span>
+                          <span className="text-xs text-white/40 flex items-center gap-1">
+                            <Icon name="chat" size={12} className="text-white/40" /> {post.comment_count ?? 0}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-white/25">
+                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                        </span>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 type Mural = {
   id: string;
@@ -36,7 +37,7 @@ export default function MuralCard({ mural }: MuralCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl opacity-40">🎨</span>
+            <span className="text-4xl opacity-40"><Icon name="palette" size={28} /></span>
           </div>
         )}
       </div>

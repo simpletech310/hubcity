@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface QuestionResult {
   question: string;
@@ -97,7 +98,7 @@ export default function SurveyResultsPage({
   if (error || !data) {
     return (
       <div className="text-center py-16">
-        <span className="text-5xl block mb-3">⚠️</span>
+        <span className="text-5xl block mb-3"><Icon name="warning" size={28} /></span>
         <p className="text-sm font-medium mb-1">{error || "Survey not found"}</p>
         <Link href="/dashboard/surveys" className="text-gold text-sm font-semibold">
           Back to Surveys
@@ -169,7 +170,7 @@ export default function SurveyResultsPage({
       {/* Question Results */}
       {response_count === 0 ? (
         <div className="text-center py-16">
-          <span className="text-5xl block mb-3">📋</span>
+          <span className="text-5xl block mb-3"><Icon name="document" size={28} /></span>
           <p className="text-sm font-medium mb-1">No responses yet</p>
           <p className="text-xs text-txt-secondary">
             Results will appear here as residents respond to this survey.
@@ -216,7 +217,7 @@ export default function SurveyResultsPage({
                                 key={star}
                                 className={`text-sm ${star <= Math.round(result.average!) ? "text-gold" : "text-white/10"}`}
                               >
-                                ★
+                                <Icon name="star" size={16} />
                               </span>
                             ))}
                           </div>

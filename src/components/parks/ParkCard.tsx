@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 type Park = {
   id: string;
@@ -16,20 +18,20 @@ type Park = {
 };
 
 const AMENITY_ICONS: Record<string, string> = {
-  playground: "🛝",
-  basketball: "🏀",
-  bbq: "🔥",
-  restrooms: "🚻",
-  pool: "🏊",
-  tennis: "🎾",
-  soccer: "⚽",
-  baseball: "⚾",
-  picnic: "🎪",
-  walking: "🚶",
-  dog_park: "🐕",
-  gym: "💪",
-  skatepark: "🛹",
-  splash_pad: "💦",
+  playground: "sparkle",
+  basketball: "trophy",
+  bbq: "flame",
+  restrooms: "building",
+  pool: "heart-pulse",
+  tennis: "trophy",
+  soccer: "trophy",
+  baseball: "trophy",
+  picnic: "theater",
+  walking: "person",
+  dog_park: "alert",
+  gym: "trophy",
+  skatepark: "sparkle",
+  splash_pad: "heart-pulse",
 };
 
 interface ParkCardProps {
@@ -53,7 +55,7 @@ export default function ParkCard({ park }: ParkCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-4xl opacity-40">🌳</span>
+            <span className="text-4xl opacity-40"><Icon name="tree" size={28} /></span>
           </div>
         )}
       </div>
@@ -71,10 +73,9 @@ export default function ParkCard({ park }: ParkCardProps) {
             {park.amenities.slice(0, 6).map((amenity) => (
               <span
                 key={amenity}
-                className="text-sm"
                 title={amenity.replace(/_/g, " ")}
               >
-                {AMENITY_ICONS[amenity] || "✅"}
+                <Icon name={(AMENITY_ICONS[amenity] || "check") as IconName} size={16} />
               </span>
             ))}
             {park.amenities.length > 6 && (

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import CultureHero from "@/components/culture/CultureHero";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export async function generateMetadata({
   params,
@@ -129,7 +130,7 @@ export default async function ArtistProfilePage({
             {videos.map((video) => (
               <Card key={video.id} hover padding={false}>
                 <div className="aspect-video bg-black/40 flex items-center justify-center">
-                  <span className="text-3xl opacity-40">🎬</span>
+                  <span className="text-3xl opacity-40"><Icon name="film" size={28} /></span>
                 </div>
                 <div className="p-4">
                   <h3 className="font-heading font-bold text-sm text-text-primary truncate">
@@ -144,7 +145,7 @@ export default async function ArtistProfilePage({
 
       {posts.length === 0 && videos.length === 0 && (
         <div className="px-5 text-center py-12">
-          <span className="text-4xl mb-3 block">🎤</span>
+          <span className="text-4xl mb-3 block"><Icon name="music" size={28} /></span>
           <p className="text-text-secondary text-sm">
             No content from this artist yet.
           </p>

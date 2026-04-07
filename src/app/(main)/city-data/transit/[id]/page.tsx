@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 
 export async function generateMetadata({
   params,
@@ -114,7 +115,7 @@ export default async function TransitStopDetailPage({
                   : "bg-purple-500/20 border border-purple-500/30"
               }`}
             >
-              {isRail ? "🚇" : "🚌"}
+              {isRail ? "transit" : "transit"}
             </div>
             <div className="flex-1 min-w-0">
               <h1 className="font-display text-2xl font-bold text-text-primary leading-tight">
@@ -168,7 +169,7 @@ export default async function TransitStopDetailPage({
               </div>
               <div className="pt-2 border-t border-border-subtle">
                 <div className="flex items-center gap-2">
-                  <span className="text-lg">⏱️</span>
+                  <span className="text-lg"><Icon name="clock" size={20} /></span>
                   <p className="text-xs text-text-secondary">
                     {schedule.frequency}
                   </p>
@@ -184,7 +185,7 @@ export default async function TransitStopDetailPage({
           <div className="space-y-3">
             {stop.latitude && stop.longitude && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🗺️</span>
+                <span className="text-lg"><Icon name="globe" size={20} /></span>
                 <Link
                   href={`/map?lat=${stop.latitude}&lng=${stop.longitude}&zoom=16`}
                   className="text-sm text-gold font-medium hover:underline"
@@ -195,7 +196,7 @@ export default async function TransitStopDetailPage({
             )}
             {stop.gtfs_stop_id && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🏷️</span>
+                <span className="text-lg"><Icon name="tag" size={20} /></span>
                 <p className="text-sm text-text-secondary">
                   GTFS ID: <span className="font-mono">{stop.gtfs_stop_id}</span>
                 </p>
@@ -235,7 +236,7 @@ export default async function TransitStopDetailPage({
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 bg-white/10 text-white px-5 py-3 rounded-full text-sm font-medium press hover:bg-white/15 transition-colors border border-white/10"
           >
-            🕐 Real-Time Arrivals on Metro.net
+            <Icon name="clock" size={16} /> Real-Time Arrivals on Metro.net
           </a>
         </div>
 

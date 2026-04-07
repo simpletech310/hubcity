@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/ui/Badge";
 import type { GalleryItemType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const typeBadge: Record<GalleryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   artwork: { label: "Artwork", variant: "gold" },
@@ -57,7 +58,7 @@ export default async function GalleryItemDetailPage({
         {item.image_urls?.[0] ? (
           <img src={item.image_urls[0]} alt={item.title} className="w-full h-full object-contain bg-black" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center"><span className="text-5xl">🖼️</span></div>
+          <div className="w-full h-full flex items-center justify-center"><span className="text-5xl"><Icon name="frame" size={28} /></span></div>
         )}
       </div>
 
@@ -83,22 +84,22 @@ export default async function GalleryItemDetailPage({
         <div className="space-y-2">
           {item.artist_name && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>🎨</span><span>Artist: <span className="text-white">{item.artist_name}</span></span>
+              <span><Icon name="palette" size={16} /></span><span>Artist: <span className="text-white">{item.artist_name}</span></span>
             </div>
           )}
           {item.year_created && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>📅</span><span>Year: <span className="text-white">{item.year_created}</span></span>
+              <span><Icon name="calendar" size={16} /></span><span>Year: <span className="text-white">{item.year_created}</span></span>
             </div>
           )}
           {item.medium && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>🖌️</span><span>Medium: <span className="text-white">{item.medium}</span></span>
+              <span><Icon name="palette" size={16} /></span><span>Medium: <span className="text-white">{item.medium}</span></span>
             </div>
           )}
           {item.dimensions && (
             <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>📐</span><span>Dimensions: <span className="text-white">{item.dimensions}</span></span>
+              <span>•</span><span>Dimensions: <span className="text-white">{item.dimensions}</span></span>
             </div>
           )}
         </div>

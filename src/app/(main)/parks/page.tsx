@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import CultureHero from "@/components/culture/CultureHero";
 import ParkCard from "@/components/parks/ParkCard";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Parks & Recreation | Hub City",
@@ -9,14 +10,14 @@ export const metadata = {
 };
 
 const AMENITY_FILTERS = [
-  { key: "playground", label: "Playground", icon: "🛝" },
-  { key: "basketball", label: "Basketball", icon: "🏀" },
-  { key: "bbq", label: "BBQ", icon: "🔥" },
-  { key: "restrooms", label: "Restrooms", icon: "🚻" },
-  { key: "pool", label: "Pool", icon: "🏊" },
-  { key: "tennis", label: "Tennis", icon: "🎾" },
-  { key: "soccer", label: "Soccer", icon: "⚽" },
-  { key: "skatepark", label: "Skatepark", icon: "🛹" },
+  { key: "playground", label: "Playground", icon: "sparkle" },
+  { key: "basketball", label: "Basketball", icon: "trophy" },
+  { key: "bbq", label: "BBQ", icon: "flame" },
+  { key: "restrooms", label: "Restrooms", icon: "building" },
+  { key: "pool", label: "Pool", icon: "heart-pulse" },
+  { key: "tennis", label: "Tennis", icon: "trophy" },
+  { key: "soccer", label: "Soccer", icon: "trophy" },
+  { key: "skatepark", label: "Skatepark", icon: "sparkle" },
 ];
 
 export default async function ParksPage({
@@ -101,7 +102,7 @@ export default async function ParksPage({
           </div>
         ) : (
           <div className="text-center py-16">
-            <span className="text-4xl mb-4 block">🌳</span>
+            <span className="text-4xl mb-4 block"><Icon name="tree" size={28} /></span>
             <h3 className="font-heading font-bold text-text-primary text-lg">
               No parks found
             </h3>

@@ -6,11 +6,11 @@ import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 
 const DATA_TYPES = [
-  { value: "businesses", label: "Businesses", icon: "🏪", fields: ["name*", "slug", "category", "description", "address", "phone", "email", "website", "hours", "district", "is_featured"] },
-  { value: "events", label: "Events", icon: "📅", fields: ["title*", "start_date*", "start_time", "end_date", "end_time", "description", "category", "location_name", "address", "is_featured"] },
-  { value: "resources", label: "Resources", icon: "💡", fields: ["title*", "description", "category", "eligibility", "how_to_apply", "deadline", "contact_phone", "contact_email", "website_url"] },
-  { value: "schools", label: "Schools", icon: "🎓", fields: ["name*", "school_type", "address", "phone", "website", "principal", "district", "enrollment", "grades", "rating"] },
-  { value: "jobs", label: "Jobs", icon: "💼", fields: ["title*", "description", "company_name", "category", "employment_type", "salary_min", "salary_max", "location", "is_remote"] },
+  { value: "businesses", label: "Businesses", icon: "store", fields: ["name*", "slug", "category", "description", "address", "phone", "email", "website", "hours", "district", "is_featured"] },
+  { value: "events", label: "Events", icon: "calendar", fields: ["title*", "start_date*", "start_time", "end_date", "end_time", "description", "category", "location_name", "address", "is_featured"] },
+  { value: "resources", label: "Resources", icon: "lightbulb", fields: ["title*", "description", "category", "eligibility", "how_to_apply", "deadline", "contact_phone", "contact_email", "website_url"] },
+  { value: "schools", label: "Schools", icon: "graduation", fields: ["name*", "school_type", "address", "phone", "website", "principal", "district", "enrollment", "grades", "rating"] },
+  { value: "jobs", label: "Jobs", icon: "briefcase", fields: ["title*", "description", "company_name", "category", "employment_type", "salary_min", "salary_max", "location", "is_remote"] },
 ];
 
 interface ImportResult {

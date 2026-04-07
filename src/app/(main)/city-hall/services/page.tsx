@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
 import Chip from "@/components/ui/Chip";
+import Icon from "@/components/ui/Icon";
 import ServiceCard from "@/components/city-hall/ServiceCard";
 import { createClient } from "@/lib/supabase/client";
 import type { CityService, Department } from "@/types/database";
@@ -104,7 +105,7 @@ export default function ServicesPage() {
       {/* Stats row */}
       <div className="flex gap-3 px-5 mb-5">
         <div className="flex items-center gap-2 bg-card rounded-full px-4 py-2 border border-border-subtle">
-          <span className="text-sm">📋</span>
+          <Icon name="document" size={14} />
           <span className="text-xs font-medium">{filtered.length} Total</span>
         </div>
         <div className="flex items-center gap-2 bg-emerald/10 rounded-full px-4 py-2 border border-emerald/20">
@@ -152,7 +153,7 @@ export default function ServicesPage() {
             ))}
             {filtered.length === 0 && (
               <div className="text-center py-16">
-                <span className="text-5xl block mb-3">📋</span>
+                <span className="block mb-3"><Icon name="document" size={48} /></span>
                 <p className="text-sm font-medium mb-1">No services found</p>
                 <p className="text-xs text-txt-secondary">
                   Try a different search or department

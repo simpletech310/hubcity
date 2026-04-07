@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/ui/Badge";
 import type { LibraryItemType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const typeBadge: Record<LibraryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   book: { label: "Book", variant: "gold" },
@@ -60,7 +61,7 @@ export default async function LibraryItemDetailPage({
               <img src={item.cover_image_url} alt={item.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-gold/10 to-purple-900/10 flex items-center justify-center">
-                <span className="text-3xl">📖</span>
+                <span className="text-3xl"><Icon name="book" size={28} /></span>
               </div>
             )}
           </div>

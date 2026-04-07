@@ -5,7 +5,9 @@ import EditorialHeader from "@/components/ui/EditorialHeader";
 import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 import AISearchButton from "@/components/home/AISearchButton";
+import WeatherBar from "@/components/home/WeatherBar";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
@@ -39,6 +41,7 @@ export default async function HomePage() {
     { count: activePollsCount },
     { data: cityAlerts },
     { data: upcomingMeetings },
+    { data: trafficAlerts },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
@@ -96,6 +99,13 @@ export default async function HomePage() {
       .gte("date", new Date().toISOString().split("T")[0])
       .order("date", { ascending: true })
       .limit(3),
+    supabase
+      .from("city_alerts")
+      .select("id, title, body, severity")
+      .eq("is_active", true)
+      .eq("alert_type", "traffic")
+      .order("created_at", { ascending: false })
+      .limit(3),
   ]);
 
   // Get user profile for greeting
@@ -122,7 +132,7 @@ export default async function HomePage() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* ── Full-Screen Art Hero ── */}
+      {/* -- Full-Screen Art Hero -- */}
       <section className="relative">
         <Link href={`/art/${featuredArt.slug}`} className="block press">
           <div className="relative w-full h-screen">
@@ -163,7 +173,7 @@ export default async function HomePage() {
               {/* Scroll indicator */}
               <div className="flex justify-center mt-6">
                 <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
-                  <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><path d="M3 5l4 4 4-4"/></svg>
+                  <Icon name="chevron-down" size={14} className="text-white" />
                 </div>
               </div>
             </div>
@@ -171,7 +181,7 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {/* ── Greeting + Search ── */}
+      {/* -- Greeting + Search -- */}
       <section className="px-5 -mt-1 space-y-3">
         <div>
           <h1 className="font-display text-[26px] leading-tight">
@@ -184,26 +194,59 @@ export default async function HomePage() {
         <AISearchButton />
       </section>
 
-      {/* ── City Alerts ── */}
+      {/* -- Weather + AQI Bar -- */}
+      <section className="px-5">
+        <WeatherBar />
+      </section>
+
+      {/* -- Traffic Alert Banner -- */}
+      {trafficAlerts && trafficAlerts.length > 0 && (
+        <section className="px-5">
+          <Card variant="glass" padding={false}>
+            <div className="p-3 flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
+                <Icon name="transit" size={16} className="text-orange-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-orange-400 uppercase tracking-wider mb-0.5">
+                  Traffic Alert
+                </p>
+                {trafficAlerts.map((ta) => (
+                  <Link key={ta.id} href="/city-data" className="block press">
+                    <p className="text-[12px] text-white/70 leading-snug line-clamp-1 mb-0.5">
+                      {ta.title}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+              <Link href="/city-data" className="shrink-0">
+                <Icon name="chevron-right" size={14} className="text-white/20" />
+              </Link>
+            </div>
+          </Card>
+        </section>
+      )}
+
+      {/* -- City Alerts -- */}
       {cityAlerts && cityAlerts.length > 0 && (
         <section className="px-5">
           <div className="flex flex-col gap-2">
             {cityAlerts.map((alert) => {
-              const severityConfig: Record<string, { bg: string; border: string; icon: string; textColor: string }> = {
-                critical: { bg: "bg-compton-red/10", border: "border-compton-red/25", icon: "🚨", textColor: "text-compton-red" },
-                warning: { bg: "bg-gold/10", border: "border-gold/25", icon: "⚠️", textColor: "text-gold" },
-                info: { bg: "bg-cyan/10", border: "border-cyan/25", icon: "ℹ️", textColor: "text-cyan" },
+              const severityConfig: Record<string, { bg: string; border: string; iconName: "alert" | "warning" | "info"; textColor: string }> = {
+                critical: { bg: "bg-compton-red/10", border: "border-compton-red/25", iconName: "alert", textColor: "text-compton-red" },
+                warning: { bg: "bg-gold/10", border: "border-gold/25", iconName: "warning", textColor: "text-gold" },
+                info: { bg: "bg-cyan/10", border: "border-cyan/25", iconName: "info", textColor: "text-cyan" },
               };
               const config = severityConfig[alert.severity] || severityConfig.info;
               return (
                 <Link key={alert.id} href="/city-data" className="press">
                   <div className={`${config.bg} border ${config.border} rounded-xl p-3 flex items-center gap-2.5`}>
-                    <span className="text-sm shrink-0">{config.icon}</span>
+                    <Icon name={config.iconName} size={16} className={`${config.textColor} shrink-0`} />
                     <div className="flex-1 min-w-0">
                       <p className={`text-[12px] font-semibold ${config.textColor}`}>{alert.title}</p>
                       <p className="text-[11px] text-white/50 line-clamp-1">{alert.body}</p>
                     </div>
-                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+                    <Icon name="chevron-right" size={12} className="text-white/20 shrink-0" />
                   </div>
                 </Link>
               );
@@ -212,17 +255,17 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ── Live Now Banner ── */}
+      {/* -- Live Now Banner -- */}
       {hasLive && <LiveNowBanner streams={liveStreams} />}
 
-      {/* ── Featured Section (mixed content) ── */}
+      {/* -- Featured Section (mixed content) -- */}
       <section className="px-5 space-y-3">
         <EditorialHeader kicker="HIGHLIGHTS" title="Featured" subtitle="Highlights from Compton" />
 
-        {/* Featured event — large card */}
+        {/* Featured event - large card */}
         {featuredEvent && (
           <Link href={`/events/${featuredEvent.id}`} className="block press">
-            <Card hover padding={false}>
+            <Card variant="glass" hover padding={false}>
               <div className="p-4 flex items-start gap-3.5">
                 <div className="flex flex-col items-center bg-gold/10 rounded-xl px-3 py-2 min-w-[52px]">
                   <span className="font-heading text-[20px] font-bold leading-none text-gold">
@@ -241,7 +284,10 @@ export default async function HomePage() {
                   </h3>
                   <div className="flex items-center gap-2 text-[11px] text-warm-gray">
                     {featuredEvent.location_name && (
-                      <span className="truncate">📍 {featuredEvent.location_name}</span>
+                      <span className="inline-flex items-center gap-1 truncate">
+                        <Icon name="map-pin" size={11} className="text-warm-gray shrink-0" />
+                        {featuredEvent.location_name}
+                      </span>
                     )}
                     <span>
                       {new Date(featuredEvent.start_date).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -253,10 +299,10 @@ export default async function HomePage() {
           </Link>
         )}
 
-        {/* Featured business — compact card */}
+        {/* Featured business - compact card */}
         {featuredBusiness && (
           <Link href={`/business/${featuredBusiness.slug}`} className="block press">
-            <Card hover padding={false}>
+            <Card variant="glass" hover padding={false}>
               <div className="p-4 flex items-center gap-3.5">
                 <div className="w-[52px] h-[52px] rounded-xl overflow-hidden relative shrink-0 bg-royal">
                   {featuredBusiness.image_urls?.[0] ? (
@@ -266,7 +312,9 @@ export default async function HomePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[22px]">🏪</div>
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Icon name="store" size={22} className="text-white/40" />
+                    </div>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -282,7 +330,8 @@ export default async function HomePage() {
                       {featuredBusiness.address ? ` · ${featuredBusiness.address.split(",")[0]}` : ""}
                     </span>
                     <span className="shrink-0 flex items-center gap-0.5 text-gold">
-                      ★ {Number(featuredBusiness.rating_avg).toFixed(1)}
+                      <Icon name="star" size={11} className="text-gold" />
+                      {Number(featuredBusiness.rating_avg).toFixed(1)}
                     </span>
                   </div>
                 </div>
@@ -294,10 +343,10 @@ export default async function HomePage() {
         {/* Live stream card (if available and not already shown via banner) */}
         {hasLive && liveStreams[0] && (
           <Link href="/live" className="block press">
-            <Card hover padding={false}>
+            <Card variant="glass" hover padding={false}>
               <div className="p-4 flex items-center gap-3.5">
                 <div className="w-[52px] h-[52px] rounded-xl bg-compton-red/15 border border-compton-red/30 flex items-center justify-center shrink-0">
-                  <span className="text-[22px]">📺</span>
+                  <Icon name="video" size={22} className="text-compton-red" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -319,67 +368,69 @@ export default async function HomePage() {
         )}
       </section>
 
-      {/* ── Ad Zone ── */}
+      {/* -- Ad Zone -- */}
       <div className="px-5">
         <AdZone zone="feed_banner" />
       </div>
 
-      {/* ── What's New Feed ── */}
+      {/* -- What's New Feed -- */}
       {pulsePosts.length > 0 && (
         <section className="px-5 space-y-3">
           <EditorialHeader kicker="THE PULSE" title="What's New" subtitle="Latest from your city" />
-          <div className="flex flex-col divide-y divide-border-subtle rounded-2xl bg-royal border border-border-subtle overflow-hidden">
-            {pulsePosts.map((post) => {
-              const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;
-              return (
-                <Link key={post.id} href="/pulse" className="press">
-                  <div className="flex items-start gap-3 px-4 py-3">
-                    {/* Avatar */}
-                    <div className="w-8 h-8 rounded-full overflow-hidden relative shrink-0 bg-deep">
-                      {post.author?.avatar_url ? (
-                        <Image
-                          src={post.author.avatar_url}
-                          alt={post.author.display_name ?? ""}
-                          fill
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-gold">
-                          {post.author?.display_name?.charAt(0) ?? "?"}
-                        </div>
-                      )}
-                    </div>
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[12px] font-semibold truncate">
-                          {post.author?.display_name ?? "Community"}
-                        </span>
-                        {badge && <Badge label={badge.label} variant={badge.variant} />}
-                        <span className="text-[11px] text-muted-gray ml-auto shrink-0">
-                          {timeAgo(post.created_at)}
-                        </span>
+          <Card variant="glass" padding={false}>
+            <div className="flex flex-col divide-y divide-border-subtle overflow-hidden">
+              {pulsePosts.map((post) => {
+                const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;
+                return (
+                  <Link key={post.id} href="/pulse" className="press">
+                    <div className="flex items-start gap-3 px-4 py-3">
+                      {/* Avatar */}
+                      <div className="w-8 h-8 rounded-full overflow-hidden relative shrink-0 bg-deep">
+                        {post.author?.avatar_url ? (
+                          <Image
+                            src={post.author.avatar_url}
+                            alt={post.author.display_name ?? ""}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-gold">
+                            {post.author?.display_name?.charAt(0) ?? "?"}
+                          </div>
+                        )}
                       </div>
-                      <p className="text-[12px] text-warm-gray leading-snug line-clamp-2">
-                        {post.body}
-                      </p>
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <span className="text-[12px] font-semibold truncate">
+                            {post.author?.display_name ?? "Community"}
+                          </span>
+                          {badge && <Badge label={badge.label} variant={badge.variant} />}
+                          <span className="text-[11px] text-muted-gray ml-auto shrink-0">
+                            {timeAgo(post.created_at)}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-warm-gray leading-snug line-clamp-2">
+                          {post.body}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </Card>
         </section>
       )}
 
-      {/* ── Bottom CTA ── */}
+      {/* -- Bottom CTA -- */}
       <section className="px-5 pb-6">
         <Link
           href="/map"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gold/20 bg-gold/5 text-gold text-[13px] font-heading font-semibold press hover:bg-gold/10 transition-colors"
         >
           Explore more on Hub City
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 3l4 4-4 4"/></svg>
+          <Icon name="chevron-right" size={14} className="text-gold" />
         </Link>
       </section>
     </div>

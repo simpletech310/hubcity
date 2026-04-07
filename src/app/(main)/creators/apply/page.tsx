@@ -4,33 +4,35 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
-const PILLARS = [
+const PILLARS: { iconName: IconName; title: string; subtitle: string; desc: string; color: string }[] = [
   {
-    icon: "📱",
+    iconName: "live",
     title: "Hub City App",
     subtitle: "Distribution Platform",
     desc: "Live & on-demand streaming, creator profiles, and direct audience connection across Compton.",
     color: "#F2A900",
   },
   {
-    icon: "🎓",
+    iconName: "graduation",
     title: "Creator Academy",
     subtitle: "Training Pipeline",
     desc: "Production skills, AI tools, digital content creation, and mentorship from industry pros.",
     color: "#3B82F6",
   },
   {
-    icon: "🎬",
+    iconName: "film",
     title: "Hub City Studios",
     subtitle: "Content Network",
     desc: "Scripted shows, news, cooking, animation, and original programming made in Compton.",
     color: "#8B5CF6",
   },
   {
-    icon: "💰",
+    iconName: "dollar",
     title: "Ad Network",
     subtitle: "Revenue Engine",
     desc: "In-house ads with fair splits: 40% Creator / 30% Platform / 30% Community Fund.",
@@ -133,7 +135,7 @@ export default function CreatorApplyPage() {
 
         <div className="relative z-10 px-5 pt-8 pb-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gold/10 border border-gold/20 mb-4">
-            <span className="text-sm">🎬</span>
+            <Icon name="film" size={14} className="text-gold" />
             <span className="text-[10px] font-bold text-gold uppercase tracking-wider">Creator Program</span>
           </div>
           <h1 className="font-heading text-3xl font-bold mb-3">
@@ -154,14 +156,14 @@ export default function CreatorApplyPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {PILLARS.map((pillar) => (
-            <Card key={pillar.title} className="relative overflow-hidden">
+            <Card key={pillar.title} variant="glass" className="relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: pillar.color }} />
               <div className="flex items-start gap-3">
                 <div
                   className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
                   style={{ background: `${pillar.color}15` }}
                 >
-                  <span className="text-xl">{pillar.icon}</span>
+                  <Icon name={pillar.iconName} size={22} style={{ color: pillar.color }} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-bold text-sm mb-0.5">{pillar.title}</h3>
@@ -212,7 +214,7 @@ export default function CreatorApplyPage() {
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{
                 background: existingStatus === "approved" ? "rgba(34,197,94,0.15)" : existingStatus === "pending" ? "rgba(242,169,0,0.15)" : "rgba(239,68,68,0.15)"
               }}>
-                <span className="text-3xl">{existingStatus === "approved" ? "✅" : existingStatus === "pending" ? "⏳" : "❌"}</span>
+                <Icon name={existingStatus === "approved" ? "check" : existingStatus === "pending" ? "clock" : "close"} size={28} style={{ color: existingStatus === "approved" ? "#22C55E" : existingStatus === "pending" ? "#F2A900" : "#EF4444" }} />
               </div>
               <h3 className="font-heading font-bold text-lg mb-2">
                 {existingStatus === "approved" ? "You're a Creator!" : existingStatus === "pending" ? "Application Under Review" : "Application Not Approved"}
@@ -239,7 +241,7 @@ export default function CreatorApplyPage() {
           <Card glow>
             <div className="text-center py-6">
               <div className="w-16 h-16 rounded-full bg-emerald/15 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🎉</span>
+                <Icon name="sparkle" size={28} className="text-emerald" />
               </div>
               <h3 className="font-heading font-bold text-lg mb-2">Application Submitted!</h3>
               <p className="text-sm text-txt-secondary mb-4 max-w-sm mx-auto">
@@ -254,7 +256,7 @@ export default function CreatorApplyPage() {
           <Card>
             <div className="text-center py-8">
               <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🔒</span>
+                <Icon name="lock" size={24} className="text-gold" />
               </div>
               <h3 className="font-heading font-bold text-base mb-2">Sign in to Apply</h3>
               <p className="text-xs text-txt-secondary mb-5 max-w-xs mx-auto">
@@ -304,7 +306,7 @@ export default function CreatorApplyPage() {
                         }
                       `}
                     >
-                      {type === "both" ? "Video & Podcast" : type === "video" ? "📹 Video" : "🎙️ Podcast"}
+                      {type === "both" ? "Video & Podcast" : type === "video" ? "Video" : "Podcast"}
                     </button>
                   ))}
                 </div>
@@ -344,7 +346,7 @@ export default function CreatorApplyPage() {
                 </label>
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm w-6 text-center">📸</span>
+                    <span className="w-6 text-center"><Icon name="camera" size={16} className="text-txt-secondary" /></span>
                     <input
                       type="text"
                       value={instagram}
@@ -354,7 +356,7 @@ export default function CreatorApplyPage() {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm w-6 text-center">▶️</span>
+                    <span className="w-6 text-center"><Icon name="video" size={16} className="text-txt-secondary" /></span>
                     <input
                       type="text"
                       value={youtube}
@@ -364,7 +366,7 @@ export default function CreatorApplyPage() {
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm w-6 text-center">🎵</span>
+                    <span className="w-6 text-center"><Icon name="music" size={16} className="text-txt-secondary" /></span>
                     <input
                       type="text"
                       value={tiktok}

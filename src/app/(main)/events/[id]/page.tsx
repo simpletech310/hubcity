@@ -5,6 +5,8 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import SaveButton from "@/components/ui/SaveButton";
 import RSVPButton from "@/components/events/RSVPButton";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 import { formatCents } from "@/lib/stripe";
 import { isTicketSalesOpen, getTicketSalesMessage } from "@/lib/tickets";
@@ -28,13 +30,13 @@ const categoryGradients: Record<string, string> = {
   youth: "from-cyan/30 via-cyan/10 to-transparent",
 };
 
-const categoryEmojis: Record<string, string> = {
-  city: "🏛️",
-  sports: "⚽",
-  culture: "🎭",
-  community: "🤝",
-  school: "📚",
-  youth: "🌟",
+const categoryIcons: Record<string, IconName> = {
+  city: "landmark",
+  sports: "trophy",
+  culture: "theater",
+  community: "handshake",
+  school: "book",
+  youth: "sparkle",
 };
 
 const categoryBadgeVariant: Record<string, "purple" | "coral" | "cyan" | "gold" | "emerald" | "blue" | "pink"> = {
@@ -136,7 +138,7 @@ export default async function EventDetailPage({
         ) : (
           <div className={`w-full h-full bg-gradient-to-br ${categoryGradients[ev.category] || "from-gold/20 to-deep"} pattern-dots`}>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-7xl opacity-30">{categoryEmojis[ev.category] || "📅"}</span>
+              <Icon name={categoryIcons[ev.category] || "calendar"} size={72} className="opacity-30" />
             </div>
           </div>
         )}
@@ -209,7 +211,7 @@ export default async function EventDetailPage({
             {/* Date */}
             <div className="text-center">
               <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">📅</span>
+                <Icon name="calendar" size={18} style={{ color: accentColor }} />
               </div>
               <p className="text-[11px] font-bold" style={{ color: accentColor }}>
                 {monthName.slice(0, 3).toUpperCase()} {dayNum}
@@ -220,7 +222,7 @@ export default async function EventDetailPage({
             {/* Time */}
             <div className="text-center">
               <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">🕐</span>
+                <Icon name="clock" size={18} style={{ color: accentColor }} />
               </div>
               <p className="text-[11px] font-bold" style={{ color: accentColor }}>
                 {ev.start_time ? formatTime12h(ev.start_time) : "TBA"}
@@ -233,7 +235,7 @@ export default async function EventDetailPage({
             {/* Attendees */}
             <div className="text-center">
               <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">👥</span>
+                <Icon name="users" size={18} style={{ color: accentColor }} />
               </div>
               <p className="text-[11px] font-bold" style={{ color: accentColor }}>
                 {ev.rsvp_count.toLocaleString()}
@@ -249,7 +251,7 @@ export default async function EventDetailPage({
         <div className="px-5 mt-4">
           <div className="rounded-2xl bg-card border border-border-subtle p-4 flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-xl bg-compton-red/10 flex items-center justify-center shrink-0">
-              <span className="text-xl">📍</span>
+              <Icon name="pin" size={20} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold truncate">{ev.location_name}</p>
@@ -425,7 +427,7 @@ export default async function EventDetailPage({
             download="event.ics"
             className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 press"
           >
-            <span className="text-sm">📅</span>
+            <Icon name="calendar" size={14} />
             <span className="text-xs font-semibold text-txt-secondary">Add to Calendar</span>
           </a>
           <button className="flex-1 rounded-xl bg-card border border-border-subtle py-3 flex items-center justify-center gap-2 press">

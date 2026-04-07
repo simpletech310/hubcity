@@ -6,6 +6,7 @@ import AdZone from "@/components/ui/AdZone";
 import PersonGallery from "@/components/culture/PersonGallery";
 import RelatedPeople from "@/components/culture/RelatedPeople";
 import type { NotablePersonCategory } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   music: { label: "Music", variant: "gold" },
@@ -67,7 +68,7 @@ export default async function PersonDetailPage({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center">
-            <span className="text-7xl">👤</span>
+            <span className="text-7xl"><Icon name="person" size={16} /></span>
           </div>
         )}
 

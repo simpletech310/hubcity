@@ -3,6 +3,7 @@ import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import type { Post } from "@/types/database";
 import AdminPostActions from "./AdminPostActions";
+import Icon from "@/components/ui/Icon";
 
 export default async function AdminPostsPage() {
   const supabase = await createClient();
@@ -72,7 +73,7 @@ export default async function AdminPostsPage() {
 
         {posts.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-4xl mb-3">📝</p>
+            <p className="text-4xl mb-3"><Icon name="edit" size={28} /></p>
             <p className="text-sm text-txt-secondary">No posts yet</p>
           </div>
         )}

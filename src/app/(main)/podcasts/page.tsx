@@ -6,6 +6,8 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { Podcast, Channel } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -14,13 +16,13 @@ import type { Podcast, Channel } from "@/types/database";
 
 type PodcastWithChannel = Podcast & { channel?: Channel };
 
-const channelFilters = [
-  { label: "All", value: "all", icon: "🎙️" },
-  { label: "City Hall", value: "city_hall", icon: "🏛️" },
-  { label: "Community", value: "community", icon: "🤝" },
-  { label: "Culture", value: "culture", icon: "🎨" },
-  { label: "Business", value: "business", icon: "💼" },
-  { label: "Sports", value: "sports", icon: "⚽" },
+const channelFilters: { label: string; value: string; iconName: IconName }[] = [
+  { label: "All", value: "all", iconName: "podcast" },
+  { label: "City Hall", value: "city_hall", iconName: "landmark" },
+  { label: "Community", value: "community", iconName: "handshake" },
+  { label: "Culture", value: "culture", iconName: "palette" },
+  { label: "Business", value: "business", iconName: "briefcase" },
+  { label: "Sports", value: "sports", iconName: "soccer" },
 ];
 
 const channelBadgeVariant: Record<string, "gold" | "blue" | "coral" | "emerald" | "pink" | "purple" | "cyan"> = {
@@ -86,7 +88,7 @@ export default function PodcastsPage() {
         <div className="relative z-10 px-5 pt-6 pb-5">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <span className="text-base">🎙️</span>
+              <Icon name="podcast" size={18} className="text-gold" />
             </div>
             <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">
               Hub City Media
@@ -103,7 +105,7 @@ export default function PodcastsPage() {
 
       {/* ── Quick Stats ── */}
       <div className="px-5 -mt-1 mb-5">
-        <div className="grid grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5 stagger">
           {[
             { label: "Episodes", value: podcasts.length, color: "#F2A900" },
             {
@@ -117,10 +119,8 @@ export default function PodcastsPage() {
               color: "#06B6D4",
             },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl bg-card border border-border-subtle p-3 text-center relative overflow-hidden"
-            >
+            <Card key={stat.label} variant="glass" className="p-3 text-center relative overflow-hidden">
+
               <div
                 className="absolute top-0 left-0 right-0 h-0.5"
                 style={{ background: stat.color }}
@@ -134,7 +134,7 @@ export default function PodcastsPage() {
               <p className="text-[9px] text-txt-secondary font-semibold uppercase tracking-wider">
                 {stat.label}
               </p>
-            </div>
+            </Card>
           ))}
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function PodcastsPage() {
           <Chip
             key={ch.value}
             label={ch.label}
-            icon={<span className="text-sm">{ch.icon}</span>}
+            icon={<Icon name={ch.iconName} size={14} />}
             active={activeChannel === ch.value}
             onClick={() => setActiveChannel(ch.value)}
           />
@@ -162,7 +162,7 @@ export default function PodcastsPage() {
       ) : podcasts.length === 0 ? (
         <div className="px-5 text-center py-16">
           <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-            <span className="text-3xl">🎧</span>
+            <Icon name="headphones" size={28} className="text-txt-secondary" />
           </div>
           <p className="text-sm font-bold mb-1">No episodes found</p>
           <p className="text-xs text-txt-secondary mb-4">
@@ -211,7 +211,7 @@ function EpisodeCard({ podcast }: { podcast: PodcastWithChannel }) {
                 className="object-cover rounded-xl"
               />
             ) : (
-              <span className="text-3xl">🎙️</span>
+              <Icon name="podcast" size={28} className="text-gold/60" />
             )}
           </div>
 

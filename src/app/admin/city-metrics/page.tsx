@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 import HCBarChart from "@/components/charts/HCBarChart";
 import DonutChart from "@/components/charts/DonutChart";
 import GaugeChart from "@/components/charts/GaugeChart";
@@ -119,7 +120,7 @@ export default function CityMetricsPage() {
             href={`/api/admin/export/${t}`}
             className="px-3 py-1.5 rounded-lg bg-white/5 border border-border-subtle text-xs font-semibold text-txt-secondary hover:text-white transition-colors"
           >
-            📥 {t}
+            <Icon name="download" size={12} className="inline mr-1" />{t}
           </a>
         ))}
       </div>

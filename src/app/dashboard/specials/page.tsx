@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/client";
 import type { FoodSpecial } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default function SpecialsManagementPage() {
   const [specials, setSpecials] = useState<FoodSpecial[]>([]);
@@ -345,7 +346,7 @@ export default function SpecialsManagementPage() {
 
           {specials.length === 0 && !showForm && (
             <div className="text-center py-16">
-              <span className="text-5xl block mb-3">🏷️</span>
+              <span className="text-5xl block mb-3"><Icon name="tag" size={28} /></span>
               <p className="text-sm font-medium mb-1">No specials yet</p>
               <p className="text-xs text-txt-secondary mb-4">
                 Create your first food special to attract customers

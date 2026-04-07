@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { Poll, PollOption } from "@/types/database";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
+import Icon from "@/components/ui/Icon";
 
 interface PollCardProps {
   poll: Poll;
@@ -105,7 +106,7 @@ export default function PollCard({ poll, userId }: PollCardProps) {
 
       {/* Type label row */}
       <div className="flex items-center gap-1.5 text-[10px] text-cyan font-semibold mb-2.5 tracking-wide">
-        <span>📊</span>
+        <span><Icon name="chart" size={16} /></span>
         POLL
         {isClosed && (
           <span className="ml-1">
@@ -213,7 +214,7 @@ export default function PollCard({ poll, userId }: PollCardProps) {
 
 /* ── Temperature Check ─────────────────────────────── */
 
-const TEMP_EMOJIS = ["🥶", "😬", "😐", "😊", "🔥"];
+const TEMP_EMOJIS = ["sparkle", "star", "heart", "flame", "bolt"];
 
 function TemperatureCheck({
   options,
@@ -238,8 +239,8 @@ function TemperatureCheck({
     return (
       <div className="space-y-2">
         <div className="flex justify-between text-base mb-1 px-1">
-          <span>🥶</span>
-          <span>🔥</span>
+          <span>•</span>
+          <span><Icon name="flame" size={16} /></span>
         </div>
         {options.map((opt, i) => {
           const pct = totalVotes > 0 ? Math.round((opt.vote_count / totalVotes) * 100) : 0;
@@ -258,10 +259,10 @@ function TemperatureCheck({
                   style={{ width: `${pct}%` }}
                 />
                 <span className="relative z-10 flex items-center gap-1.5">
-                  <span className="text-base">{opt.emoji || TEMP_EMOJIS[i] || "🔵"}</span>
+                  <span className="text-base">{opt.emoji || TEMP_EMOJIS[i] || "sparkle"}</span>
                   {opt.label && <span className="text-txt-secondary">{opt.label}</span>}
                   {isUserChoice && (
-                    <span className="text-cyan text-[10px] font-semibold">✓</span>
+                    <span className="text-cyan text-[10px] font-semibold"><Icon name="check" size={16} /></span>
                   )}
                 </span>
                 <span className="relative z-10 text-txt-secondary font-medium">
@@ -279,8 +280,8 @@ function TemperatureCheck({
   return (
     <div className="space-y-3">
       <div className="flex justify-between text-base px-1">
-        <span>🥶</span>
-        <span>🔥</span>
+        <span>•</span>
+        <span><Icon name="flame" size={16} /></span>
       </div>
       <div className="flex gap-1.5">
         {options.map((opt, i) => {
@@ -300,7 +301,7 @@ function TemperatureCheck({
                 ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 press"}
               `}
             >
-              {opt.emoji || TEMP_EMOJIS[i] || "🔵"}
+              {opt.emoji || TEMP_EMOJIS[i] || "sparkle"}
             </button>
           );
         })}
@@ -365,7 +366,7 @@ function MultipleChoice({
                     {opt.label}
                   </span>
                   {isUserChoice && (
-                    <span className="text-cyan text-[10px] font-semibold">✓</span>
+                    <span className="text-cyan text-[10px] font-semibold"><Icon name="check" size={16} /></span>
                   )}
                 </span>
                 <span className={`relative z-10 font-medium ${isUserChoice ? "text-cyan" : "text-txt-secondary"}`}>

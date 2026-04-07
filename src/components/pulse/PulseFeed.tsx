@@ -10,6 +10,9 @@ import ComposeModal from "./ComposeModal";
 import CreatePollModal from "./CreatePollModal";
 import CreateSurveyModal from "./CreateSurveyModal";
 import PulseLiveCard from "./PulseLiveCard";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
+import CityPulseBar from "./CityPulseBar";
 import type { Post, ReactionEmoji, LiveStream, Poll, Survey } from "@/types/database";
 
 // ─── Types ──────────────────────────────────────────
@@ -36,13 +39,13 @@ interface Promotion {
 }
 
 const filters = [
-  { label: "All", value: "all", icon: "🔥", color: "#F2A900" },
-  { label: "City News", value: "city_official", icon: "🏛️", color: "#3B82F6" },
-  { label: "Business", value: "business_owner", icon: "🏪", color: "#22C55E" },
-  { label: "Jobs", value: "jobs", icon: "💼", color: "#F59E0B" },
-  { label: "Community", value: "citizen", icon: "💬", color: "#8B5CF6" },
-  { label: "Polls", value: "polls", icon: "📊", color: "#06B6D4" },
-  { label: "Surveys", value: "surveys", icon: "📋", color: "#EC4899" },
+  { label: "All", value: "all", iconName: "flame" as const, color: "#F2A900" },
+  { label: "City News", value: "city_official", iconName: "landmark" as const, color: "#3B82F6" },
+  { label: "Business", value: "business_owner", iconName: "store" as const, color: "#22C55E" },
+  { label: "Jobs", value: "jobs", iconName: "briefcase" as const, color: "#F59E0B" },
+  { label: "Community", value: "citizen", iconName: "chat" as const, color: "#8B5CF6" },
+  { label: "Polls", value: "polls", iconName: "chart" as const, color: "#06B6D4" },
+  { label: "Surveys", value: "surveys", iconName: "document" as const, color: "#EC4899" },
 ];
 
 const eventCategoryColors: Record<string, string> = {
@@ -67,6 +70,7 @@ interface PulseFeedProps {
   surveys?: Survey[];
   events?: CityEvent[];
   promotions?: Promotion[];
+  trafficAlertCount?: number;
 }
 
 export default function PulseFeed({
@@ -80,6 +84,7 @@ export default function PulseFeed({
   surveys = [],
   events = [],
   promotions = [],
+  trafficAlertCount = 0,
 }: PulseFeedProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [composeOpen, setComposeOpen] = useState(false);
@@ -145,8 +150,13 @@ export default function PulseFeed({
 
   return (
     <div className="animate-fade-in pb-safe">
+      {/* ─── City Pulse Bar ─── */}
+      <div className="pt-4">
+        <CityPulseBar trafficAlertCount={trafficAlertCount} />
+      </div>
+
       {/* ─── Filter Chips ─── */}
-      <div className="flex gap-2 px-5 pt-4 mb-3 overflow-x-auto scrollbar-hide pb-1">
+      <div className="flex gap-2 px-5 mb-3 overflow-x-auto scrollbar-hide pb-1">
         {filters.map((f) => {
           const isActive = activeFilter === f.value;
           return (
@@ -160,7 +170,7 @@ export default function PulseFeed({
                 border: `1px solid ${isActive ? `${f.color}30` : "rgba(255,255,255,0.06)"}`,
               }}
             >
-              <span>{f.icon}</span>
+              <Icon name={f.iconName} size={14} className="opacity-80" />
               {f.label}
             </button>
           );
@@ -169,7 +179,8 @@ export default function PulseFeed({
 
       {/* ─── Trending Hashtags (inline chips) ─── */}
       {trendingHashtags.length > 0 && activeFilter === "all" && (
-        <div className="flex items-center gap-2 px-5 mb-4 overflow-x-auto scrollbar-hide pb-1">
+        <div className="flex items-center gap-2 mx-5 mb-4 px-3 py-2 rounded-xl glass-surface overflow-x-auto scrollbar-hide">
+          <Icon name="trending" size={12} className="text-gold/60 shrink-0" />
           <span className="text-[10px] text-white/30 uppercase tracking-wider font-semibold shrink-0">Trending</span>
           {trendingHashtags.map((t) => (
             <span
@@ -202,9 +213,11 @@ export default function PulseFeed({
           {feedItems.length === 0 ? (
             <div className="text-center py-16">
               <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">
-                  {activeFilter === "polls" ? "📊" : activeFilter === "surveys" ? "📋" : activeFilter === "jobs" ? "💼" : "📡"}
-                </span>
+                <Icon
+                  name={activeFilter === "polls" ? "chart" : activeFilter === "surveys" ? "document" : activeFilter === "jobs" ? "briefcase" : "pulse"}
+                  size={28}
+                  className="text-white/30"
+                />
               </div>
               <p className="text-sm font-semibold mb-1">
                 {activeFilter === "polls"
@@ -376,8 +389,8 @@ export default function PulseFeed({
                   const typeColors: Record<string, string> = {
                     bogo: "#FF6B6B", discount: "#22C55E", free_item: "#06B6D4", bundle: "#F2A900", loyalty: "#8B5CF6",
                   };
-                  const typeIcons: Record<string, string> = {
-                    bogo: "🎁", discount: "💰", free_item: "🆓", bundle: "📦", loyalty: "⭐",
+                  const typeIcons: Record<string, IconName> = {
+                    bogo: "tag", discount: "dollar", free_item: "sparkle", bundle: "cart", loyalty: "star",
                   };
                   const color = typeColors[promo.promo_type] || "#F2A900";
                   return (
@@ -389,7 +402,7 @@ export default function PulseFeed({
                       <div className="bg-card rounded-2xl border border-border-subtle p-3.5 h-full hover:border-white/10 transition-all" style={{ borderTopWidth: 2, borderTopColor: color }}>
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${color}12` }}>
-                            <span className="text-sm">{typeIcons[promo.promo_type] || "🏷️"}</span>
+                            <Icon name={typeIcons[promo.promo_type] || "tag"} size={16} style={{ color }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] text-white/30 truncate">{biz?.name || "Local Business"}</p>
@@ -431,7 +444,7 @@ export default function PulseFeed({
                 className="flex items-center gap-2 bg-card border border-border-subtle rounded-full pl-4 pr-3 py-2.5 press hover:border-gold/30 transition-colors shadow-lg"
               >
                 <span className="text-[12px] font-semibold">New Post</span>
-                <span className="text-base">📝</span>
+                <Icon name="edit" size={16} className="text-gold" />
               </button>
               {(userRole === "city_official" || userRole === "admin") && (
                 <>
@@ -440,14 +453,14 @@ export default function PulseFeed({
                     className="flex items-center gap-2 bg-card border border-cyan/20 rounded-full pl-4 pr-3 py-2.5 press hover:border-cyan/40 transition-colors shadow-lg"
                   >
                     <span className="text-[12px] font-semibold text-cyan">New Poll</span>
-                    <span className="text-base">📊</span>
+                    <Icon name="chart" size={16} className="text-cyan" />
                   </button>
                   <button
                     onClick={() => { setFabExpanded(false); setSurveyOpen(true); }}
                     className="flex items-center gap-2 bg-card border border-hc-purple/20 rounded-full pl-4 pr-3 py-2.5 press hover:border-hc-purple/40 transition-colors shadow-lg"
                   >
                     <span className="text-[12px] font-semibold text-hc-purple">New Survey</span>
-                    <span className="text-base">📋</span>
+                    <Icon name="document" size={16} className="text-hc-purple" />
                   </button>
                 </>
               )}

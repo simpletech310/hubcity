@@ -12,6 +12,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { getStripeClient } from "@/lib/stripe-client";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventTicketConfig } from "@/types/database";
 import type { Stripe } from "@stripe/stripe-js";
@@ -444,7 +445,7 @@ export default function TicketSelectionPage() {
                   <Image src={event.image_url} alt={event.title} fill className="object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: `${accentColor}20` }}>
-                    <span className="text-xl">🎫</span>
+                    <Icon name="ticket" size={20} />
                   </div>
                 )}
               </div>
@@ -455,7 +456,7 @@ export default function TicketSelectionPage() {
                 </p>
                 {event.location_name && (
                   <p className="text-[11px] mt-1 truncate" style={{ color: accentColor }}>
-                    📍 {event.location_name}
+                    <Icon name="pin" size={11} className="inline" /> {event.location_name}
                   </p>
                 )}
               </div>
@@ -501,7 +502,7 @@ export default function TicketSelectionPage() {
         {!loading && !error && configs.length === 0 && (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-              <span className="text-3xl">🎫</span>
+              <Icon name="ticket" size={30} />
             </div>
             <p className="text-txt-secondary text-sm">No tickets available for this event.</p>
           </div>

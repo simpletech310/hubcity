@@ -7,11 +7,13 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import type { CityIssue } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const ISSUE_ICONS: Record<string, string> = {
-  pothole: "🕳️", streetlight: "💡", graffiti: "🎨", trash: "🗑️",
-  flooding: "🌊", parking: "🅿️", noise: "🔊", sidewalk: "🚶",
-  tree: "🌳", parks: "🏞️", water: "💧", stray: "🐕", safety: "🚨", other: "📋",
+  pothole: "alert", streetlight: "lightbulb", graffiti: "palette", trash: "trash",
+  flooding: "alert", parking: "🅿•", noise: "bell", sidewalk: "person",
+  tree: "tree", parks: "tree", water: "heart-pulse", stray: "alert", safety: "alert", other: "document",
 };
 
 type BadgeVariant = "gold" | "cyan" | "purple" | "emerald" | "coral";
@@ -154,7 +156,7 @@ export default function IssueDetailPage() {
         {/* Title Card */}
         <Card className="mb-5">
           <div className="flex items-start gap-3">
-            <span className="text-3xl">{ISSUE_ICONS[issue.type] || "📋"}</span>
+            <Icon name={(ISSUE_ICONS[issue.type] || "document") as IconName} size={28} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <Badge label={issue.type.replace("_", " ")} variant="gold" />
@@ -244,7 +246,7 @@ export default function IssueDetailPage() {
               Location
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-lg">📍</span>
+              <span className="text-lg"><Icon name="pin" size={20} /></span>
               <p className="text-sm">{issue.location_text}</p>
             </div>
             {issue.district && (
@@ -271,7 +273,7 @@ export default function IssueDetailPage() {
             <p className="text-sm font-semibold">{issue.assigned_department}</p>
             {issue.forwarded_at && (
               <p className="text-xs text-emerald mt-1">
-                ✓ Forwarded {formatDate(issue.forwarded_at)}
+                <Icon name="check" size={16} /> Forwarded {formatDate(issue.forwarded_at)}
               </p>
             )}
           </Card>
@@ -303,7 +305,7 @@ export default function IssueDetailPage() {
                 : "bg-card border border-border-subtle text-txt-secondary"
             }`}
           >
-            👍 {userUpvoted ? "Upvoted" : "Upvote"} · {issue.upvote_count}
+            <Icon name="heart-pulse" size={16} /> {userUpvoted ? "Upvoted" : "Upvote"} · {issue.upvote_count}
           </button>
 
           {issue.source_post_id && (
@@ -311,7 +313,7 @@ export default function IssueDetailPage() {
               href="/pulse"
               className="flex-1 py-3 rounded-xl bg-card border border-border-subtle text-sm font-bold text-center press"
             >
-              💬 View Post
+              <Icon name="chat" size={16} /> View Post
             </Link>
           )}
         </div>

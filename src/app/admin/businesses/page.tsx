@@ -4,6 +4,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import type { Business } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default async function AdminBusinessesPage() {
   const supabase = await createClient();
@@ -42,7 +43,7 @@ export default async function AdminBusinessesPage() {
                       District {biz.district}
                     </span>
                   )}
-                  <span className="text-xs text-gold">★ {Number(biz.rating_avg).toFixed(1)}</span>
+                  <span className="text-xs text-gold"><Icon name="star" size={14} className="text-gold" /> {Number(biz.rating_avg).toFixed(1)}</span>
                   <span className="text-xs text-txt-secondary">({biz.rating_count} reviews)</span>
                 </div>
               </div>

@@ -3,23 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ToastProvider from "@/components/ui/Toast";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
-const navItems = [
-  { href: "/admin", label: "Dashboard", icon: "📊" },
-  { href: "/admin/events", label: "Events", icon: "📅" },
-  { href: "/admin/venues", label: "Venues", icon: "🏟️" },
-  { href: "/admin/businesses", label: "Businesses", icon: "🏪" },
-  { href: "/admin/resources", label: "Resources", icon: "💡" },
-  { href: "/admin/posts", label: "Posts", icon: "📢" },
-  { href: "/admin/issues", label: "City Issues", icon: "🚧" },
-  { href: "/admin/creators", label: "Creators", icon: "🎬" },
-  { href: "/admin/reports", label: "Reports", icon: "🚩" },
-  { href: "/admin/data", label: "Data & Insights", icon: "📈" },
-  { href: "/admin/city-metrics", label: "City Metrics", icon: "🏙️" },
-  { href: "/admin/users", label: "Users", icon: "👥" },
-  { href: "/admin/podcasts", label: "Podcasts", icon: "🎙️" },
-  { href: "/admin/import", label: "Data Import", icon: "📤" },
-  { href: "/admin/notifications", label: "Notifications", icon: "🔔" },
+const navItems: { href: string; label: string; iconName: IconName }[] = [
+  { href: "/admin", label: "Dashboard", iconName: "chart" },
+  { href: "/admin/events", label: "Events", iconName: "calendar" },
+  { href: "/admin/venues", label: "Venues", iconName: "building" },
+  { href: "/admin/businesses", label: "Businesses", iconName: "store" },
+  { href: "/admin/resources", label: "Resources", iconName: "lightbulb" },
+  { href: "/admin/posts", label: "Posts", iconName: "megaphone" },
+  { href: "/admin/issues", label: "City Issues", iconName: "wrench" },
+  { href: "/admin/creators", label: "Creators", iconName: "film" },
+  { href: "/admin/reports", label: "Reports", iconName: "flag" },
+  { href: "/admin/data", label: "Data & Insights", iconName: "trending" },
+  { href: "/admin/city-metrics", label: "City Metrics", iconName: "globe" },
+  { href: "/admin/users", label: "Users", iconName: "users" },
+  { href: "/admin/podcasts", label: "Podcasts", iconName: "podcast" },
+  { href: "/admin/import", label: "Data Import", iconName: "upload" },
+  { href: "/admin/notifications", label: "Notifications", iconName: "bell" },
 ];
 
 export default function AdminNav({
@@ -62,7 +64,7 @@ export default function AdminNav({
                   ${active ? "bg-gold/10 text-gold" : "text-txt-secondary hover:text-white hover:bg-white/5"}
                 `}
               >
-                <span>{item.icon}</span>
+                <Icon name={item.iconName} size={16} />
                 {item.label}
               </Link>
             );
@@ -74,7 +76,7 @@ export default function AdminNav({
             href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-txt-secondary hover:text-white hover:bg-white/5"
           >
-            <span>🏠</span>
+            <Icon name="home" size={16} />
             Back to App
           </Link>
         </div>
@@ -107,7 +109,7 @@ export default function AdminNav({
                   ${active ? "bg-gold/10 text-gold" : "text-txt-secondary"}
                 `}
               >
-                <span>{item.icon}</span>
+                <Icon name={item.iconName} size={16} />
                 {item.label}
               </Link>
             );

@@ -142,7 +142,7 @@ export default function ProductDetailModal({
         ) : (
           <div className="aspect-[4/3] bg-card flex items-center justify-center">
             <span className="text-4xl opacity-30">
-              {item.is_digital ? "📱" : "📦"}
+              {item.is_digital ? "phone" : "cart"}
             </span>
           </div>
         )}

@@ -5,6 +5,7 @@ import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 import type { FoodTour } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 interface TourStopRow {
   id: string;
@@ -81,7 +82,7 @@ export default async function TourDetailPage({
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-coral/20 to-gold/10 flex items-center justify-center">
-            <span className="text-6xl">🍽️</span>
+            <span className="text-6xl"><Icon name="utensils" size={16} /></span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
@@ -151,7 +152,7 @@ export default async function TourDetailPage({
                         </h3>
                         {biz?.address && (
                           <p className="text-[10px] text-txt-secondary mb-1 truncate">
-                            📍 {biz.address.split(",")[0]}
+                            <Icon name="pin" size={16} /> {biz.address.split(",")[0]}
                           </p>
                         )}
                         {stop.note && (
@@ -162,7 +163,7 @@ export default async function TourDetailPage({
                       </div>
                       {(biz?.rating_avg ?? 0) > 0 && (
                         <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-gold text-xs">★</span>
+                          <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
                           <span className="text-xs font-bold">
                             {Number(biz?.rating_avg ?? 0).toFixed(1)}
                           </span>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
 import { TransitCard } from "@/components/city-data/TransitCard";
 import { createClient } from "@/lib/supabase/server";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Transit - Hub City",
@@ -77,7 +78,7 @@ export default async function TransitPage() {
         <div className="mb-6 rounded-2xl bg-royal/50 p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-purple-500/15 flex items-center justify-center shrink-0">
-              <span className="text-lg">🚇</span>
+              <span className="text-lg"><Icon name="transit" size={20} /></span>
             </div>
             <div>
               <p className="text-sm font-medium text-white/90 mb-0.5">
@@ -102,7 +103,7 @@ export default async function TransitPage() {
         {railRoutes.length > 0 && (
           <>
             <h2 className="mb-4 text-xl font-semibold text-gold flex items-center gap-2">
-              <span className="text-lg">🚆</span> Rail
+              <span className="text-lg"><Icon name="transit" size={20} /></span> Rail
             </h2>
             <div className="mb-8 grid gap-4">
               {railRoutes.map((route) => (
@@ -122,7 +123,7 @@ export default async function TransitPage() {
         {busRoutes.length > 0 && (
           <>
             <h2 className="mb-4 text-xl font-semibold text-gold flex items-center gap-2">
-              <span className="text-lg">🚌</span> Bus Routes
+              <span className="text-lg"><Icon name="transit" size={20} /></span> Bus Routes
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {busRoutes.map((route) => (
@@ -144,7 +145,7 @@ export default async function TransitPage() {
             href="/map"
             className="inline-flex items-center gap-2 bg-gold/15 text-gold border border-gold/20 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-gold/25 transition-colors"
           >
-            <span>🗺️</span> View All Stops on Map
+            <span><Icon name="globe" size={16} /></span> View All Stops on Map
           </Link>
           <p className="text-center text-sm text-white/30">
             Route data based on LA Metro service. Real-time GTFS integration coming soon.

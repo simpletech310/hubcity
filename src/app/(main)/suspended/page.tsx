@@ -5,7 +5,7 @@ export default function SuspendedPage() {
     <div className="min-h-dvh flex items-center justify-center px-5">
       <div className="text-center max-w-sm">
         <div className="w-20 h-20 rounded-2xl bg-coral/10 flex items-center justify-center mx-auto mb-6">
-          <span className="text-4xl">🚫</span>
+          <span className="text-4xl">•</span>
         </div>
         <h1 className="font-heading text-2xl font-bold mb-2">Account Suspended</h1>
         <p className="text-sm text-txt-secondary leading-relaxed mb-6">

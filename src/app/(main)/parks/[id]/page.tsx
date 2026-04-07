@@ -1,22 +1,24 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const AMENITY_DETAILS: Record<string, { icon: string; label: string }> = {
-  playground: { icon: "🛝", label: "Playground" },
-  basketball: { icon: "🏀", label: "Basketball Courts" },
-  bbq: { icon: "🔥", label: "BBQ Grills" },
-  restrooms: { icon: "🚻", label: "Restrooms" },
-  pool: { icon: "🏊", label: "Swimming Pool" },
-  tennis: { icon: "🎾", label: "Tennis Courts" },
-  soccer: { icon: "⚽", label: "Soccer Fields" },
-  baseball: { icon: "⚾", label: "Baseball Diamond" },
-  picnic: { icon: "🎪", label: "Picnic Area" },
-  walking: { icon: "🚶", label: "Walking Trail" },
-  dog_park: { icon: "🐕", label: "Dog Park" },
-  gym: { icon: "💪", label: "Fitness Area" },
-  skatepark: { icon: "🛹", label: "Skatepark" },
-  splash_pad: { icon: "💦", label: "Splash Pad" },
+  playground: { icon: "sparkle", label: "Playground" },
+  basketball: { icon: "trophy", label: "Basketball Courts" },
+  bbq: { icon: "flame", label: "BBQ Grills" },
+  restrooms: { icon: "building", label: "Restrooms" },
+  pool: { icon: "heart-pulse", label: "Swimming Pool" },
+  tennis: { icon: "trophy", label: "Tennis Courts" },
+  soccer: { icon: "trophy", label: "Soccer Fields" },
+  baseball: { icon: "trophy", label: "Baseball Diamond" },
+  picnic: { icon: "theater", label: "Picnic Area" },
+  walking: { icon: "person", label: "Walking Trail" },
+  dog_park: { icon: "alert", label: "Dog Park" },
+  gym: { icon: "trophy", label: "Fitness Area" },
+  skatepark: { icon: "sparkle", label: "Skatepark" },
+  splash_pad: { icon: "heart-pulse", label: "Splash Pad" },
 };
 
 export async function generateMetadata({
@@ -84,7 +86,7 @@ export default async function ParkDetailPage({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-6xl opacity-30">🌳</span>
+            <span className="text-6xl opacity-30"><Icon name="tree" size={16} /></span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
@@ -117,7 +119,7 @@ export default async function ParkDetailPage({
         <section className="px-5">
           <Card hover={false} padding>
             <div className="flex items-center gap-3">
-              <span className="text-lg">🕐</span>
+              <span className="text-lg"><Icon name="clock" size={20} /></span>
               <div>
                 <h3 className="font-heading font-bold text-sm text-text-primary">
                   Hours
@@ -138,7 +140,7 @@ export default async function ParkDetailPage({
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
             {park.amenities.map((amenity: string) => {
               const detail = AMENITY_DETAILS[amenity] || {
-                icon: "✅",
+                icon: "check",
                 label: amenity.replace(/_/g, " "),
               };
               return (
@@ -146,7 +148,7 @@ export default async function ParkDetailPage({
                   key={amenity}
                   className="flex items-center gap-2 bg-card rounded-xl border border-border-subtle px-3 py-2.5"
                 >
-                  <span className="text-lg">{detail.icon}</span>
+                  <Icon name={detail.icon as IconName} size={20} />
                   <span className="text-sm text-text-primary capitalize">
                     {detail.label}
                   </span>

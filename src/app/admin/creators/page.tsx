@@ -6,6 +6,8 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import CreatorBadge from "@/components/creators/CreatorBadge";
 import { createClient } from "@/lib/supabase/client";
 
@@ -145,11 +147,11 @@ export default function AdminCreatorsPage() {
   const contentTypeBadge = (type: string) => {
     switch (type) {
       case "video":
-        return <Badge label="Video" variant="blue" icon={<span className="text-[8px]">📹</span>} />;
+        return <Badge label="Video" variant="blue" icon={<Icon name="video" size={10} />} />;
       case "podcast":
-        return <Badge label="Podcast" variant="purple" icon={<span className="text-[8px]">🎙️</span>} />;
+        return <Badge label="Podcast" variant="purple" icon={<Icon name="podcast" size={10} />} />;
       case "both":
-        return <Badge label="Video & Podcast" variant="gold" icon={<span className="text-[8px]">🎬</span>} />;
+        return <Badge label="Video & Podcast" variant="gold" icon={<Icon name="film" size={10} />} />;
       default:
         return <Badge label={type} variant="blue" />;
     }
@@ -175,19 +177,19 @@ export default function AdminCreatorsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { label: "Total Creators", value: stats.total, color: "#F2A900", icon: "🎬" },
-          { label: "Pending Apps", value: stats.pending, color: "#FF6B6B", icon: "📋" },
-          { label: "Active This Month", value: stats.activeMonth, color: "#22C55E", icon: "📈" },
-        ].map((stat) => (
-          <Card key={stat.label} className="relative overflow-hidden">
+        {([
+          { label: "Total Creators", value: stats.total, color: "#F2A900", iconName: "film" as IconName },
+          { label: "Pending Apps", value: stats.pending, color: "#FF6B6B", iconName: "document" as IconName },
+          { label: "Active This Month", value: stats.activeMonth, color: "#22C55E", iconName: "trending" as IconName },
+        ]).map((stat) => (
+          <Card key={stat.label} variant="glass" className="relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: `${stat.color}12` }}
               >
-                <span className="text-lg">{stat.icon}</span>
+                <Icon name={stat.iconName} size={20} style={{ color: stat.color }} />
               </div>
               <div>
                 <p className="font-heading font-bold text-xl" style={{ color: stat.color }}>
@@ -283,13 +285,13 @@ export default function AdminCreatorsPage() {
                   {app.social_links && (
                     <div className="flex items-center gap-3 mb-2">
                       {app.social_links.instagram && (
-                        <span className="text-[10px] text-txt-secondary">📸 {app.social_links.instagram}</span>
+                        <span className="text-[10px] text-txt-secondary flex items-center gap-0.5"><Icon name="camera" size={10} /> {app.social_links.instagram}</span>
                       )}
                       {app.social_links.youtube && (
-                        <span className="text-[10px] text-txt-secondary">▶️ {app.social_links.youtube}</span>
+                        <span className="text-[10px] text-txt-secondary flex items-center gap-0.5"><Icon name="video" size={10} /> {app.social_links.youtube}</span>
                       )}
                       {app.social_links.tiktok && (
-                        <span className="text-[10px] text-txt-secondary">🎵 {app.social_links.tiktok}</span>
+                        <span className="text-[10px] text-txt-secondary flex items-center gap-0.5"><Icon name="music" size={10} /> {app.social_links.tiktok}</span>
                       )}
                     </div>
                   )}
@@ -388,7 +390,7 @@ export default function AdminCreatorsPage() {
 
           {applications.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-4xl mb-3">🎬</p>
+              <p className="mb-3"><Icon name="film" size={36} className="text-txt-secondary" /></p>
               <p className="text-sm text-txt-secondary">
                 {filter === "pending"
                   ? "No pending applications"

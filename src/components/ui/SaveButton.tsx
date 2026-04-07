@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Icon from "@/components/ui/Icon";
 
 interface SaveButtonProps {
   itemType: "business" | "event" | "resource";
@@ -82,7 +83,7 @@ export default function SaveButton({
       } ${loading ? "opacity-60" : ""}`}
       title={saved ? "Unsave" : "Save"}
     >
-      {saved ? "🔖" : "🏷️"}
+      <Icon name="bookmark" size={size === "sm" ? 16 : 20} />
     </button>
   );
 }

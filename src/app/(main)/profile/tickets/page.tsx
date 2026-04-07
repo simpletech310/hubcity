@@ -17,12 +17,12 @@ const categoryGradients: Record<string, string> = {
 };
 
 const categoryEmojis: Record<string, string> = {
-  city: "🏛️",
-  sports: "⚽",
-  culture: "🎭",
-  community: "🤝",
-  school: "📚",
-  youth: "🌟",
+  city: "landmark",
+  sports: "trophy",
+  culture: "theater",
+  community: "handshake",
+  school: "book",
+  youth: "star",
 };
 
 type OrderWithEvent = TicketOrder & {
@@ -214,7 +214,7 @@ function OrderCard({ order }: { order: OrderWithEvent }) {
                 categoryGradients[category] || "from-deep to-midnight"
               } flex items-center justify-center`}
             >
-              <span className="text-3xl">{categoryEmojis[category] || "📅"}</span>
+              <span className="text-3xl">{categoryEmojis[category] || "calendar"}</span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />

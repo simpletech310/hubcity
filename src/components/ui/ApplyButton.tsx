@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 
 interface ApplyButtonProps {
   resourceId: string;
@@ -56,7 +57,7 @@ export default function ApplyButton({
             <div className="px-5 pb-6">
               <div className="text-center mb-5">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center mx-auto mb-3">
-                  <span className="text-3xl">📋</span>
+                  <Icon name="document" size={28} className="text-gold" />
                 </div>
                 <h3 className="font-heading font-bold text-lg mb-1">
                   Apply for {resourceName}
@@ -72,7 +73,7 @@ export default function ApplyButton({
                     href={`tel:${phone}`}
                     className="flex items-center gap-3 bg-white/[0.04] border border-border-subtle rounded-xl px-4 py-3.5 press hover:border-gold/20 transition-colors"
                   >
-                    <span className="text-lg">📞</span>
+                    <Icon name="phone" size={20} className="text-white" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold">Call to Apply</p>
                       <p className="text-xs text-gold">{phone}</p>
@@ -92,7 +93,7 @@ export default function ApplyButton({
                 )}
 
                 <div className="flex items-center gap-3 bg-white/[0.04] border border-border-subtle rounded-xl px-4 py-3.5">
-                  <span className="text-lg">🏢</span>
+                  <Icon name="building" size={20} className="text-white" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold">Visit In Person</p>
                     <p className="text-xs text-txt-secondary">
@@ -102,7 +103,7 @@ export default function ApplyButton({
                 </div>
 
                 <div className="flex items-center gap-3 bg-gold/[0.06] border border-gold/15 rounded-xl px-4 py-3.5">
-                  <span className="text-lg">🤖</span>
+                  <Icon name="lightbulb" size={20} className="text-gold" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-gold">
                       Need Help Applying?

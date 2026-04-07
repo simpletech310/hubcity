@@ -4,9 +4,12 @@ import { motion } from "motion/react";
 import clsx from "clsx";
 import { fadeInUp } from "@/lib/animations";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 interface EmptyStateProps {
   icon?: string;
+  iconName?: IconName;
   title: string;
   description?: string;
   action?: {
@@ -18,6 +21,7 @@ interface EmptyStateProps {
 
 export default function EmptyState({
   icon,
+  iconName,
   title,
   description,
   action,
@@ -29,11 +33,15 @@ export default function EmptyState({
       initial="hidden"
       animate="visible"
     >
-      {icon && (
+      {iconName ? (
+        <div className="w-16 h-16 rounded-full glass-card-elevated flex items-center justify-center mb-4">
+          <Icon name={iconName} size={28} className="text-white/40" />
+        </div>
+      ) : icon ? (
         <span className="text-5xl mb-4" role="img" aria-hidden>
           {icon}
         </span>
-      )}
+      ) : null}
 
       <h3 className="text-lg font-semibold text-txt-primary mb-1">{title}</h3>
 

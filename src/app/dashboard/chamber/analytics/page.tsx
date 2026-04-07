@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 
 interface ChamberAnalytics {
   total_businesses: number;
@@ -176,7 +177,7 @@ export default function ChamberAnalyticsPage() {
           {analytics.paused_businesses > 0 && (
             <Card className="border border-gold/30">
               <div className="flex items-center gap-3">
-                <span className="text-xl">⚠️</span>
+                <span className="text-xl"><Icon name="warning" size={20} /></span>
                 <div>
                   <p className="text-sm font-semibold text-gold">
                     {analytics.paused_businesses} Paused Business{analytics.paused_businesses > 1 ? "es" : ""}

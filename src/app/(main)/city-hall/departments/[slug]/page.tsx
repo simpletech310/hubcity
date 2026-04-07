@@ -2,19 +2,21 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import ServiceCard from "@/components/city-hall/ServiceCard";
 import { createClient } from "@/lib/supabase/server";
 import type { Department, CityService } from "@/types/database";
 
-const categoryEmojis: Record<string, string> = {
-  administration: "🏛️",
-  public_safety: "🛡️",
-  public_works: "🚧",
-  community: "🤝",
-  finance: "💰",
-  planning: "📐",
-  parks: "🌳",
-  utilities: "💡",
+const categoryIcons: Record<string, IconName> = {
+  administration: "landmark",
+  public_safety: "shield",
+  public_works: "wrench",
+  community: "handshake",
+  finance: "dollar",
+  planning: "chart",
+  parks: "tree",
+  utilities: "lightbulb",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -45,7 +47,7 @@ export default async function DepartmentDetailPage({
   if (!department) notFound();
 
   const dept = department as Department & { services: CityService[] };
-  const emoji = categoryEmojis[dept.category] ?? "🏛️";
+  const iconName = categoryIcons[dept.category] ?? "landmark";
   const categoryLabel = categoryLabels[dept.category] ?? dept.category;
   const services = (dept.services ?? []).filter((s) => s.is_active).sort((a, b) => a.sort_order - b.sort_order);
 
@@ -68,7 +70,7 @@ export default async function DepartmentDetailPage({
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0 border border-gold/15">
-            <span className="text-2xl">{emoji}</span>
+            <Icon name={iconName} size={24} />
           </div>
           <div className="flex-1">
             <h1 className="font-heading text-xl font-bold mb-1 leading-tight">
@@ -99,18 +101,18 @@ export default async function DepartmentDetailPage({
         )}
 
         {/* Contact Info */}
-        <Card className="mb-5">
+        <Card variant="glass-elevated" className="mb-5">
           <h3 className="font-heading font-bold text-sm mb-3">Contact Information</h3>
           <div className="space-y-3">
             {dept.address && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📍</span>
+                <Icon name="pin" size={18} />
                 <p className="text-sm">{dept.address}</p>
               </div>
             )}
             {dept.phone && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📞</span>
+                <Icon name="phone" size={18} />
                 <a href={`tel:${dept.phone}`} className="text-sm text-gold font-medium">
                   {dept.phone}
                 </a>
@@ -118,7 +120,7 @@ export default async function DepartmentDetailPage({
             )}
             {dept.email && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">✉️</span>
+                <Icon name="mail" size={18} />
                 <a href={`mailto:${dept.email}`} className="text-sm text-gold font-medium">
                   {dept.email}
                 </a>
@@ -126,7 +128,7 @@ export default async function DepartmentDetailPage({
             )}
             {dept.hours && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🕐</span>
+                <Icon name="clock" size={18} />
                 <p className="text-sm">{typeof dept.hours === 'string' ? dept.hours : JSON.stringify(dept.hours)}</p>
               </div>
             )}
@@ -150,7 +152,7 @@ export default async function DepartmentDetailPage({
         {/* No services fallback */}
         {services.length === 0 && (
           <div className="text-center py-10 mb-6">
-            <span className="text-4xl block mb-2">📋</span>
+            <span className="block mb-2"><Icon name="document" size={36} /></span>
             <p className="text-sm text-txt-secondary">
               No services listed for this department yet.
             </p>

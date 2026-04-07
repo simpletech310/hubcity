@@ -1,37 +1,38 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 const crisisHotlines = [
   {
     name: "Suicide & Crisis Lifeline",
     number: "988",
     description: "24/7 free and confidential support",
-    icon: "💙",
+    icon: "alert",
   },
   {
     name: "Poison Control",
     number: "1-800-222-1222",
     description: "Immediate poison emergency help",
-    icon: "☠️",
+    icon: "alert",
   },
   {
     name: "National Domestic Violence Hotline",
     number: "1-800-799-7233",
     description: "24/7 confidential support for abuse victims",
-    icon: "🛡️",
+    icon: "shield",
   },
   {
     name: "SAMHSA Helpline",
     number: "1-800-662-4357",
     description: "Substance abuse & mental health referrals",
-    icon: "💚",
+    icon: "phone",
   },
   {
     name: "Crisis Text Line",
     number: "Text HOME to 741741",
     description: "Free 24/7 crisis text support",
-    icon: "💬",
+    icon: "chat",
   },
 ];
 
@@ -113,7 +114,7 @@ export default function EmergencyPage() {
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
           <div className="relative">
-            <span className="text-5xl block mb-3">🚨</span>
+            <span className="text-5xl block mb-3"><Icon name="alert" size={28} /></span>
             <p className="text-3xl font-display font-bold text-white mb-1">
               Call 911
             </p>
@@ -139,7 +140,7 @@ export default function EmergencyPage() {
         {/* Crisis Hotlines */}
         <div className="mb-6">
           <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span>📞</span> Crisis Hotlines
+            <span><Icon name="phone" size={16} /></span> Crisis Hotlines
           </h2>
           <div className="space-y-2.5">
             {crisisHotlines.map((hotline) => (
@@ -175,7 +176,7 @@ export default function EmergencyPage() {
         {/* Nearest Hospitals */}
         <div className="mb-6">
           <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span>🏨</span> Nearest Hospitals
+            <span>•</span> Nearest Hospitals
           </h2>
           <div className="space-y-2.5">
             {nearbyHospitals.map((hospital) => (
@@ -193,14 +194,14 @@ export default function EmergencyPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 text-[12px] text-gold font-medium"
                   >
-                    <span>📍</span>
+                    <span><Icon name="pin" size={16} /></span>
                     {hospital.address}
                   </a>
                   <a
                     href={`tel:${hospital.phone.replace(/[^0-9]/g, "")}`}
                     className="flex items-center gap-2 text-[12px] text-gold font-medium"
                   >
-                    <span>📞</span>
+                    <span><Icon name="phone" size={16} /></span>
                     {hospital.phone}
                   </a>
                 </div>
@@ -228,7 +229,7 @@ export default function EmergencyPage() {
         {/* Mental Health Crisis */}
         <div className="mb-6">
           <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span>🧠</span> Mental Health Crisis
+            <span><Icon name="lightbulb" size={16} /></span> Mental Health Crisis
           </h2>
           <div className="space-y-2.5">
             {mentalHealthResources.map((resource) => (
@@ -260,7 +261,7 @@ export default function EmergencyPage() {
               className="border-gold/15 text-center py-5 relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-              <span className="text-3xl block mb-2">🏥</span>
+              <span className="text-3xl block mb-2"><Icon name="heart-pulse" size={28} /></span>
               <h3 className="font-heading font-bold text-base mb-1">
                 Full Health Directory
               </h3>

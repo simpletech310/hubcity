@@ -1,7 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "./SignOutButton";
 import BadgesSection from "./BadgesSection";
@@ -48,18 +51,18 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-const resourceCategoryIcons: Record<string, string> = {
-  business: "🏪",
-  housing: "🏠",
-  health: "❤️",
-  youth: "🧒",
-  jobs: "💼",
-  food: "🍽️",
-  legal: "⚖️",
-  senior: "👴",
-  education: "📚",
-  veterans: "🎖️",
-  utilities: "💡",
+const resourceCategoryIcons: Record<string, IconName> = {
+  business: "store",
+  housing: "house",
+  health: "heart-pulse",
+  youth: "baby",
+  jobs: "briefcase",
+  food: "utensils",
+  legal: "gavel",
+  senior: "elder",
+  education: "book",
+  veterans: "veteran",
+  utilities: "lightbulb",
 };
 
 const resourceCategoryColors: Record<string, string> = {
@@ -77,10 +80,10 @@ const resourceCategoryColors: Record<string, string> = {
 };
 
 // Emergency & quick reference
-const emergencyContacts = [
-  { label: "Emergency", number: "911", icon: "🚨" },
-  { label: "City Hall", number: "(310) 605-5500", icon: "🏛️" },
-  { label: "Non-Emergency", number: "(310) 605-5511", icon: "📞" },
+const emergencyContacts: { label: string; number: string; icon: IconName }[] = [
+  { label: "Emergency", number: "911", icon: "alert" },
+  { label: "City Hall", number: "(310) 605-5500", icon: "landmark" },
+  { label: "Non-Emergency", number: "(310) 605-5511", icon: "phone" },
 ];
 
 export default async function ProfilePage() {
@@ -114,14 +117,14 @@ export default async function ProfilePage() {
       .eq("user_id", user.id)
       .eq("status", "going")
       .limit(5),
-    // User's recent pulse posts
+    // User's recent pulse posts (fetch more for grid)
     supabase
       .from("posts")
-      .select("id, title, body, created_at")
+      .select("id, title, body, image_url, created_at")
       .eq("author_id", user.id)
       .eq("is_published", true)
       .order("created_at", { ascending: false })
-      .limit(3),
+      .limit(12),
     // Ticket orders
     supabase
       .from("ticket_orders")
@@ -142,6 +145,11 @@ export default async function ProfilePage() {
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : null;
+
+  // Redirect citizens to settings
+  if (role === "citizen") {
+    redirect("/profile/settings");
+  }
 
   // Filter upcoming events that haven't passed yet
   const upcomingEvents = (upcomingRsvps ?? [])
@@ -203,9 +211,13 @@ export default async function ProfilePage() {
   const posts = recentPosts ?? [];
   const tickets = ticketOrders ?? [];
 
+  // Separate posts with images for Instagram grid
+  const postsWithImages = (posts as Record<string, unknown>[]).filter((p) => p.image_url);
+  const postsTextOnly = (posts as Record<string, unknown>[]).filter((p) => !p.image_url);
+
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ── Profile Hero ── */}
+      {/* -- Profile Hero -- */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-deep to-hc-purple/8" />
         <div className="absolute inset-0 pattern-dots opacity-20" />
@@ -228,9 +240,7 @@ export default async function ProfilePage() {
               )}
               {verificationStatus === "verified" && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald flex items-center justify-center ring-2 ring-midnight">
-                  <svg width="12" height="12" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                    <path d="M2.5 6l2.5 2.5 5-5" />
-                  </svg>
+                  <Icon name="check" size={12} className="text-white" strokeWidth={2.5} />
                 </div>
               )}
             </div>
@@ -241,12 +251,12 @@ export default async function ProfilePage() {
               <p className="text-sm text-txt-secondary mb-1.5">{handle}</p>
               <div className="flex gap-1.5 flex-wrap">
                 {verificationStatus === "verified" ? (
-                  <Badge label="Verified" variant="emerald" />
+                  <Badge label="Verified" variant="emerald" iconName="verified" />
                 ) : (
                   <Badge label="Unverified" variant="gold" />
                 )}
                 {district && dInfo && (
-                  <Badge label={`District ${district}`} variant="cyan" />
+                  <Badge label={`District ${district}`} variant="cyan" iconName="map-pin" />
                 )}
                 <Badge label={role.replace("_", " ")} variant="purple" />
               </div>
@@ -254,10 +264,8 @@ export default async function ProfilePage() {
 
             {/* Edit profile */}
             <Link href="/profile/edit" className="shrink-0">
-              <div className="w-9 h-9 rounded-xl bg-card border border-border-subtle flex items-center justify-center press hover:border-gold/20 transition-colors">
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
-                  <path d="M11.5 1.5l3 3-9 9H2.5v-3l9-9z" />
-                </svg>
+              <div className="w-9 h-9 rounded-xl glass-card border border-border-subtle flex items-center justify-center press hover:border-gold/20 transition-colors">
+                <Icon name="edit" size={16} className="text-txt-secondary" />
               </div>
             </Link>
           </div>
@@ -276,18 +284,20 @@ export default async function ProfilePage() {
 
           {/* Stats */}
           <div className="grid grid-cols-4 gap-2">
-            {[
-              { label: "Saved", value: savedCount ?? 0, icon: "🔖", color: "#F2A900" },
-              { label: "RSVPs", value: rsvpCount ?? 0, icon: "📅", color: "#3B82F6" },
-              { label: "Tickets", value: tickets.length, icon: "🎟️", color: "#8B5CF6" },
-              { label: "Tags", value: profileTags.length, icon: "💡", color: "#22C55E" },
-            ].map((stat) => (
+            {([
+              { label: "Saved", value: savedCount ?? 0, icon: "bookmark" as IconName, color: "#F2A900" },
+              { label: "RSVPs", value: rsvpCount ?? 0, icon: "calendar" as IconName, color: "#3B82F6" },
+              { label: "Tickets", value: tickets.length, icon: "ticket" as IconName, color: "#8B5CF6" },
+              { label: "Tags", value: profileTags.length, icon: "lightbulb" as IconName, color: "#22C55E" },
+            ]).map((stat) => (
               <div
                 key={stat.label}
-                className="bg-card rounded-xl p-2.5 text-center border border-border-subtle relative overflow-hidden"
+                className="glass-card-elevated rounded-xl p-2.5 text-center relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
-                <span className="text-sm block mb-0.5">{stat.icon}</span>
+                <span className="block mb-0.5" style={{ color: stat.color }}>
+                  <Icon name={stat.icon} size={16} className="mx-auto" />
+                </span>
                 <p className="font-heading font-bold text-sm leading-none" style={{ color: stat.color }}>
                   {stat.value}
                 </p>
@@ -298,7 +308,7 @@ export default async function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Business Dashboard ── */}
+      {/* -- Business Dashboard -- */}
       {userBusiness && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -306,11 +316,11 @@ export default async function ProfilePage() {
             <h2 className="font-heading font-bold text-base">My Business</h2>
           </div>
           <Link href="/dashboard">
-            <div className="rounded-2xl bg-gradient-to-br from-gold/10 via-card to-card border border-gold/20 p-4 hover:border-gold/40 transition-colors press relative overflow-hidden">
+            <Card variant="glass" className="bg-gradient-to-br from-gold/10 via-transparent to-transparent border-gold/20 hover:border-gold/40 transition-colors press relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
               <div className="flex items-center gap-3.5 mb-3">
                 <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0">
-                  <span className="text-xl">🏪</span>
+                  <Icon name="store" size={22} className="text-gold" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-heading font-bold text-[14px] truncate">{userBusiness.name}</p>
@@ -318,37 +328,36 @@ export default async function ProfilePage() {
                     <span className="text-[11px] text-txt-secondary capitalize">{userBusiness.category}</span>
                     {Number(userBusiness.rating_avg) > 0 && (
                       <>
-                        <span className="text-txt-secondary/30">·</span>
-                        <span className="text-[11px] text-gold">★ {Number(userBusiness.rating_avg).toFixed(1)}</span>
+                        <span className="text-txt-secondary/30">&middot;</span>
+                        <Icon name="star" size={11} className="text-gold" />
+                        <span className="text-[11px] text-gold">{Number(userBusiness.rating_avg).toFixed(1)}</span>
                         <span className="text-[11px] text-txt-secondary">({userBusiness.rating_count})</span>
                       </>
                     )}
                   </div>
                 </div>
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold shrink-0">
-                  <path d="M8 4l6 6-6 6" />
-                </svg>
+                <Icon name="chevron-right" size={20} className="text-gold shrink-0" />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <span className="text-sm">📋</span>
+                  <Icon name="receipt" size={16} className="text-txt-secondary mx-auto" />
                   <p className="text-[10px] text-txt-secondary mt-0.5">Orders</p>
                 </div>
                 <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <span className="text-sm">📅</span>
+                  <Icon name="calendar" size={16} className="text-txt-secondary mx-auto" />
                   <p className="text-[10px] text-txt-secondary mt-0.5">Bookings</p>
                 </div>
                 <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <span className="text-sm">📊</span>
+                  <Icon name="chart" size={16} className="text-txt-secondary mx-auto" />
                   <p className="text-[10px] text-txt-secondary mt-0.5">Analytics</p>
                 </div>
               </div>
-            </div>
+            </Card>
           </Link>
         </section>
       )}
 
-      {/* ── Your District ── */}
+      {/* -- Your District -- */}
       {district && dInfo && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -356,7 +365,7 @@ export default async function ProfilePage() {
             <h2 className="font-heading font-bold text-base">Your District</h2>
           </div>
           <Link href="/district">
-            <div className="rounded-2xl bg-card border border-border-subtle p-4 relative overflow-hidden hover:border-gold/20 transition-colors press">
+            <Card variant="glass" className="relative overflow-hidden hover:border-gold/20 transition-colors press">
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: dInfo.color }} />
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${dInfo.color}15` }}>
@@ -367,9 +376,7 @@ export default async function ProfilePage() {
                   <p className="text-[11px] text-txt-secondary">{dInfo.area}</p>
                 </div>
                 <div className="shrink-0">
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary/50">
-                    <path d="M6 4l4 4-4 4" />
-                  </svg>
+                  <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
                 </div>
               </div>
 
@@ -380,7 +387,7 @@ export default async function ProfilePage() {
                   <div className="space-y-1.5">
                     {districtEvents.slice(0, 2).map((evt) => (
                       <div key={evt.id as string} className="flex items-center gap-2">
-                        <span className="text-[10px]">📅</span>
+                        <Icon name="calendar" size={12} className="text-txt-secondary shrink-0" />
                         <p className="text-[11px] truncate flex-1">{evt.title as string}</p>
                         <p className="text-[9px] text-txt-secondary shrink-0">
                           {new Date(evt.start_date as string).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
@@ -390,12 +397,12 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               )}
-            </div>
+            </Card>
           </Link>
         </section>
       )}
 
-      {/* ── Upcoming Events ── */}
+      {/* -- Upcoming Events -- */}
       {upcomingEvents.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -410,7 +417,7 @@ export default async function ProfilePage() {
               const eventDate = new Date(event.start_date as string);
               return (
                 <Link key={event.id as string} href={`/events/${event.slug}`}>
-                  <div className="rounded-xl bg-card border border-border-subtle p-3 flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
+                  <Card variant="glass" className="flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-blue rounded-l-xl" />
                     <div className="w-11 h-11 rounded-lg bg-hc-blue/10 flex flex-col items-center justify-center shrink-0">
                       <span className="text-[9px] font-bold text-hc-blue uppercase">
@@ -427,14 +434,16 @@ export default async function ProfilePage() {
                           <span className="text-[10px] text-txt-secondary">{String(event.start_time)}</span>
                         )}
                         {String(event.location_name ?? "") !== "" && (
-                          <span className="text-[10px] text-txt-secondary truncate">📍 {String(event.location_name)}</span>
+                          <span className="text-[10px] text-txt-secondary truncate flex items-center gap-0.5">
+                            <Icon name="map-pin" size={10} className="shrink-0" /> {String(event.location_name)}
+                          </span>
                         )}
                       </div>
                     </div>
                     <div className="shrink-0 px-2 py-0.5 rounded-md bg-emerald/10 border border-emerald/20">
                       <span className="text-[9px] font-bold text-emerald">Going</span>
                     </div>
-                  </div>
+                  </Card>
                 </Link>
               );
             })}
@@ -442,7 +451,7 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* ── Your Tickets ── */}
+      {/* -- Your Tickets -- */}
       {tickets.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -455,10 +464,10 @@ export default async function ProfilePage() {
               const event = order.event as Record<string, unknown> | null;
               return (
                 <Link key={order.id as string} href={`/tickets/${order.id}`}>
-                  <div className="rounded-xl bg-card border border-border-subtle p-3 flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
+                  <Card variant="glass" className="flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-purple rounded-l-xl" />
                     <div className="w-11 h-11 rounded-lg bg-hc-purple/10 flex items-center justify-center shrink-0">
-                      <span className="text-lg">🎟️</span>
+                      <Icon name="ticket" size={20} className="text-hc-purple" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-bold truncate">{event ? (event.title as string) : "Event"}</p>
@@ -469,7 +478,7 @@ export default async function ProfilePage() {
                         {(order.status as string).charAt(0).toUpperCase() + (order.status as string).slice(1)}
                       </span>
                     </div>
-                  </div>
+                  </Card>
                 </Link>
               );
             })}
@@ -477,12 +486,12 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* ── Profile Tags (interests) ── */}
+      {/* -- Profile Tags (interests) -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-gold" />
           <h2 className="font-heading font-bold text-base">Your Interests</h2>
-          <Badge label="AI Matched" variant="gold" shine />
+          <Badge label="AI Matched" variant="gold" shine iconName="sparkle" />
         </div>
         <div className="flex flex-wrap gap-2 mb-2">
           {profileTags.length > 0 ? (
@@ -495,12 +504,10 @@ export default async function ProfilePage() {
               </span>
             ))
           ) : (
-            <span className="text-xs text-txt-secondary">No interests yet — browse resources to get AI-matched tags</span>
+            <span className="text-xs text-txt-secondary">No interests yet -- browse resources to get AI-matched tags</span>
           )}
           <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-dashed border-white/15 text-[11px] text-txt-secondary press hover:border-gold/30 hover:text-gold transition-all">
-            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M6 2v8M2 6h8" />
-            </svg>
+            <Icon name="plus" size={12} />
             Add
           </button>
         </div>
@@ -509,10 +516,10 @@ export default async function ProfilePage() {
         </p>
       </section>
 
-      {/* ── Achievements / Badges ── */}
+      {/* -- Achievements / Badges -- */}
       <BadgesSection />
 
-      {/* ── Hub City Digital ID Card ── */}
+      {/* -- Hub City Digital ID Card -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-gold" />
@@ -530,7 +537,7 @@ export default async function ProfilePage() {
         />
       </section>
 
-      {/* ── Resources For You ── */}
+      {/* -- Resources For You -- */}
       {matchedResources.length > 0 && (
         <section className="mb-5">
           <div className="px-5 flex items-center gap-2 mb-3">
@@ -541,7 +548,8 @@ export default async function ProfilePage() {
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
             {matchedResources.map((res, i) => {
               const cat = res.category as string;
-              const accentColor = resourceCategoryColors[cat] || "#F2A900";
+              const resAccent = resourceCategoryColors[cat] || "#F2A900";
+              const catIcon = resourceCategoryIcons[cat] || "lightbulb";
               return (
                 <Link
                   key={res.id as string}
@@ -549,14 +557,14 @@ export default async function ProfilePage() {
                   className="shrink-0 w-[200px] animate-slide-in"
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
-                  <div className="rounded-xl bg-card border border-border-subtle p-3.5 hover:border-gold/20 transition-colors press relative overflow-hidden h-full">
-                    <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
+                  <Card variant="glass" className="hover:border-gold/20 transition-colors press relative overflow-hidden h-full">
+                    <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: resAccent }} />
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                        <span className="text-sm">{resourceCategoryIcons[cat] || "📦"}</span>
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${resAccent}15` }}>
+                        <Icon name={catIcon} size={16} style={{ color: resAccent }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[8px] font-bold uppercase tracking-wider" style={{ color: accentColor }}>{cat}</p>
+                        <p className="text-[8px] font-bold uppercase tracking-wider" style={{ color: resAccent }}>{cat}</p>
                       </div>
                       {res.is_free === true && (
                         <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald/10 text-emerald border border-emerald/20">FREE</span>
@@ -570,7 +578,7 @@ export default async function ProfilePage() {
                       <div className={`w-1.5 h-1.5 rounded-full ${res.status === "open" ? "bg-emerald" : res.status === "limited" ? "bg-gold" : "bg-hc-blue"}`} />
                       <span className="text-[9px] text-txt-secondary capitalize">{res.status as string}</span>
                     </div>
-                  </div>
+                  </Card>
                 </Link>
               );
             })}
@@ -578,40 +586,40 @@ export default async function ProfilePage() {
         </section>
       )}
 
-      {/* ── Quick Actions ── */}
+      {/* -- Quick Actions -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-cyan" />
           <h2 className="font-heading font-bold text-base">Quick Actions</h2>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          {[
-            { label: "Find Resources", icon: "🤖", desc: "AI-powered matching", href: "/resources", color: "#22C55E" },
-            { label: "Browse Events", icon: "📅", desc: `${rsvpCount ?? 0} RSVPs`, href: "/events", color: "#3B82F6" },
-            { label: "Local Businesses", icon: "🏪", desc: "Deals & specials", href: "/business", color: "#F2A900" },
-            { label: "City Pulse", icon: "📡", desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
-            { label: "City Hall", icon: "🏛️", desc: "Services & permits", href: "/city-hall", color: "#06B6D4" },
-            { label: "Food & Dining", icon: "🍽️", desc: "Order & explore", href: "/food", color: "#FF6B6B" },
-          ].map((action) => (
+          {([
+            { label: "Find Resources", icon: "search" as IconName, desc: "AI-powered matching", href: "/resources", color: "#22C55E" },
+            { label: "Browse Events", icon: "calendar" as IconName, desc: `${rsvpCount ?? 0} RSVPs`, href: "/events", color: "#3B82F6" },
+            { label: "Local Businesses", icon: "store" as IconName, desc: "Deals & specials", href: "/business", color: "#F2A900" },
+            { label: "City Pulse", icon: "pulse" as IconName, desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
+            { label: "City Hall", icon: "landmark" as IconName, desc: "Services & permits", href: "/city-hall", color: "#06B6D4" },
+            { label: "Food & Dining", icon: "utensils" as IconName, desc: "Order & explore", href: "/food", color: "#FF6B6B" },
+          ]).map((action) => (
             <Link key={action.label} href={action.href}>
-              <div className="rounded-xl bg-card border border-border-subtle p-3.5 hover:border-gold/20 transition-colors press relative overflow-hidden">
+              <Card variant="glass" className="hover:border-gold/20 transition-colors press relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: action.color }} />
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${action.color}12` }}>
-                    <span className="text-lg">{action.icon}</span>
+                    <Icon name={action.icon} size={20} style={{ color: action.color }} />
                   </div>
                   <div className="min-w-0">
                     <p className="text-[12px] font-bold">{action.label}</p>
                     <p className="text-[10px] text-txt-secondary">{action.desc}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* ── Recent Activity ── */}
+      {/* -- Your Posts (Instagram-style grid for images, list for text) -- */}
       {posts.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
@@ -619,22 +627,47 @@ export default async function ProfilePage() {
             <h2 className="font-heading font-bold text-base">Your Posts</h2>
             <Link href="/pulse" className="ml-auto text-[10px] text-gold font-bold">See All</Link>
           </div>
-          <div className="space-y-2">
-            {(posts as Record<string, unknown>[]).map((post) => (
-              <div key={post.id as string} className="rounded-xl bg-card border border-border-subtle p-3 relative overflow-hidden">
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-coral rounded-l-xl" />
-                <div className="pl-2">
-                  {post.title ? <p className="text-[12px] font-bold mb-0.5">{String(post.title)}</p> : null}
-                  <p className="text-[11px] text-txt-secondary line-clamp-2">{post.body as string}</p>
-                  <p className="text-[9px] text-txt-secondary/50 mt-1">{timeAgo(post.created_at as string)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+
+          {/* Instagram-style 3-col image grid */}
+          {postsWithImages.length > 0 && (
+            <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden mb-3">
+              {postsWithImages.map((post) => (
+                <Link key={post.id as string} href={`/pulse/${post.id}`} className="relative aspect-square group">
+                  <Image
+                    src={post.image_url as string}
+                    alt={post.title ? String(post.title) : "Post"}
+                    fill
+                    className="object-cover transition-opacity group-hover:opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                    <p className="text-[10px] text-white font-medium line-clamp-2 leading-tight">
+                      {post.body ? String(post.body).slice(0, 60) : ""}
+                    </p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Text-only posts list */}
+          {postsTextOnly.length > 0 && (
+            <div className="space-y-2">
+              {postsTextOnly.slice(0, 3).map((post) => (
+                <Card key={post.id as string} variant="glass" className="relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-coral rounded-l-xl" />
+                  <div className="pl-2">
+                    {post.title ? <p className="text-[12px] font-bold mb-0.5">{String(post.title)}</p> : null}
+                    <p className="text-[11px] text-txt-secondary line-clamp-2">{post.body as string}</p>
+                    <p className="text-[9px] text-txt-secondary/50 mt-1">{timeAgo(post.created_at as string)}</p>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
         </section>
       )}
 
-      {/* ── Emergency & Important Numbers ── */}
+      {/* -- Emergency & Important Numbers -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-compton-red" />
@@ -643,48 +676,52 @@ export default async function ProfilePage() {
         <div className="grid grid-cols-3 gap-2">
           {emergencyContacts.map((contact) => (
             <a key={contact.label} href={`tel:${contact.number.replace(/[^0-9]/g, "")}`}>
-              <div className="rounded-xl bg-card border border-border-subtle p-3 text-center hover:border-compton-red/20 transition-colors press relative overflow-hidden">
+              <Card variant="glass" className="text-center hover:border-compton-red/20 transition-colors press relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-compton-red/40" />
-                <span className="text-lg block mb-1">{contact.icon}</span>
+                <span className="block mb-1">
+                  <Icon name={contact.icon} size={20} className="text-compton-red mx-auto" />
+                </span>
                 <p className="text-[10px] font-bold mb-0.5">{contact.label}</p>
                 <p className="text-[9px] text-txt-secondary">{contact.number}</p>
-              </div>
+              </Card>
             </a>
           ))}
         </div>
       </section>
 
-      {/* ── Divider ── */}
+      {/* -- Divider -- */}
       <div className="divider-subtle mx-5 mb-4" />
 
-      {/* ── Settings Menu ── */}
+      {/* -- Settings Menu -- */}
       <div className="px-5 space-y-1">
         <p className="text-[10px] text-txt-secondary font-semibold uppercase tracking-wider mb-2">Account & Settings</p>
-        {[
-          { label: "Saved Items", icon: "🔖", href: "/profile/saved", count: savedCount ?? 0 },
-          { label: "My Applications", icon: "📋", href: "/profile/applications" },
-          { label: "My Job Applications", icon: "💼", href: "/profile/jobs" },
-          { label: "My Tickets", icon: "🎟️", href: "/profile/tickets" },
-          { label: "My Groups", icon: "🤝", href: "/groups" },
-          { label: "My RSVPs", icon: "📅", href: "/events", count: rsvpCount ?? 0 },
-          { label: "Notification Settings", icon: "🔔", href: "/profile/settings" },
-          { label: "Verify Address", icon: "✅", href: "/verify-address", highlight: verificationStatus !== "verified" },
-          { label: "Language", icon: "🌐", comingSoon: true, detail: profile?.language || "English" },
-          { label: "Privacy & Data", icon: "🔒", comingSoon: true },
-          { label: "Help & Support", icon: "❓", comingSoon: true },
-          { label: "About Hub City", icon: "ℹ️", comingSoon: true },
-        ].map((item) => {
+        {([
+          { label: "Saved Items", icon: "bookmark" as IconName, href: "/profile/saved", count: savedCount ?? 0 },
+          { label: "My Applications", icon: "document" as IconName, href: "/profile/applications" },
+          { label: "My Job Applications", icon: "briefcase" as IconName, href: "/profile/jobs" },
+          { label: "My Tickets", icon: "ticket" as IconName, href: "/profile/tickets" },
+          { label: "My Groups", icon: "users" as IconName, href: "/groups" },
+          { label: "My RSVPs", icon: "calendar" as IconName, href: "/events", count: rsvpCount ?? 0 },
+          { label: "Notification Settings", icon: "bell" as IconName, href: "/profile/settings" },
+          { label: "Verify Address", icon: "verified" as IconName, href: "/verify-address", highlight: verificationStatus !== "verified" },
+          { label: "Language", icon: "globe" as IconName, comingSoon: true, detail: profile?.language || "English" },
+          { label: "Privacy & Data", icon: "lock" as IconName, comingSoon: true },
+          { label: "Help & Support", icon: "info" as IconName, comingSoon: true },
+          { label: "About Hub City", icon: "info" as IconName, comingSoon: true },
+        ] as { label: string; icon: IconName; href?: string; count?: number; highlight?: boolean; comingSoon?: boolean; detail?: string }[]).map((item) => {
           const content = (
             <div className={`flex items-center justify-between py-3 px-1 rounded-xl transition-colors ${item.comingSoon ? "opacity-50 cursor-default" : "hover:bg-white/[0.03] press"}`}>
               <div className="flex items-center gap-3">
-                <span className="text-base w-6 text-center">{item.icon}</span>
+                <span className="w-6 text-center flex items-center justify-center">
+                  <Icon name={item.icon} size={18} className="text-txt-secondary" />
+                </span>
                 <span className="text-[13px] font-medium">{item.label}</span>
                 {item.comingSoon && (
                   <span className="text-[9px] text-txt-secondary bg-white/[0.06] px-1.5 py-0.5 rounded-full font-medium">
                     Coming Soon
                   </span>
                 )}
-                {(item as Record<string, unknown>).highlight === true ? (
+                {item.highlight === true ? (
                   <span className="text-[9px] text-gold bg-gold/10 px-1.5 py-0.5 rounded-full font-bold">
                     Verify Now
                   </span>
@@ -702,17 +739,7 @@ export default async function ProfilePage() {
                   </span>
                 )}
                 {!item.comingSoon && (
-                  <svg
-                    width="16"
-                    height="16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className="text-txt-secondary/50"
-                    strokeLinecap="round"
-                  >
-                    <path d="M6 4l4 4-4 4" />
-                  </svg>
+                  <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
                 )}
               </div>
             </div>
@@ -721,11 +748,11 @@ export default async function ProfilePage() {
           if (item.comingSoon) {
             return <div key={item.label}>{content}</div>;
           }
-          return <Link key={item.label} href={(item as { href: string }).href}>{content}</Link>;
+          return <Link key={item.label} href={item.href!}>{content}</Link>;
         })}
       </div>
 
-      {/* ── Sign Out ── */}
+      {/* -- Sign Out -- */}
       <div className="px-5 mt-8 mb-6">
         <SignOutButton />
 
@@ -733,7 +760,7 @@ export default async function ProfilePage() {
           {user.email}
         </p>
         <p className="text-center text-[10px] text-txt-secondary/50 mt-1">
-          Hub City v1.0.0 · Made with love in Compton
+          Hub City v1.0.0 -- Made with love in Compton
         </p>
       </div>
     </div>

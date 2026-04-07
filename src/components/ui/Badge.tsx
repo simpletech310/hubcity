@@ -1,3 +1,5 @@
+import Icon, { type IconName } from "@/components/ui/Icon";
+
 type BadgeVariant =
   | "gold"
   | "emerald"
@@ -11,6 +13,7 @@ interface BadgeProps {
   label: string;
   variant?: BadgeVariant;
   icon?: React.ReactNode;
+  iconName?: IconName;
   size?: "sm" | "md";
   shine?: boolean;
 }
@@ -29,6 +32,7 @@ export default function Badge({
   label,
   variant = "gold",
   icon,
+  iconName,
   size = "sm",
   shine = false,
 }: BadgeProps) {
@@ -41,7 +45,7 @@ export default function Badge({
         ${shine ? "badge-shine" : ""}
       `}
     >
-      {icon}
+      {iconName ? <Icon name={iconName} size={size === "sm" ? 10 : 12} /> : icon}
       {label}
     </span>
   );

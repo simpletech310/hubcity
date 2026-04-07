@@ -51,19 +51,19 @@ export default async function CityDataPage() {
       href: "/city-data/transit",
       title: "Transit",
       description: "Metro routes, bus schedules, and transit info for Compton.",
-      icon: "🚌",
+      icon: "transit",
     },
     {
       href: "/city-data/safety",
       title: "Community Safety",
       description: "Issue tracking, emergency contacts, and safety resources.",
-      icon: "🛡️",
+      icon: "shield",
     },
     {
       href: "/city-data/meetings",
       title: "City Meetings",
       description: "Council meetings, agendas, minutes, and livestreams.",
-      icon: "🏛️",
+      icon: "landmark",
     },
   ];
 

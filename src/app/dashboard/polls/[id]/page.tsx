@@ -4,6 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface PollOption {
   id: string;
@@ -103,7 +104,7 @@ export default function PollResultsPage({
   if (error || !data) {
     return (
       <div className="text-center py-16">
-        <span className="text-5xl block mb-3">⚠️</span>
+        <span className="text-5xl block mb-3"><Icon name="warning" size={28} /></span>
         <p className="text-sm font-medium mb-1">{error || "Poll not found"}</p>
         <Link href="/dashboard/polls" className="text-gold text-sm font-semibold">
           Back to Polls
@@ -176,7 +177,7 @@ export default function PollResultsPage({
       {/* Results Chart */}
       <Card padding>
         <h2 className="font-heading font-bold text-sm mb-4 flex items-center gap-2">
-          <span>📊</span> Results Breakdown
+          <span><Icon name="chart" size={16} /></span> Results Breakdown
         </h2>
         <div className="space-y-3">
           {options.map((opt, i) => {
@@ -189,7 +190,7 @@ export default function PollResultsPage({
                   <span className="text-[13px] font-medium flex items-center gap-1.5">
                     {opt.emoji && <span>{opt.emoji}</span>}
                     {opt.label}
-                    {isWinner && <span className="text-gold text-[10px]">👑</span>}
+                    {isWinner && <span className="text-gold text-[10px]"><Icon name="trophy" size={16} className="text-gold" /></span>}
                   </span>
                   <span className="text-[12px] text-txt-secondary">
                     {opt.vote_count} ({opt.percentage}%)
@@ -216,7 +217,7 @@ export default function PollResultsPage({
       {timeline.length > 0 && (
         <Card padding>
           <h2 className="font-heading font-bold text-sm mb-4 flex items-center gap-2">
-            <span>📈</span> Vote Activity
+            <span><Icon name="chart" size={16} /></span> Vote Activity
           </h2>
           <div className="flex items-end gap-1 h-24">
             {timeline.map((entry, i) => {
@@ -251,7 +252,7 @@ export default function PollResultsPage({
       {!poll.is_anonymous && voters.length > 0 && (
         <Card padding>
           <h2 className="font-heading font-bold text-sm mb-4 flex items-center gap-2">
-            <span>👥</span> Recent Voters ({voters.length})
+            <span><Icon name="users" size={16} /></span> Recent Voters ({voters.length})
           </h2>
           <div className="space-y-2 max-h-72 overflow-y-auto">
             {voters.slice(0, 50).map((v, i) => {
@@ -288,7 +289,7 @@ export default function PollResultsPage({
       {poll.is_anonymous && (
         <div className="text-center py-4">
           <span className="text-[11px] text-txt-secondary">
-            🔒 This poll is anonymous — individual votes are hidden.
+            <Icon name="lock" size={16} /> This poll is anonymous — individual votes are hidden.
           </span>
         </div>
       )}

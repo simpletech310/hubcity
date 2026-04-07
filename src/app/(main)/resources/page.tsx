@@ -5,6 +5,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Resource } from "@/types/database";
 
@@ -12,17 +14,17 @@ import type { Resource } from "@/types/database";
 // Config
 // ---------------------------------------------------------------------------
 
-const categories = [
-  { label: "All", value: "all", icon: "📋", color: "#F2A900" },
-  { label: "Housing", value: "housing", icon: "🏠", color: "#3B82F6" },
-  { label: "Health", value: "health", icon: "❤️", color: "#EF4444" },
-  { label: "Jobs", value: "jobs", icon: "💼", color: "#22C55E" },
-  { label: "Food", value: "food", icon: "🍎", color: "#FF6B6B" },
-  { label: "Youth", value: "youth", icon: "🧒", color: "#8B5CF6" },
-  { label: "Business", value: "business", icon: "🏪", color: "#F2A900" },
-  { label: "Education", value: "education", icon: "📚", color: "#06B6D4" },
-  { label: "Legal", value: "legal", icon: "⚖️", color: "#FF006E" },
-  { label: "Senior", value: "senior", icon: "👴", color: "#9E9A93" },
+const categories: { label: string; value: string; icon: IconName; color: string }[] = [
+  { label: "All", value: "all", icon: "document", color: "#F2A900" },
+  { label: "Housing", value: "housing", icon: "house", color: "#3B82F6" },
+  { label: "Health", value: "health", icon: "heart-pulse", color: "#EF4444" },
+  { label: "Jobs", value: "jobs", icon: "briefcase", color: "#22C55E" },
+  { label: "Food", value: "food", icon: "apple", color: "#FF6B6B" },
+  { label: "Youth", value: "youth", icon: "baby", color: "#8B5CF6" },
+  { label: "Business", value: "business", icon: "store", color: "#F2A900" },
+  { label: "Education", value: "education", icon: "education", color: "#06B6D4" },
+  { label: "Legal", value: "legal", icon: "gavel", color: "#FF006E" },
+  { label: "Senior", value: "senior", icon: "elder", color: "#9E9A93" },
 ];
 
 const categoryColors: Record<string, string> = Object.fromEntries(
@@ -43,7 +45,7 @@ const categoryBadgeVariant: Record<string, "gold" | "blue" | "coral" | "emerald"
   utilities: "cyan",
 };
 
-const categoryIcons: Record<string, string> = Object.fromEntries(
+const categoryIcons: Record<string, IconName> = Object.fromEntries(
   categories.filter((c) => c.value !== "all").map((c) => [c.value, c.icon])
 );
 
@@ -54,13 +56,13 @@ const statusConfig: Record<string, { variant: "emerald" | "coral" | "cyan" | "go
   limited: { variant: "gold", label: "Limited Spots" },
 };
 
-const quickPrompts = [
-  { text: "I need help paying rent", icon: "🏠" },
-  { text: "Where can I get free food?", icon: "🍎" },
-  { text: "Job training programs near me", icon: "💼" },
-  { text: "Free health clinics in Compton", icon: "❤️" },
-  { text: "Youth after-school programs", icon: "🧒" },
-  { text: "Help starting a small business", icon: "🏪" },
+const quickPrompts: { text: string; icon: IconName }[] = [
+  { text: "I need help paying rent", icon: "house" },
+  { text: "Where can I get free food?", icon: "apple" },
+  { text: "Job training programs near me", icon: "briefcase" },
+  { text: "Free health clinics in Compton", icon: "heart-pulse" },
+  { text: "Youth after-school programs", icon: "baby" },
+  { text: "Help starting a small business", icon: "store" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -164,7 +166,7 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
           className="w-full p-4 flex items-center gap-3.5 press text-left"
         >
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/20 to-hc-purple/10 flex items-center justify-center shrink-0 animate-float">
-            <span className="text-2xl">🤖</span>
+            <Icon name="sparkle" size={24} className="text-gold" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
@@ -269,7 +271,7 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                       <Link key={r.id} href={`/resources/${r.id}`}>
                         <div className="flex items-center gap-3 bg-surface rounded-xl p-3 press hover:bg-elevated transition-colors">
                           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${categoryColors[r.category] || "#F2A900"}15` }}>
-                            <span className="text-sm">{categoryIcons[r.category] || "📋"}</span>
+                            <Icon name={categoryIcons[r.category] || "document"} size={16} className="text-white/70" />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="text-[12px] font-bold truncate">{r.name}</p>
@@ -300,7 +302,7 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                     onClick={() => handleQuickPrompt(prompt.text)}
                     className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2.5 text-left press hover:bg-elevated transition-colors"
                   >
-                    <span className="text-sm">{prompt.icon}</span>
+                    <Icon name={prompt.icon} size={16} className="text-white/70 shrink-0" />
                     <span className="text-[11px] text-txt-secondary leading-tight">{prompt.text}</span>
                   </button>
                 ))}
@@ -374,7 +376,7 @@ export default function ResourcesPage() {
         <div className="relative z-10 px-5 pt-6 pb-5">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-lg bg-emerald/15 flex items-center justify-center">
-              <span className="text-base">🤝</span>
+              <Icon name="handshake" size={18} className="text-emerald" />
             </div>
             <p className="text-[10px] text-emerald font-bold uppercase tracking-[0.2em]">Community Support</p>
           </div>
@@ -397,7 +399,7 @@ export default function ResourcesPage() {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="rounded-xl bg-card border border-border-subtle p-3 text-center relative overflow-hidden"
+              className="rounded-xl glass-card border border-border-subtle glass-inner-light p-3 text-center relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
               <p className="font-heading font-bold text-lg leading-none mb-0.5" style={{ color: stat.color }}>
@@ -442,7 +444,7 @@ export default function ResourcesPage() {
           <Chip
             key={cat.value}
             label={cat.label}
-            icon={<span className="text-sm">{cat.icon}</span>}
+            icon={<Icon name={cat.icon} size={16} className="text-white/70" />}
             active={activeCategory === cat.value}
             onClick={() => setActiveCategory(cat.value)}
           />
@@ -472,11 +474,11 @@ export default function ResourcesPage() {
                     <button
                       key={cat.value}
                       onClick={() => setActiveCategory(cat.value)}
-                      className="rounded-xl bg-card border border-border-subtle p-3 flex flex-col items-center gap-1.5 press hover:border-gold/20 transition-colors relative overflow-hidden"
+                      className="rounded-xl glass-card border border-border-subtle glass-inner-light p-3 flex flex-col items-center gap-1.5 press hover:border-gold/20 transition-colors relative overflow-hidden"
                     >
                       <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: cat.color }} />
                       <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${cat.color}15` }}>
-                        <span className="text-lg">{cat.icon}</span>
+                        <Icon name={cat.icon} size={20} className="text-white/70" />
                       </div>
                       <p className="text-[10px] font-bold">{cat.label}</p>
                       <p className="text-[9px] text-txt-secondary">{count}</p>
@@ -544,7 +546,7 @@ export default function ResourcesPage() {
           {filtered.length === 0 && (
             <div className="px-5 text-center py-16">
               <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-                <span className="text-3xl">🔍</span>
+                <Icon name="search" size={28} className="text-white/30" />
               </div>
               <p className="text-sm font-bold mb-1">No resources found</p>
               <p className="text-xs text-txt-secondary mb-4">Try a different search or category</p>
@@ -566,7 +568,7 @@ export default function ResourcesPage() {
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald to-transparent" />
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
-                  <span className="text-2xl">📞</span>
+                  <Icon name="phone" size={24} className="text-emerald" />
                 </div>
                 <div className="flex-1">
                   <p className="font-heading font-bold text-sm mb-0.5">Need Immediate Help?</p>
@@ -612,7 +614,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: `${accentColor}15` }}
               >
-                <span className="text-lg">{categoryIcons[r.category] || "📋"}</span>
+                <Icon name={categoryIcons[r.category] || "document"} size={20} className="text-white/70" />
               </div>
               <div className="min-w-0">
                 <h3 className="font-heading font-bold text-[13px] line-clamp-1">{r.name}</h3>
@@ -643,7 +645,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
           {/* Deadline warning */}
           {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
             <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border-subtle ml-[52px]">
-              <span className="text-[10px]">⏰</span>
+              <Icon name="clock" size={12} className="text-gold" />
               <p className={`text-[11px] font-semibold ${daysUntilDeadline <= 7 ? "text-compton-red" : "text-gold"}`}>
                 {daysUntilDeadline <= 1
                   ? "Deadline tomorrow!"

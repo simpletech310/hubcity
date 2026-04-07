@@ -54,7 +54,7 @@ export default function AdminPostActions({ post }: AdminPostActionsProps) {
         loading={loading}
         title={post.is_pinned ? "Unpin" : "Pin"}
       >
-        {post.is_pinned ? "📌" : "📍"}
+        {post.is_pinned ? "pin" : "pin"}
       </Button>
       <Button
         variant="ghost"

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { getDistrictFromZip } from "@/lib/districts";
+import Icon from "@/components/ui/Icon";
 
 export default function VerifyAddressPage() {
   const [address, setAddress] = useState("");
@@ -61,7 +62,7 @@ export default function VerifyAddressPage() {
   return (
     <div className="max-w-[430px] mx-auto min-h-dvh bg-midnight flex flex-col items-center justify-center px-6">
       <div className="w-16 h-16 rounded-2xl bg-gold-glow flex items-center justify-center mb-6">
-        <span className="text-3xl">📍</span>
+        <span className="text-3xl"><Icon name="pin" size={28} /></span>
       </div>
 
       <h1 className="font-heading text-2xl font-bold mb-2">

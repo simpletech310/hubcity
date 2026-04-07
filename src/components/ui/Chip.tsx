@@ -1,11 +1,14 @@
 "use client";
 
+import Icon, { type IconName } from "@/components/ui/Icon";
+
 interface ChipProps {
   label: string;
   active?: boolean;
   onClick?: () => void;
   color?: string;
   icon?: React.ReactNode;
+  iconName?: IconName;
 }
 
 export default function Chip({
@@ -14,6 +17,7 @@ export default function Chip({
   onClick,
   color,
   icon,
+  iconName,
 }: ChipProps) {
   return (
     <button
@@ -23,13 +27,13 @@ export default function Chip({
         whitespace-nowrap transition-all duration-300 press shrink-0
         ${
           active
-            ? "bg-gold text-midnight shadow-lg shadow-gold/20"
-            : "bg-white/[0.06] text-txt-secondary hover:text-white hover:bg-white/[0.1] border border-border-subtle"
+            ? "glass-chip-active text-gold-light"
+            : "glass-chip text-txt-secondary hover:text-white hover:bg-white/[0.1]"
         }
       `}
       style={active && color ? { backgroundColor: color } : undefined}
     >
-      {icon}
+      {iconName ? <Icon name={iconName} size={16} /> : icon}
       {label}
     </button>
   );

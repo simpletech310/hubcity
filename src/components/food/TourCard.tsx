@@ -3,6 +3,7 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { FoodTour } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default function TourCard({ tour }: { tour: FoodTour }) {
   const stopCount = tour.stops?.length ?? 0;
@@ -20,7 +21,7 @@ export default function TourCard({ tour }: { tour: FoodTour }) {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-coral/20 to-gold/10 flex items-center justify-center">
-              <span className="text-4xl">🍽️</span>
+              <span className="text-4xl"><Icon name="utensils" size={28} /></span>
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />

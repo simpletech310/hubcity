@@ -5,11 +5,13 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { CityIssue } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const ISSUE_ICONS: Record<string, string> = {
-  pothole: "🕳️", streetlight: "💡", graffiti: "🎨", trash: "🗑️",
-  flooding: "🌊", parking: "🅿️", noise: "🔊", sidewalk: "🚶",
-  tree: "🌳", parks: "🏞️", water: "💧", stray: "🐕", safety: "🚨", other: "📋",
+  pothole: "alert", streetlight: "lightbulb", graffiti: "palette", trash: "trash",
+  flooding: "alert", parking: "🅿•", noise: "bell", sidewalk: "person",
+  tree: "tree", parks: "tree", water: "heart-pulse", stray: "alert", safety: "alert", other: "document",
 };
 
 const STATUS_CONFIG: Record<string, { color: string; label: string }> = {
@@ -87,7 +89,7 @@ export default function MyReportedIssuesPage() {
         {!loading && issues.length === 0 && (
           <Card>
             <div className="text-center py-8">
-              <p className="text-3xl mb-3">📋</p>
+              <p className="text-3xl mb-3"><Icon name="document" size={28} /></p>
               <p className="text-sm font-semibold">No issues reported yet</p>
               <p className="text-xs text-txt-secondary mt-1">
                 See a problem in Compton? Report it and track its progress here.
@@ -117,8 +119,8 @@ export default function MyReportedIssuesPage() {
                 <div className="pl-3">
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="text-lg shrink-0">
-                        {ISSUE_ICONS[issue.type] || "📋"}
+                      <span className="shrink-0">
+                        <Icon name={(ISSUE_ICONS[issue.type] || "document") as IconName} size={20} />
                       </span>
                       <div className="min-w-0">
                         <p className="text-sm font-bold truncate">
@@ -126,7 +128,7 @@ export default function MyReportedIssuesPage() {
                         </p>
                         {issue.location_text && (
                           <p className="text-xs text-txt-secondary truncate">
-                            📍 {issue.location_text}
+                            <Icon name="pin" size={16} /> {issue.location_text}
                           </p>
                         )}
                       </div>
@@ -153,7 +155,7 @@ export default function MyReportedIssuesPage() {
 
                   <div className="flex items-center justify-between text-xs text-txt-secondary">
                     <div className="flex items-center gap-3">
-                      <span>👍 {issue.upvote_count}</span>
+                      <span><Icon name="heart-pulse" size={16} /> {issue.upvote_count}</span>
                       {issue.district && <span>District {issue.district}</span>}
                       {issue.assigned_department && (
                         <span>{issue.assigned_department}</span>

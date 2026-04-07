@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ChamberUpdatesWidget from "@/components/dashboard/ChamberUpdatesWidget";
 import type { Order, StripeAccount, GrantApplication, Resource, BusinessType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -287,7 +288,7 @@ export default async function DashboardOverview() {
                   <p className="text-xl font-heading font-bold text-coral">
                     {business.rating_avg ? Number(business.rating_avg).toFixed(1) : "--"}
                   </p>
-                  <span className="text-[10px] text-txt-secondary">★</span>
+                  <span className="text-[10px] text-txt-secondary"><Icon name="star" size={16} className="text-txt-secondary" /></span>
                 </div>
                 <p className="text-[9px] text-txt-secondary">{business.rating_count || 0} reviews</p>
               </Card>

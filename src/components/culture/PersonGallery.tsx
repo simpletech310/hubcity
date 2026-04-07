@@ -40,7 +40,7 @@ export default function PersonGallery({ images, name }: PersonGalleryProps) {
             onClick={() => setLightboxIdx(null)}
             className="absolute top-5 right-5 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
           >
-            ✕
+            •
           </button>
 
           {/* Prev/Next */}

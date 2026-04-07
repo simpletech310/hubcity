@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface AnalyticsData {
   stats: {
@@ -287,7 +288,7 @@ export default function AnalyticsPage() {
                 const pct = review_stats.count > 0 ? (count / review_stats.count) * 100 : 0;
                 return (
                   <div key={star} className="flex items-center gap-2">
-                    <span className="text-xs font-medium w-8 text-right">{star} ★</span>
+                    <span className="text-xs font-medium w-8 text-right">{star} <Icon name="star" size={14} /></span>
                     <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full bg-gold"

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getArtBySlug, artSpotlight } from "@/lib/art-spotlight";
+import Icon from "@/components/ui/Icon";
 
 export default async function ArtDetailPage({
   params,
@@ -72,7 +73,7 @@ export default async function ArtDetailPage({
                 />
               ) : (
                 <div className="w-9 h-9 rounded-full bg-gold/15 border border-gold/30 flex items-center justify-center">
-                  <span className="text-sm">🎨</span>
+                  <span className="text-sm"><Icon name="palette" size={14} /></span>
                 </div>
               )}
               <div>
@@ -139,7 +140,7 @@ export default async function ArtDetailPage({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-2.5 text-[12px] font-medium press hover:bg-white/[0.1] transition-colors"
                 >
-                  🌐 Website
+                  <Icon name="globe" size={16} /> Website
                 </a>
               )}
               {art.artistInstagram && (
@@ -149,7 +150,7 @@ export default async function ArtDetailPage({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/[0.1] rounded-xl px-4 py-2.5 text-[12px] font-medium press hover:bg-white/[0.1] transition-colors"
                 >
-                  📸 {art.artistInstagram}
+                  <Icon name="film" size={16} /> {art.artistInstagram}
                 </a>
               )}
             </div>

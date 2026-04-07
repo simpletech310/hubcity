@@ -3,6 +3,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import SectionHeader from "@/components/layout/SectionHeader";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DistrictPage() {
@@ -68,13 +70,13 @@ export default async function DistrictPage() {
       .limit(3),
   ]);
 
-  const quickLinks = [
-    { label: "City Hall", href: "/city-hall", icon: "\u{1F3DB}\uFE0F" },
-    { label: "Report Issue", href: "/city-hall/issues", icon: "\u{1F6A8}" },
-    { label: "City Data", href: "/city-data", icon: "\u{1F4CA}" },
-    { label: "Schools", href: "/schools", icon: "\u{1F393}" },
-    { label: "Health", href: "/health", icon: "\u{1FA7A}" },
-    { label: "Parks", href: "/parks", icon: "\u{1F333}" },
+  const quickLinks: { label: string; href: string; iconName: IconName }[] = [
+    { label: "City Hall", href: "/city-hall", iconName: "landmark" },
+    { label: "Report Issue", href: "/city-hall/issues", iconName: "alert" },
+    { label: "City Data", href: "/city-data", iconName: "chart" },
+    { label: "Schools", href: "/schools", iconName: "graduation" },
+    { label: "Health", href: "/health", iconName: "heart-pulse" },
+    { label: "Parks", href: "/parks", iconName: "tree" },
   ];
 
   const severityColor: Record<string, string> = {
@@ -266,7 +268,7 @@ export default async function DistrictPage() {
             <Link key={link.href} href={link.href}>
               <Card hover>
                 <div className="flex items-center gap-3 py-0.5">
-                  <span className="text-lg">{link.icon}</span>
+                  <Icon name={link.iconName} size={20} className="text-gold" />
                   <p className="text-[13px] font-bold">{link.label}</p>
                 </div>
               </Card>

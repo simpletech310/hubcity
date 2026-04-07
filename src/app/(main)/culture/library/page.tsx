@@ -6,14 +6,16 @@ import MuseumNav from "@/components/culture/MuseumNav";
 import LibraryItemCard from "@/components/culture/LibraryItemCard";
 import Chip from "@/components/ui/Chip";
 import type { LibraryItem } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const itemTypes = [
-  { label: "All", value: "all", icon: "📚" },
-  { label: "Books", value: "book", icon: "📖" },
-  { label: "Articles", value: "article", icon: "📰" },
-  { label: "Docs", value: "documentary", icon: "🎬" },
-  { label: "Academic", value: "academic", icon: "🎓" },
-  { label: "Archives", value: "archive", icon: "🗃️" },
+  { label: "All", value: "all", icon: "book" },
+  { label: "Books", value: "book", icon: "book" },
+  { label: "Articles", value: "article", icon: "document" },
+  { label: "Docs", value: "documentary", icon: "film" },
+  { label: "Academic", value: "academic", icon: "graduation" },
+  { label: "Archives", value: "archive", icon: "scroll" },
 ];
 
 export default function LibraryPage() {
@@ -48,7 +50,7 @@ export default function LibraryPage() {
           <Chip
             key={type.value}
             label={type.label}
-            icon={<span className="text-sm">{type.icon}</span>}
+            icon={<Icon name={type.icon as IconName} size={14} />}
             active={activeType === type.value}
             onClick={() => setActiveType(type.value)}
           />
@@ -69,7 +71,7 @@ export default function LibraryPage() {
         </section>
       ) : (
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">📚</span>
+          <span className="text-5xl block mb-3"><Icon name="book" size={28} /></span>
           <p className="text-sm font-medium mb-1">Library coming soon</p>
           <p className="text-xs text-txt-secondary">
             Essential books and reading about Compton are being catalogued.

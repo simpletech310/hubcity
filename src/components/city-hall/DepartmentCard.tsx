@@ -1,27 +1,29 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { Department } from "@/types/database";
 
-const categoryEmojis: Record<string, string> = {
-  administration: "🏛️",
-  public_safety: "🛡️",
-  public_works: "🚧",
-  community: "🤝",
-  finance: "💰",
-  planning: "📐",
-  parks: "🌳",
-  utilities: "💡",
+const categoryIcons: Record<string, IconName> = {
+  administration: "landmark",
+  public_safety: "shield",
+  public_works: "wrench",
+  community: "handshake",
+  finance: "dollar",
+  planning: "chart",
+  parks: "tree",
+  utilities: "lightbulb",
 };
 
 export default function DepartmentCard({ department }: { department: Department }) {
-  const emoji = categoryEmojis[department.category] ?? "🏛️";
+  const iconName = categoryIcons[department.category] ?? "landmark";
 
   return (
     <Link href={`/city-hall/departments/${department.slug}`}>
-      <Card hover>
+      <Card variant="glass" hover>
         <div className="flex items-start gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center text-lg shrink-0 border border-gold/15">
-            {emoji}
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0 border border-gold/15">
+            <Icon name={iconName} size={20} />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 import type { AdDecision } from "@/lib/ads";
 import { fetchAd, fireTracking } from "@/lib/ads";
 import type { Podcast, Channel } from "@/types/database";
@@ -510,7 +511,7 @@ export default function PodcastEpisodePage() {
     return (
       <div className="px-5 text-center py-20 animate-fade-in">
         <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-          <span className="text-3xl">🎙️</span>
+          <Icon name="podcast" size={28} className="text-txt-secondary" />
         </div>
         <p className="text-sm font-bold mb-1">Episode not found</p>
         <p className="text-xs text-txt-secondary mb-4">
@@ -561,7 +562,7 @@ export default function PodcastEpisodePage() {
                 className="object-cover rounded-2xl"
               />
             ) : (
-              <span className="text-4xl">🎙️</span>
+              <Icon name="podcast" size={36} className="text-gold/60" />
             )}
           </div>
 

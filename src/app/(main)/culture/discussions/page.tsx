@@ -3,6 +3,7 @@ import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import Card from "@/components/ui/Card";
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Discussions | The Compton Museum | Hub City",
@@ -125,7 +126,7 @@ export default async function DiscussionsPage() {
           </div>
         ) : (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">💬</span>
+            <span className="text-5xl block mb-3"><Icon name="chat" size={28} /></span>
             <p className="text-sm font-medium mb-1">No discussions yet</p>
             <p className="text-xs text-txt-secondary mb-4">
               Be the first to share a cultural story or memory.

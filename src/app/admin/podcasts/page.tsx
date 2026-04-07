@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import Icon from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Podcast, Channel } from "@/types/database";
 
@@ -311,7 +312,7 @@ export default function AdminPodcastsPage() {
       ) : podcasts.length === 0 ? (
         <Card>
           <div className="text-center py-8">
-            <span className="text-3xl mb-3 block">🎙️</span>
+            <span className="mb-3 block"><Icon name="podcast" size={28} className="text-txt-secondary" /></span>
             <p className="text-sm font-bold mb-1">No episodes yet</p>
             <p className="text-xs text-txt-secondary">
               Create your first podcast episode

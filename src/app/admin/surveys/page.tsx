@@ -2,6 +2,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import AdminSurveyActions from "./AdminSurveyActions";
+import Icon from "@/components/ui/Icon";
 
 interface Survey {
   id: string;
@@ -108,7 +109,7 @@ export default async function AdminSurveysPage() {
 
         {surveys.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-4xl mb-3">📋</p>
+            <p className="text-4xl mb-3"><Icon name="document" size={28} /></p>
             <p className="text-sm text-txt-secondary">No surveys yet</p>
           </div>
         )}

@@ -10,6 +10,8 @@ import Chip from "@/components/ui/Chip";
 import StreamCard from "./StreamCard";
 import CreateStreamModal from "./CreateStreamModal";
 import PreRollAd from "./PreRollAd";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type {
   Channel,
   ChannelVideo,
@@ -28,7 +30,7 @@ type TabId = "home" | "live" | "originals" | "channels" | "schedule";
 
 const TABS: { id: TabId; label: string; icon?: string }[] = [
   { id: "home", label: "Home" },
-  { id: "live", label: "Live", icon: "🔴" },
+  { id: "live", label: "Live", icon: "live" },
   { id: "originals", label: "Originals" },
   { id: "channels", label: "Channels" },
   { id: "schedule", label: "Schedule" },
@@ -107,14 +109,14 @@ const ORIGINALS = [
 
 // ── Compton Stars ──────────────────────────────────────────
 const COMPTON_STARS = [
-  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", icon: "🎤" },
-  { name: "Serena Williams", title: "Tennis Legend", icon: "🎾" },
-  { name: "Venus Williams", title: "Tennis Champion", icon: "🏆" },
-  { name: "Dr. Dre", title: "Music Mogul", icon: "🎧" },
-  { name: "Ice Cube", title: "Entertainment Icon", icon: "🎬" },
-  { name: "The Game", title: "West Coast Legend", icon: "🎵" },
-  { name: "A'ja Wilson", title: "WNBA MVP", icon: "🏀" },
-  { name: "Coolio", title: "Grammy Winner", icon: "🏅" },
+  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", icon: "music" },
+  { name: "Serena Williams", title: "Tennis Legend", icon: "trophy" },
+  { name: "Venus Williams", title: "Tennis Champion", icon: "trophy" },
+  { name: "Dr. Dre", title: "Music Mogul", icon: "music" },
+  { name: "Ice Cube", title: "Entertainment Icon", icon: "film" },
+  { name: "The Game", title: "West Coast Legend", icon: "music" },
+  { name: "A'ja Wilson", title: "WNBA MVP", icon: "trophy" },
+  { name: "Coolio", title: "Grammy Winner", icon: "music" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────
@@ -756,16 +758,16 @@ export default function HubCityTV({
             <h2 className="font-heading font-bold text-[18px] mb-3">Browse by Category</h2>
             <div className="grid grid-cols-3 gap-2.5">
               {[
-                { label: "Sports", icon: "🏈", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
-                { label: "Music", icon: "🎵", color: "#8B5CF6", gradient: "from-hc-purple/30 to-hc-purple/5" },
-                { label: "News", icon: "📰", color: "#06B6D4", gradient: "from-cyan/30 to-cyan/5" },
-                { label: "Culture", icon: "🎭", color: "#EF4444", gradient: "from-compton-red/30 to-compton-red/5" },
-                { label: "Podcasts", icon: "🎙️", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
-                { label: "Education", icon: "📚", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
+                { label: "Sports", icon: "trophy", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
+                { label: "Music", icon: "music", color: "#8B5CF6", gradient: "from-hc-purple/30 to-hc-purple/5" },
+                { label: "News", icon: "megaphone", color: "#06B6D4", gradient: "from-cyan/30 to-cyan/5" },
+                { label: "Culture", icon: "theater", color: "#EF4444", gradient: "from-compton-red/30 to-compton-red/5" },
+                { label: "Podcasts", icon: "music", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
+                { label: "Education", icon: "book", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
               ].map((cat, i) => (
                 <button key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-border-subtle p-3 text-left press group`}>
                   <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50" style={{ background: `linear-gradient(90deg, transparent, ${cat.color}, transparent)` }} />
-                  <span className="text-[22px] block mb-1.5">{cat.icon}</span>
+                  <span className="block mb-1.5"><Icon name={cat.icon as IconName} size={22} /></span>
                   <span className="font-heading text-[12px] font-bold">{cat.label}</span>
                 </button>
               ))}

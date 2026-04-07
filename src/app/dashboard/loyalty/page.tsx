@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import type { LoyaltyReward } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 interface LoyaltyStats {
   total_points_earned: number;
@@ -122,7 +123,7 @@ export default function LoyaltyDashboardPage() {
           </div>
         ) : rewards.length === 0 ? (
           <Card className="text-center py-10">
-            <p className="text-3xl mb-2">🎁</p>
+            <p className="text-3xl mb-2"><Icon name="sparkle" size={28} /></p>
             <p className="text-sm text-txt-secondary">No rewards created yet</p>
             <p className="text-xs text-txt-secondary mt-1">
               Create rewards to incentivize repeat customers

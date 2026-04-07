@@ -7,15 +7,17 @@ import Badge from "@/components/ui/Badge";
 import Chip from "@/components/ui/Chip";
 import Button from "@/components/ui/Button";
 import type { CommunityGroup } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const CATEGORY_ICONS: Record<string, string> = {
-  neighborhood: "🏘️",
-  interest: "💡",
-  school: "🎓",
-  faith: "⛪",
-  sports: "⚽",
-  business: "💼",
-  other: "🤝",
+  neighborhood: "house",
+  interest: "lightbulb",
+  school: "graduation",
+  faith: "heart-pulse",
+  sports: "trophy",
+  business: "briefcase",
+  other: "handshake",
 };
 
 const CATEGORIES = [
@@ -143,7 +145,8 @@ export default function GroupsPage() {
                 {CATEGORIES.filter((c) => c !== "all").map((c) => (
                   <Chip
                     key={c}
-                    label={`${CATEGORY_ICONS[c] || ""} ${c}`}
+                    label={c}
+                    iconName={(CATEGORY_ICONS[c] || "handshake") as IconName}
                     active={newCategory === c}
                     onClick={() => setNewCategory(c)}
                   />
@@ -164,7 +167,8 @@ export default function GroupsPage() {
           {CATEGORIES.map((c) => (
             <Chip
               key={c}
-              label={c === "all" ? "All" : `${CATEGORY_ICONS[c] || ""} ${c}`}
+              label={c === "all" ? "All" : c}
+              iconName={c !== "all" ? (CATEGORY_ICONS[c] || "handshake") as IconName : undefined}
               active={category === c}
               onClick={() => setCategory(c)}
             />
@@ -183,7 +187,7 @@ export default function GroupsPage() {
         {!loading && groups.length === 0 && (
           <Card>
             <div className="text-center py-8">
-              <p className="text-3xl mb-3">🤝</p>
+              <p className="text-3xl mb-3"><Icon name="handshake" size={28} /></p>
               <p className="text-sm font-semibold">No groups yet</p>
               <p className="text-xs text-txt-secondary mt-1">
                 Be the first to create one!
@@ -198,9 +202,7 @@ export default function GroupsPage() {
             <Card key={group.id} hover>
               <div className="flex items-start gap-3">
                 <Link href={`/groups/${group.id}`} className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-                  <span className="text-xl">
-                    {CATEGORY_ICONS[group.category] || "🤝"}
-                  </span>
+                  <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={24} />
                 </Link>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -214,7 +216,7 @@ export default function GroupsPage() {
                   )}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-txt-secondary">
-                      👥 {group.member_count} member{group.member_count !== 1 ? "s" : ""}
+                      <Icon name="users" size={16} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
                     </span>
                     <button
                       onClick={() => handleJoin(group.id)}
@@ -228,7 +230,7 @@ export default function GroupsPage() {
                       {joining === group.id
                         ? "..."
                         : isMember
-                          ? "✓ Joined"
+                          ? "check Joined"
                           : "Join"}
                     </button>
                   </div>

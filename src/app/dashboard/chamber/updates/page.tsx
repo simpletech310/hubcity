@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import type { ChamberUpdate } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categoryColors: Record<string, "gold" | "emerald" | "cyan" | "coral" | "purple"> = {
   event: "cyan",
@@ -54,7 +55,7 @@ export default function ChamberUpdatesPage() {
         </div>
       ) : updates.length === 0 ? (
         <Card className="text-center py-10">
-          <p className="text-3xl mb-2">📢</p>
+          <p className="text-3xl mb-2"><Icon name="megaphone" size={28} /></p>
           <p className="text-sm text-txt-secondary">No updates yet</p>
           <p className="text-xs text-txt-secondary mt-1">
             Post updates to keep businesses informed
@@ -69,7 +70,7 @@ export default function ChamberUpdatesPage() {
               <Card key={update.id}>
                 <div className="flex items-start gap-3">
                   {update.is_pinned && (
-                    <span className="text-gold text-xs mt-0.5">📌</span>
+                    <span className="text-gold text-xs mt-0.5"><Icon name="pin" size={14} className="text-gold" /></span>
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">

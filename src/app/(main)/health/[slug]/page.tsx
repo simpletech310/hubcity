@@ -4,20 +4,22 @@ import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/server";
 import type { HealthResource, HealthCategory } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const categoryEmojis: Record<string, string> = {
-  clinic: "🏥",
-  hospital: "🏨",
-  mental_health: "🧠",
-  dental: "🦷",
-  vision: "👁️",
-  pharmacy: "💊",
-  emergency: "🚑",
-  substance_abuse: "💚",
-  prenatal: "🤰",
-  pediatric: "👶",
-  senior_care: "🧓",
-  insurance_help: "📋",
+  clinic: "heart-pulse",
+  hospital: "building",
+  mental_health: "lightbulb",
+  dental: "heart-pulse",
+  vision: "eye",
+  pharmacy: "heart-pulse",
+  emergency: "alert",
+  substance_abuse: "shield",
+  prenatal: "baby",
+  pediatric: "baby",
+  senior_care: "elder",
+  insurance_help: "document",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -52,7 +54,7 @@ export default async function HealthResourceDetailPage({
   if (!resource) notFound();
 
   const res = resource as HealthResource;
-  const icon = categoryEmojis[res.category] ?? "🏥";
+  const icon = categoryEmojis[res.category] ?? "heart-pulse";
   const categoryLabel = categoryLabels[res.category] ?? res.category;
 
   const mapsUrl = res.address
@@ -85,7 +87,7 @@ export default async function HealthResourceDetailPage({
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center shrink-0 border border-border-subtle">
-            <span className="text-2xl">{icon}</span>
+            <Icon name={icon as IconName} size={24} />
           </div>
           <div className="flex-1">
             <h1 className="font-heading text-xl font-bold mb-1 leading-tight">
@@ -127,7 +129,7 @@ export default async function HealthResourceDetailPage({
           <div className="space-y-3">
             {res.phone && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📞</span>
+                <span className="text-lg"><Icon name="phone" size={20} /></span>
                 <a
                   href={`tel:${res.phone}`}
                   className="text-sm text-gold font-medium"
@@ -138,7 +140,7 @@ export default async function HealthResourceDetailPage({
             )}
             {res.website && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🌐</span>
+                <span className="text-lg"><Icon name="globe" size={20} /></span>
                 <a
                   href={
                     res.website.startsWith("http")
@@ -155,7 +157,7 @@ export default async function HealthResourceDetailPage({
             )}
             {res.address && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📍</span>
+                <span className="text-lg"><Icon name="pin" size={20} /></span>
                 {mapsUrl ? (
                   <a
                     href={mapsUrl}
@@ -172,7 +174,7 @@ export default async function HealthResourceDetailPage({
             )}
             {res.hours && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🕐</span>
+                <span className="text-lg"><Icon name="clock" size={20} /></span>
                 <p className="text-sm">{typeof res.hours === 'string' ? res.hours : JSON.stringify(res.hours)}</p>
               </div>
             )}
@@ -221,7 +223,7 @@ export default async function HealthResourceDetailPage({
               href={`tel:${res.phone}`}
               className="flex items-center justify-center gap-2 bg-white/10 text-white px-5 py-3 rounded-full text-sm font-medium press hover:bg-white/15 transition-colors border border-white/10"
             >
-              📞 Call Now
+              <Icon name="phone" size={16} /> Call Now
             </a>
           )}
         </div>

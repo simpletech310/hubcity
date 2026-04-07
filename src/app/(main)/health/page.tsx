@@ -5,24 +5,26 @@ import Image from "next/image";
 import Link from "next/link";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import EmergencyBanner from "@/components/health/EmergencyBanner";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { HealthResource, HealthCategory } from "@/types/database";
 
 // ─── Config ────────────────────────────────────────
-const categories: { label: string; value: HealthCategory | "all"; icon: string; color: string }[] = [
-  { label: "All", value: "all", icon: "🏥", color: "#F2A900" },
-  { label: "Clinic", value: "clinic", icon: "🏥", color: "#3B82F6" },
-  { label: "Hospital", value: "hospital", icon: "🏨", color: "#EF4444" },
-  { label: "Mental Health", value: "mental_health", icon: "🧠", color: "#8B5CF6" },
-  { label: "Dental", value: "dental", icon: "🦷", color: "#06B6D4" },
-  { label: "Vision", value: "vision", icon: "👁️", color: "#22C55E" },
-  { label: "Pharmacy", value: "pharmacy", icon: "💊", color: "#EC4899" },
-  { label: "Emergency", value: "emergency", icon: "🚑", color: "#EF4444" },
-  { label: "Substance", value: "substance_abuse", icon: "💚", color: "#22C55E" },
-  { label: "Prenatal", value: "prenatal", icon: "🤰", color: "#F472B6" },
-  { label: "Pediatric", value: "pediatric", icon: "👶", color: "#60A5FA" },
-  { label: "Senior", value: "senior_care", icon: "🧓", color: "#D97706" },
-  { label: "Insurance", value: "insurance_help", icon: "📋", color: "#6366F1" },
+const categories: { label: string; value: HealthCategory | "all"; icon: IconName; color: string }[] = [
+  { label: "All", value: "all", icon: "first-aid", color: "#F2A900" },
+  { label: "Clinic", value: "clinic", icon: "stethoscope", color: "#3B82F6" },
+  { label: "Hospital", value: "hospital", icon: "first-aid", color: "#EF4444" },
+  { label: "Mental Health", value: "mental_health", icon: "brain", color: "#8B5CF6" },
+  { label: "Dental", value: "dental", icon: "tooth", color: "#06B6D4" },
+  { label: "Vision", value: "vision", icon: "eye", color: "#22C55E" },
+  { label: "Pharmacy", value: "pharmacy", icon: "pill", color: "#EC4899" },
+  { label: "Emergency", value: "emergency", icon: "alert", color: "#EF4444" },
+  { label: "Substance", value: "substance_abuse", icon: "heart-pulse", color: "#22C55E" },
+  { label: "Prenatal", value: "prenatal", icon: "baby", color: "#F472B6" },
+  { label: "Pediatric", value: "pediatric", icon: "baby", color: "#60A5FA" },
+  { label: "Senior", value: "senior_care", icon: "elder", color: "#D97706" },
+  { label: "Insurance", value: "insurance_help", icon: "document", color: "#6366F1" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -40,12 +42,12 @@ const categoryLabels: Record<string, string> = {
 type FilterTag = "free" | "medicaid" | "walkins";
 
 // ─── Wellness Activities (hardcoded community data) ─
-const wellnessActivities = [
+const wellnessActivities: { name: string; tagline: string; description: string; icon: IconName; color: string; schedule: string; location: string; type: string }[] = [
   {
     name: "Compton Run Club",
     tagline: "Every Saturday at 7 AM",
     description: "Free weekly community run/walk through Compton. All levels welcome — from first-timers to marathon runners.",
-    icon: "🏃",
+    icon: "trending",
     color: "#22C55E",
     schedule: "Saturdays 7:00 AM",
     location: "Wilson Park, Compton",
@@ -55,7 +57,7 @@ const wellnessActivities = [
     name: "Yoga in the Park",
     tagline: "Free outdoor yoga sessions",
     description: "Beginner-friendly yoga class every Sunday morning. Bring a mat or towel — we provide the good vibes.",
-    icon: "🧘",
+    icon: "heart-pulse",
     color: "#8B5CF6",
     schedule: "Sundays 8:00 AM",
     location: "Gonzales Park, Compton",
@@ -65,7 +67,7 @@ const wellnessActivities = [
     name: "Compton Boxing Club",
     tagline: "Train like a champion",
     description: "Free boxing training for youth and adults. Build confidence, discipline, and fitness.",
-    icon: "🥊",
+    icon: "trophy",
     color: "#EF4444",
     schedule: "Mon/Wed/Fri 5:00 PM",
     location: "Compton Community Center",
@@ -75,7 +77,7 @@ const wellnessActivities = [
     name: "Seniors Walk & Talk",
     tagline: "Move your body, feed your soul",
     description: "Gentle walking group for seniors. Social connection and light exercise in a supportive environment.",
-    icon: "🚶",
+    icon: "elder",
     color: "#D97706",
     schedule: "Tuesdays 9:00 AM",
     location: "Lueders Park, Compton",
@@ -83,14 +85,14 @@ const wellnessActivities = [
   },
 ];
 
-const upcomingHealthEvents = [
+const upcomingHealthEvents: { id: string; title: string; date: string; time: string; location: string; icon: IconName; color: string; type: string; description: string }[] = [
   {
     id: "blood-drive-spring",
     title: "Spring Community Blood Drive",
     date: "2026-04-12",
     time: "9:00 AM - 3:00 PM",
     location: "Compton City Hall",
-    icon: "🩸",
+    icon: "heart-pulse",
     color: "#EF4444",
     type: "blood_drive",
     description: "Give the gift of life. Walk-ins welcome, appointments preferred. Free snacks and a t-shirt for all donors.",
@@ -101,7 +103,7 @@ const upcomingHealthEvents = [
     date: "2026-04-19",
     time: "10:00 AM - 4:00 PM",
     location: "Compton College",
-    icon: "🏥",
+    icon: "first-aid",
     color: "#3B82F6",
     type: "health_fair",
     description: "Free screenings, dental checkups, vision tests, mental health resources, and family activities.",
@@ -112,7 +114,7 @@ const upcomingHealthEvents = [
     date: "2026-04-26",
     time: "7:00 AM",
     location: "Wilson Park → City Hall",
-    icon: "🏅",
+    icon: "trophy",
     color: "#22C55E",
     type: "fitness",
     description: "Annual community 5K through historic Compton. All ages and abilities. Finisher medals for everyone!",
@@ -123,7 +125,7 @@ const upcomingHealthEvents = [
     date: "2026-05-03",
     time: "2:00 PM - 4:00 PM",
     location: "Compton Library",
-    icon: "🧠",
+    icon: "brain",
     color: "#8B5CF6",
     type: "mental_health",
     description: "Free workshop on stress management, mindfulness, and community support resources.",
@@ -134,25 +136,25 @@ const upcomingHealthEvents = [
     date: "2026-05-10",
     time: "10:00 AM - 2:00 PM",
     location: "MLK Jr Community Hospital",
-    icon: "💉",
+    icon: "stethoscope",
     color: "#06B6D4",
     type: "clinic",
     description: "Flu shots, COVID boosters, and routine vaccinations. No insurance needed. All ages welcome.",
   },
 ];
 
-const fitnessSpots = [
-  { name: "Wilson Park", type: "Park", icon: "🌳", features: ["Track", "Basketball", "Playground"], color: "#22C55E" },
-  { name: "Gonzales Park", type: "Park", icon: "🌿", features: ["Walking Path", "Open Field", "Benches"], color: "#15803D" },
-  { name: "Lueders Park", type: "Park", icon: "🏞️", features: ["Walking Trail", "Picnic Area"], color: "#059669" },
-  { name: "Compton Par Course", type: "Fitness", icon: "💪", features: ["Outdoor Gym", "Pull-Up Bars", "Dip Bars"], color: "#D97706" },
+const fitnessSpots: { name: string; type: string; icon: IconName; features: string[]; color: string }[] = [
+  { name: "Wilson Park", type: "Park", icon: "tree", features: ["Track", "Basketball", "Playground"], color: "#22C55E" },
+  { name: "Gonzales Park", type: "Park", icon: "tree", features: ["Walking Path", "Open Field", "Benches"], color: "#15803D" },
+  { name: "Lueders Park", type: "Park", icon: "navigation", features: ["Walking Trail", "Picnic Area"], color: "#059669" },
+  { name: "Compton Par Course", type: "Fitness", icon: "trending", features: ["Outdoor Gym", "Pull-Up Bars", "Dip Bars"], color: "#D97706" },
 ];
 
-const wellnessTips = [
-  { tip: "Walk 30 minutes a day to reduce heart disease risk by 35%", icon: "🚶", color: "#22C55E" },
-  { tip: "Drink 8 glasses of water daily — your body is 60% water", icon: "💧", color: "#3B82F6" },
-  { tip: "Get 7-9 hours of sleep for optimal mental health", icon: "😴", color: "#8B5CF6" },
-  { tip: "Eat 5 servings of fruits & veggies every day", icon: "🥗", color: "#15803D" },
+const wellnessTips: { tip: string; icon: IconName; color: string }[] = [
+  { tip: "Walk 30 minutes a day to reduce heart disease risk by 35%", icon: "trending", color: "#22C55E" },
+  { tip: "Drink 8 glasses of water daily — your body is 60% water", icon: "heart-pulse", color: "#3B82F6" },
+  { tip: "Get 7-9 hours of sleep for optimal mental health", icon: "moon", color: "#8B5CF6" },
+  { tip: "Eat 5 servings of fruits & veggies every day", icon: "apple", color: "#15803D" },
 ];
 
 // ─── Components ────────────────────────────────────
@@ -171,7 +173,7 @@ function HealthResourceCard({ resource }: { resource: HealthResource }) {
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: `${color}12` }}
               >
-                <span className="text-lg">{categories.find(c => c.value === resource.category)?.icon || "🏥"}</span>
+                <Icon name={categories.find(c => c.value === resource.category)?.icon || "first-aid"} size={18} />
               </div>
               <div className="min-w-0">
                 <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">{resource.name}</h3>
@@ -351,7 +353,7 @@ export default function HealthPage() {
           const tip = wellnessTips[new Date().getDay() % wellnessTips.length];
           return (
             <div className="rounded-2xl p-4 flex items-center gap-3 border" style={{ background: `${tip.color}08`, borderColor: `${tip.color}15` }}>
-              <span className="text-2xl">{tip.icon}</span>
+              <Icon name={tip.icon} size={24} />
               <div className="flex-1">
                 <p className="text-[10px] text-white/30 uppercase tracking-wider font-semibold mb-0.5">Daily Wellness Tip</p>
                 <p className="text-[12px] text-white/60 leading-relaxed">{tip.tip}</p>
@@ -383,7 +385,7 @@ export default function HealthPage() {
               >
                 <div className="flex items-center gap-2.5 mb-2">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${activity.color}15` }}>
-                    <span className="text-xl">{activity.icon}</span>
+                    <Icon name={activity.icon} size={20} />
                   </div>
                   <div>
                     <h3 className="font-heading font-bold text-[13px]">{activity.name}</h3>
@@ -436,7 +438,7 @@ export default function HealthPage() {
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-base">{event.icon}</span>
+                        <Icon name={event.icon} size={16} />
                         <h3 className="font-heading font-bold text-[13px] truncate">{event.title}</h3>
                       </div>
                       <p className="text-[11px] text-white/40 line-clamp-2 mb-2">{event.description}</p>
@@ -488,7 +490,7 @@ export default function HealthPage() {
               style={{ background: `${spot.color}06`, borderColor: `${spot.color}15` }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">{spot.icon}</span>
+                <Icon name={spot.icon} size={20} />
                 <div>
                   <p className="font-heading font-bold text-[12px]">{spot.name}</p>
                   <p className="text-[9px] text-white/30">{spot.type}</p>
@@ -548,7 +550,7 @@ export default function HealthPage() {
                   border: `1px solid ${isActive ? `${cat.color}30` : "rgba(255,255,255,0.06)"}`,
                 }}
               >
-                <span>{cat.icon}</span>
+                <Icon name={cat.icon} size={14} />
                 {cat.label}
               </button>
             );
@@ -615,7 +617,7 @@ export default function HealthPage() {
             {filteredResources.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🏥</span>
+                  <Icon name="first-aid" size={30} />
                 </div>
                 <p className="text-sm font-semibold mb-1">No health resources found</p>
                 <p className="text-xs text-white/30">Try a different category or search</p>
@@ -635,7 +637,7 @@ export default function HealthPage() {
             </svg>
           </div>
           <div className="relative">
-            <span className="text-2xl block mb-2">🧠</span>
+            <span className="block mb-2"><Icon name="brain" size={24} /></span>
             <h3 className="font-heading font-bold text-lg mb-1">Mental Health Matters</h3>
             <p className="text-[12px] text-white/40 leading-relaxed mb-3">
               It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all Compton residents.
@@ -669,13 +671,13 @@ export default function HealthPage() {
         </h2>
         <div className="grid grid-cols-2 gap-2.5">
           {[
-            { label: "Blood Pressure", target: "< 120/80", icon: "❤️", color: "#EF4444" },
-            { label: "Blood Sugar", target: "< 100 mg/dL", icon: "🩸", color: "#D97706" },
-            { label: "BMI", target: "18.5 - 24.9", icon: "⚖️", color: "#3B82F6" },
-            { label: "Cholesterol", target: "< 200 mg/dL", icon: "🫀", color: "#8B5CF6" },
+            { label: "Blood Pressure", target: "< 120/80", icon: "heart-pulse" as IconName, color: "#EF4444" },
+            { label: "Blood Sugar", target: "< 100 mg/dL", icon: "pulse" as IconName, color: "#D97706" },
+            { label: "BMI", target: "18.5 - 24.9", icon: "chart" as IconName, color: "#3B82F6" },
+            { label: "Cholesterol", target: "< 200 mg/dL", icon: "stethoscope" as IconName, color: "#8B5CF6" },
           ].map((item) => (
             <div key={item.label} className="bg-card rounded-xl border border-border-subtle p-3 text-center">
-              <span className="text-xl block mb-1">{item.icon}</span>
+              <span className="block mb-1"><Icon name={item.icon} size={20} /></span>
               <p className="text-[11px] font-semibold text-white/60">{item.label}</p>
               <p className="text-[12px] font-bold mt-0.5" style={{ color: item.color }}>{item.target}</p>
               <p className="text-[9px] text-white/20 mt-0.5">Healthy Range</p>

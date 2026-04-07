@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 
 interface BusinessReview {
   id: string;
@@ -27,7 +28,7 @@ function StarDisplay({ rating, size = "sm" }: { rating: number; size?: "sm" | "m
     <span className={`inline-flex gap-0.5 ${sizeClass}`} aria-label={`${rating} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((star) => (
         <span key={star} className={star <= Math.round(rating) ? "text-gold" : "text-white/15"}>
-          ★
+          <Icon name="star" size={16} />
         </span>
       ))}
     </span>
@@ -59,7 +60,7 @@ function StarSelector({
           role="radio"
           aria-checked={star === value}
         >
-          ★
+          <Icon name="star" size={16} />
         </button>
       ))}
     </div>
@@ -71,7 +72,7 @@ function DistributionBar({ star, count, max }: { star: number; count: number; ma
   return (
     <div className="flex items-center gap-2">
       <span className="text-[11px] text-txt-secondary w-4 text-right">{star}</span>
-      <span className="text-gold text-[10px]">★</span>
+      <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
       <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
         <div
           className="h-full rounded-full bg-gold transition-all duration-500"

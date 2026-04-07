@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/client";
 import type { VendorStatus } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const statusOptions: { value: VendorStatus; label: string; color: string }[] = [
   { value: "active", label: "Active", color: "bg-emerald" },
@@ -231,7 +232,7 @@ export default function VendorLocationPage() {
           fullWidth
           size="sm"
         >
-          📍 Update My Location
+          <Icon name="pin" size={16} /> Update My Location
         </Button>
         {geoError && (
           <p className="text-xs text-coral mt-2">{geoError}</p>
@@ -294,7 +295,7 @@ export default function VendorLocationPage() {
                     {entry.start_time} - {entry.end_time}
                   </p>
                   <p className="text-[11px] text-txt-secondary">
-                    📍 {entry.location_name}
+                    <Icon name="pin" size={16} /> {entry.location_name}
                   </p>
                 </div>
                 <button

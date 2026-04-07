@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import type { GalleryItem, GalleryItemType } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const typeBadge: Record<GalleryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   artwork: { label: "Artwork", variant: "gold" },
@@ -31,7 +32,7 @@ export default function GalleryItemCard({ item }: GalleryItemCardProps) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center">
-            <span className="text-3xl">🖼️</span>
+            <span className="text-3xl"><Icon name="frame" size={28} /></span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent opacity-80" />

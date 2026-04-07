@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface ChamberBusiness {
   id: string;
@@ -146,7 +147,7 @@ export default function ChamberBusinessesPage() {
                         <span className="capitalize">{biz.business_sub_type.replace("_", " ")}</span>
                       )}
                       {biz.rating_avg && (
-                        <span>{Number(biz.rating_avg).toFixed(1)} ★</span>
+                        <span>{Number(biz.rating_avg).toFixed(1)} <Icon name="star" size={16} /></span>
                       )}
                     </div>
                     {owner && (

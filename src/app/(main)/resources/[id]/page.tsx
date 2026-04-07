@@ -2,23 +2,25 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import SaveButton from "@/components/ui/SaveButton";
 import ApplyButton from "@/components/ui/ApplyButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
 
-const categoryIcons: Record<string, string> = {
-  business: "💼",
-  housing: "🏠",
-  health: "❤️",
-  youth: "🧒",
-  jobs: "💼",
-  food: "🍎",
-  legal: "⚖️",
-  senior: "👴",
-  education: "📚",
-  veterans: "🎖️",
-  utilities: "💡",
+const categoryIcons: Record<string, IconName> = {
+  business: "briefcase",
+  housing: "house",
+  health: "heart-pulse",
+  youth: "baby",
+  jobs: "briefcase",
+  food: "apple",
+  legal: "gavel",
+  senior: "elder",
+  education: "education",
+  veterans: "veteran",
+  utilities: "lightbulb",
 };
 
 const statusStyles: Record<string, { variant: "emerald" | "coral" | "cyan" | "gold"; label: string }> = {
@@ -45,7 +47,7 @@ export default async function ResourceDetailPage({
   if (!resource) notFound();
 
   const res = resource as Resource;
-  const icon = categoryIcons[res.category] ?? "📋";
+  const icon = categoryIcons[res.category] ?? "document" as IconName;
   const status = statusStyles[res.status] ?? { variant: "cyan" as const, label: res.status };
 
   return (
@@ -67,7 +69,7 @@ export default async function ResourceDetailPage({
         {/* Header */}
         <div className="flex items-start gap-3 mb-4">
           <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center shrink-0 border border-border-subtle">
-            <span className="text-2xl">{icon}</span>
+            <Icon name={icon} size={28} className="text-white/70" />
           </div>
           <div className="flex-1">
             <h1 className="font-heading text-xl font-bold mb-1 leading-tight">
@@ -98,17 +100,17 @@ export default async function ResourceDetailPage({
 
         {/* Eligibility */}
         {res.eligibility && (
-          <Card glow className="mb-5 border-gold/15 bg-gradient-to-br from-gold/[0.05] to-transparent">
+          <Card variant="glass" glow className="mb-5 border-gold/15 bg-gradient-to-br from-gold/[0.05] to-transparent">
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/40 via-gold/20 to-transparent" />
             <h3 className="font-heading font-bold text-sm mb-2 flex items-center gap-2">
-              <span>📋</span> Eligibility Requirements
+              <Icon name="document" size={16} className="text-gold" /> Eligibility Requirements
             </h3>
             <p className="text-[13px] text-txt-secondary leading-relaxed">
               {res.eligibility}
             </p>
             {res.deadline && (
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-subtle">
-                <span className="text-sm">⏰</span>
+                <Icon name="clock" size={16} className="text-gold" />
                 <p className="text-sm text-gold font-bold">
                   Deadline: {new Date(res.deadline).toLocaleDateString("en-US", {
                     month: "long",
@@ -122,18 +124,18 @@ export default async function ResourceDetailPage({
         )}
 
         {/* Contact Info */}
-        <Card className="mb-5">
+        <Card variant="glass" className="mb-5">
           <h3 className="font-heading font-bold text-sm mb-3">Contact Information</h3>
           <div className="space-y-3">
             {res.address && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📍</span>
+                <Icon name="pin" size={20} className="text-white/50 shrink-0" />
                 <p className="text-sm">{res.address}</p>
               </div>
             )}
             {res.phone && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📞</span>
+                <Icon name="phone" size={20} className="text-white/50 shrink-0" />
                 <a href={`tel:${res.phone}`} className="text-sm text-gold font-medium">
                   {res.phone}
                 </a>
@@ -141,7 +143,7 @@ export default async function ResourceDetailPage({
             )}
             {res.website && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🌐</span>
+                <Icon name="globe" size={20} className="text-white/50 shrink-0" />
                 <a
                   href={res.website.startsWith("http") ? res.website : `https://${res.website}`}
                   target="_blank"
@@ -154,7 +156,7 @@ export default async function ResourceDetailPage({
             )}
             {res.hours && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🕐</span>
+                <Icon name="clock" size={20} className="text-white/50 shrink-0" />
                 <p className="text-sm">{res.hours}</p>
               </div>
             )}

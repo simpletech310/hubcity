@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import ApplicationStatusBadge from "@/components/jobs/ApplicationStatusBadge";
 import { createClient } from "@/lib/supabase/server";
 import type { JobApplication, JobListing, Business } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default async function MyJobApplicationsPage() {
   const supabase = await createClient();
@@ -56,7 +57,7 @@ export default async function MyJobApplicationsPage() {
       <div className="px-5 space-y-3">
         {appList.length === 0 ? (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">💼</span>
+            <span className="text-5xl block mb-3"><Icon name="briefcase" size={28} /></span>
             <p className="text-sm font-medium mb-1">No applications yet</p>
             <p className="text-xs text-txt-secondary mb-4">
               Browse the job board to find opportunities.

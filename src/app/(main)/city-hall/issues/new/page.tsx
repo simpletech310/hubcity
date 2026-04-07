@@ -5,24 +5,26 @@ import Link from "next/link";
 import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import { generateIssueTitle, ISSUE_DEPARTMENT_MAP } from "@/lib/hashtags";
 
 const ISSUE_TYPES = [
-  { key: "pothole", emoji: "\uD83D\uDD73\uFE0F", label: "Pothole" },
-  { key: "streetlight", emoji: "\uD83D\uDCA1", label: "Streetlight" },
-  { key: "graffiti", emoji: "\uD83C\uDFA8", label: "Graffiti" },
-  { key: "trash", emoji: "\uD83D\uDDD1\uFE0F", label: "Trash" },
-  { key: "flooding", emoji: "\uD83C\uDF0A", label: "Flooding" },
-  { key: "parking", emoji: "\uD83C\uDD7F\uFE0F", label: "Parking" },
-  { key: "noise", emoji: "\uD83D\uDD0A", label: "Noise" },
-  { key: "sidewalk", emoji: "\uD83D\uDEB6", label: "Sidewalk" },
-  { key: "tree", emoji: "\uD83C\uDF33", label: "Tree" },
-  { key: "parks", emoji: "\uD83C\uDFDE\uFE0F", label: "Parks" },
-  { key: "water", emoji: "\uD83D\uDCA7", label: "Water" },
-  { key: "stray", emoji: "\uD83D\uDC15", label: "Stray Animal" },
-  { key: "safety", emoji: "\uD83D\uDEA8", label: "Safety" },
-  { key: "other", emoji: "\uD83D\uDCCB", label: "Other" },
+  { key: "pothole", iconName: "alert" as IconName, label: "Pothole" },
+  { key: "streetlight", iconName: "lightbulb" as IconName, label: "Streetlight" },
+  { key: "graffiti", iconName: "palette" as IconName, label: "Graffiti" },
+  { key: "trash", iconName: "trash" as IconName, label: "Trash" },
+  { key: "flooding", iconName: "rain" as IconName, label: "Flooding" },
+  { key: "parking", iconName: "parking" as IconName, label: "Parking" },
+  { key: "noise", iconName: "megaphone" as IconName, label: "Noise" },
+  { key: "sidewalk", iconName: "person" as IconName, label: "Sidewalk" },
+  { key: "tree", iconName: "tree" as IconName, label: "Tree" },
+  { key: "parks", iconName: "tree" as IconName, label: "Parks" },
+  { key: "water", iconName: "rain" as IconName, label: "Water" },
+  { key: "stray", iconName: "heart-pulse" as IconName, label: "Stray Animal" },
+  { key: "safety", iconName: "shield" as IconName, label: "Safety" },
+  { key: "other", iconName: "document" as IconName, label: "Other" },
 ] as const;
 
 type IssueTypeKey = (typeof ISSUE_TYPES)[number]["key"];
@@ -195,9 +197,7 @@ export default function ReportIssuePage() {
 
             <Card className="text-left mb-6">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">
-                  {ISSUE_TYPES.find((t) => t.key === createdIssue.type)?.emoji || "\uD83D\uDCCB"}
-                </span>
+                <Icon name={ISSUE_TYPES.find((t) => t.key === createdIssue.type)?.iconName || "document"} size={24} className="text-gold" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold truncate">{createdIssue.title}</p>
                   <p className="text-xs text-txt-secondary">
@@ -283,7 +283,7 @@ export default function ReportIssuePage() {
                   }
                 `}
               >
-                <span className="text-xl">{type.emoji}</span>
+                <Icon name={type.iconName} size={22} />
                 <span className="text-[10px] text-txt-secondary leading-tight text-center">
                   {type.label}
                 </span>

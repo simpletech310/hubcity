@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface SurveySummary {
   id: string;
@@ -59,7 +60,7 @@ export default function DashboardSurveysPage() {
         </div>
       ) : surveys.length === 0 ? (
         <div className="text-center py-16">
-          <span className="text-5xl block mb-3">📋</span>
+          <span className="text-5xl block mb-3"><Icon name="document" size={28} /></span>
           <p className="text-sm font-medium mb-1">No surveys created yet</p>
           <p className="text-xs text-txt-secondary mb-4">
             Go to Pulse to create your first survey.

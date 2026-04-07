@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
 
 type Profile = {
   id: string;
@@ -39,7 +40,7 @@ export default function StoryCard({ post, author }: StoryCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-3xl opacity-40">📖</span>
+            <span className="text-3xl opacity-40"><Icon name="book" size={28} /></span>
           </div>
         )}
       </div>

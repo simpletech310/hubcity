@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ChallengeCard from "@/components/food/ChallengeCard";
 import type { FoodChallenge } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default async function FoodChallengesPage() {
   const supabase = await createClient();
@@ -49,7 +50,7 @@ export default async function FoodChallengesPage() {
           ))
         ) : (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">🏆</span>
+            <span className="text-5xl block mb-3"><Icon name="trophy" size={28} /></span>
             <p className="text-sm font-medium mb-1">No active challenges</p>
             <p className="text-xs text-txt-secondary">
               New food challenges are coming soon!

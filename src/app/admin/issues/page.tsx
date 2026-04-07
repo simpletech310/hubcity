@@ -5,6 +5,8 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import type { CityIssue } from "@/types/database";
 
 type BadgeVariant = "gold" | "cyan" | "purple" | "emerald" | "coral";
@@ -12,10 +14,10 @@ const STATUS_BADGE: Record<string, BadgeVariant> = {
   reported: "gold", acknowledged: "cyan", in_progress: "purple", resolved: "emerald", closed: "coral",
 };
 
-const ISSUE_ICONS: Record<string, string> = {
-  pothole: "🕳️", streetlight: "💡", graffiti: "🎨", trash: "🗑️",
-  flooding: "🌊", parking: "🅿️", noise: "🔊", sidewalk: "🚶",
-  tree: "🌳", parks: "🏞️", water: "💧", stray: "🐕", safety: "🚨", other: "📋",
+const ISSUE_ICONS: Record<string, IconName> = {
+  pothole: "alert", streetlight: "lightbulb", graffiti: "palette", trash: "trash",
+  flooding: "rain", parking: "parking", noise: "bell", sidewalk: "person",
+  tree: "tree", parks: "tree", water: "rain", stray: "shield", safety: "shield", other: "document",
 };
 
 const STATUSES = ["all", "reported", "acknowledged", "in_progress", "resolved", "closed"];
@@ -101,7 +103,7 @@ export default function AdminIssuesPage() {
           href="/api/admin/export/issues"
           className="px-3 py-1.5 rounded-lg bg-white/5 border border-border-subtle text-xs font-semibold text-txt-secondary hover:text-white transition-colors"
         >
-          📥 Export CSV
+          <Icon name="download" size={12} className="inline mr-1" />Export CSV
         </a>
       </div>
 
@@ -138,8 +140,8 @@ export default function AdminIssuesPage() {
           return (
             <Card key={issue.id}>
               <div className="flex items-start gap-3">
-                <span className="text-xl shrink-0">
-                  {ISSUE_ICONS[issue.type] || "📋"}
+                <span className="shrink-0">
+                  <Icon name={ISSUE_ICONS[issue.type] || "document"} size={22} className="text-txt-secondary" />
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -162,10 +164,10 @@ export default function AdminIssuesPage() {
 
                   <div className="flex items-center gap-3 text-xs text-txt-secondary mb-2">
                     {issue.location_text && (
-                      <span>📍 {issue.location_text}</span>
+                      <span className="flex items-center gap-0.5"><Icon name="pin" size={10} /> {issue.location_text}</span>
                     )}
                     {issue.district && <span>D{issue.district}</span>}
-                    <span>👍 {issue.upvote_count}</span>
+                    <span className="flex items-center gap-0.5"><Icon name="trending" size={10} /> {issue.upvote_count}</span>
                     <span>{daysSince(issue.created_at)}</span>
                     {issue.assigned_department && (
                       <span>→ {issue.assigned_department}</span>

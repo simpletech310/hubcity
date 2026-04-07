@@ -5,6 +5,7 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import Badge from "@/components/ui/Badge";
 import type { Coupon } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
@@ -73,7 +74,7 @@ export default function CouponsPage() {
         </div>
       ) : coupons.length === 0 ? (
         <Card className="text-center py-10">
-          <p className="text-3xl mb-2">🏷️</p>
+          <p className="text-3xl mb-2"><Icon name="tag" size={28} /></p>
           <p className="text-sm text-txt-secondary">No coupons yet</p>
           <p className="text-xs text-txt-secondary mt-1">
             Create coupons to attract customers and boost sales

@@ -3,6 +3,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
+import Icon from "@/components/ui/Icon";
 
 export default async function SavedItemsPage() {
   const supabase = await createClient();
@@ -57,22 +58,22 @@ export default async function SavedItemsPage() {
     ]);
 
   const categoryIcons: Record<string, string> = {
-    business: "🏪",
-    restaurant: "🍽️",
-    barber: "💈",
-    retail: "🛍️",
-    event: "📅",
-    resource: "📋",
-    community: "👥",
-    sports: "🏈",
-    culture: "🎨",
-    city: "🏛️",
-    youth: "🧒",
-    housing: "🏠",
-    health: "❤️",
-    jobs: "💼",
-    food: "🍎",
-    education: "📚",
+    business: "store",
+    restaurant: "utensils",
+    barber: "scissors",
+    retail: "shopping",
+    event: "calendar",
+    resource: "document",
+    community: "users",
+    sports: "trophy",
+    culture: "palette",
+    city: "landmark",
+    youth: "education",
+    housing: "home",
+    health: "heart",
+    jobs: "briefcase",
+    food: "apple",
+    education: "book",
   };
 
   return (
@@ -108,7 +109,7 @@ export default async function SavedItemsPage() {
             <Card hover>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
-                  {categoryIcons[biz.category] || "🏪"}
+                  {categoryIcons[biz.category] || "store"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-bold text-[13px] truncate">
@@ -122,7 +123,7 @@ export default async function SavedItemsPage() {
                   <Badge label="Business" variant="emerald" />
                   {biz.rating_avg > 0 && (
                     <span className="text-[11px] text-gold font-bold">
-                      ★ {biz.rating_avg.toFixed(1)}
+                      <Icon name="star" size={16} /> {biz.rating_avg.toFixed(1)}
                     </span>
                   )}
                 </div>
@@ -137,7 +138,7 @@ export default async function SavedItemsPage() {
             <Card hover>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-coral/15 to-coral/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
-                  {categoryIcons[ev.category] || "📅"}
+                  {categoryIcons[ev.category] || "calendar"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-bold text-[13px] truncate">
@@ -163,7 +164,7 @@ export default async function SavedItemsPage() {
             <Card hover>
               <div className="flex items-center gap-3">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan/15 to-cyan/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
-                  {categoryIcons[res.category] || "📋"}
+                  {categoryIcons[res.category] || "document"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-heading font-bold text-[13px] truncate">
@@ -184,7 +185,7 @@ export default async function SavedItemsPage() {
 
         {items.length === 0 && (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">🔖</span>
+            <span className="text-5xl block mb-3"><Icon name="bookmark" size={28} /></span>
             <p className="text-sm font-medium mb-1">Nothing saved yet</p>
             <p className="text-xs text-txt-secondary mb-4">
               Save businesses, events, and resources to find them here

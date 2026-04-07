@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { VendorStatus } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 interface VendorLocationCardProps {
   id: string;
@@ -73,7 +74,7 @@ export default function VendorLocationCard({
 
           {current_location_name && (
             <p className="text-[12px] text-txt-secondary mb-1">
-              📍 Currently at: {current_location_name}
+              <Icon name="pin" size={16} /> Currently at: {current_location_name}
             </p>
           )}
 

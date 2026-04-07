@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
 import Chip from "@/components/ui/Chip";
+import Icon from "@/components/ui/Icon";
 import DepartmentCard from "@/components/city-hall/DepartmentCard";
 import { createClient } from "@/lib/supabase/client";
 import type { Department } from "@/types/database";
@@ -131,7 +132,7 @@ export default function DepartmentsPage() {
             ))}
             {filtered.length === 0 && (
               <div className="text-center py-16">
-                <span className="text-5xl block mb-3">🏛️</span>
+                <span className="block mb-3"><Icon name="landmark" size={48} /></span>
                 <p className="text-sm font-medium mb-1">No departments found</p>
                 <p className="text-xs text-txt-secondary">
                   Try a different search or category

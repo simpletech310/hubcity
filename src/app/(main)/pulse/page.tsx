@@ -14,6 +14,7 @@ export default async function PulsePage() {
     { data: rawSurveys },
     { data: rawEvents },
     { data: rawPromos },
+    { count: trafficAlertCount },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -64,6 +65,12 @@ export default async function PulsePage() {
       .eq("is_active", true)
       .order("created_at", { ascending: false })
       .limit(6),
+    // Active traffic alerts count
+    supabase
+      .from("city_alerts")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "traffic")
+      .eq("is_active", true),
   ]);
 
   const posts: Post[] = (rawPosts as Post[]) || [];
@@ -160,6 +167,7 @@ export default async function PulsePage() {
       surveys={surveys}
       events={events}
       promotions={promotions}
+      trafficAlertCount={trafficAlertCount ?? 0}
     />
   );
 }

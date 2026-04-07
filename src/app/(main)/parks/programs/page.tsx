@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import CultureHero from "@/components/culture/CultureHero";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Park Programs | Hub City",
@@ -154,7 +155,7 @@ export default async function ParkProgramsPage({
           </div>
         ) : (
           <div className="text-center py-16">
-            <span className="text-4xl mb-4 block">📋</span>
+            <span className="text-4xl mb-4 block"><Icon name="document" size={28} /></span>
             <h3 className="font-heading font-bold text-text-primary text-lg">
               No programs found
             </h3>

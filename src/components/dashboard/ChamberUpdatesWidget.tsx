@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 
 interface ChamberUpdatePreview {
   id: string;
@@ -54,7 +55,7 @@ export default function ChamberUpdatesWidget() {
         {updates.map((update) => (
           <Card key={update.id}>
             <div className="flex items-start gap-2">
-              {update.is_pinned && <span className="text-xs">📌</span>}
+              {update.is_pinned && <span className="text-xs"><Icon name="pin" size={14} /></span>}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <p className="text-sm font-medium truncate">{update.title}</p>

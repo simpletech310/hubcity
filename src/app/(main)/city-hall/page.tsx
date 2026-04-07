@@ -4,6 +4,8 @@ import SectionHeader from "@/components/layout/SectionHeader";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import DepartmentCard from "@/components/city-hall/DepartmentCard";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
@@ -23,13 +25,13 @@ function timeAgo(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-const quickLinks = [
-  { label: "City Council", icon: "👥", href: "/district", color: "from-royal/40 to-royal/20" },
-  { label: "Permits & Licenses", icon: "📄", href: "https://www.comptoncity.org/departments/permits", color: "from-gold/30 to-gold/10", external: true },
-  { label: "Public Records", icon: "📁", href: "/city-hall/services", color: "from-cyan/40 to-cyan/20" },
-  { label: "Pay Bills", icon: "💳", href: "https://www.comptoncity.org/departments/finance", color: "from-emerald/40 to-emerald/20", external: true },
-  { label: "Report Issue", icon: "🛠️", href: "/city-hall/services", color: "from-coral/40 to-coral/20" },
-  { label: "Contact Us", icon: "📞", href: "/city-hall/departments", color: "from-hc-purple/40 to-hc-purple/20" },
+const quickLinks: { label: string; iconName: IconName; href: string; color: string; external?: boolean }[] = [
+  { label: "City Council", iconName: "users", href: "/district", color: "from-royal/40 to-royal/20" },
+  { label: "Permits & Licenses", iconName: "document", href: "https://www.comptoncity.org/departments/permits", color: "from-gold/30 to-gold/10", external: true },
+  { label: "Public Records", iconName: "scroll", href: "/city-hall/services", color: "from-cyan/40 to-cyan/20" },
+  { label: "Pay Bills", iconName: "credit-card", href: "https://www.comptoncity.org/departments/finance", color: "from-emerald/40 to-emerald/20", external: true },
+  { label: "Report Issue", iconName: "wrench", href: "/city-hall/services", color: "from-coral/40 to-coral/20" },
+  { label: "Contact Us", iconName: "phone", href: "/city-hall/departments", color: "from-hc-purple/40 to-hc-purple/20" },
 ];
 
 export default async function CityHallPage() {
@@ -93,7 +95,7 @@ export default async function CityHallPage() {
           <div className="relative z-10 p-6 pb-7">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-12 h-12 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center">
-                <span className="text-2xl">🏛️</span>
+                <Icon name="landmark" size={24} />
               </div>
               <div>
                 <p className="text-gold text-[10px] font-bold tracking-[0.25em] uppercase">
@@ -122,9 +124,9 @@ export default async function CityHallPage() {
             const inner = (
               <div className="flex flex-col items-center gap-2 py-3 press group">
                 <div
-                  className={`w-[50px] h-[50px] rounded-2xl bg-gradient-to-br ${link.color} flex items-center justify-center text-[20px] group-hover:scale-110 transition-transform duration-300 border border-white/[0.06]`}
+                  className={`w-[50px] h-[50px] rounded-2xl bg-gradient-to-br ${link.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/[0.06]`}
                 >
-                  {link.icon}
+                  <Icon name={link.iconName} size={20} />
                 </div>
                 <span className="text-[11px] font-semibold text-txt-secondary group-hover:text-white transition-colors text-center leading-tight">
                   {link.label}
@@ -263,8 +265,8 @@ export default async function CityHallPage() {
                     {post.body}
                   </p>
                   <div className="flex items-center gap-4 mt-2.5 pt-2.5 border-t border-border-subtle">
-                    <span className="text-[11px] text-txt-secondary font-medium">
-                      {post.comment_count > 0 ? `💬 ${post.comment_count}` : ""}
+                    <span className="text-[11px] text-txt-secondary font-medium flex items-center gap-1">
+                      {post.comment_count > 0 && <><Icon name="chat" size={12} /> {post.comment_count}</>}
                     </span>
                   </div>
                 </Card>
@@ -299,13 +301,13 @@ export default async function CityHallPage() {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-[13px] truncate">{event.title}</p>
                       {event.location_name && (
-                        <p className="text-[11px] text-txt-secondary truncate">
-                          📍 {event.location_name}
+                        <p className="text-[11px] text-txt-secondary truncate flex items-center gap-1">
+                          <Icon name="pin" size={11} /> {event.location_name}
                         </p>
                       )}
                       {event.start_time && (
-                        <p className="text-[10px] text-txt-secondary mt-0.5">
-                          🕐 {event.start_time}
+                        <p className="text-[10px] text-txt-secondary mt-0.5 flex items-center gap-1">
+                          <Icon name="clock" size={11} /> {event.start_time}
                         </p>
                       )}
                     </div>
@@ -324,7 +326,7 @@ export default async function CityHallPage() {
           <div className="pattern-dots absolute inset-0 opacity-15" />
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
           <div className="relative text-center">
-            <span className="text-3xl block mb-2">🌐</span>
+            <span className="block mb-2"><Icon name="globe" size={28} /></span>
             <h3 className="font-heading font-bold text-base mb-1">
               Visit comptoncity.org
             </h3>

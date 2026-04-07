@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import ExhibitCard from "@/components/culture/ExhibitCard";
+import Icon from "@/components/ui/Icon";
 
 export const metadata = {
   title: "Exhibits | The Compton Museum | Hub City",
@@ -49,7 +50,7 @@ export default async function ExhibitsPage() {
           </div>
         ) : allExhibits.length === 0 ? (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">🎨</span>
+            <span className="text-5xl block mb-3"><Icon name="palette" size={28} /></span>
             <p className="text-sm font-medium mb-1">Exhibits coming soon</p>
             <p className="text-xs text-txt-secondary">
               The museum is preparing new collections for you to explore.

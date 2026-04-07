@@ -6,6 +6,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { JobApplication, JobApplicationStatus } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const statusConfig: Record<
   JobApplicationStatus,
@@ -150,7 +151,7 @@ export default function JobApplicationsPage() {
         </div>
       ) : applications.length === 0 ? (
         <div className="text-center py-16">
-          <span className="text-5xl block mb-3">📋</span>
+          <span className="text-5xl block mb-3"><Icon name="document" size={28} /></span>
           <p className="text-sm font-medium mb-1">No applications yet</p>
           <p className="text-xs text-txt-secondary">
             Applications will appear here when residents apply

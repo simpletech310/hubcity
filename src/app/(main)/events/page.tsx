@@ -8,17 +8,19 @@ import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import AdZone from "@/components/ui/AdZone";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Event } from "@/types/database";
 
-const categories = [
-  { label: "All", value: "all", icon: "🔥" },
-  { label: "City", value: "city", icon: "🏛️" },
-  { label: "Sports", value: "sports", icon: "🏈" },
-  { label: "Culture", value: "culture", icon: "🎭" },
-  { label: "Community", value: "community", icon: "🤝" },
-  { label: "School", value: "school", icon: "📚" },
-  { label: "Youth", value: "youth", icon: "🌟" },
+const categories: { label: string; value: string; icon: IconName }[] = [
+  { label: "All", value: "all", icon: "flame" },
+  { label: "City", value: "city", icon: "landmark" },
+  { label: "Sports", value: "sports", icon: "trophy" },
+  { label: "Culture", value: "culture", icon: "theater" },
+  { label: "Community", value: "community", icon: "handshake" },
+  { label: "School", value: "school", icon: "book" },
+  { label: "Youth", value: "youth", icon: "sparkle" },
 ];
 
 const categoryImages: Record<string, string> = {
@@ -187,7 +189,7 @@ export default function EventsPage() {
             <div className="flex items-center gap-4 text-[13px] text-warm-gray mb-6">
               {heroEvent.location_name && (
                 <span className="flex items-center gap-1.5">
-                  <span className="text-[16px]">📍</span>
+                  <Icon name="pin" size={16} />
                   {heroEvent.location_name}
                 </span>
               )}
@@ -235,28 +237,28 @@ export default function EventsPage() {
           ══════════════════════════════════════════════════════ */}
       <div className="flex gap-2.5 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
         <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <span className="text-[18px]">🎉</span>
+          <Icon name="calendar" size={18} />
           <div>
             <p className="text-[15px] font-bold font-heading leading-none">{events.length}</p>
             <p className="text-[10px] text-warm-gray">Events</p>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <span className="text-[18px]">🔥</span>
+          <Icon name="flame" size={18} />
           <div>
             <p className="text-[15px] font-bold font-heading leading-none">{todayEvents.length}</p>
             <p className="text-[10px] text-warm-gray">Today</p>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <span className="text-[18px]">👥</span>
+          <Icon name="users" size={18} />
           <div>
             <p className="text-[15px] font-bold font-heading leading-none">{totalRSVP.toLocaleString()}</p>
             <p className="text-[10px] text-warm-gray">Attending</p>
           </div>
         </div>
         <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <span className="text-[18px]">⭐</span>
+          <Icon name="star" size={18} />
           <div>
             <p className="text-[15px] font-bold font-heading leading-none">{featured.length}</p>
             <p className="text-[10px] text-warm-gray">Featured</p>
@@ -271,7 +273,8 @@ export default function EventsPage() {
         {categories.map((cat) => (
           <Chip
             key={cat.value}
-            label={`${cat.icon} ${cat.label}`}
+            icon={<Icon name={cat.icon} size={14} />}
+            label={cat.label}
             active={activeCategory === cat.value}
             onClick={() => setActiveCategory(cat.value)}
           />
@@ -362,7 +365,7 @@ export default function EventsPage() {
                         className="absolute top-0 left-0 right-0 h-[2px] opacity-50"
                         style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
                       />
-                      <span className="text-[28px] block mb-1.5">{cat.icon}</span>
+                      <span className="block mb-1.5"><Icon name={cat.icon} size={28} /></span>
                       <span className="font-heading text-[14px] font-bold block">{cat.label}</span>
                       <span className="text-[11px] text-warm-gray">{catEvents.length} events</span>
                     </button>
@@ -396,7 +399,7 @@ export default function EventsPage() {
               {events.length === 0 && (
                 <div className="text-center py-16">
                   <div className="w-20 h-20 rounded-3xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                    <span className="text-[40px]">📅</span>
+                    <Icon name="calendar" size={40} />
                   </div>
                   <p className="font-heading font-bold text-[16px] mb-1">No events found</p>
                   <p className="text-[13px] text-warm-gray max-w-[240px] mx-auto">
@@ -482,7 +485,7 @@ function EventCardHot({ event }: { event: Event }) {
           <h3 className="font-heading font-bold text-[14px] mb-1.5 line-clamp-1">{event.title}</h3>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[11px] text-warm-gray">
-              <span>📍</span>
+              <Icon name="pin" size={12} />
               <span className="truncate max-w-[140px]">{event.location_name ?? "Compton"}</span>
             </div>
             {(event.rsvp_count ?? 0) > 0 && (
@@ -573,9 +576,9 @@ function EventCardFeatured({ event }: { event: Event }) {
             </h3>
             <div className="flex items-center gap-3 text-[12px] text-warm-gray">
               {event.location_name && (
-                <span className="flex items-center gap-1">📍 {event.location_name}</span>
+                <span className="flex items-center gap-1"><Icon name="pin" size={12} /> {event.location_name}</span>
               )}
-              <span className="flex items-center gap-1">🕐 {date.time}</span>
+              <span className="flex items-center gap-1"><Icon name="clock" size={12} /> {date.time}</span>
             </div>
           </div>
         </div>
@@ -631,9 +634,9 @@ function EventCardRow({ event }: { event: Event }) {
               {event.title}
             </h3>
             <div className="flex items-center gap-3 text-[11px] text-warm-gray mb-2">
-              <span className="flex items-center gap-1">🕐 {date.time}</span>
+              <span className="flex items-center gap-1"><Icon name="clock" size={11} /> {date.time}</span>
               {event.location_name && (
-                <span className="flex items-center gap-1 truncate">📍 {event.location_name}</span>
+                <span className="flex items-center gap-1 truncate"><Icon name="pin" size={11} /> {event.location_name}</span>
               )}
             </div>
             <div className="flex items-center gap-2">
@@ -648,7 +651,7 @@ function EventCardRow({ event }: { event: Event }) {
                 </span>
               )}
               {event.is_featured && (
-                <span className="text-[9px] text-gold font-bold">⭐ Featured</span>
+                <span className="text-[9px] text-gold font-bold flex items-center gap-0.5"><Icon name="star" size={9} /> Featured</span>
               )}
             </div>
           </div>

@@ -6,6 +6,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { Survey, SurveyQuestion } from "@/types/database";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
+import Icon from "@/components/ui/Icon";
 
 interface SurveyCardProps {
   survey: Survey;
@@ -90,7 +91,7 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
 
       {/* Type label row */}
       <div className="flex items-center gap-1.5 text-[10px] text-hc-purple font-semibold mb-2.5 tracking-wide">
-        <span>📋</span>
+        <span><Icon name="document" size={16} /></span>
         SURVEY
         {isClosed && (
           <span className="ml-1">
@@ -152,7 +153,7 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
           <Badge
             label="Responded"
             variant="emerald"
-            icon={<span className="text-[9px]">✓</span>}
+            icon={<span className="text-[9px]"><Icon name="check" size={16} /></span>}
           />
           <span className="text-[11px] text-txt-secondary">
             {responseCount} {responseCount === 1 ? "response" : "responses"}
@@ -385,7 +386,7 @@ function QuestionField({
                 }
               `}
             >
-              ★
+              <Icon name="star" size={16} />
             </button>
           ))}
         </div>

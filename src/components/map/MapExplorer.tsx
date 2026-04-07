@@ -5,6 +5,7 @@ import Link from "next/link";
 import MapView from "@/components/ui/MapView";
 import type { MapPoint } from "@/types/map";
 import { MAP_POINT_COLORS, MAP_POINT_LABELS } from "@/types/map";
+import Icon from "@/components/ui/Icon";
 
 interface MapExplorerProps {
   initialPoints: MapPoint[];
@@ -14,14 +15,14 @@ interface MapExplorerProps {
 type PointType = MapPoint["type"];
 
 const CATEGORY_ICONS: Record<PointType, string> = {
-  business: "🏪",
-  event: "🎉",
-  issue: "🛠️",
-  health: "🏥",
-  school: "🎓",
-  transit: "🚇",
-  park: "🌳",
-  mural: "🎨",
+  business: "store",
+  event: "calendar",
+  issue: "wrench",
+  health: "heart-pulse",
+  school: "graduation",
+  transit: "transit",
+  park: "tree",
+  mural: "palette",
 };
 
 // Order for display
@@ -133,7 +134,7 @@ export default function MapExplorer({
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-heading font-bold text-[17px] leading-tight flex items-center gap-2">
-              <span className="text-gold">📍</span>
+              <span className="text-gold"><Icon name="pin" size={16} className="text-gold" /></span>
               Find Resources
             </h1>
             <p className="text-[11px] text-warm-gray mt-0.5">
@@ -273,7 +274,7 @@ export default function MapExplorer({
             {sortedListPoints.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-5">
                 <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-3">
-                  <span className="text-2xl">🔍</span>
+                  <span className="text-2xl"><Icon name="search" size={24} /></span>
                 </div>
                 <p className="text-sm text-warm-gray font-medium">
                   No results found
@@ -304,7 +305,7 @@ export default function MapExplorer({
                         </p>
                         {typeof point.metadata?.address === "string" && (
                           <p className="text-[11px] text-warm-gray truncate mt-0.5">
-                            📍 {point.metadata.address}
+                            <Icon name="pin" size={16} /> {point.metadata.address}
                           </p>
                         )}
                         {typeof point.metadata?.description === "string" && (
@@ -432,7 +433,7 @@ export default function MapExplorer({
                     </div>
                     {typeof selectedPoint.metadata?.address === "string" && (
                       <p className="text-[12px] text-warm-gray truncate">
-                        📍 {selectedPoint.metadata.address}
+                        <Icon name="pin" size={16} /> {selectedPoint.metadata.address}
                       </p>
                     )}
                     {typeof selectedPoint.metadata?.description === "string" && (
@@ -445,7 +446,7 @@ export default function MapExplorer({
                         href={`tel:${selectedPoint.metadata.phone}`}
                         className="inline-flex items-center gap-1 text-[11px] text-gold font-medium mt-1"
                       >
-                        📞 {selectedPoint.metadata.phone}
+                        <Icon name="phone" size={16} /> {selectedPoint.metadata.phone}
                       </a>
                     )}
                   </div>

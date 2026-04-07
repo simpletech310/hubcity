@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const wings = [
-  { href: "/culture", label: "Lobby", icon: "🏛️" },
-  { href: "/culture/exhibits", label: "Exhibits", icon: "🎨" },
-  { href: "/culture/gallery", label: "Gallery", icon: "🖼️" },
-  { href: "/culture/people", label: "People", icon: "👤" },
-  { href: "/culture/history", label: "History", icon: "📜" },
-  { href: "/culture/media", label: "Media", icon: "🎬" },
-  { href: "/culture/library", label: "Library", icon: "📚" },
-  { href: "/culture/discussions", label: "Discuss", icon: "💬" },
-  { href: "/culture/murals", label: "Murals", icon: "🎭" },
-  { href: "/culture/calendar", label: "Events", icon: "📅" },
+  { href: "/culture", label: "Lobby", icon: "landmark" },
+  { href: "/culture/exhibits", label: "Exhibits", icon: "palette" },
+  { href: "/culture/gallery", label: "Gallery", icon: "frame" },
+  { href: "/culture/people", label: "People", icon: "person" },
+  { href: "/culture/history", label: "History", icon: "scroll" },
+  { href: "/culture/media", label: "Media", icon: "film" },
+  { href: "/culture/library", label: "Library", icon: "book" },
+  { href: "/culture/discussions", label: "Discuss", icon: "chat" },
+  { href: "/culture/murals", label: "Murals", icon: "theater" },
+  { href: "/culture/calendar", label: "Events", icon: "calendar" },
 ];
 
 export default function MuseumNav() {
@@ -38,7 +40,7 @@ export default function MuseumNav() {
                 : "bg-white/[0.04] text-txt-secondary border border-transparent hover:bg-white/[0.06] hover:text-white"
             }`}
           >
-            <span className="text-sm">{wing.icon}</span>
+            <Icon name={wing.icon as IconName} size={16} />
             {wing.label}
           </Link>
         );

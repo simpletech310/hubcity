@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 interface GroupPost {
   id: string;
@@ -31,13 +33,13 @@ interface GroupInfo {
 }
 
 const CATEGORY_ICONS: Record<string, string> = {
-  neighborhood: "🏘️",
-  interest: "💡",
-  school: "🎓",
-  faith: "⛪",
-  sports: "⚽",
-  business: "💼",
-  other: "🤝",
+  neighborhood: "house",
+  interest: "lightbulb",
+  school: "graduation",
+  faith: "heart-pulse",
+  sports: "trophy",
+  business: "briefcase",
+  other: "handshake",
 };
 
 function timeAgo(dateStr: string) {
@@ -145,9 +147,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </Link>
           <div className="flex items-start gap-3">
             <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center shrink-0">
-              <span className="text-2xl">
-                {CATEGORY_ICONS[group.category] || "🤝"}
-              </span>
+              <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={24} />
             </div>
             <div className="flex-1">
               <h1 className="font-heading text-xl font-bold">{group.name}</h1>
@@ -156,7 +156,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               )}
               <div className="flex items-center gap-3 mt-2">
                 <span className="text-xs text-txt-secondary">
-                  👥 {group.member_count} member{group.member_count !== 1 ? "s" : ""}
+                  <Icon name="users" size={16} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
                 </span>
                 <button
                   onClick={handleJoin}
@@ -167,7 +167,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       : "bg-gold/20 text-gold border border-gold/30"
                   }`}
                 >
-                  {joining ? "..." : isMember ? "✓ Joined" : "Join"}
+                  {joining ? "..." : isMember ? "check Joined" : "Join"}
                 </button>
               </div>
             </div>
@@ -219,7 +219,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         {posts.length === 0 && (
           <Card>
             <div className="text-center py-8">
-              <p className="text-3xl mb-3">💬</p>
+              <p className="text-3xl mb-3"><Icon name="chat" size={28} /></p>
               <p className="text-sm font-semibold">No posts yet</p>
               <p className="text-xs text-txt-secondary mt-1">
                 {isMember ? "Be the first to post!" : "Join to start the conversation"}
@@ -265,7 +265,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               {/* Footer */}
               <div className="flex items-center gap-4 pt-1">
                 <span className="text-xs text-txt-secondary">
-                  💬 {post.comment_count || 0} comment{(post.comment_count || 0) !== 1 ? "s" : ""}
+                  <Icon name="chat" size={16} /> {post.comment_count || 0} comment{(post.comment_count || 0) !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>

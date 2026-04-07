@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, MenuItem, FoodSpecial, VendorStatus } from "@/types/database";
@@ -144,7 +145,7 @@ export default async function VendorDetailPage({
         <div className="flex items-start justify-between mb-2">
           <h1 className="font-heading text-2xl font-bold">{biz.name}</h1>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-gold">★</span>
+            <span className="text-gold"><Icon name="star" size={16} className="text-gold" /></span>
             <span className="font-bold">
               {Number(biz.rating_avg).toFixed(1)}
             </span>
@@ -164,7 +165,7 @@ export default async function VendorDetailPage({
         {biz.current_location_name && (
           <Card className="mb-4">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">📍</span>
+              <span className="text-2xl"><Icon name="pin" size={24} /></span>
               <div className="flex-1">
                 <p className="text-sm font-bold">
                   {biz.current_location_name}
@@ -319,7 +320,7 @@ export default async function VendorDetailPage({
           <div className="space-y-3">
             {biz.phone && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📞</span>
+                <span className="text-lg"><Icon name="phone" size={20} /></span>
                 <a
                   href={`tel:${biz.phone}`}
                   className="text-sm font-medium text-gold"
@@ -330,7 +331,7 @@ export default async function VendorDetailPage({
             )}
             {biz.website && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🌐</span>
+                <span className="text-lg"><Icon name="globe" size={20} /></span>
                 <a
                   href={
                     biz.website.startsWith("http")

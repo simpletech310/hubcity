@@ -5,6 +5,7 @@ import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
 import type { FoodSpecial } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 export default function SpecialsPage() {
   const [specials, setSpecials] = useState<FoodSpecial[]>([]);
@@ -103,7 +104,7 @@ export default function SpecialsPage() {
           [1, 2, 3].map((i) => <div key={i} className="skeleton h-28" />)
         ) : filtered.length === 0 ? (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3">🏷️</span>
+            <span className="text-5xl block mb-3"><Icon name="tag" size={28} /></span>
             <p className="text-sm font-medium mb-1">No active specials</p>
             <p className="text-xs text-txt-secondary">
               Check back soon for new deals

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { MuseumExhibit } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 interface ExhibitCardProps {
   exhibit: MuseumExhibit;
@@ -22,7 +23,7 @@ export default function ExhibitCard({ exhibit, featured = false }: ExhibitCardPr
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold/10 to-purple-900/20 flex items-center justify-center">
-            <span className="text-4xl">🎨</span>
+            <span className="text-4xl"><Icon name="palette" size={28} /></span>
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />

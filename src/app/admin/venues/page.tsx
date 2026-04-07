@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import type { Venue } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 type VenueWithSections = Venue & { sections: { id: string }[] };
 
@@ -34,7 +35,7 @@ export default async function VenuesPage() {
 
       {rows.length === 0 ? (
         <Card className="text-center py-12">
-          <p className="text-4xl mb-3">🏟️</p>
+          <p className="text-4xl mb-3"><Icon name="building" size={28} /></p>
           <p className="text-txt-secondary text-sm">No venues yet.</p>
           <Link href="/admin/venues/new" className="mt-4 inline-block">
             <Button variant="primary" size="sm">Create your first venue</Button>

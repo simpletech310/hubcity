@@ -2,20 +2,22 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { HealthResource } from "@/types/database";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const categoryEmojis: Record<string, string> = {
-  clinic: "🏥",
-  hospital: "🏨",
-  mental_health: "🧠",
-  dental: "🦷",
-  vision: "👁️",
-  pharmacy: "💊",
-  emergency: "🚑",
-  substance_abuse: "💚",
-  prenatal: "🤰",
-  pediatric: "👶",
-  senior_care: "🧓",
-  insurance_help: "📋",
+  clinic: "heart-pulse",
+  hospital: "building",
+  mental_health: "lightbulb",
+  dental: "heart-pulse",
+  vision: "eye",
+  pharmacy: "heart-pulse",
+  emergency: "alert",
+  substance_abuse: "shield",
+  prenatal: "baby",
+  pediatric: "baby",
+  senior_care: "elder",
+  insurance_help: "document",
 };
 
 const categoryLabels: Record<string, string> = {
@@ -44,8 +46,8 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
         {/* Top row: icon, name, emergency indicator */}
         <div className="flex items-start justify-between mb-2.5">
           <div className="flex items-start gap-3 flex-1 min-w-0 mr-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center text-lg shrink-0 border border-border-subtle">
-              {categoryEmojis[resource.category] ?? "🏥"}
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center shrink-0 border border-border-subtle">
+              <Icon name={(categoryEmojis[resource.category] ?? "heart-pulse") as IconName} size={20} />
             </div>
             <div className="min-w-0">
               <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">
@@ -71,7 +73,7 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
         {/* Address */}
         {resource.address && (
           <p className="text-[11px] text-txt-secondary mb-2.5 line-clamp-1">
-            📍 {resource.address}
+            <Icon name="pin" size={16} /> {resource.address}
           </p>
         )}
 
@@ -106,7 +108,7 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
         {/* Phone */}
         {resource.phone && (
           <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-border-subtle">
-            <span className="text-xs">📞</span>
+            <span className="text-xs"><Icon name="phone" size={14} /></span>
             <p className="text-[11px] text-gold font-semibold">{resource.phone}</p>
           </div>
         )}

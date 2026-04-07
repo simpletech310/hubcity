@@ -7,6 +7,8 @@ import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
 import EditorialHeader from "@/components/ui/EditorialHeader";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
 
@@ -14,15 +16,15 @@ import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
 // Category config
 // ---------------------------------------------------------------------------
 
-const categories = [
-  { label: "All", value: "all", icon: "🏪", color: "#F2A900" },
-  { label: "Barber", value: "barber", icon: "💈", color: "#8B5CF6" },
-  { label: "Retail", value: "retail", icon: "🛍️", color: "#3B82F6" },
-  { label: "Services", value: "services", icon: "🔧", color: "#06B6D4" },
-  { label: "Auto", value: "auto", icon: "🚗", color: "#EF4444" },
-  { label: "Health", value: "health", icon: "❤️", color: "#22C55E" },
-  { label: "Beauty", value: "beauty", icon: "💅", color: "#FF006E" },
-  { label: "Entertainment", value: "entertainment", icon: "🎭", color: "#F2A900" },
+const categories: { label: string; value: string; iconName: IconName; color: string }[] = [
+  { label: "All", value: "all", iconName: "store", color: "#F2A900" },
+  { label: "Barber", value: "barber", iconName: "scissors", color: "#8B5CF6" },
+  { label: "Retail", value: "retail", iconName: "shopping", color: "#3B82F6" },
+  { label: "Services", value: "services", iconName: "wrench", color: "#06B6D4" },
+  { label: "Auto", value: "auto", iconName: "car", color: "#EF4444" },
+  { label: "Health", value: "health", iconName: "heart-pulse", color: "#22C55E" },
+  { label: "Beauty", value: "beauty", iconName: "sparkle", color: "#FF006E" },
+  { label: "Entertainment", value: "entertainment", iconName: "theater", color: "#F2A900" },
 ];
 
 const categoryColors: Record<string, string> = {
@@ -59,17 +61,17 @@ const categoryArt: Record<string, string> = {
   other: "art-city",
 };
 
-const badgeIcons: Record<string, string> = {
-  black_owned: "✊🏿",
-  woman_owned: "👩🏾",
-  veteran_owned: "🎖️",
-  lgbtq_friendly: "🏳️‍🌈",
-  family_owned: "👨‍👩‍👧",
-  eco_friendly: "🌱",
-  city_certified: "🏛️",
-  local_favorite: "⭐",
-  new_business: "🆕",
-  compton_original: "🏠",
+const badgeIcons: Record<string, IconName> = {
+  black_owned: "verified",
+  woman_owned: "person",
+  veteran_owned: "shield",
+  lgbtq_friendly: "flag",
+  family_owned: "family",
+  eco_friendly: "tree",
+  city_certified: "landmark",
+  local_favorite: "star",
+  new_business: "sparkle",
+  compton_original: "house",
 };
 
 const badgeVariants: Record<string, "gold" | "emerald" | "cyan" | "pink" | "purple" | "coral" | "blue"> = {
@@ -103,7 +105,7 @@ interface LocalDeal {
   discount: string;
   promoCode?: string;
   validUntil: string;
-  icon: string;
+  iconName: IconName;
 }
 
 interface TrendingBiz {
@@ -111,7 +113,7 @@ interface TrendingBiz {
   slug: string;
   category: string;
   tagline: string;
-  icon: string;
+  iconName: IconName;
   stat: string;
   statLabel: string;
 }
@@ -126,7 +128,7 @@ const localDeals: LocalDeal[] = [
     description: "20% off all fades every Friday",
     discount: "20% OFF",
     validUntil: "Every Friday",
-    icon: "💈",
+    iconName: "scissors",
   },
   {
     id: "d2",
@@ -138,7 +140,7 @@ const localDeals: LocalDeal[] = [
     discount: "$49.99",
     promoCode: "SPRING25",
     validUntil: "Apr 30",
-    icon: "🚗",
+    iconName: "car",
   },
   {
     id: "d3",
@@ -150,7 +152,7 @@ const localDeals: LocalDeal[] = [
     discount: "30% OFF",
     promoCode: "GLOWUP",
     validUntil: "Apr 15",
-    icon: "💅",
+    iconName: "sparkle",
   },
   {
     id: "d4",
@@ -161,7 +163,7 @@ const localDeals: LocalDeal[] = [
     description: "Join this month & skip the enrollment fee",
     discount: "FREE",
     validUntil: "Mar 31",
-    icon: "💪",
+    iconName: "heart-pulse",
   },
   {
     id: "d5",
@@ -172,7 +174,7 @@ const localDeals: LocalDeal[] = [
     description: "Buy 2 get 1 free on new arrivals",
     discount: "B2G1",
     validUntil: "Apr 7",
-    icon: "🛍️",
+    iconName: "shopping",
   },
   {
     id: "d6",
@@ -184,22 +186,22 @@ const localDeals: LocalDeal[] = [
     discount: "SAVE $200",
     promoCode: "SOUNDS24",
     validUntil: "Apr 30",
-    icon: "🎵",
+    iconName: "music",
   },
 ];
 
 const trendingBusinesses: TrendingBiz[] = [
-  { name: "Compton Cuts", slug: "compton-cuts", category: "barber", tagline: "The freshest fades in the city", icon: "💈", stat: "340+", statLabel: "cuts/mo" },
-  { name: "Hub City Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", icon: "💪", stat: "1.2K", statLabel: "members" },
-  { name: "Glow Up Beauty", slug: "glow-up-beauty", category: "beauty", tagline: "Look good, feel good", icon: "💅", stat: "4.9", statLabel: "rating" },
-  { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", icon: "🔧", stat: "18yrs", statLabel: "serving" },
+  { name: "Compton Cuts", slug: "compton-cuts", category: "barber", tagline: "The freshest fades in the city", iconName: "scissors", stat: "340+", statLabel: "cuts/mo" },
+  { name: "Hub City Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
+  { name: "Glow Up Beauty", slug: "glow-up-beauty", category: "beauty", tagline: "Look good, feel good", iconName: "sparkle", stat: "4.9", statLabel: "rating" },
+  { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", iconName: "wrench", stat: "18yrs", statLabel: "serving" },
 ];
 
-const quickActions = [
-  { label: "Deals", icon: "🔥", filter: "deals", color: "#EF4444" },
-  { label: "New", icon: "🆕", filter: "new", color: "#8B5CF6" },
-  { label: "Top Rated", icon: "⭐", filter: "top", color: "#F2A900" },
-  { label: "Black Owned", icon: "✊🏿", filter: "black_owned", color: "#22C55E" },
+const quickActions: { label: string; iconName: IconName; filter: string; color: string }[] = [
+  { label: "Deals", iconName: "flame", filter: "deals", color: "#EF4444" },
+  { label: "New", iconName: "sparkle", filter: "new", color: "#8B5CF6" },
+  { label: "Top Rated", iconName: "star", filter: "top", color: "#F2A900" },
+  { label: "Black Owned", iconName: "verified", filter: "black_owned", color: "#22C55E" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -310,7 +312,7 @@ export default function BusinessPage() {
         <div className="relative z-10 px-5 pt-6 pb-5">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <span className="text-base">🏪</span>
+              <Icon name="store" size={18} className="text-gold" />
             </div>
             <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">Shop Local</p>
           </div>
@@ -334,7 +336,7 @@ export default function BusinessPage() {
                   borderColor: quickFilter === action.filter ? `${action.color}40` : "rgba(255,255,255,0.06)",
                 }}
               >
-                <span className="text-sm">{action.icon}</span>
+                <Icon name={action.iconName} size={14} style={{ color: quickFilter === action.filter ? action.color : undefined }} />
                 <span className="text-[11px] font-bold" style={{ color: quickFilter === action.filter ? action.color : undefined }}>
                   {action.label}
                 </span>
@@ -374,7 +376,7 @@ export default function BusinessPage() {
             <div className="w-1 h-5 rounded-full bg-compton-red" />
             <h2 className="font-heading font-bold text-base">Today&apos;s Deals</h2>
             <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-compton-red/10 border border-compton-red/20">
-              <span className="text-[10px]">🔥</span>
+              <Icon name="flame" size={10} className="text-compton-red" />
               <span className="text-[9px] font-bold text-compton-red">{localDeals.length} active</span>
             </div>
           </div>
@@ -392,7 +394,7 @@ export default function BusinessPage() {
           <div className="px-5 flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full bg-gold" />
             <h2 className="font-heading font-bold text-base">Trending in Compton</h2>
-            <span className="text-[10px] text-txt-secondary ml-auto">📈 This week</span>
+            <span className="text-[10px] text-txt-secondary ml-auto flex items-center gap-1"><Icon name="trending" size={10} /> This week</span>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
             {trendingBusinesses.map((biz, i) => (
@@ -405,7 +407,7 @@ export default function BusinessPage() {
                 <div className="rounded-2xl bg-card border border-border-subtle p-3.5 hover:border-gold/20 transition-colors relative overflow-hidden">
                   <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: categoryColors[biz.category] || "#F2A900" }} />
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2.5" style={{ background: `${categoryColors[biz.category]}15` }}>
-                    <span className="text-xl">{biz.icon}</span>
+                    <Icon name={biz.iconName} size={20} style={{ color: categoryColors[biz.category] }} />
                   </div>
                   <h3 className="font-heading font-bold text-[12px] mb-0.5 truncate">{biz.name}</h3>
                   <p className="text-[10px] text-txt-secondary mb-2 line-clamp-1">{biz.tagline}</p>
@@ -450,7 +452,7 @@ export default function BusinessPage() {
           <Chip
             key={cat.value}
             label={cat.label}
-            icon={<span className="text-sm">{cat.icon}</span>}
+            icon={<Icon name={cat.iconName} size={14} />}
             active={activeCategory === cat.value}
             onClick={() => { setActiveCategory(cat.value); setQuickFilter(null); }}
           />
@@ -497,7 +499,7 @@ export default function BusinessPage() {
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl" style={{ background: categoryColors[deal.category] }} />
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${categoryColors[deal.category]}15` }}>
-                        <span className="text-lg">{deal.icon}</span>
+                        <Icon name={deal.iconName} size={18} style={{ color: categoryColors[deal.category] }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-[11px] text-txt-secondary">{deal.businessName}</p>
@@ -551,7 +553,7 @@ export default function BusinessPage() {
                       onClick={() => setSearch(badge.replace(/_/g, " "))}
                       className="shrink-0 rounded-xl bg-card border border-border-subtle px-3 py-2.5 flex items-center gap-2 press hover:border-gold/20 transition-colors"
                     >
-                      <span className="text-base">{badgeIcons[badge] || "🏷️"}</span>
+                      <Icon name={badgeIcons[badge] || "tag"} size={16} className="text-gold" />
                       <div className="text-left">
                         <p className="text-[11px] font-bold leading-tight">{formatBadgeLabel(badge)}</p>
                         <p className="text-[9px] text-txt-secondary">{count} business{count !== 1 ? "es" : ""}</p>
@@ -581,7 +583,7 @@ export default function BusinessPage() {
                     >
                       <div className="absolute top-0 left-0 bottom-0 w-0.5 rounded-l-xl" style={{ background: cat.color }} />
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${cat.color}15` }}>
-                        <span className="text-lg">{cat.icon}</span>
+                        <Icon name={cat.iconName} size={18} style={{ color: cat.color }} />
                       </div>
                       <div className="min-w-0">
                         <p className="text-[12px] font-bold truncate">{cat.label}</p>
@@ -601,21 +603,21 @@ export default function BusinessPage() {
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald via-cyan to-transparent" />
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
-                    <span className="text-xl">💚</span>
+                    <Icon name="heart-pulse" size={20} className="text-emerald" />
                   </div>
                   <div>
                     <h3 className="font-heading font-bold text-sm mb-1">Why Shop Local?</h3>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">●</span>
+                        <span className="text-emerald text-[10px]">•</span>
                         <p className="text-[11px] text-txt-secondary">68¢ of every $1 stays in Compton</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">●</span>
+                        <span className="text-emerald text-[10px]">•</span>
                         <p className="text-[11px] text-txt-secondary">Creates 2x more local jobs than chains</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">●</span>
+                        <span className="text-emerald text-[10px]">•</span>
                         <p className="text-[11px] text-txt-secondary">Builds a stronger, self-sufficient community</p>
                       </div>
                     </div>
@@ -661,7 +663,7 @@ export default function BusinessPage() {
               {filtered.length === 0 && (
                 <div className="text-center py-16">
                   <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-                    <span className="text-3xl">🔍</span>
+                    <Icon name="search" size={28} className="text-txt-secondary" />
                   </div>
                   <p className="text-sm font-bold mb-1">No businesses found</p>
                   <p className="text-xs text-txt-secondary">
@@ -678,7 +680,7 @@ export default function BusinessPage() {
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-hc-purple via-gold to-transparent" />
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-hc-purple/15 flex items-center justify-center shrink-0">
-                  <span className="text-2xl">📣</span>
+                  <Icon name="megaphone" size={22} className="text-hc-purple" />
                 </div>
                 <div className="flex-1">
                   <p className="font-heading font-bold text-sm mb-0.5">Promote Your Business</p>
@@ -701,7 +703,7 @@ export default function BusinessPage() {
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gold to-transparent" />
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
-                  <span className="text-2xl">🏪</span>
+                  <Icon name="store" size={22} className="text-gold" />
                 </div>
                 <div className="flex-1">
                   <p className="font-heading font-bold text-sm mb-0.5">Own a Business in Compton?</p>
@@ -743,7 +745,7 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
         <div className="p-3.5">
           <div className="flex items-center justify-between mb-2">
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-              <span className="text-lg">{deal.icon}</span>
+              <Icon name={deal.iconName} size={18} style={{ color: accentColor }} />
             </div>
             <div className="px-2 py-0.5 rounded-lg bg-compton-red/10 border border-compton-red/20">
               <span className="text-[11px] font-bold text-compton-red">{deal.discount}</span>
@@ -800,7 +802,7 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
           {/* Rating pill */}
           {biz.rating_avg > 0 && (
             <div className="absolute top-2.5 right-2.5 bg-midnight/70 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1">
-              <span className="text-gold text-[10px]">★</span>
+              <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
               <span className="text-[10px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
             </div>
           )}
@@ -827,7 +829,7 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
                     color: accentColor,
                   }}
                 >
-                  <span>{badgeIcons[badge] || "🏷️"}</span>
+                  <Icon name={badgeIcons[badge] || "tag"} size={10} />
                   {formatBadgeLabel(badge)}
                 </span>
               ))}
@@ -867,9 +869,7 @@ function BusinessRow({ biz }: { biz: Business }) {
               <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
             ) : (
               <div className={`w-full h-full ${categoryArt[biz.category] ?? "art-city"} flex items-center justify-center`}>
-                <span className="text-xl opacity-60">
-                  {categories.find((c) => c.value === biz.category)?.icon || "🏪"}
-                </span>
+                <Icon name={categories.find((c) => c.value === biz.category)?.iconName || "store"} size={20} className="opacity-60" />
               </div>
             )}
             {biz.is_featured && (
@@ -884,7 +884,7 @@ function BusinessRow({ biz }: { biz: Business }) {
               <h3 className="font-heading font-bold text-[13px] truncate">{biz.name}</h3>
               {biz.rating_avg > 0 && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-gold text-[10px]">★</span>
+                  <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
                   <span className="text-[11px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
                   <span className="text-[9px] text-txt-secondary">({biz.rating_count})</span>
                 </div>
@@ -902,18 +902,18 @@ function BusinessRow({ biz }: { biz: Business }) {
                   key={badge}
                   className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold border bg-gold/5 border-gold/15 text-gold-light"
                 >
-                  <span className="text-[9px]">{badgeIcons[badge] || "🏷️"}</span>
+                  <Icon name={badgeIcons[badge] || "tag"} size={9} />
                   {formatBadgeLabel(badge)}
                 </span>
               ))}
               {(biz.accepts_orders || biz.accepts_bookings) && (
                 <span className="ml-auto px-1.5 py-0.5 rounded-md bg-gold/8 text-[8px] font-bold text-gold">
-                  {biz.accepts_orders ? "📦 Order" : "📅 Book"}
+                  <span className="inline-flex items-center gap-0.5"><Icon name={biz.accepts_orders ? "cart" : "calendar"} size={8} /> {biz.accepts_orders ? "Order" : "Book"}</span>
                 </span>
               )}
               {!biz.accepts_orders && !biz.accepts_bookings && biz.address && (
-                <span className="text-[9px] text-txt-secondary truncate ml-auto">
-                  📍 {biz.address.split(",")[0]}
+                <span className="text-[9px] text-txt-secondary truncate ml-auto inline-flex items-center gap-0.5">
+                  <Icon name="pin" size={9} /> {biz.address.split(",")[0]}
                 </span>
               )}
             </div>

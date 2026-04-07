@@ -8,6 +8,7 @@ import LivePlayer from "./LivePlayer";
 import CreateStreamModal from "./CreateStreamModal";
 import StreamCard from "./StreamCard";
 import type { LiveStream } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categories = [
   { label: "All", value: "all" },
@@ -153,7 +154,7 @@ export default function LiveFeed({ streams, canStream, userId }: LiveFeedProps) 
 
         {filteredUpcoming.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-4xl mb-3">📡</p>
+            <p className="text-4xl mb-3"><Icon name="pulse" size={28} /></p>
             <p className="text-sm text-txt-secondary">
               No streams scheduled yet
             </p>
@@ -179,7 +180,7 @@ export default function LiveFeed({ streams, canStream, userId }: LiveFeedProps) 
           <div className="pattern-dots absolute inset-0 opacity-20" />
           <div className="relative">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center mx-auto mb-4 animate-float">
-              <span className="text-3xl">🎥</span>
+              <span className="text-3xl">•</span>
             </div>
             <h3 className="font-heading font-bold text-lg mb-3 text-center">
               How Live Streaming Works

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
+import Icon from "@/components/ui/Icon";
 import type { NotablePerson, NotablePersonCategory } from "@/types/database";
 
 const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
@@ -15,9 +16,10 @@ const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "go
 
 interface PersonCardProps {
   person: NotablePerson;
+  compact?: boolean;
 }
 
-export default function PersonCard({ person }: PersonCardProps) {
+export default function PersonCard({ person, compact = false }: PersonCardProps) {
   const badge = categoryBadge[person.category] ?? { label: person.category, variant: "gold" as const };
   const lifespan = person.birth_year
     ? person.death_year
@@ -25,6 +27,35 @@ export default function PersonCard({ person }: PersonCardProps) {
       : `b. ${person.birth_year}`
     : null;
 
+  // Compact mode: explorer grid tile — portrait fills card, name overlay at bottom
+  if (compact) {
+    return (
+      <Link
+        href={`/culture/people/${person.slug}`}
+        className="group relative block aspect-square rounded-xl overflow-hidden"
+      >
+        {person.portrait_url ? (
+          <img
+            src={person.portrait_url}
+            alt={person.name}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center">
+            <Icon name="person" size={40} className="text-txt-secondary" />
+          </div>
+        )}
+        {/* Bottom gradient + name */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 pb-2.5 px-2.5">
+          <p className="font-heading font-bold text-xs text-white leading-tight group-hover:text-gold transition-colors">
+            {person.name}
+          </p>
+        </div>
+      </Link>
+    );
+  }
+
+  // Default mode: full card with badge, title, lifespan
   return (
     <Link
       href={`/culture/people/${person.slug}`}
@@ -40,7 +71,7 @@ export default function PersonCard({ person }: PersonCardProps) {
           />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center">
-            <span className="text-4xl">👤</span>
+            <Icon name="person" size={40} className="text-txt-secondary" />
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent" />

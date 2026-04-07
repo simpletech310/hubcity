@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 import SaveButton from "@/components/ui/SaveButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Business } from "@/types/database";
@@ -44,20 +46,20 @@ const categoryArt: Record<string, string> = {
   other: "art-city",
 };
 
-const badgeIcons: Record<string, string> = {
-  black_owned: "✊🏿",
-  women_owned: "👩🏾",
-  woman_owned: "👩🏾",
-  hispanic_owned: "🇲🇽",
-  veteran_owned: "🎖️",
-  locally_owned: "📍",
-  lgbtq_friendly: "🏳️‍🌈",
-  family_owned: "👨‍👩‍👧",
-  eco_friendly: "🌱",
-  city_certified: "🏛️",
-  local_favorite: "⭐",
-  new_business: "🆕",
-  compton_original: "🏠",
+const badgeIcons: Record<string, IconName> = {
+  black_owned: "verified",
+  women_owned: "person",
+  woman_owned: "person",
+  hispanic_owned: "flag",
+  veteran_owned: "shield",
+  locally_owned: "pin",
+  lgbtq_friendly: "flag",
+  family_owned: "family",
+  eco_friendly: "tree",
+  city_certified: "landmark",
+  local_favorite: "star",
+  new_business: "sparkle",
+  compton_original: "house",
 };
 
 const dayFullNames: Record<string, string> = {
@@ -176,7 +178,7 @@ export default async function BusinessDetailPage({
         {/* Rating pill */}
         {biz.rating_avg > 0 && (
           <div className="absolute top-4 left-16 z-10 bg-midnight/70 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-            <span className="text-gold text-xs">★</span>
+            <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
             <span className="text-xs font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
             <span className="text-[9px] text-txt-secondary">({biz.rating_count})</span>
           </div>
@@ -210,7 +212,7 @@ export default async function BusinessDetailPage({
                 key={badge}
                 className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/5 border border-gold/15"
               >
-                <span className="text-sm">{badgeIcons[badge] || "🏷️"}</span>
+                <Icon name={badgeIcons[badge] || "tag"} size={14} className="text-gold" />
                 <span className="text-[11px] font-bold text-gold-light whitespace-nowrap">
                   {formatBadgeLabel(badge)}
                 </span>
@@ -223,12 +225,12 @@ export default async function BusinessDetailPage({
       {/* ── Quick Actions Grid ── */}
       <div className="px-5 mt-4">
         <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: "Call", icon: "📞", href: biz.phone ? `tel:${biz.phone}` : undefined },
-            { label: "Directions", icon: "🗺️", href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined },
-            { label: "Website", icon: "🌐", href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined },
-            { label: "Share", icon: "📤", href: undefined },
-          ].map((action) => {
+          {([
+            { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined },
+            { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined },
+            { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined },
+            { label: "Share", iconName: "share" as IconName, href: undefined },
+          ]).map((action) => {
             const isExternal = action.href?.startsWith("http");
             const Wrapper = action.href ? "a" : "button";
             return (
@@ -240,7 +242,7 @@ export default async function BusinessDetailPage({
                 } : {})}
                 className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 press hover:border-gold/20 transition-colors"
               >
-                <span className="text-lg">{action.icon}</span>
+                <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
                 <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
               </Wrapper>
             );
@@ -265,7 +267,7 @@ export default async function BusinessDetailPage({
           {/* Address */}
           <div className="p-4 flex items-center gap-3.5 border-b border-border-subtle">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-              <span className="text-lg">📍</span>
+              <Icon name="pin" size={18} style={{ color: accentColor }} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold truncate">{biz.address}</p>
@@ -277,7 +279,7 @@ export default async function BusinessDetailPage({
           {biz.phone && (
             <a href={`tel:${biz.phone}`} className="p-4 flex items-center gap-3.5 border-b border-border-subtle press">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">📞</span>
+                <Icon name="phone" size={18} style={{ color: accentColor }} />
               </div>
               <p className="text-sm font-bold" style={{ color: accentColor }}>{biz.phone}</p>
             </a>
@@ -287,7 +289,7 @@ export default async function BusinessDetailPage({
           {todayHours && (
             <div className="p-4 flex items-center gap-3.5 border-b border-border-subtle">
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">🕐</span>
+                <Icon name="clock" size={18} style={{ color: accentColor }} />
               </div>
               <div>
                 <p className="text-sm font-bold">
@@ -308,7 +310,7 @@ export default async function BusinessDetailPage({
               className="p-4 flex items-center gap-3.5 press"
             >
               <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg">🌐</span>
+                <span className="text-lg"><Icon name="globe" size={20} /></span>
               </div>
               <p className="text-sm font-bold truncate" style={{ color: accentColor }}>{biz.website}</p>
             </a>
@@ -345,7 +347,7 @@ export default async function BusinessDetailPage({
                     )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[10px] text-txt-secondary flex items-center gap-1">
-                        🕐 {svc.duration} min
+                        <Icon name="clock" size={16} /> {svc.duration} min
                       </span>
                     </div>
                   </div>
@@ -413,7 +415,7 @@ export default async function BusinessDetailPage({
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald rounded-l-2xl" />
                 <div className="pl-2">
                   <div className="flex items-center gap-2">
-                    <span className="text-base">🏷️</span>
+                    <span className="text-base"><Icon name="tag" size={16} /></span>
                     <h3 className="text-[13px] font-bold text-emerald">{promo.title}</h3>
                   </div>
                   {promo.description && (
@@ -476,7 +478,7 @@ export default async function BusinessDetailPage({
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-3xl opacity-20">
-                          {item.is_digital ? "📱" : "📦"}
+                          {item.is_digital ? "phone" : "cart"}
                         </span>
                       </div>
                     )}

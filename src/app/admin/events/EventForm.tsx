@@ -8,6 +8,7 @@ import Card from "@/components/ui/Card";
 import Chip from "@/components/ui/Chip";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventCategory, Venue, VenueSection } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categories: EventCategory[] = [
   "city", "sports", "culture", "community", "school", "youth",
@@ -356,7 +357,7 @@ export default function EventForm({ event }: EventFormProps) {
             className="w-full flex items-center justify-between px-4 py-3 bg-gold/5 hover:bg-gold/10 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <span className="text-gold font-semibold text-sm">🎟 Ticketing</span>
+              <span className="text-gold font-semibold text-sm"><Icon name="tag" size={14} className="text-gold" /> Ticketing</span>
               {isTicketed && (
                 <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-medium">
                   Enabled

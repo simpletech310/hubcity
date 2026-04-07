@@ -4,6 +4,9 @@ import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import EditorialHeader from "@/components/ui/EditorialHeader";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
+import Card from "@/components/ui/Card";
 import type {
   Business,
   FoodSpecial,
@@ -13,36 +16,36 @@ import type {
 } from "@/types/database";
 
 // ─── Category Config ───────────────────────────────
-const categories = [
-  { label: "All", value: "all", icon: "🔥", color: "#F2A900" },
-  { label: "Restaurants", value: "restaurant", icon: "🍽️", color: "#FF6B6B" },
-  { label: "Food Trucks", value: "food_truck", icon: "🚚", color: "#22C55E" },
-  { label: "Carts", value: "cart", icon: "🛒", color: "#06B6D4" },
+const categories: { label: string; value: string; iconName: IconName; color: string }[] = [
+  { label: "All", value: "all", iconName: "flame", color: "#F2A900" },
+  { label: "Restaurants", value: "restaurant", iconName: "utensils", color: "#FF6B6B" },
+  { label: "Food Trucks", value: "food_truck", iconName: "truck", color: "#22C55E" },
+  { label: "Carts", value: "cart", iconName: "cart", color: "#06B6D4" },
 ];
 
-const quickFilters = [
-  { label: "Open Now", icon: "🟢", filter: "open" },
-  { label: "Order Pickup", icon: "📦", filter: "pickup" },
-  { label: "Food Trucks", icon: "🚚", filter: "trucks" },
-  { label: "Deals", icon: "🏷️", filter: "deals" },
+const quickFilters: { label: string; iconName: IconName; filter: string }[] = [
+  { label: "Open Now", iconName: "check", filter: "open" },
+  { label: "Order Pickup", iconName: "shopping", filter: "pickup" },
+  { label: "Food Trucks", iconName: "truck", filter: "trucks" },
+  { label: "Deals", iconName: "tag", filter: "deals" },
 ];
 
-const moodSections = [
-  { title: "Late Night Eats", subtitle: "Open past 10 PM", icon: "🌙", color: "#8B5CF6", filter: "late_night" },
-  { title: "Always Open", subtitle: "24/7 spots that never close", icon: "⏰", color: "#06B6D4", filter: "always_open" },
-  { title: "Quick Bites", subtitle: "In and out under 15 min", icon: "⚡", color: "#F2A900", filter: "quick" },
-  { title: "Family Style", subtitle: "Big portions, bigger love", icon: "👨‍👩‍👧‍👦", color: "#22C55E", filter: "family" },
+const moodSections: { title: string; subtitle: string; iconName: IconName; color: string; filter: string }[] = [
+  { title: "Late Night Eats", subtitle: "Open past 10 PM", iconName: "moon", color: "#8B5CF6", filter: "late_night" },
+  { title: "Always Open", subtitle: "24/7 spots that never close", iconName: "clock", color: "#06B6D4", filter: "always_open" },
+  { title: "Quick Bites", subtitle: "In and out under 15 min", iconName: "bolt", color: "#F2A900", filter: "quick" },
+  { title: "Family Style", subtitle: "Big portions, bigger love", iconName: "family", color: "#22C55E", filter: "family" },
 ];
 
-const comptonfavs = [
-  { name: "BBQ", icon: "🍖", color: "#DC2626", search: "bbq" },
-  { name: "Tacos", icon: "🌮", color: "#EA580C", search: "taco" },
-  { name: "Burgers", icon: "🍔", color: "#D97706", search: "burger" },
-  { name: "Seafood", icon: "🦐", color: "#0284C7", search: "seafood" },
-  { name: "Wings", icon: "🍗", color: "#B91C1C", search: "wing" },
-  { name: "Soul Food", icon: "🍛", color: "#7C3AED", search: "soul" },
-  { name: "Mexican", icon: "🫔", color: "#15803D", search: "mexican" },
-  { name: "Desserts", icon: "🧁", color: "#EC4899", search: "dessert" },
+const comptonfavs: { name: string; iconName: IconName; color: string; search: string }[] = [
+  { name: "BBQ", iconName: "meat", color: "#DC2626", search: "bbq" },
+  { name: "Tacos", iconName: "taco", color: "#EA580C", search: "taco" },
+  { name: "Burgers", iconName: "burger", color: "#D97706", search: "burger" },
+  { name: "Seafood", iconName: "shrimp", color: "#0284C7", search: "seafood" },
+  { name: "Wings", iconName: "wings", color: "#B91C1C", search: "wing" },
+  { name: "Soul Food", iconName: "bowl", color: "#7C3AED", search: "soul" },
+  { name: "Mexican", iconName: "taco", color: "#15803D", search: "mexican" },
+  { name: "Desserts", iconName: "donut", color: "#EC4899", search: "dessert" },
 ];
 
 // ─── Helper: Parse time string like "10:00 AM" to minutes since midnight ────
@@ -193,7 +196,7 @@ function FoodCard({ business, featured = false }: { business: Business; featured
 
   return (
     <Link href={`/business/${business.slug || business.id}`} className="block press">
-      <div className="bg-card rounded-2xl border border-border-subtle overflow-hidden hover:border-white/10 transition-all">
+      <Card variant="glass" hover padding={false}>
         <div className="flex gap-0">
           {/* Image */}
           <div className="w-[100px] h-[100px] shrink-0 relative">
@@ -201,7 +204,7 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               <Image src={heroImage} alt={business.name} fill className="object-cover" sizes="100px" />
             ) : (
               <div className="w-full h-full art-food flex items-center justify-center">
-                <span className="text-2xl">{business.is_mobile_vendor ? "🚚" : "🍽️"}</span>
+                <Icon name={business.is_mobile_vendor ? "truck" : "utensils"} size={24} />
               </div>
             )}
             {isLive && (
@@ -245,7 +248,7 @@ function FoodCard({ business, featured = false }: { business: Business; featured
             </div>
           </div>
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }
@@ -265,9 +268,12 @@ function TruckTrackerCard({ vendor }: { vendor: { id: string; name: string; slug
 
   return (
     <Link href={`/food/vendor/${vendor.slug || vendor.id}`} className="block press">
-      <div
-        className="bg-card rounded-2xl border overflow-hidden transition-all hover:border-white/10"
-        style={{ borderColor: isActive ? "rgba(34,197,94,0.2)" : isEnRoute ? "rgba(242,169,0,0.2)" : "rgba(255,255,255,0.06)" }}
+      <Card
+        variant="glass"
+        hover
+        padding={false}
+        className="overflow-hidden"
+        style={{ borderColor: isActive ? "rgba(34,197,94,0.2)" : isEnRoute ? "rgba(242,169,0,0.2)" : undefined }}
       >
         <div className="p-4">
           <div className="flex items-start justify-between gap-3 mb-3">
@@ -276,7 +282,7 @@ function TruckTrackerCard({ vendor }: { vendor: { id: string; name: string; slug
                 className="w-10 h-10 rounded-xl flex items-center justify-center"
                 style={{ background: isActive ? "rgba(34,197,94,0.1)" : isEnRoute ? "rgba(242,169,0,0.1)" : "rgba(255,255,255,0.04)" }}
               >
-                <span className="text-lg">{isActive ? "🚚" : isEnRoute ? "🛣️" : "💤"}</span>
+                <Icon name={isActive ? "truck" : isEnRoute ? "navigation" : "moon"} size={20} />
               </div>
               <div>
                 <h3 className="font-heading font-bold text-[13px]">{vendor.name}</h3>
@@ -323,7 +329,7 @@ function TruckTrackerCard({ vendor }: { vendor: { id: string; name: string; slug
             </div>
           )}
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }
@@ -338,7 +344,7 @@ function DealCard({ special }: { special: FoodSpecial }) {
 
   return (
     <Link href={bizSlug ? `/business/${bizSlug}` : "#"} className="block shrink-0 w-[180px] press">
-      <div className="bg-card rounded-2xl border border-border-subtle p-3.5 hover:border-gold/20 transition-all h-full">
+      <Card variant="glass" hover className="h-full">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] text-white/40 truncate">{bizName}</span>
           {discount > 0 && (
@@ -352,7 +358,7 @@ function DealCard({ special }: { special: FoodSpecial }) {
           <span className="text-white/30 text-xs line-through">${(special.original_price / 100).toFixed(2)}</span>
           <span className="font-heading font-bold text-gold text-lg">${(special.special_price / 100).toFixed(2)}</span>
         </div>
-      </div>
+      </Card>
     </Link>
   );
 }
@@ -360,8 +366,8 @@ function DealCard({ special }: { special: FoodSpecial }) {
 // ─── Promo Card ────────────────────────────────────
 function PromoCard({ promo }: { promo: FoodPromotion }) {
   const bizName = (promo.business as unknown as { name: string })?.name ?? "Local Business";
-  const typeIcons: Record<string, string> = {
-    bogo: "🎁", discount: "💰", free_item: "🆓", bundle: "📦", loyalty: "⭐",
+  const typeIcons: Record<string, IconName> = {
+    bogo: "sparkle", discount: "dollar", free_item: "tag", bundle: "shopping", loyalty: "star",
   };
   const typeColors: Record<string, string> = {
     bogo: "#FF6B6B", discount: "#22C55E", free_item: "#06B6D4", bundle: "#F2A900", loyalty: "#8B5CF6",
@@ -369,8 +375,9 @@ function PromoCard({ promo }: { promo: FoodPromotion }) {
   const color = typeColors[promo.promo_type] || "#F2A900";
 
   return (
-    <div
-      className="bg-card rounded-2xl border overflow-hidden"
+    <Card
+      variant="glass"
+      padding={false}
       style={{ borderColor: `${color}15` }}
     >
       <div className="p-4 flex items-start gap-3">
@@ -378,7 +385,7 @@ function PromoCard({ promo }: { promo: FoodPromotion }) {
           className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: `${color}12` }}
         >
-          <span className="text-xl">{typeIcons[promo.promo_type] || "🏷️"}</span>
+          <Icon name={typeIcons[promo.promo_type] || "tag"} size={22} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] text-white/30 mb-0.5">{bizName}</p>
@@ -401,7 +408,7 @@ function PromoCard({ promo }: { promo: FoodPromotion }) {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -534,7 +541,7 @@ export default function FoodPage() {
             }}
             className="flex items-center gap-1.5 shrink-0 bg-white/[0.04] border border-white/[0.06] rounded-full px-3.5 py-2 text-[11px] font-semibold text-white/60 press hover:bg-white/[0.08] transition-all"
           >
-            <span>{f.icon}</span>
+            <Icon name={f.iconName} size={14} />
             {f.label}
           </button>
         ))}
@@ -555,7 +562,7 @@ export default function FoodPage() {
                 border: `1px solid ${isActive ? `${cat.color}30` : "rgba(255,255,255,0.06)"}`,
               }}
             >
-              <span>{cat.icon}</span>
+              <Icon name={cat.iconName} size={14} />
               {cat.label}
             </button>
           );
@@ -580,7 +587,7 @@ export default function FoodPage() {
                   className="w-16 h-16 rounded-2xl flex items-center justify-center border transition-all hover:scale-105"
                   style={{ background: `${fav.color}10`, borderColor: `${fav.color}20` }}
                 >
-                  <span className="text-2xl">{fav.icon}</span>
+                  <Icon name={fav.iconName} size={24} />
                 </div>
                 <span className="text-[10px] font-semibold text-white/50">{fav.name}</span>
               </button>
@@ -595,7 +602,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between px-5 mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span className="text-coral">🏷️</span> Today&apos;s Deals
+                <Icon name="tag" size={18} className="text-coral" /> Today&apos;s Deals
               </h2>
               <p className="text-[11px] text-white/30">Limited time specials</p>
             </div>
@@ -619,7 +626,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>🚚</span> Food Truck Tracker
+                <Icon name="truck" size={18} /> Food Truck Tracker
               </h2>
               <p className="text-[11px] text-white/30">
                 {activeTrucks.length > 0 ? `${activeTrucks.length} trucks rolling right now` : "See where trucks are headed"}
@@ -631,7 +638,7 @@ export default function FoodPage() {
           <div className="relative h-32 rounded-2xl overflow-hidden mb-3 border border-emerald/20 bg-emerald/[0.03]">
             <div className="absolute inset-0 pattern-grid opacity-30" />
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl mb-1">🗺️</span>
+              <Icon name="map-pin" size={30} className="mb-1" />
               <p className="text-[11px] text-white/40 font-medium">Live Truck Map Coming Soon</p>
               <p className="text-[9px] text-white/20">Real-time locations and routes</p>
             </div>
@@ -665,7 +672,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>📦</span> Order for Pickup
+                <Icon name="shopping" size={18} /> Order for Pickup
               </h2>
               <p className="text-[11px] text-white/30">Skip the wait — order ahead</p>
             </div>
@@ -703,7 +710,7 @@ export default function FoodPage() {
                     border: `1px solid ${mood.color}15`,
                   }}
                 >
-                  <span className="text-2xl block mb-1">{mood.icon}</span>
+                  <Icon name={mood.iconName} size={24} className="block mb-1" />
                   <p className="font-heading font-bold text-[12px]" style={{ color: mood.color }}>{mood.title}</p>
                   <p className="text-[10px] text-white/30">{mood.subtitle}</p>
                   {count > 0 && (
@@ -723,7 +730,7 @@ export default function FoodPage() {
         <section className="mb-6">
           <div className="px-5 mb-3">
             <h2 className="font-heading font-bold text-base flex items-center gap-2">
-              <span>🌙</span> Late Night Eats
+              <Icon name="moon" size={18} /> Late Night Eats
             </h2>
             <p className="text-[11px] text-white/30">Open past 10 PM for those midnight cravings</p>
           </div>
@@ -741,7 +748,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>💰</span> Promos & Deals
+                <Icon name="dollar" size={18} /> Promos & Deals
               </h2>
               <p className="text-[11px] text-white/30">Save on your favorites</p>
             </div>
@@ -788,7 +795,7 @@ export default function FoodPage() {
             {businesses.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                  <span className="text-3xl">🍽️</span>
+                  <Icon name="utensils" size={30} />
                 </div>
                 <p className="text-sm font-semibold mb-1">No food spots found</p>
                 <p className="text-xs text-white/30">Try a different search or category</p>
@@ -804,7 +811,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between px-5 mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>🗺️</span> Food Tours
+                <Icon name="map-pin" size={18} /> Food Tours
               </h2>
               <p className="text-[11px] text-white/30">Curated culinary journeys</p>
             </div>
@@ -818,7 +825,7 @@ export default function FoodPage() {
                     <Image src={tour.image_url} alt={tour.name} fill className="object-cover" sizes="220px" />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-coral/20 to-gold/10 flex items-center justify-center">
-                      <span className="text-4xl">🍽️</span>
+                      <Icon name="utensils" size={36} />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
@@ -844,7 +851,7 @@ export default function FoodPage() {
           <div className="flex items-center justify-between mb-3">
             <div>
               <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <span>🏆</span> Food Challenges
+                <Icon name="trophy" size={18} /> Food Challenges
               </h2>
               <p className="text-[11px] text-white/30">Think you can handle it?</p>
             </div>
@@ -857,10 +864,10 @@ export default function FoodPage() {
               };
               const color = typeColors[ch.challenge_type] || "#F2A900";
               return (
-                <div key={ch.id} className="bg-card rounded-2xl border border-border-subtle p-4 hover:border-white/10 transition-all" style={{ borderLeftWidth: 3, borderLeftColor: color }}>
+                <Card key={ch.id} variant="glass" hover style={{ borderLeftWidth: 3, borderLeftColor: color }}>
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${color}12` }}>
-                      <span className="text-xl">{ch.challenge_type === "eating" ? "🏆" : ch.challenge_type === "photo" ? "📸" : "⭐"}</span>
+                      <Icon name={ch.challenge_type === "eating" ? "trophy" : ch.challenge_type === "photo" ? "camera" : "star"} size={22} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-heading font-bold text-[13px] mb-1">{ch.name}</h3>
@@ -869,11 +876,11 @@ export default function FoodPage() {
                         {ch.participant_count > 0 && <span className="text-[10px] text-white/30">{ch.participant_count} joined</span>}
                       </div>
                       {ch.prize_description && (
-                        <p className="text-[11px] text-gold font-semibold">🎁 {ch.prize_description}</p>
+                        <p className="text-[11px] text-gold font-semibold flex items-center gap-1"><Icon name="sparkle" size={12} /> {ch.prize_description}</p>
                       )}
                     </div>
                   </div>
-                </div>
+                </Card>
               );
             })}
           </div>
@@ -890,7 +897,7 @@ export default function FoodPage() {
             </svg>
           </div>
           <div className="relative">
-            <span className="text-2xl block mb-2">🍳</span>
+            <Icon name="store" size={24} className="block mb-2" />
             <h3 className="font-heading font-bold text-lg mb-1">Own a Food Business?</h3>
             <p className="text-[12px] text-white/40 leading-relaxed mb-3">
               List your restaurant, food truck, or cart on Hub City. Reach customers, manage orders, and post daily specials.

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
+import Icon from "@/components/ui/Icon";
 
 export async function generateMetadata({
   params,
@@ -110,7 +111,7 @@ export default async function MuralDetailPage({
         </div>
       ) : (
         <div className="mx-5 mb-6 aspect-[16/10] rounded-2xl bg-gradient-to-br from-pink-900/40 via-purple-900/30 to-gold/10 flex items-center justify-center">
-          <span className="text-7xl opacity-30">🎨</span>
+          <span className="text-7xl opacity-30"><Icon name="palette" size={16} /></span>
         </div>
       )}
 
@@ -170,7 +171,7 @@ export default async function MuralDetailPage({
           <div className="space-y-3">
             {mural.address && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">📍</span>
+                <span className="text-lg"><Icon name="pin" size={20} /></span>
                 {mapsUrl ? (
                   <a
                     href={mapsUrl}
@@ -187,7 +188,7 @@ export default async function MuralDetailPage({
             )}
             {mural.latitude && mural.longitude && (
               <div className="flex items-center gap-3">
-                <span className="text-lg">🗺️</span>
+                <span className="text-lg"><Icon name="globe" size={20} /></span>
                 <Link
                   href={`/map?lat=${mural.latitude}&lng=${mural.longitude}&zoom=17`}
                   className="text-sm text-gold font-medium hover:underline"
@@ -253,7 +254,7 @@ export default async function MuralDetailPage({
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl opacity-30">🎨</span>
+                        <span className="text-3xl opacity-30"><Icon name="palette" size={28} /></span>
                       </div>
                     )}
                   </div>

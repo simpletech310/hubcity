@@ -1,3 +1,5 @@
+import Icon from "@/components/ui/Icon";
+
 export default function MuseumHero() {
   return (
     <section className="relative w-full overflow-hidden">
@@ -10,7 +12,7 @@ export default function MuseumHero() {
         <div className="relative z-10 px-6 pb-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-8 h-8 rounded-lg bg-gold/20 border border-gold/30 flex items-center justify-center">
-              <span className="text-sm">🏛️</span>
+              <span className="text-sm"><Icon name="landmark" size={14} /></span>
             </div>
             <span className="text-[11px] font-semibold text-gold uppercase tracking-widest">
               Est. Compton, CA

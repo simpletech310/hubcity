@@ -3,6 +3,7 @@ import Image from "next/image";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import type { Business } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 const categoryArt: Record<string, string> = {
   restaurant: "art-food",
@@ -55,7 +56,7 @@ export default function FoodBusinessCard({ business }: { business: Business }) {
                 {business.name}
               </h3>
               <div className="flex items-center gap-1 shrink-0">
-                <span className="text-gold text-xs">★</span>
+                <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
                 <span className="text-xs font-bold">
                   {Number(business.rating_avg).toFixed(1)}
                 </span>
@@ -77,12 +78,12 @@ export default function FoodBusinessCard({ business }: { business: Business }) {
               />
               {business.is_mobile_vendor && business.current_location_name && (
                 <span className="text-[10px] text-txt-secondary truncate">
-                  📍 {business.current_location_name}
+                  <Icon name="pin" size={16} /> {business.current_location_name}
                 </span>
               )}
               {!business.is_mobile_vendor && business.address && (
                 <span className="text-[10px] text-txt-secondary truncate">
-                  📍 {business.address.split(",")[0]}
+                  <Icon name="pin" size={16} /> {business.address.split(",")[0]}
                 </span>
               )}
             </div>

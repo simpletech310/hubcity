@@ -6,6 +6,7 @@ import Badge from "@/components/ui/Badge";
 import Button from "@/components/ui/Button";
 import Chip from "@/components/ui/Chip";
 import type { ContentReport, ReportStatus } from "@/types/database";
+import Icon from "@/components/ui/Icon";
 
 interface ReportWithReporter extends Omit<ContentReport, "reporter"> {
   reporter: { id: string; display_name: string; avatar_url: string | null } | null;
@@ -260,7 +261,7 @@ export default function AdminReportsPage() {
 
           {reports.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-4xl mb-3">🛡️</p>
+              <p className="text-4xl mb-3"><Icon name="shield" size={28} /></p>
               <p className="text-sm text-txt-secondary">
                 {filter === "pending"
                   ? "No pending reports"

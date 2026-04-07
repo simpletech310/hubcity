@@ -9,6 +9,7 @@ import ReactionBar from "./ReactionBar";
 import type { Post, ReactionEmoji } from "@/types/database";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import dynamic from "next/dynamic";
+import Icon from "@/components/ui/Icon";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false });
 
@@ -140,7 +141,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                       }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-white hover:bg-white/5 flex items-center gap-2"
                     >
-                      ✏️ Edit Post
+                      <Icon name="edit" size={16} /> Edit Post
                     </button>
                   )}
                   {canDelete && (
@@ -157,7 +158,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                       }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
                     >
-                      🗑️ Delete Post
+                      <Icon name="trash" size={16} /> Delete Post
                     </button>
                   )}
                   {!isAuthor && (
@@ -168,7 +169,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                       }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
                     >
-                      🚩 Report Post
+                      <Icon name="flag" size={16} /> Report Post
                     </button>
                   )}
                 </div>
@@ -284,7 +285,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-deep border border-border-subtle rounded-2xl p-5 max-w-sm mx-auto">
             {reported ? (
               <div className="text-center py-4">
-                <p className="text-2xl mb-2">✅</p>
+                <p className="text-2xl mb-2"><Icon name="check" size={24} /></p>
                 <p className="text-sm font-bold mb-1">Report Submitted</p>
                 <p className="text-xs text-txt-secondary">Thank you. Our team will review this content.</p>
                 <button

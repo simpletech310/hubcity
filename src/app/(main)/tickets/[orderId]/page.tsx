@@ -8,6 +8,7 @@ import Button from "@/components/ui/Button";
 import { formatCents } from "@/lib/stripe";
 import type { TicketOrder, TicketOrderItem, Ticket } from "@/types/database";
 import QRCode from "qrcode";
+import Icon from "@/components/ui/Icon";
 
 type TicketWithQR = Ticket & { qrDataUrl: string };
 
@@ -234,7 +235,7 @@ export default function ETicketPage() {
             {event?.start_date && (
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
-                  <span className="text-sm">📅</span>
+                  <span className="text-sm"><Icon name="calendar" size={14} /></span>
                 </div>
                 <div>
                   <p className="text-sm font-medium">
@@ -252,7 +253,7 @@ export default function ETicketPage() {
             {(event?.location_name || event?.address) && (
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-lg bg-coral/10 flex items-center justify-center shrink-0">
-                  <span className="text-sm">📍</span>
+                  <span className="text-sm"><Icon name="pin" size={14} /></span>
                 </div>
                 <div>
                   <p className="text-sm font-medium">

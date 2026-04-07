@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 interface MuseumWingCardProps {
   href: string;
@@ -23,7 +25,7 @@ export default function MuseumWingCard({
       className={`group block rounded-2xl bg-gradient-to-br ${gradient} border border-border-subtle p-4 card-glow transition-all duration-300 hover:border-gold/20`}
     >
       <div className="flex items-start justify-between mb-3">
-        <span className="text-2xl">{icon}</span>
+        <Icon name={icon as IconName} size={24} />
         {typeof count === "number" && (
           <span className="text-[10px] font-semibold text-txt-secondary bg-white/5 px-2 py-0.5 rounded-full">
             {count}
