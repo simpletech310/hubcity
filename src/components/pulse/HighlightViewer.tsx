@@ -41,6 +41,7 @@ export default function HighlightViewer({
   onViewed,
 }: HighlightViewerProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isMuted, setIsMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
@@ -55,13 +56,26 @@ export default function HighlightViewer({
     }
   }, [current, onViewed]);
 
-  // Auto-play video
+  // Auto-play video with sound; fall back to muted if browser blocks it
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
-    }
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.currentTime = 0;
+    vid.muted = false;
+    vid.play().catch(() => {
+      // Browser blocked unmuted autoplay — retry muted
+      vid.muted = true;
+      setIsMuted(true);
+      vid.play().catch(() => {});
+    });
   }, [currentIndex]);
+
+  const toggleMute = useCallback(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    vid.muted = !vid.muted;
+    setIsMuted(vid.muted);
+  }, []);
 
   const goNext = useCallback(() => {
     if (currentIndex < highlights.length - 1) {
@@ -188,7 +202,6 @@ export default function HighlightViewer({
             autoPlay
             playsInline
             loop
-            muted
             className="w-full h-full object-contain bg-black"
           />
         ) : current.image_url ? (
@@ -205,6 +218,27 @@ export default function HighlightViewer({
           </div>
         )}
       </div>
+
+      {/* Mute/unmute button */}
+      {current.video_url && (
+        <button
+          onClick={(e) => { e.stopPropagation(); toggleMute(); }}
+          className="absolute bottom-[calc(env(safe-area-inset-bottom,20px)+70px)] right-5 z-20 w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white press"
+        >
+          {isMuted ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" />
+              <line x1="23" y1="9" x2="17" y2="15" />
+              <line x1="17" y1="9" x2="23" y2="15" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z" />
+              <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Caption overlay */}
       {current.body && current.body !== "City Highlight" && (
