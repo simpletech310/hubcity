@@ -1,8 +1,22 @@
 "use client";
 
 import useSWR from "swr";
+import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+const WEATHER_ICON_MAP: Record<string, IconName> = {
+  "01d": "sun", "01n": "moon",
+  "02d": "cloud", "02n": "cloud",
+  "03d": "cloud", "03n": "cloud",
+  "04d": "cloud", "04n": "cloud",
+  "09d": "rain", "09n": "rain",
+  "10d": "rain", "10n": "rain",
+  "11d": "bolt", "11n": "bolt",
+  "13d": "snow", "13n": "snow",
+  "50d": "wind", "50n": "wind",
+};
 
 interface WeatherData {
   temp: number;
@@ -15,27 +29,6 @@ interface AQIData {
   color: string;
 }
 
-const WEATHER_ICONS: Record<string, string> = {
-  "01d": "\u2600\uFE0F",
-  "01n": "\uD83C\uDF19",
-  "02d": "\u26C5",
-  "02n": "\uD83C\uDF19",
-  "03d": "\u2601\uFE0F",
-  "03n": "\u2601\uFE0F",
-  "04d": "\uD83C\uDF25\uFE0F",
-  "04n": "\uD83C\uDF25\uFE0F",
-  "09d": "\uD83C\uDF27\uFE0F",
-  "09n": "\uD83C\uDF27\uFE0F",
-  "10d": "\uD83C\uDF26\uFE0F",
-  "10n": "\uD83C\uDF27\uFE0F",
-  "11d": "\u26C8\uFE0F",
-  "11n": "\u26C8\uFE0F",
-  "13d": "\u2744\uFE0F",
-  "13n": "\u2744\uFE0F",
-  "50d": "\uD83C\uDF2B\uFE0F",
-  "50n": "\uD83C\uDF2B\uFE0F",
-};
-
 const AQI_COLORS: Record<string, string> = {
   emerald: "text-emerald-400",
   gold: "text-yellow-400",
@@ -44,10 +37,11 @@ const AQI_COLORS: Record<string, string> = {
 };
 
 interface GlanceCard {
-  icon: string;
+  icon: IconName;
   value: string;
   label: string;
   colorClass?: string;
+  bg: string;
 }
 
 export function CityAtGlance() {
@@ -58,42 +52,53 @@ export function CityAtGlance() {
     refreshInterval: 3600000,
   });
 
+  const weatherIcon = weather ? (WEATHER_ICON_MAP[weather.icon] ?? "sun") : "sun";
+
   const cards: GlanceCard[] = [
     {
-      icon: weather ? (WEATHER_ICONS[weather.icon] ?? "\uD83C\uDF24\uFE0F") : "\uD83C\uDF24\uFE0F",
+      icon: weatherIcon,
       value: weather ? `${weather.temp}\u00B0` : "--",
       label: "Weather",
+      bg: "bg-gold/10",
+      colorClass: "text-gold",
     },
     {
-      icon: "\uD83C\uDF2C\uFE0F",
+      icon: "wind",
       value: aqi ? aqi.category : "--",
       label: "Air Quality",
-      colorClass: aqi ? AQI_COLORS[aqi.color] : undefined,
+      colorClass: aqi ? AQI_COLORS[aqi.color] : "text-white",
+      bg: aqi?.color === "emerald" ? "bg-emerald/10" : "bg-yellow-500/10",
     },
     {
-      icon: "\uD83C\uDF89",
+      icon: "calendar",
       value: "--",
       label: "Next Event",
+      bg: "bg-cyan/10",
+      colorClass: "text-cyan",
     },
     {
-      icon: "\u26A0\uFE0F",
+      icon: "alert",
       value: "--",
       label: "Active Issues",
+      bg: "bg-red-500/10",
+      colorClass: "text-red-400",
     },
   ];
 
   return (
-    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
       {cards.map((card) => (
         <div
           key={card.label}
-          className="flex w-[100px] shrink-0 flex-col items-center rounded-xl bg-royal p-3 text-center"
+          className="flex w-[90px] shrink-0 flex-col items-center rounded-xl bg-white/[0.03] border border-white/[0.06] p-3 text-center"
         >
-          <span className="mb-1 text-2xl">{card.icon}</span>
-          <span className={`text-sm font-bold ${card.colorClass ?? "text-white"}`}>
+          <div className={`w-8 h-8 rounded-lg ${card.bg} flex items-center justify-center mb-1.5`}>
+            <Icon name={card.icon} size={16} className={card.colorClass || "text-white"} />
+          </div>
+          <span className={`text-[13px] font-bold ${card.colorClass ?? "text-white"}`}>
             {card.value}
           </span>
-          <span className="text-[10px] text-white/50">{card.label}</span>
+          <span className="text-[9px] text-white/40 font-medium">{card.label}</span>
         </div>
       ))}
     </div>
