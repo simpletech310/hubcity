@@ -208,6 +208,7 @@ export default function HighlightViewer({
             preload="auto"
             controls={false}
             className="absolute inset-0 w-full h-full"
+            style={{ objectFit: "contain" }}
           />
         ) : current.image_url ? (
           /* eslint-disable-next-line @next/next/no-img-element */
@@ -215,6 +216,7 @@ export default function HighlightViewer({
             src={current.image_url}
             alt={current.body || "Highlight"}
             className="absolute inset-0 w-full h-full"
+            style={{ objectFit: "contain" }}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#1a1510] to-black">
