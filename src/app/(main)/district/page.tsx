@@ -733,7 +733,7 @@ function CouncilCard({
 
   return (
     <Link
-      href={handle ? `/city-hall/${handle}` : "/city-hall"}
+      href={handle ? `/user/${handle}` : "/city-hall"}
       className="block glass-card-elevated rounded-2xl p-4 press hover:border-white/10 transition-colors"
     >
       <div className="flex items-start gap-3.5">

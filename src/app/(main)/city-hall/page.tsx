@@ -28,9 +28,9 @@ function timeAgo(dateStr: string): string {
 const quickLinks: { label: string; iconName: IconName; href: string; color: string; external?: boolean }[] = [
   { label: "City Council", iconName: "users", href: "/district", color: "from-royal/40 to-royal/20" },
   { label: "Permits & Licenses", iconName: "document", href: "https://www.comptoncity.org/departments/permits", color: "from-gold/30 to-gold/10", external: true },
-  { label: "Public Records", iconName: "scroll", href: "/city-hall/services", color: "from-cyan/40 to-cyan/20" },
+  { label: "Public Records", iconName: "scroll", href: "/city-hall/issues", color: "from-cyan/40 to-cyan/20" },
   { label: "Pay Bills", iconName: "credit-card", href: "https://www.comptoncity.org/departments/finance", color: "from-emerald/40 to-emerald/20", external: true },
-  { label: "Report Issue", iconName: "wrench", href: "/city-hall/services", color: "from-coral/40 to-coral/20" },
+  { label: "Report Issue", iconName: "wrench", href: "/city-hall/issues", color: "from-coral/40 to-coral/20" },
   { label: "Contact Us", iconName: "phone", href: "/city-hall/departments", color: "from-hc-purple/40 to-hc-purple/20" },
 ];
 
