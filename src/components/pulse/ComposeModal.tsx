@@ -163,16 +163,6 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
     }
   };
 
-  const toggleHighlight = () => {
-    if (!isHighlight) {
-      // Turning ON highlight — clear image, need video
-      setImageUrl(null);
-      setImagePreview(null);
-      setIsHighlight(true);
-    } else {
-      setIsHighlight(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
@@ -339,19 +329,6 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
             </svg>
             Video
-          </button>
-          <button
-            onClick={toggleHighlight}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs press transition-all ${
-              isHighlight
-                ? "bg-gold/15 text-gold border border-gold/25"
-                : "text-gold/60 hover:bg-gold/10"
-            }`}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill={isHighlight ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
-            Highlight
           </button>
           <span className="text-[10px] text-txt-secondary ml-auto">
             {body.length}/500
