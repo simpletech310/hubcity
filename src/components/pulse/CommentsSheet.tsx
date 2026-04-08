@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import type { Comment } from "@/types/database";
 
 interface CommentsSheetProps {
@@ -34,6 +35,22 @@ function getInitials(name: string): string {
     .join("")
     .slice(0, 2)
     .toUpperCase();
+}
+
+function CommentSkeleton() {
+  return (
+    <div className="flex gap-2.5 animate-pulse">
+      <div className="w-8 h-8 rounded-full bg-white/[0.06] shrink-0" />
+      <div className="flex-1 space-y-2">
+        <div className="flex gap-2">
+          <div className="w-20 h-3 rounded bg-white/[0.06]" />
+          <div className="w-8 h-3 rounded bg-white/[0.04]" />
+        </div>
+        <div className="w-3/4 h-3.5 rounded bg-white/[0.04]" />
+        <div className="w-1/2 h-3.5 rounded bg-white/[0.03]" />
+      </div>
+    </div>
+  );
 }
 
 export default function CommentsSheet({
@@ -103,7 +120,6 @@ export default function CommentsSheet({
       replies: [],
     };
 
-    // Optimistically add
     if (replyTo) {
       setComments((prev) =>
         prev.map((c) =>
@@ -130,9 +146,7 @@ export default function CommentsSheet({
       });
 
       if (res.ok) {
-        // Refetch for accurate data
         await fetchComments();
-        // Scroll to bottom
         setTimeout(() => {
           listRef.current?.scrollTo({
             top: listRef.current.scrollHeight,
@@ -140,7 +154,6 @@ export default function CommentsSheet({
           });
         }, 100);
       } else {
-        // Rollback
         onCountChange(commentCount);
         await fetchComments();
       }
@@ -149,6 +162,32 @@ export default function CommentsSheet({
       await fetchComments();
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    // Optimistic remove
+    setComments((prev) =>
+      prev
+        .filter((c) => c.id !== commentId)
+        .map((c) => ({
+          ...c,
+          replies: c.replies?.filter((r) => r.id !== commentId),
+        }))
+    );
+    onCountChange(Math.max(0, commentCount - 1));
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        await fetchComments();
+        onCountChange(commentCount);
+      }
+    } catch {
+      await fetchComments();
+      onCountChange(commentCount);
     }
   };
 
@@ -199,11 +238,16 @@ export default function CommentsSheet({
         {/* Comment list */}
         <div ref={listRef} className="flex-1 overflow-y-auto px-5 py-3 space-y-4">
           {loading && comments.length === 0 ? (
-            <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+            <div className="space-y-5">
+              <CommentSkeleton />
+              <CommentSkeleton />
+              <CommentSkeleton />
             </div>
           ) : comments.length === 0 ? (
             <div className="text-center py-8">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/10 mx-auto mb-3">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
               <p className="text-sm text-txt-secondary">No comments yet</p>
               <p className="text-xs text-txt-secondary mt-1">
                 Be the first to comment
@@ -215,7 +259,9 @@ export default function CommentsSheet({
                 key={comment.id}
                 comment={comment}
                 onReply={handleReply}
+                onDelete={handleDelete}
                 userId={userId}
+                postId={postId}
               />
             ))
           )}
@@ -223,7 +269,7 @@ export default function CommentsSheet({
 
         {/* Reply indicator */}
         {replyTo && (
-          <div className="px-5 py-2 border-t border-border-subtle bg-white/5 flex items-center gap-2 shrink-0">
+          <div className="px-5 py-2 border-t border-border-subtle bg-white/5 flex items-center gap-2 shrink-0 animate-in slide-in-from-bottom-2 duration-200">
             <span className="text-xs text-txt-secondary flex-1 truncate">
               Replying to{" "}
               <span className="text-gold">
@@ -250,7 +296,7 @@ export default function CommentsSheet({
                 placeholder={
                   replyTo ? "Write a reply..." : "Add a comment..."
                 }
-                className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary resize-none focus:outline-none focus:border-gold/40 min-h-[38px] max-h-[100px]"
+                className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary resize-none focus:outline-none focus:border-gold/40 min-h-[38px] max-h-[100px] transition-all"
                 maxLength={1000}
                 rows={1}
                 onKeyDown={(e) => {
@@ -301,32 +347,92 @@ export default function CommentsSheet({
 function CommentItem({
   comment,
   onReply,
+  onDelete,
   userId,
+  postId,
   isReply = false,
 }: {
   comment: Comment;
   onReply: (c: Comment) => void;
+  onDelete: (id: string) => void;
   userId: string | null;
+  postId: string;
   isReply?: boolean;
 }) {
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const name = comment.author?.display_name || "Anonymous";
   const initials = getInitials(name);
+  const avatarUrl = comment.author?.avatar_url;
+  const isAuthor = userId === comment.author_id;
+
+  const hasReplies = comment.replies && comment.replies.length > 0;
+  const [showAllReplies, setShowAllReplies] = useState(false);
+  const visibleReplies = showAllReplies
+    ? comment.replies || []
+    : (comment.replies || []).slice(0, 3);
+  const hiddenCount = (comment.replies?.length || 0) - 3;
+
+  const toggleLike = async () => {
+    if (!userId) return;
+    const prev = liked;
+    const prevCount = likeCount;
+    setLiked(!prev);
+    setLikeCount(prev ? Math.max(0, prevCount - 1) : prevCount + 1);
+
+    try {
+      const res = await fetch(
+        `/api/posts/${postId}/comments/${comment.id}/like`,
+        { method: "POST" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setLiked(data.liked);
+        setLikeCount(data.like_count);
+      } else {
+        setLiked(prev);
+        setLikeCount(prevCount);
+      }
+    } catch {
+      setLiked(prev);
+      setLikeCount(prevCount);
+    }
+  };
 
   return (
-    <div className={isReply ? "ml-8" : ""}>
+    <div className={isReply ? "ml-8 relative" : "relative"}>
+      {/* Thread line for replies */}
+      {isReply && (
+        <div className="absolute -left-5 top-0 bottom-0 w-[2px] bg-white/[0.06] rounded-full" />
+      )}
+
       <div className="flex gap-2.5">
         {/* Avatar */}
-        <div
-          className={`${
-            isReply ? "w-7 h-7 text-[9px]" : "w-8 h-8 text-[10px]"
-          } rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold ring-1 ring-white/5 shrink-0`}
-        >
-          {initials}
-        </div>
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={name}
+            width={isReply ? 28 : 32}
+            height={isReply ? 28 : 32}
+            className={`${
+              isReply ? "w-7 h-7" : "w-8 h-8"
+            } rounded-full object-cover ring-1 ring-white/5 shrink-0`}
+          />
+        ) : (
+          <div
+            className={`${
+              isReply ? "w-7 h-7 text-[9px]" : "w-8 h-8 text-[10px]"
+            } rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold ring-1 ring-white/5 shrink-0`}
+          >
+            {initials}
+          </div>
+        )}
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-white truncate">
               {name}
             </span>
@@ -337,29 +443,100 @@ function CommentItem({
           <p className="text-sm text-white/90 mt-0.5 break-words whitespace-pre-wrap">
             {comment.body}
           </p>
-          {userId && !isReply && (
+
+          {/* Actions row */}
+          <div className="flex items-center gap-3 mt-1.5">
+            {/* Like */}
             <button
-              onClick={() => onReply(comment)}
-              className="text-[11px] text-txt-secondary hover:text-gold press mt-1 transition-colors"
+              onClick={toggleLike}
+              disabled={!userId}
+              className={`flex items-center gap-1 text-[11px] press transition-colors ${
+                liked ? "text-coral" : "text-txt-secondary hover:text-coral/60"
+              } ${!userId ? "opacity-40" : ""}`}
             >
-              Reply
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill={liked ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
+              </svg>
+              {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
             </button>
-          )}
+
+            {/* Reply */}
+            {userId && !isReply && (
+              <button
+                onClick={() => onReply(comment)}
+                className="text-[11px] text-txt-secondary hover:text-gold press transition-colors"
+              >
+                Reply
+              </button>
+            )}
+
+            {/* Delete */}
+            {isAuthor && (
+              <>
+                {showDeleteConfirm ? (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => {
+                        onDelete(comment.id);
+                        setShowDeleteConfirm(false);
+                      }}
+                      className="text-[10px] text-coral font-semibold press"
+                    >
+                      Delete
+                    </button>
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="text-[10px] text-txt-secondary press"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="text-[11px] text-txt-secondary hover:text-coral/60 press transition-colors"
+                  >
+                    Delete
+                  </button>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Nested replies */}
-      {comment.replies && comment.replies.length > 0 && (
+      {hasReplies && (
         <div className="mt-3 space-y-3">
-          {comment.replies.map((reply) => (
+          {/* Thread connector line */}
+          {visibleReplies.map((reply) => (
             <CommentItem
               key={reply.id}
               comment={reply}
               onReply={onReply}
+              onDelete={onDelete}
               userId={userId}
+              postId={postId}
               isReply
             />
           ))}
+          {!showAllReplies && hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllReplies(true)}
+              className="ml-8 text-[11px] text-gold/70 font-semibold press hover:text-gold transition-colors"
+            >
+              View {hiddenCount} more {hiddenCount === 1 ? "reply" : "replies"}
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ReactionBar from "./ReactionBar";
+import MediaLightbox from "./MediaLightbox";
 import type { Post, ReactionEmoji } from "@/types/database";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import dynamic from "next/dynamic";
@@ -41,6 +42,12 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const [currentBody, setCurrentBody] = useState(post.body);
   const [editedAt, setEditedAt] = useState(post.edited_at);
   const [bodyExpanded, setBodyExpanded] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxType, setLightboxType] = useState<"image" | "video">("image");
+  const [lightboxSrc, setLightboxSrc] = useState("");
+  const [videoDims, setVideoDims] = useState<{ w: number; h: number } | null>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
+
   const author = post.author;
   const initials = author?.display_name
     ?.split(" ")
@@ -63,6 +70,24 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const showMenuButton = userId && (isAuthor || userId !== post.author_id);
 
   const isLongBody = currentBody.length > 280;
+
+  const openLightbox = useCallback((type: "image" | "video", src: string) => {
+    setLightboxType(type);
+    setLightboxSrc(src);
+    setLightboxOpen(true);
+  }, []);
+
+  /** Calculate video dimensions to fit in card without object-fit */
+  const handleVideoMeta = useCallback((e: React.SyntheticEvent<HTMLVideoElement>) => {
+    const vid = e.currentTarget;
+    const containerWidth = videoContainerRef.current?.clientWidth || 398;
+    const maxH = 560;
+    const scale = Math.min(containerWidth / vid.videoWidth, maxH / vid.videoHeight);
+    setVideoDims({
+      w: Math.round(vid.videoWidth * scale),
+      h: Math.round(vid.videoHeight * scale),
+    });
+  }, []);
 
   if (deleted) return null;
 
@@ -93,10 +118,14 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 alt={author.display_name}
                 width={44}
                 height={44}
-                className="w-11 h-11 rounded-full object-cover ring-2 ring-white/[0.06]"
+                className={`w-11 h-11 rounded-full object-cover ring-2 ${
+                  isVerified ? "ring-cyan/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]" : "ring-white/[0.06]"
+                }`}
               />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/[0.06]">
+              <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ${
+                isVerified ? "ring-cyan/30" : "ring-white/[0.06]"
+              }`}>
                 {initials}
               </div>
             )}
@@ -144,7 +173,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 w-40">
+                  <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 w-40 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
                     {canEdit && (
                       <button
                         onClick={() => {
@@ -158,32 +187,38 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                       </button>
                     )}
                     {canDelete && (
-                      <button
-                        onClick={async () => {
-                          setShowMenu(false);
-                          if (!confirm("Delete this post? This cannot be undone.")) return;
-                          try {
-                            const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
-                            if (res.ok) setDeleted(true);
-                          } catch {
-                            // silent fail
-                          }
-                        }}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
-                      >
-                        <Icon name="trash" size={16} /> Delete Post
-                      </button>
+                      <>
+                        {canEdit && <div className="border-t border-white/[0.04] my-0.5" />}
+                        <button
+                          onClick={async () => {
+                            setShowMenu(false);
+                            if (!confirm("Delete this post? This cannot be undone.")) return;
+                            try {
+                              const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+                              if (res.ok) setDeleted(true);
+                            } catch {
+                              // silent fail
+                            }
+                          }}
+                          className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-coral/5 flex items-center gap-2"
+                        >
+                          <Icon name="trash" size={16} /> Delete Post
+                        </button>
+                      </>
                     )}
                     {!isAuthor && (
-                      <button
-                        onClick={() => {
-                          setShowMenu(false);
-                          setShowReport(true);
-                        }}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-white/5 flex items-center gap-2"
-                      >
-                        <Icon name="flag" size={16} /> Report Post
-                      </button>
+                      <>
+                        <div className="border-t border-white/[0.04] my-0.5" />
+                        <button
+                          onClick={() => {
+                            setShowMenu(false);
+                            setShowReport(true);
+                          }}
+                          className="w-full text-left px-3 py-2 text-xs font-medium text-coral hover:bg-coral/5 flex items-center gap-2"
+                        >
+                          <Icon name="flag" size={16} /> Report Post
+                        </button>
+                      </>
                     )}
                   </div>
                 </>
@@ -267,28 +302,36 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         )}
       </div>
 
-      {/* Media — full bleed */}
+      {/* Media — full bleed, tappable for lightbox */}
       {post.media_type === "image" && post.image_url && (
-        <div className="relative overflow-hidden">
+        <button
+          onClick={() => openLightbox("image", post.image_url!)}
+          className="relative overflow-hidden w-full block"
+        >
           <Image
             src={post.image_url}
             alt="Post image"
             width={430}
             height={430}
-            className="w-full h-auto max-h-[420px] object-cover"
+            className="w-full h-auto max-h-[420px] object-contain bg-black/20"
           />
-        </div>
+        </button>
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && post.video_url && (
-        <div className="overflow-hidden rounded-xl bg-black">
+        <div ref={videoContainerRef} className="overflow-hidden bg-black flex items-center justify-center">
           <video
             src={post.video_url}
             controls
             playsInline
             preload="metadata"
-            className="w-full max-h-[560px]"
-            style={{ objectFit: "contain" }}
+            onLoadedMetadata={handleVideoMeta}
+            onClick={() => openLightbox("video", post.video_url!)}
+            style={
+              videoDims
+                ? { width: `${videoDims.w}px`, height: `${videoDims.h}px` }
+                : { maxWidth: "100%", maxHeight: "560px", width: "auto", height: "auto" }
+            }
           />
         </div>
       )}
@@ -322,6 +365,15 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       <div className="px-4 pb-3 pt-1">
         <ReactionBar post={post} userReactions={userReactions} userId={userId} />
       </div>
+
+      {/* Media Lightbox */}
+      {lightboxOpen && (
+        <MediaLightbox
+          type={lightboxType}
+          src={lightboxSrc}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
 
       {/* Report Modal */}
       {showReport && (

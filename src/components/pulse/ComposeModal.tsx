@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Button from "@/components/ui/Button";
@@ -11,10 +11,9 @@ interface ComposeModalProps {
   onClose: () => void;
   userId: string;
   userName: string;
-  initialHighlight?: boolean;
 }
 
-export default function ComposeModal({ isOpen, onClose, userId, userName, initialHighlight = false }: ComposeModalProps) {
+export default function ComposeModal({ isOpen, onClose, userId, userName }: ComposeModalProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -27,7 +26,23 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [isHighlight] = useState(initialHighlight);
+  const [hashtagSuggestions, setHashtagSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [trendingTags, setTrendingTags] = useState<string[]>([]);
+
+  // Fetch trending hashtags once
+  useEffect(() => {
+    if (isOpen && trendingTags.length === 0) {
+      fetch("/api/hashtags/trending")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.trending) {
+            setTrendingTags(data.trending.map((t: { hashtag: string }) => t.hashtag));
+          }
+        })
+        .catch(() => {});
+    }
+  }, [isOpen, trendingTags.length]);
 
   if (!isOpen) return null;
 
@@ -38,6 +53,40 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
     .slice(0, 2)
     .toUpperCase();
 
+  // Character counter
+  const charPercent = Math.min(body.length / 500, 1);
+  const counterColor =
+    body.length > 480 ? "#FF6B6B" : body.length > 400 ? "#F2A900" : "rgba(255,255,255,0.3)";
+  const counterRadius = 8;
+  const counterCircumference = 2 * Math.PI * counterRadius;
+  const counterOffset = counterCircumference * (1 - charPercent);
+
+  // Hashtag detection
+  const handleBodyChange = (value: string) => {
+    setBody(value);
+
+    // Check if user is typing a hashtag
+    const match = value.match(/#(\w*)$/);
+    if (match && match[1].length > 0) {
+      const partial = match[1].toLowerCase();
+      const suggestions = trendingTags.filter((t) =>
+        t.toLowerCase().startsWith(partial)
+      );
+      setHashtagSuggestions(suggestions.slice(0, 5));
+      setShowSuggestions(suggestions.length > 0);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const insertHashtag = (tag: string) => {
+    const match = body.match(/#(\w*)$/);
+    if (match) {
+      setBody(body.slice(0, body.length - match[0].length) + `#${tag} `);
+    }
+    setShowSuggestions(false);
+  };
+
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -47,16 +96,13 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
       return;
     }
 
-    // Clear video if set
     setVideoUrl(null);
     setVideoPreview(null);
 
-    // Show preview
     const reader = new FileReader();
     reader.onload = (ev) => setImagePreview(ev.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Upload
     setUploading(true);
     setError("");
     try {
@@ -79,15 +125,12 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
       return;
     }
 
-    // Clear image if set
     setImageUrl(null);
     setImagePreview(null);
 
-    // Show preview
     const url = URL.createObjectURL(file);
     setVideoPreview(url);
 
-    // Upload
     setUploading(true);
     setError("");
     try {
@@ -102,17 +145,9 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
   };
 
   const handleSubmit = async () => {
-    if (isHighlight) {
-      // Highlights require media
-      if (!imageUrl && !videoUrl) {
-        setError("Add a photo or video for your highlight");
-        return;
-      }
-    } else {
-      if (!body.trim() && !imageUrl && !videoUrl) {
-        setError("Write something or attach media");
-        return;
-      }
+    if (!body.trim() && !imageUrl && !videoUrl) {
+      setError("Write something or attach media");
+      return;
     }
 
     setSubmitting(true);
@@ -123,10 +158,10 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          body: body.trim() || (isHighlight ? "City Highlight" : imageUrl ? "Shared a photo" : "Shared a video"),
+          body: body.trim() || (imageUrl ? "Shared a photo" : "Shared a video"),
           image_url: imageUrl,
           video_url: videoUrl,
-          is_highlight: isHighlight,
+          is_highlight: false,
         }),
       });
 
@@ -135,7 +170,6 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
         throw new Error(data.error || "Failed to create post");
       }
 
-      // Reset and close
       setBody("");
       setImageUrl(null);
       setImagePreview(null);
@@ -162,204 +196,6 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
     }
   };
 
-  const hasMedia = !!imagePreview || !!videoPreview;
-
-  // ── HIGHLIGHT MODE — Story/Reel Creator ──────────────────
-  if (isHighlight) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        {/* Full-screen dark backdrop */}
-        <div className="absolute inset-0 bg-black" onClick={handleClose} />
-
-        <div className="relative w-full max-w-[430px] h-full flex flex-col bg-black">
-          {/* Top bar */}
-          <div className="relative z-20 flex items-center justify-between px-4 pt-[env(safe-area-inset-top,12px)] pb-3">
-            <button onClick={handleClose} className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center press">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-            <div className="flex items-center gap-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              <span className="text-sm font-heading font-bold text-gold">City Highlight</span>
-            </div>
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              loading={submitting}
-              disabled={uploading || !hasMedia}
-            >
-              Share
-            </Button>
-          </div>
-
-          {error && (
-            <div className="mx-4 mb-3 bg-coral/15 border border-coral/25 rounded-xl px-4 py-2.5 text-xs text-coral relative z-20">
-              {error}
-            </div>
-          )}
-
-          {/* Media preview area — the main stage */}
-          <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-            {hasMedia ? (
-              <>
-                {/* Image highlight preview */}
-                {imagePreview && (
-                  <div className="relative w-full h-full flex items-center justify-center">
-                    <Image
-                      src={imagePreview}
-                      alt="Highlight"
-                      fill
-                      className="object-contain"
-                    />
-                    {uploading && (
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="w-10 h-10 border-3 border-gold/30 border-t-gold rounded-full animate-spin" />
-                          <span className="text-xs text-white/60 font-medium">Uploading...</span>
-                        </div>
-                      </div>
-                    )}
-                    {imageUrl && !uploading && (
-                      <div className="absolute top-3 left-3 bg-emerald/20 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                        <span className="text-[10px] text-emerald font-semibold">Ready</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Video highlight preview */}
-                {videoPreview && (
-                  <div className="relative w-full h-full flex items-center justify-center bg-black">
-                    <video
-                      src={videoPreview}
-                      controls
-                      playsInline
-                      autoPlay
-                      muted
-                      className="w-full h-full object-contain"
-                    />
-                    {uploading && (
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-                        <div className="flex flex-col items-center gap-3">
-                          <div className="w-10 h-10 border-3 border-gold/30 border-t-gold rounded-full animate-spin" />
-                          <span className="text-xs text-white/60 font-medium">Processing video...</span>
-                        </div>
-                      </div>
-                    )}
-                    {videoUrl && !uploading && (
-                      <div className="absolute top-3 left-3 bg-emerald/20 backdrop-blur-sm rounded-full px-3 py-1.5 flex items-center gap-1.5 z-10">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
-                          <path d="M20 6L9 17l-5-5" />
-                        </svg>
-                        <span className="text-[10px] text-emerald font-semibold">Ready</span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Caption overlay at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 z-20">
-                  <div className="bg-gradient-to-t from-black via-black/80 to-transparent pt-10 pb-4 px-4">
-                    <div className="flex items-end gap-3">
-                      <div className="flex-1">
-                        <input
-                          value={body}
-                          onChange={(e) => setBody(e.target.value)}
-                          placeholder="Add a caption..."
-                          className="w-full bg-white/10 backdrop-blur-sm text-sm text-white placeholder:text-white/40 rounded-xl px-4 py-3 focus:outline-none focus:ring-1 focus:ring-gold/40 border border-white/10"
-                          maxLength={200}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between mt-2 px-1">
-                      <span className="text-[10px] text-white/30">{body.length}/200</span>
-                      {/* Swap media button */}
-                      <button
-                        onClick={() => {
-                          setImagePreview(null);
-                          setImageUrl(null);
-                          setVideoPreview(null);
-                          setVideoUrl(null);
-                        }}
-                        className="text-[11px] text-white/40 press hover:text-white/60 transition-colors"
-                      >
-                        Change media
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              /* No media yet — upload prompt */
-              <div className="flex flex-col items-center gap-6 px-8">
-                <div className="w-24 h-24 rounded-full bg-gold/10 border-2 border-dashed border-gold/25 flex items-center justify-center">
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-gold/60">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </div>
-                <div className="text-center">
-                  <h3 className="font-heading font-bold text-[20px] text-white mb-2">Create a Highlight</h3>
-                  <p className="text-sm text-white/40 leading-relaxed max-w-[260px]">
-                    Share a photo or video moment with the Compton community. It appears in the highlights strip on the Pulse.
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    className="flex items-center gap-2.5 bg-white/[0.08] border border-white/[0.12] px-6 py-3.5 rounded-2xl text-[14px] font-semibold press hover:bg-white/[0.12] transition-all disabled:opacity-40"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan">
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                      <circle cx="8.5" cy="8.5" r="1.5" />
-                      <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                    <span className="text-white">Photo</span>
-                  </button>
-                  <button
-                    onClick={() => videoInputRef.current?.click()}
-                    disabled={uploading}
-                    className="flex items-center gap-2.5 bg-white/[0.08] border border-white/[0.12] px-6 py-3.5 rounded-2xl text-[14px] font-semibold press hover:bg-white/[0.12] transition-all disabled:opacity-40"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-coral">
-                      <polygon points="23 7 16 12 23 17 23 7" />
-                      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                    <span className="text-white">Video</span>
-                  </button>
-                </div>
-                <p className="text-[11px] text-white/20 mt-2">Photo (5MB) or Video (50MB max)</p>
-              </div>
-            )}
-          </div>
-
-          {/* Hidden file inputs */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            className="hidden"
-            onChange={handleImageSelect}
-          />
-          <input
-            ref={videoInputRef}
-            type="file"
-            accept="video/mp4,video/quicktime,video/webm,video/mov"
-            className="hidden"
-            onChange={handleVideoSelect}
-          />
-        </div>
-      </div>
-    );
-  }
-
-  // ── REGULAR POST MODE ────────────────────────────────────
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
@@ -384,7 +220,7 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
             size="sm"
             onClick={handleSubmit}
             loading={submitting}
-            disabled={uploading}
+            disabled={uploading || (!body.trim() && !imageUrl && !videoUrl)}
           >
             Post
           </Button>
@@ -397,7 +233,7 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
         )}
 
         {/* Author + Textarea */}
-        <div className="flex gap-3 px-5 pt-4">
+        <div className="flex gap-3 px-5 pt-4 relative">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-xs ring-2 ring-white/5 shrink-0">
             {initials}
           </div>
@@ -405,28 +241,52 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
             <p className="text-xs font-semibold mb-1">{userName}</p>
             <textarea
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(e) => handleBodyChange(e.target.value)}
               placeholder="What's happening in Compton?"
               className="w-full bg-transparent text-sm text-white placeholder:text-txt-secondary resize-none focus:outline-none min-h-[80px]"
               maxLength={500}
               autoFocus
             />
+
+            {/* Hashtag suggestions */}
+            {showSuggestions && (
+              <div className="absolute left-12 right-5 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 z-30">
+                {hashtagSuggestions.map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => insertHashtag(tag)}
+                    className="w-full text-left px-3 py-2 text-xs font-medium text-gold/80 hover:bg-white/5 press"
+                  >
+                    #{tag}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Image preview */}
+        {/* Image preview — larger, object-contain */}
         {imagePreview && (
-          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden">
+          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden bg-black/30">
             <Image
               src={imagePreview}
               alt="Preview"
-              width={380}
-              height={200}
-              className="w-full h-auto max-h-[200px] object-cover"
+              width={390}
+              height={300}
+              className="w-full h-auto max-h-[300px] object-contain"
             />
+            {/* Upload progress bar */}
             {uploading && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
+                <div className="h-full bg-gold animate-pulse rounded-full" style={{ width: "70%" }} />
+              </div>
+            )}
+            {imageUrl && !uploading && (
+              <div className="absolute top-2 left-2 bg-emerald/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
+                  <path d="M20 6L9 17l-5-5" />
+                </svg>
+                <span className="text-[9px] text-emerald font-semibold">Ready</span>
               </div>
             )}
             <button
@@ -434,48 +294,55 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
                 setImagePreview(null);
                 setImageUrl(null);
               }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white text-sm press"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white press"
             >
-              x
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
             </button>
           </div>
         )}
 
-        {/* Video preview */}
+        {/* Video preview — larger */}
         {videoPreview && (
-          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden border border-border-subtle bg-white/5">
+          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden border border-border-subtle bg-black">
             <video
               src={videoPreview}
-              controls
               playsInline
-              className="w-full max-h-[200px] object-contain bg-black"
+              autoPlay
+              muted
+              loop
+              className="w-full max-h-[300px]"
+              style={{ width: "auto", height: "auto", maxWidth: "100%", maxHeight: "300px", margin: "0 auto", display: "block" }}
             />
             {uploading && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
+                <div className="h-full bg-gold animate-pulse rounded-full" style={{ width: "60%" }} />
               </div>
             )}
             {videoUrl && !uploading && (
-              <p className="text-xs text-emerald px-3 py-2 flex items-center gap-1">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <div className="absolute top-2 left-2 bg-emerald/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                Video ready
-              </p>
+                <span className="text-[9px] text-emerald font-semibold">Ready</span>
+              </div>
             )}
             <button
               onClick={() => {
                 setVideoPreview(null);
                 setVideoUrl(null);
               }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white text-sm press"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white press"
             >
-              x
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
             </button>
           </div>
         )}
 
-        {/* Media bar */}
+        {/* Media bar + character counter */}
         <div className="flex items-center gap-2 px-5 py-3 border-t border-border-subtle">
           <input
             ref={fileInputRef}
@@ -514,9 +381,33 @@ export default function ComposeModal({ isOpen, onClose, userId, userName, initia
             </svg>
             Video
           </button>
-          <span className="text-[10px] text-txt-secondary ml-auto">
-            {body.length}/500
-          </span>
+
+          {/* Circular character counter */}
+          <div className="ml-auto flex items-center gap-1.5">
+            <svg width="22" height="22" viewBox="0 0 22 22" className="rotate-[-90deg]">
+              <circle
+                cx="11" cy="11" r={counterRadius}
+                fill="none"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="2"
+              />
+              <circle
+                cx="11" cy="11" r={counterRadius}
+                fill="none"
+                stroke={counterColor}
+                strokeWidth="2"
+                strokeDasharray={counterCircumference}
+                strokeDashoffset={counterOffset}
+                strokeLinecap="round"
+                className="transition-all duration-200"
+              />
+            </svg>
+            {body.length > 400 && (
+              <span className="text-[10px] tabular-nums" style={{ color: counterColor }}>
+                {500 - body.length}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

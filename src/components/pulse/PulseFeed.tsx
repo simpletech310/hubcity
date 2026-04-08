@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import PostCard from "./PostCard";
@@ -10,8 +10,7 @@ import ComposeModal from "./ComposeModal";
 import CreatePollModal from "./CreatePollModal";
 import CreateSurveyModal from "./CreateSurveyModal";
 import PulseLiveCard from "./PulseLiveCard";
-import HighlightCard from "./HighlightCard";
-import HighlightViewer from "./HighlightViewer";
+import HighlightStrip from "@/components/highlights/HighlightStrip";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
@@ -50,21 +49,6 @@ interface SuggestedProfile {
   role: string;
   verification_status: string;
   bio: string | null;
-}
-
-interface HighlightData {
-  id: string;
-  body: string;
-  video_url: string | null;
-  image_url: string | null;
-  created_at: string;
-  author: {
-    id: string;
-    display_name: string;
-    handle: string | null;
-    avatar_url: string | null;
-    role: string;
-  } | null;
 }
 
 const filters = [
@@ -284,18 +268,11 @@ export default function PulseFeed({
 }: PulseFeedProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [composeOpen, setComposeOpen] = useState(false);
-  const [composeHighlight, setComposeHighlight] = useState(false);
   const [pollOpen, setPollOpen] = useState(false);
   const [surveyOpen, setSurveyOpen] = useState(false);
 
   const isOfficial = userRole === "city_official" || userRole === "admin";
   const canPost = userId && userRole !== "citizen";
-
-  // Highlights
-  const [highlights, setHighlights] = useState<HighlightData[]>([]);
-  const [viewedIds, setViewedIds] = useState<Set<string>>(new Set());
-  const [viewerOpen, setViewerOpen] = useState(false);
-  const [viewerIndex, setViewerIndex] = useState(0);
 
   // Trending hashtags
   const [trendingHashtags, setTrendingHashtags] = useState<{ hashtag: string; count: number }[]>([]);
@@ -308,40 +285,6 @@ export default function PulseFeed({
       })
       .catch(() => {});
   }, []);
-
-  // Fetch highlights
-  useEffect(() => {
-    fetch("/api/highlights")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.highlights) setHighlights(data.highlights);
-      })
-      .catch(() => {});
-  }, []);
-
-  // Load viewed highlights from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("hc_viewed_highlights");
-      if (stored) setViewedIds(new Set(JSON.parse(stored)));
-    } catch {}
-  }, []);
-
-  const markViewed = useCallback((id: string) => {
-    setViewedIds((prev) => {
-      const next = new Set(prev);
-      next.add(id);
-      try {
-        localStorage.setItem("hc_viewed_highlights", JSON.stringify([...next]));
-      } catch {}
-      return next;
-    });
-  }, []);
-
-  const openHighlight = (index: number) => {
-    setViewerIndex(index);
-    setViewerOpen(true);
-  };
 
   // Filter logic
   const showPolls = activeFilter === "all" || activeFilter === "polls";
@@ -411,7 +354,7 @@ export default function PulseFeed({
                 .toUpperCase()}
             </div>
             <button
-              onClick={() => { setComposeHighlight(false); setComposeOpen(true); }}
+              onClick={() => setComposeOpen(true)}
               className="flex-1 text-left text-sm text-white/30 press"
             >
               What&apos;s happening in Compton?
@@ -441,35 +384,8 @@ export default function PulseFeed({
       )}
 
       {/* ─── Highlights Strip ─── */}
-      {(canPost || highlights.length > 0) && activeFilter === "all" && (
-        <div className="mb-4">
-          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
-            {/* New highlight button */}
-            {canPost && (
-              <button
-                onClick={() => { setComposeHighlight(true); setComposeOpen(true); }}
-                className="flex flex-col items-center gap-1.5 shrink-0 w-[68px] press"
-              >
-                <div className="w-[60px] h-[60px] rounded-full border-2 border-dashed border-gold/30 flex items-center justify-center bg-gold/5">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </div>
-                <span className="text-[10px] font-medium text-gold/60">New</span>
-              </button>
-            )}
-            {highlights.map((h, i) => (
-              <HighlightCard
-                key={h.id}
-                id={h.id}
-                authorName={h.author?.display_name || "Unknown"}
-                authorAvatar={h.author?.avatar_url || null}
-                isViewed={viewedIds.has(h.id)}
-                onClick={() => openHighlight(i)}
-              />
-            ))}
-          </div>
-        </div>
+      {activeFilter === "all" && (
+        <HighlightStrip canCreate={!!canPost} userId={userId} userName={userName} />
       )}
 
       {/* ─── Filter Chips ─── */}
@@ -637,10 +553,9 @@ export default function PulseFeed({
         <>
           <ComposeModal
             isOpen={composeOpen}
-            onClose={() => { setComposeOpen(false); setComposeHighlight(false); }}
+            onClose={() => setComposeOpen(false)}
             userId={userId}
             userName={userName}
-            initialHighlight={composeHighlight}
           />
           {isOfficial && (
             <>
@@ -651,15 +566,6 @@ export default function PulseFeed({
         </>
       )}
 
-      {/* Highlight Viewer */}
-      {viewerOpen && highlights.length > 0 && (
-        <HighlightViewer
-          highlights={highlights}
-          initialIndex={viewerIndex}
-          onClose={() => setViewerOpen(false)}
-          onViewed={markViewed}
-        />
-      )}
     </div>
   );
 }
