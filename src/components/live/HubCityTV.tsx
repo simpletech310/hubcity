@@ -72,14 +72,14 @@ const VIDEO_TYPE_LABEL: Record<string, string> = {
 
 // ── Compton Stars ──────────────────────────────────────────
 const COMPTON_STARS = [
-  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", icon: "music" },
-  { name: "Serena Williams", title: "Tennis Legend", icon: "trophy" },
-  { name: "Venus Williams", title: "Tennis Champion", icon: "trophy" },
-  { name: "Dr. Dre", title: "Music Mogul", icon: "music" },
-  { name: "Ice Cube", title: "Entertainment Icon", icon: "film" },
-  { name: "The Game", title: "West Coast Legend", icon: "music" },
-  { name: "A'ja Wilson", title: "WNBA MVP", icon: "trophy" },
-  { name: "Coolio", title: "Grammy Winner", icon: "music" },
+  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", videoId: "a9791d00-3eeb-4e02-a91e-ea438f802774", playbackId: "djIRWA5IxCqF00raJ3hjIMd488F69sRhhF00xolcpwQGI", imageUrl: "/images/generated/kendrick.jpg" },
+  { name: "Serena Williams", title: "Tennis Legend", videoId: "9a77eb42-0e46-4820-8cc5-d9fe531004a5", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/serena.jpg" },
+  { name: "Venus Williams", title: "Tennis Champion", videoId: "9aceff49-3816-4154-86bc-07cb4d731212", playbackId: "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA", imageUrl: "/images/generated/venus.jpg" },
+  { name: "Dr. Dre", title: "Music Mogul", videoId: "080f5716-03dc-4fb8-9e46-b122a3b5b803", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/dre.jpg" },
+  { name: "Ice Cube", title: "Entertainment Icon", videoId: "fb007744-d894-4ede-9059-960887c8274e", playbackId: "ZRXLTip00QsIHSYRlWmGRIfRF4waRhycuQ007OuIulU7g", imageUrl: "/images/generated/icecube.jpg" },
+  { name: "The Game", title: "West Coast Legend", videoId: "33e3916a-a8bd-4c41-be32-b06a9e825134", playbackId: "f4Ug00QD4QexEgZGgQDng3qqrte5gR6RByNVK131oWZE", imageUrl: "/images/generated/thegame.jpg" },
+  { name: "A'ja Wilson", title: "WNBA MVP", videoId: "0fce5952-fa94-43d1-8b08-973d32520a08", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/aja.jpg" },
+  { name: "Coolio", title: "Grammy Winner", videoId: "c33cce2a-9afb-4e40-8a41-f61314ed945c", playbackId: "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo", imageUrl: "/images/generated/coolio.jpg" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────
@@ -630,15 +630,39 @@ export default function HubCityTV({
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
               {COMPTON_STARS.map((star, i) => (
-                <div key={i} className="shrink-0 flex flex-col items-center gap-2 w-[80px] press">
+                <button
+                  key={i}
+                  onClick={() => playVideo({
+                    id: star.videoId,
+                    title: `${star.name} — ${star.title}`,
+                    mux_playback_id: star.playbackId,
+                    mux_asset_id: null,
+                    channel_id: "",
+                    description: null,
+                    thumbnail_url: null,
+                    duration: null,
+                    video_type: "featured",
+                    view_count: 0,
+                    is_published: true,
+                    published_at: new Date().toISOString(),
+                    created_at: new Date().toISOString(),
+                  } as ChannelVideo)}
+                  className="shrink-0 flex flex-col items-center gap-2 w-[80px] press"
+                >
                   <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-br from-gold/20 via-royal to-hc-purple/20 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center text-[24px]">{star.icon}</div>
+                    <div className="w-full h-full rounded-full bg-midnight overflow-hidden">
+                      <img
+                        src={`https://image.mux.com/${star.playbackId}/thumbnail.jpg?width=128&height=128&fit_mode=smartcrop`}
+                        alt={star.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   </div>
                   <div className="text-center">
                     <p className="text-[11px] font-semibold leading-tight">{star.name}</p>
                     <p className="text-[9px] text-warm-gray">{star.title}</p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </section>
