@@ -704,7 +704,7 @@ export default async function ProfilePage() {
           { label: "My Tickets", icon: "ticket" as IconName, href: "/profile/tickets" },
           ...((role === "admin" || role === "city_official" || role === "city_ambassador") ? [{ label: "Go Live", icon: "tv" as IconName, href: "/live", highlight: true }] : []),
           { label: "My Groups", icon: "users" as IconName, href: "/groups" },
-          { label: "My RSVPs", icon: "calendar" as IconName, href: "/events", count: rsvpCount ?? 0 },
+          { label: "My RSVPs", icon: "calendar" as IconName, href: "/profile/rsvps", count: rsvpCount ?? 0 },
           { label: "Notification Settings", icon: "bell" as IconName, href: "/profile/settings" },
           { label: "Verify Address", icon: "verified" as IconName, href: "/verify-address", highlight: verificationStatus !== "verified" },
           { label: "Language", icon: "globe" as IconName, comingSoon: true, detail: profile?.language || "English" },
