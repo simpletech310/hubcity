@@ -68,13 +68,16 @@ export default function GroupsPage() {
     load();
   }, [category]);
 
+  // Filter out private groups client-side
+  const publicGroups = groups.filter((g) => g.is_public !== false);
+
   const filteredGroups = search.trim()
-    ? groups.filter(
+    ? publicGroups.filter(
         (g) =>
           g.name.toLowerCase().includes(search.toLowerCase()) ||
           (g.description && g.description.toLowerCase().includes(search.toLowerCase()))
       )
-    : groups;
+    : publicGroups;
 
   async function handleJoin(groupId: string) {
     setJoining(groupId);
@@ -249,61 +252,95 @@ export default function GroupsPage() {
           const badgeVariant = CATEGORY_BADGE_VARIANT[group.category] || "coral";
 
           return (
-            <Card key={group.id} hover className="relative overflow-hidden">
-              {/* Category accent line */}
-              <div
-                className="absolute top-0 left-0 right-0 h-[2px]"
-                style={{
-                  background: `linear-gradient(90deg, var(--color-${color}) 0%, transparent 100%)`,
-                  opacity: 0.4,
-                }}
-              />
+            <Card key={group.id} hover padding={false} className="relative overflow-hidden">
+              {/* Cover image or category accent header */}
+              <Link href={`/groups/${group.id}`} className="block relative">
+                {group.image_url ? (
+                  <div className="relative h-20 w-full">
+                    <img
+                      src={group.image_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
+                  </div>
+                ) : (
+                  <div
+                    className="h-20 w-full"
+                    style={{
+                      background: `linear-gradient(135deg, color-mix(in srgb, var(--color-${color}) 18%, transparent) 0%, transparent 100%)`,
+                    }}
+                  />
+                )}
+              </Link>
 
-              <div className="flex items-start gap-3">
-                <Link
-                  href={`/groups/${group.id}`}
-                  className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-                  style={{
-                    background: `color-mix(in srgb, var(--color-${color}) 12%, transparent)`,
-                  }}
-                >
-                  <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={24} />
-                </Link>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <Link href={`/groups/${group.id}`} className="text-sm font-bold truncate hover:text-gold transition-colors">{group.name}</Link>
-                    <Badge label={group.category} variant={badgeVariant} />
-                  </div>
-                  {group.description && (
-                    <p className="text-xs text-txt-secondary line-clamp-2 mb-2">
-                      {group.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-txt-secondary flex items-center gap-1">
-                      <Icon name="users" size={14} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
-                    </span>
-                    <button
-                      onClick={() => handleJoin(group.id)}
-                      disabled={joining === group.id}
-                      className={`px-4 py-1.5 rounded-lg text-xs font-bold press transition-all flex items-center gap-1.5 ${
-                        isMember
-                          ? "bg-emerald/20 text-emerald border border-emerald/30"
-                          : "bg-gold/20 text-gold border border-gold/30"
-                      }`}
+              {/* Avatar overlapping cover bottom-left */}
+              <div className="relative px-4">
+                <div className="-mt-5 mb-2 flex items-end gap-3">
+                  {group.avatar_url ? (
+                    <Link
+                      href={`/groups/${group.id}`}
+                      className="w-10 h-10 rounded-full overflow-hidden border-2 border-card shrink-0 bg-card"
                     >
-                      {joining === group.id ? (
-                        "..."
-                      ) : isMember ? (
-                        <>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                          Joined
-                        </>
-                      ) : (
-                        "Join"
-                      )}
-                    </button>
-                  </div>
+                      <img
+                        src={group.avatar_url}
+                        alt={group.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </Link>
+                  ) : (
+                    <Link
+                      href={`/groups/${group.id}`}
+                      className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 border-card"
+                      style={{
+                        background: `color-mix(in srgb, var(--color-${color}) 20%, var(--color-card))`,
+                      }}
+                    >
+                      <Icon name={(CATEGORY_ICONS[group.category] || "handshake") as IconName} size={18} />
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Card body */}
+              <div className="px-4 pb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Link href={`/groups/${group.id}`} className="text-sm font-bold truncate hover:text-gold transition-colors">
+                    {group.name}
+                  </Link>
+                  <Badge label={group.category} variant={badgeVariant} />
+                </div>
+
+                {group.description && (
+                  <p className="text-xs text-txt-secondary line-clamp-2 mb-3">
+                    {group.description}
+                  </p>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-txt-secondary flex items-center gap-1">
+                    <Icon name="users" size={14} /> {group.member_count} member{group.member_count !== 1 ? "s" : ""}
+                  </span>
+                  <button
+                    onClick={() => handleJoin(group.id)}
+                    disabled={joining === group.id}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-bold press transition-all flex items-center gap-1.5 ${
+                      isMember
+                        ? "bg-emerald/20 text-emerald border border-emerald/30"
+                        : "bg-gold/20 text-gold border border-gold/30"
+                    }`}
+                  >
+                    {joining === group.id ? (
+                      "..."
+                    ) : isMember ? (
+                      <>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Joined
+                      </>
+                    ) : (
+                      "Join"
+                    )}
+                  </button>
                 </div>
               </div>
             </Card>

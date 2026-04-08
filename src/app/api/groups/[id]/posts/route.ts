@@ -103,7 +103,7 @@ export async function POST(
       );
     }
 
-    const { body, image_url } = await request.json();
+    const { body, image_url, video_url, media_type } = await request.json();
 
     if (!body || typeof body !== "string" || !body.trim()) {
       return NextResponse.json(
@@ -119,6 +119,8 @@ export async function POST(
         author_id: user.id,
         body: body.trim(),
         image_url: image_url || null,
+        video_url: video_url || null,
+        media_type: media_type || null,
         is_published: true,
         reaction_counts: {},
       })

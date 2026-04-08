@@ -43,9 +43,11 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const [editedAt, setEditedAt] = useState(post.edited_at);
   const [bodyExpanded, setBodyExpanded] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [lightboxType, setLightboxType] = useState<"image" | "video">("image");
   const [lightboxSrc, setLightboxSrc] = useState("");
   const [videoDims, setVideoDims] = useState<{ w: number; h: number } | null>(null);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [videoMuted, setVideoMuted] = useState(true);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const author = post.author;
@@ -71,10 +73,21 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
 
   const isLongBody = currentBody.length > 280;
 
-  const openLightbox = useCallback((type: "image" | "video", src: string) => {
-    setLightboxType(type);
+  const openImageLightbox = useCallback((src: string) => {
     setLightboxSrc(src);
     setLightboxOpen(true);
+  }, []);
+
+  const toggleVideoPlay = useCallback(() => {
+    const vid = videoRef.current;
+    if (!vid) return;
+    if (vid.paused) {
+      vid.play();
+      setVideoPlaying(true);
+    } else {
+      vid.pause();
+      setVideoPlaying(false);
+    }
   }, []);
 
   /** Calculate video dimensions to fit in card without object-fit */
@@ -305,7 +318,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       {/* Media — full bleed, tappable for lightbox */}
       {post.media_type === "image" && post.image_url && (
         <button
-          onClick={() => openLightbox("image", post.image_url!)}
+          onClick={() => openImageLightbox(post.image_url!)}
           className="relative overflow-hidden w-full block"
         >
           <Image
@@ -319,20 +332,46 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && post.video_url && (
-        <div ref={videoContainerRef} className="overflow-hidden bg-black flex items-center justify-center">
+        <div ref={videoContainerRef} className="overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
           <video
+            ref={videoRef}
             src={post.video_url}
-            controls
             playsInline
+            muted={videoMuted}
             preload="metadata"
             onLoadedMetadata={handleVideoMeta}
-            onClick={() => openLightbox("video", post.video_url!)}
+            onEnded={() => setVideoPlaying(false)}
             style={
               videoDims
                 ? { width: `${videoDims.w}px`, height: `${videoDims.h}px` }
                 : { maxWidth: "100%", maxHeight: "560px", width: "auto", height: "auto" }
             }
           />
+          {/* Play/pause overlay */}
+          {!videoPlaying && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+              </div>
+            </div>
+          )}
+          {/* Mute toggle */}
+          <button
+            onClick={(e) => { e.stopPropagation(); setVideoMuted(!videoMuted); if (videoRef.current) videoRef.current.muted = !videoMuted; }}
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            {videoMuted ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 5L6 9H2v6h4l5 4V5z" /><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
+              </svg>
+            )}
+          </button>
         </div>
       )}
 
@@ -366,10 +405,10 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         <ReactionBar post={post} userReactions={userReactions} userId={userId} />
       </div>
 
-      {/* Media Lightbox */}
+      {/* Image Lightbox */}
       {lightboxOpen && (
         <MediaLightbox
-          type={lightboxType}
+          type="image"
           src={lightboxSrc}
           onClose={() => setLightboxOpen(false)}
         />

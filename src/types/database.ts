@@ -185,6 +185,7 @@ export interface Event {
   ticket_sales_end: string | null;
   max_tickets_per_person: number;
   group_id: string | null;
+  visibility: "public" | "group" | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
@@ -1192,6 +1193,7 @@ export interface CommunityGroup {
   description: string | null;
   category: GroupCategory;
   image_url: string | null;
+  avatar_url: string | null;
   is_public: boolean;
   member_count: number;
   created_by: string | null;
@@ -1214,6 +1216,8 @@ export interface GroupPost {
   author_id: string;
   body: string;
   image_url: string | null;
+  video_url: string | null;
+  media_type: "image" | "video" | null;
   is_published: boolean;
   is_pinned: boolean;
   reaction_counts: Record<string, number>;
@@ -1236,8 +1240,15 @@ export interface GroupPostComment {
   author_id: string;
   body: string;
   is_published: boolean;
+  like_count?: number;
   created_at: string;
   author?: Profile;
+}
+
+export interface GroupPostCommentLike {
+  comment_id: string;
+  user_id: string;
+  created_at: string;
 }
 
 // ── Citizen Badges ───────────────────────────────────

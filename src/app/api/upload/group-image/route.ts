@@ -15,6 +15,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const groupId = formData.get("groupId") as string | null;
+    const imageType = (formData.get("type") as string) || "cover";
 
     if (!file || !groupId) {
       return NextResponse.json({ error: "File and groupId required" }, { status: 400 });
@@ -48,7 +49,7 @@ export async function POST(request: Request) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const path = `groups/${groupId}/${Date.now()}.${ext}`;
+    const path = `groups/${groupId}/${imageType}/${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("post-images")

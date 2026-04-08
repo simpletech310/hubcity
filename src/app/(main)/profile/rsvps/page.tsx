@@ -92,7 +92,7 @@ export default async function MyRsvpsPage() {
                 return (
                   <Link
                     key={rsvp.id}
-                    href={`/events/${event.slug || event.id}`}
+                    href={`/profile/rsvps/${rsvp.id}`}
                     className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-emerald/20 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -166,7 +166,7 @@ export default async function MyRsvpsPage() {
                 return (
                   <Link
                     key={rsvp.id}
-                    href={`/events/${event.slug || event.id}`}
+                    href={`/profile/rsvps/${rsvp.id}`}
                     className="block glass-card-elevated rounded-2xl p-3.5 press opacity-60 hover:opacity-80 transition-opacity"
                   >
                     <div className="flex items-center gap-3">

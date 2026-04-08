@@ -10,7 +10,6 @@ import ComposeModal from "./ComposeModal";
 import CreatePollModal from "./CreatePollModal";
 import CreateSurveyModal from "./CreateSurveyModal";
 import PulseLiveCard from "./PulseLiveCard";
-import HighlightStrip from "@/components/highlights/HighlightStrip";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
@@ -381,11 +380,6 @@ export default function PulseFeed({
             </div>
           </div>
         </div>
-      )}
-
-      {/* ─── Highlights Strip ─── */}
-      {activeFilter === "all" && (
-        <HighlightStrip canCreate={!!canPost} userId={userId} userName={userName} />
       )}
 
       {/* ─── Filter Chips ─── */}

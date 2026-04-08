@@ -85,6 +85,7 @@ export async function POST(
         is_ticketed: false,
         rsvp_count: 0,
         group_id: groupId,
+        visibility: body.visibility || "public",
         created_by: user.id,
       })
       .select()

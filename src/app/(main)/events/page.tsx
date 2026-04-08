@@ -97,6 +97,7 @@ export default function EventsPage() {
         .from("events")
         .select("*")
         .eq("is_published", true)
+        .or("visibility.eq.public,visibility.is.null")
         .order("is_featured", { ascending: false })
         .order("start_date", { ascending: true });
 

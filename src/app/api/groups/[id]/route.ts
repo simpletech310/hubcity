@@ -79,6 +79,7 @@ export async function PATCH(
     if (body.name !== undefined) updates.name = body.name;
     if (body.description !== undefined) updates.description = body.description;
     if (body.image_url !== undefined) updates.image_url = body.image_url;
+    if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url;
     if (body.category !== undefined) updates.category = body.category;
     if (body.is_public !== undefined) updates.is_public = body.is_public;
     updates.updated_at = new Date().toISOString();
