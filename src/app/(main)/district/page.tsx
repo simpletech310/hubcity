@@ -64,8 +64,8 @@ export default async function DistrictPage() {
     { data: activeSurveys },
     { data: officialPosts },
     { count: businessCount },
-    { count: schoolCount },
-    { count: parkCount },
+    { data: districtSchools },
+    { data: districtParks },
     { data: allCouncil },
   ] = await Promise.all([
     // Council member for user's district
@@ -143,18 +143,37 @@ export default async function DistrictPage() {
           .eq("is_published", true)
           .order("created_at", { ascending: false })
           .limit(5),
-    // District stats
+    // Business count
     supabase
       .from("businesses")
       .select("id", { count: "exact", head: true })
       .eq("is_published", true),
-    supabase
-      .from("schools")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true),
-    supabase
-      .from("parks")
-      .select("id", { count: "exact", head: true }),
+    // Schools — filtered by district if signed in
+    userDistrict
+      ? supabase
+          .from("schools")
+          .select("id, name, slug, address, level, mascot, district, image_urls")
+          .eq("is_published", true)
+          .eq("district", userDistrict)
+          .order("name")
+      : supabase
+          .from("schools")
+          .select("id, name, slug, address, level, mascot, district, image_urls")
+          .eq("is_published", true)
+          .order("name")
+          .limit(6),
+    // Parks — filtered by district if signed in
+    userDistrict
+      ? supabase
+          .from("parks")
+          .select("id, name, slug, address, district, amenities, image_urls")
+          .eq("district", userDistrict)
+          .order("name")
+      : supabase
+          .from("parks")
+          .select("id, name, slug, address, district, amenities, image_urls")
+          .order("name")
+          .limit(6),
     // All council members (for non-signed-in view)
     !userDistrict
       ? supabase
@@ -208,6 +227,8 @@ export default async function DistrictPage() {
 
   const eventsList = districtEvents ?? [];
   const alertsList = districtAlerts ?? [];
+  const schoolsList = districtSchools ?? [];
+  const parksList = districtParks ?? [];
 
   const severityStyles: Record<string, { icon: IconName; color: string; bg: string }> = {
     critical: { icon: "alert", color: "text-coral", bg: "bg-coral/10" },
@@ -366,8 +387,8 @@ export default async function DistrictPage() {
             {[
               { label: "Events", count: eventsList.length, icon: "calendar" as IconName, color: "text-hc-purple", bg: "from-hc-purple/8 to-hc-purple/3", border: "border-hc-purple/15" },
               { label: "Businesses", count: businessCount ?? 0, icon: "store" as IconName, color: "text-gold", bg: "from-gold/8 to-gold/3", border: "border-gold/15" },
-              { label: "Schools", count: schoolCount ?? 0, icon: "graduation" as IconName, color: "text-cyan", bg: "from-cyan/8 to-cyan/3", border: "border-cyan/15" },
-              { label: "Parks", count: parkCount ?? 0, icon: "tree" as IconName, color: "text-emerald", bg: "from-emerald/8 to-emerald/3", border: "border-emerald/15" },
+              { label: "Schools", count: schoolsList.length, icon: "graduation" as IconName, color: "text-cyan", bg: "from-cyan/8 to-cyan/3", border: "border-cyan/15" },
+              { label: "Parks", count: parksList.length, icon: "tree" as IconName, color: "text-emerald", bg: "from-emerald/8 to-emerald/3", border: "border-emerald/15" },
             ].map((stat) => (
               <div
                 key={stat.label}
@@ -475,6 +496,107 @@ export default async function DistrictPage() {
             </div>
           )}
         </div>
+
+        {/* ── Schools in District ────────────────────── */}
+        {schoolsList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                {userDistrict ? "Schools in Your District" : "Schools in Compton"}
+              </p>
+              <Link href="/schools" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {schoolsList.slice(0, 5).map((school) => (
+                <Link
+                  key={school.id}
+                  href={`/schools/${school.slug || school.id}`}
+                  className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-cyan/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan/15 to-cyan/5 border border-cyan/10 flex items-center justify-center shrink-0">
+                      <Icon name="graduation" size={18} className="text-cyan" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-white truncate">{school.name}</p>
+                      {school.address && (
+                        <p className="text-[11px] text-white/40 truncate mt-0.5">{school.address}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1">
+                        {school.level && (
+                          <span className="text-[9px] font-semibold text-cyan bg-cyan/10 rounded-full px-2 py-0.5 capitalize">
+                            {school.level}
+                          </span>
+                        )}
+                        {school.mascot && (
+                          <span className="text-[9px] text-white/30">
+                            {school.mascot}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Parks in District ──────────────────────── */}
+        {parksList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                {userDistrict ? "Parks in Your District" : "Parks in Compton"}
+              </p>
+              <Link href="/parks" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {parksList.slice(0, 5).map((park) => (
+                <Link
+                  key={park.id}
+                  href={`/parks/${park.slug || park.id}`}
+                  className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-emerald/20 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex items-center justify-center shrink-0">
+                      <Icon name="tree" size={18} className="text-emerald" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-white truncate">{park.name}</p>
+                      {park.address && (
+                        <p className="text-[11px] text-white/40 truncate mt-0.5">{park.address}</p>
+                      )}
+                      {park.amenities && park.amenities.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {park.amenities.slice(0, 4).map((amenity: string) => (
+                            <span
+                              key={amenity}
+                              className="text-[8px] text-emerald/70 bg-emerald/8 border border-emerald/10 rounded-full px-1.5 py-0.5 capitalize"
+                            >
+                              {amenity.replace(/_/g, " ")}
+                            </span>
+                          ))}
+                          {park.amenities.length > 4 && (
+                            <span className="text-[8px] text-white/30 self-center">
+                              +{park.amenities.length - 4}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ── Community Voice (Polls & Surveys) ──────── */}
         {(pollsWithVotes.length > 0 || surveysWithResponses.length > 0) && (
