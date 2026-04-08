@@ -281,13 +281,14 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && post.video_url && (
-        <div className="overflow-hidden">
+        <div className="overflow-hidden rounded-xl bg-black">
           <video
             src={post.video_url}
             controls
             playsInline
-            className="w-full"
-            style={{ aspectRatio: "16/9" }}
+            preload="metadata"
+            className="w-full max-h-[560px]"
+            style={{ objectFit: "contain" }}
           />
         </div>
       )}

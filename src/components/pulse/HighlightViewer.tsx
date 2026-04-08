@@ -208,10 +208,12 @@ export default function HighlightViewer({
             preload="auto"
             controls={false}
             style={{
-              width: "100%",
-              height: "100%",
-              objectFit: current.body?.includes("cover") ? "cover" : "contain",
-              background: "#000",
+              maxWidth: "100%",
+              maxHeight: "100%",
+              width: "auto",
+              height: "auto",
+              margin: "auto",
+              display: "block",
             }}
           />
         ) : current.image_url ? (
