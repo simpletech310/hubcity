@@ -207,7 +207,12 @@ export default function HighlightViewer({
             loop
             preload="auto"
             controls={false}
-            style={{ width: "100%", height: "100%", objectFit: "contain", background: "#000" }}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: current.body?.includes("cover") ? "cover" : "contain",
+              background: "#000",
+            }}
           />
         ) : current.image_url ? (
           <Image
