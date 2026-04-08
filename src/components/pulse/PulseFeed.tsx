@@ -440,7 +440,7 @@ export default function PulseFeed({
       )}
 
       {/* ─── Highlights Strip ─── */}
-      {highlights.length > 0 && activeFilter === "all" && (
+      {(canPost || highlights.length > 0) && activeFilter === "all" && (
         <div className="mb-4">
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
             {/* New highlight button */}

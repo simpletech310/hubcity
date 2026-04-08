@@ -71,15 +71,16 @@ const VIDEO_TYPE_LABEL: Record<string, string> = {
 };
 
 // ── Compton Stars ──────────────────────────────────────────
+// Each star maps to a real working Mux video with a valid playback ID
 const COMPTON_STARS = [
-  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", videoId: "a9791d00-3eeb-4e02-a91e-ea438f802774", playbackId: "djIRWA5IxCqF00raJ3hjIMd488F69sRhhF00xolcpwQGI", imageUrl: "/images/generated/kendrick.jpg" },
-  { name: "Serena Williams", title: "Tennis Legend", videoId: "9a77eb42-0e46-4820-8cc5-d9fe531004a5", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/serena.jpg" },
-  { name: "Venus Williams", title: "Tennis Champion", videoId: "9aceff49-3816-4154-86bc-07cb4d731212", playbackId: "DvUNmWbAG0100yvsdMvVzTod00dPKsJrL00xu1lG5MmsKIA", imageUrl: "/images/generated/venus.jpg" },
-  { name: "Dr. Dre", title: "Music Mogul", videoId: "080f5716-03dc-4fb8-9e46-b122a3b5b803", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/dre.jpg" },
-  { name: "Ice Cube", title: "Entertainment Icon", videoId: "fb007744-d894-4ede-9059-960887c8274e", playbackId: "ZRXLTip00QsIHSYRlWmGRIfRF4waRhycuQ007OuIulU7g", imageUrl: "/images/generated/icecube.jpg" },
-  { name: "The Game", title: "West Coast Legend", videoId: "33e3916a-a8bd-4c41-be32-b06a9e825134", playbackId: "f4Ug00QD4QexEgZGgQDng3qqrte5gR6RByNVK131oWZE", imageUrl: "/images/generated/thegame.jpg" },
-  { name: "A'ja Wilson", title: "WNBA MVP", videoId: "0fce5952-fa94-43d1-8b08-973d32520a08", playbackId: "td402NA02WmGBS7cue5sJPGUI016Hdf00SocDYGUK4IXeFY", imageUrl: "/images/generated/aja.jpg" },
-  { name: "Coolio", title: "Grammy Winner", videoId: "c33cce2a-9afb-4e40-8a41-f61314ed945c", playbackId: "CV00L4KqMbBxeyXz9EfyrHiH017q76WVaNEhhQNr4FBNo", imageUrl: "/images/generated/coolio.jpg" },
+  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", initials: "KL", gradient: "from-gold to-amber-600", videoId: "33e3916a-a8bd-4c41-be32-b06a9e825134", playbackId: "f4Ug00QD4QexEgZGgQDng3qqrte5gR6RByNVK131oWZE" },
+  { name: "Serena Williams", title: "Tennis Legend", initials: "SW", gradient: "from-emerald-500 to-emerald-700", videoId: "d3cc7275-48f6-4d33-92f5-9c791d16faf0", playbackId: "ebtNRHkj3RpaUpDK3pLZrcgdd02PuxKhAAvixF7Xes018" },
+  { name: "Venus Williams", title: "Tennis Champion", initials: "VW", gradient: "from-purple-500 to-purple-700", videoId: "d9b84dd7-9209-44ce-92c7-094e34ce1f43", playbackId: "kFDhcP1lcGuDbw7LPywhHyuaYlctLdavMlrP9zSIRCM" },
+  { name: "Dr. Dre", title: "Music Mogul", initials: "DD", gradient: "from-red-500 to-red-700", videoId: "4fc91fcb-7f14-4f46-9f00-cbeb7d60aa2a", playbackId: "FusUwGulDYINjFmmiWwIqy7JRw5Jtc7PKoR00luhEqW4" },
+  { name: "Ice Cube", title: "Entertainment Icon", initials: "IC", gradient: "from-blue-500 to-blue-700", videoId: "fb007744-d894-4ede-9059-960887c8274e", playbackId: "ZRXLTip00QsIHSYRlWmGRIfRF4waRhycuQ007OuIulU7g" },
+  { name: "The Game", title: "West Coast Legend", initials: "TG", gradient: "from-orange-500 to-orange-700", videoId: "007fdd0c-8b9b-473e-8a8d-6af321ae5682", playbackId: "YALEP43HilUrxW5tFI48UiNg7ufyX02Je02YuEOdsUKi4" },
+  { name: "A'ja Wilson", title: "WNBA MVP", initials: "AW", gradient: "from-pink-500 to-pink-700", videoId: "742fedd3-bb35-4cdc-9313-c70deb2811d9", playbackId: "q7nnuKNqscJKCJkNhZs91NlYuozN5Uf3i47fEjZMu3c" },
+  { name: "Coolio", title: "Grammy Winner", initials: "CO", gradient: "from-cyan-500 to-cyan-700", videoId: "39f153f8-9465-49ff-aa25-c98ee5f8022b", playbackId: "wFMOU618MPNMnV7LikddlMm01QztefAzMn89XjqBoHu4" },
 ];
 
 // ── Helpers ────────────────────────────────────────────────
@@ -460,11 +461,31 @@ export default function HubCityTV({
           ) : (
             <>
               <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
-                Hub City TV
+                Hub City <span className="text-gold">TV</span>
               </h1>
               <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
-                Compton&apos;s community television
+                Compton&apos;s community television. Free. Local. Always on.
               </p>
+              <div className="flex gap-3 mt-5">
+                <button
+                  onClick={() => setActiveTab("channels")}
+                  className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  Start Watching
+                </button>
+                {canStream && (
+                  <button
+                    onClick={() => setCreateOpen(true)}
+                    className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
+                    Go Live
+                  </button>
+                )}
+              </div>
             </>
           )}
 
@@ -649,13 +670,9 @@ export default function HubCityTV({
                   } as ChannelVideo)}
                   className="shrink-0 flex flex-col items-center gap-2 w-[80px] press"
                 >
-                  <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-br from-gold/20 via-royal to-hc-purple/20 p-[2px]">
-                    <div className="w-full h-full rounded-full bg-midnight overflow-hidden">
-                      <img
-                        src={`https://image.mux.com/${star.playbackId}/thumbnail.jpg?width=128&height=128&fit_mode=smartcrop`}
-                        alt={star.name}
-                        className="w-full h-full object-cover"
-                      />
+                  <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-br from-gold/40 via-gold/20 to-gold/40 p-[2px]">
+                    <div className={`w-full h-full rounded-full bg-gradient-to-br ${star.gradient} flex items-center justify-center`}>
+                      <span className="text-white font-heading font-bold text-[18px] drop-shadow-lg">{star.initials}</span>
                     </div>
                   </div>
                   <div className="text-center">
@@ -757,6 +774,85 @@ export default function HubCityTV({
             </section>
           )}
 
+          {/* ── Get Your Content On The Air CTA ── */}
+          <section className="mb-8 px-5">
+            <div className="relative overflow-hidden rounded-2xl border border-gold/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-compton-red/10" />
+              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-60" />
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold/5 blur-2xl" />
+              <div className="relative z-10 p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-heading font-bold text-[16px] text-white">Get On The Air</h3>
+                    <p className="text-[11px] text-gold font-semibold">Your city. Your story. Your channel.</p>
+                  </div>
+                </div>
+                <p className="text-[13px] text-white/60 leading-relaxed mb-4">
+                  Got a podcast, cooking show, or community event? Hub City TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
+                </p>
+                <div className="flex gap-2">
+                  <Link href="/profile/settings" className="flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-xl font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                    Apply Now
+                  </Link>
+                  <button onClick={() => setActiveTab("channels")} className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.12] px-4 py-2.5 rounded-xl text-[13px] font-medium press hover:bg-white/[0.1] transition-colors text-white/70">
+                    Browse Channels
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* ── What's On Hub City TV ── */}
+          <section className="mb-8 px-5">
+            <h2 className="font-heading font-bold text-[18px] mb-3 flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+              Made For Compton
+            </h2>
+            <div className="grid grid-cols-2 gap-2.5">
+              {[
+                { label: "City Meetings", desc: "Council sessions live", icon: "landmark" as IconName, color: "#06B6D4", gradient: "from-cyan/15 to-cyan/5" },
+                { label: "Local Sports", desc: "Friday Night Lights", icon: "trophy" as IconName, color: "#3B82F6", gradient: "from-hc-blue/15 to-hc-blue/5" },
+                { label: "Original Shows", desc: "Compton-made content", icon: "film" as IconName, color: "#F2A900", gradient: "from-gold/15 to-gold/5" },
+                { label: "Community", desc: "Events & culture", icon: "users" as IconName, color: "#8B5CF6", gradient: "from-hc-purple/15 to-hc-purple/5" },
+              ].map((cat, i) => (
+                <div key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-white/[0.06] p-4 press group hover:border-white/[0.12] transition-all`}>
+                  <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, transparent, ${cat.color}, transparent)` }} />
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ background: `${cat.color}15` }}>
+                    <Icon name={cat.icon} size={18} style={{ color: cat.color }} />
+                  </div>
+                  <p className="font-heading text-[13px] font-bold text-white mb-0.5">{cat.label}</p>
+                  <p className="text-[11px] text-white/40">{cat.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Community Stats Bar ── */}
+          <section className="mb-8 px-5">
+            <div className="flex gap-2">
+              <div className="flex-1 rounded-xl bg-gradient-to-br from-gold/8 to-gold/3 border border-gold/15 p-3 text-center">
+                <p className="text-[20px] font-heading font-bold text-gold">{channels.length}</p>
+                <p className="text-[10px] text-white/40 font-medium">Channels</p>
+              </div>
+              <div className="flex-1 rounded-xl bg-gradient-to-br from-coral/8 to-coral/3 border border-coral/15 p-3 text-center">
+                <p className="text-[20px] font-heading font-bold text-coral">{recentVideos.length + featuredVideos.length}</p>
+                <p className="text-[10px] text-white/40 font-medium">Videos</p>
+              </div>
+              <div className="flex-1 rounded-xl bg-gradient-to-br from-emerald/8 to-emerald/3 border border-emerald/15 p-3 text-center">
+                <p className="text-[20px] font-heading font-bold text-emerald">Free</p>
+                <p className="text-[10px] text-white/40 font-medium">Always</p>
+              </div>
+            </div>
+          </section>
+
           {/* ── Browse by Category ── */}
           <section className="mb-8 px-5">
             <h2 className="font-heading font-bold text-[18px] mb-3">Browse by Category</h2>
@@ -793,6 +889,53 @@ export default function HubCityTV({
               </div>
             </section>
           )}
+
+          {/* ── Creator Spotlight CTA ── */}
+          <section className="mb-8 px-5">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-compton-red/10 via-midnight to-coral/10 border border-compton-red/15 p-5">
+              <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-compton-red/5 blur-2xl" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-coral">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                    <line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
+                  </svg>
+                  <h3 className="font-heading font-bold text-[15px]">Got a Podcast?</h3>
+                </div>
+                <p className="text-[12px] text-white/50 mb-3 leading-relaxed">
+                  Record it. Upload it. Compton listens. Hub City TV hosts local podcasts, talk shows, and audio content from the community.
+                </p>
+                <Link href="/podcasts" className="inline-flex items-center gap-1.5 text-[12px] text-coral font-semibold press">
+                  Explore Podcasts
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Why Hub City TV ── */}
+          <section className="mb-8 px-5">
+            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Hub City TV</span>?</h2>
+            <div className="space-y-3">
+              {[
+                { emoji: "1", title: "100% Free", desc: "No subscriptions, no ads for viewers, no paywall. Just Compton.", color: "#22C55E" },
+                { emoji: "2", title: "By Compton, For Compton", desc: "Every channel is locally owned. Every show tells our story.", color: "#F2A900" },
+                { emoji: "3", title: "Go Live Anytime", desc: "Schools, churches, businesses — anyone can broadcast to the city.", color: "#3B82F6" },
+                { emoji: "4", title: "On Demand", desc: "Missed it live? Watch replays of city meetings, games, and more.", color: "#8B5CF6" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-start gap-3.5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-heading font-bold text-[14px]" style={{ background: `${item.color}15`, color: item.color }}>
+                    {item.emoji}
+                  </div>
+                  <div>
+                    <p className="font-heading font-bold text-[13px] text-white mb-0.5">{item.title}</p>
+                    <p className="text-[12px] text-white/40 leading-relaxed">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       )}
 
