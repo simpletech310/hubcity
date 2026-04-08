@@ -199,12 +199,15 @@ export default function HighlightViewer({
       >
         {current.video_url ? (
           <video
+            key={current.id}
             ref={videoRef}
             src={current.video_url}
             autoPlay
             playsInline
             loop
-            className="w-full h-full object-contain bg-black"
+            preload="auto"
+            controls={false}
+            style={{ width: "100%", height: "100%", objectFit: "cover", background: "#000" }}
           />
         ) : current.image_url ? (
           <Image
