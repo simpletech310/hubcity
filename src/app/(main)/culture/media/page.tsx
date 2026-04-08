@@ -48,10 +48,12 @@ export default async function MediaPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <CultureHero title="Media" subtitle="Videos, documentaries, and cultural stories from the Museum." />
+      <CultureHero title="Media" subtitle="Videos, documentaries, and cultural stories from the Museum." imageUrl="/images/art/IMG_2788.jpg" />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Museum Channel Videos */}

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
+import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import PersonCard from "@/components/culture/PersonCard";
 import PersonCardFeatured from "@/components/culture/PersonCardFeatured";
@@ -21,17 +22,6 @@ const categories: { label: string; value: string; iconName: IconName }[] = [
   { label: "Arts", value: "arts", iconName: "palette" },
   { label: "Business", value: "business", iconName: "briefcase" },
   { label: "Education", value: "education", iconName: "graduation" },
-];
-
-const CATEGORY_ORDER: NotablePersonCategory[] = [
-  "music",
-  "sports",
-  "politics",
-  "activism",
-  "arts",
-  "education",
-  "business",
-  "other",
 ];
 
 const CATEGORY_KICKERS: Record<NotablePersonCategory, string> = {
@@ -85,39 +75,46 @@ export default function PeoplePage() {
     load();
   }, [activeCategory]);
 
-  // Hero person is the first in the list (highest display_order from API)
   const heroPerson = people[0] ?? null;
 
   return (
     <div className="space-y-6 pb-20">
+      <CultureHero
+        title="Notable People"
+        subtitle="The musicians, athletes, leaders, and visionaries who shaped Compton."
+        imageUrl="/images/art/IMG_2775.JPG"
+      />
+
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
+      </div>
+
       {/* Hero Spotlight — only in "All" view */}
       {!loading && activeCategory === "all" && heroPerson && (
-        <Spotlight
-          title={heroPerson.name}
-          subtitle={heroPerson.title ?? undefined}
-          imageUrl={heroPerson.portrait_url ?? undefined}
-          href={`/culture/people/${heroPerson.slug}`}
-          kicker="LEGENDS OF COMPTON"
-          badge={categoryBadge[heroPerson.category]}
-          height="h-[400px]"
-        />
-      )}
-
-      {/* Editorial header for filtered view */}
-      {!loading && activeCategory !== "all" && (
-        <div className="px-5 pt-2">
-          <EditorialHeader
-            kicker={CATEGORY_KICKERS[activeCategory as NotablePersonCategory] ?? "NOTABLE FIGURES"}
-            title={CATEGORY_TITLES[activeCategory as NotablePersonCategory] ?? "Notable People"}
-            subtitle="The musicians, athletes, leaders, and visionaries who shaped Compton."
+        <div className="px-5">
+          <Spotlight
+            title={heroPerson.name}
+            subtitle={heroPerson.title ?? undefined}
+            imageUrl={heroPerson.portrait_url ?? undefined}
+            href={`/culture/people/${heroPerson.slug}`}
+            kicker="LEGENDS OF COMPTON"
+            badge={categoryBadge[heroPerson.category]}
+            height="h-[340px]"
           />
         </div>
       )}
 
-      {/* Museum Navigation */}
-      <div className="px-5">
-        <MuseumNav />
-      </div>
+      {/* Editorial header for filtered view */}
+      {!loading && activeCategory !== "all" && (
+        <div className="px-5">
+          <EditorialHeader
+            kicker={CATEGORY_KICKERS[activeCategory as NotablePersonCategory] ?? "NOTABLE FIGURES"}
+            title={CATEGORY_TITLES[activeCategory as NotablePersonCategory] ?? "Notable People"}
+          />
+        </div>
+      )}
 
       {/* Category filter chips */}
       <div className="flex gap-2 px-5 overflow-x-auto scrollbar-hide pb-1">
@@ -147,7 +144,6 @@ export default function PeoplePage() {
       {/* "All" view — Instagram Explorer-style 3-column grid */}
       {!loading && activeCategory === "all" && (
         <div className="space-y-6">
-          {/* Explorer grid — all people in tight 3-col layout */}
           <section className="px-3">
             {people.length > 1 ? (
               <div className="grid grid-cols-3 gap-1">
@@ -166,7 +162,6 @@ export default function PeoplePage() {
             ) : null}
           </section>
 
-          {/* AdZone in explorer view */}
           <div className="px-5">
             <AdZone zone="feed_banner" />
           </div>

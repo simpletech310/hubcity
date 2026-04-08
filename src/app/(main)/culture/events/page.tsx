@@ -1,4 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
+import CultureHero from "@/components/culture/CultureHero";
+import MuseumNav from "@/components/culture/MuseumNav";
 import CultureCalendarClient from "../calendar/CultureCalendarClient";
 
 export const metadata = {
@@ -23,10 +25,18 @@ export default async function CultureEventsPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <div className="px-5 pt-4">
-        <h1 className="font-display text-2xl text-white mb-1">Cultural Events</h1>
-        <p className="text-sm text-txt-secondary">Don&apos;t miss what&apos;s happening in Compton.</p>
+      <CultureHero
+        title="Cultural Events"
+        subtitle="Don't miss what's happening in Compton."
+        imageUrl="/images/art/IMG_2787.jpg"
+      />
+
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
+
       <div className="px-5">
         <CultureCalendarClient
           events={events ?? []}

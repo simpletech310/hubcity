@@ -52,8 +52,7 @@ export default function MusicHeritagePage() {
       <CultureHero
         title="The Sound of Compton"
         subtitle="Six decades of music that changed the world."
-        gradient="art-mural"
-        pattern
+        imageUrl="/images/art/IMG_2789.jpg"
       />
 
       <section className="px-5 max-w-4xl mx-auto">

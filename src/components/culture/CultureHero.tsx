@@ -1,8 +1,9 @@
-import clsx from "clsx";
+import Image from "next/image";
 
 interface CultureHeroProps {
   title: string;
   subtitle?: string;
+  imageUrl?: string;
   gradient?: string;
   pattern?: boolean;
 }
@@ -10,29 +11,46 @@ interface CultureHeroProps {
 export default function CultureHero({
   title,
   subtitle,
-  gradient = "art-mural",
+  imageUrl,
+  gradient,
   pattern = false,
 }: CultureHeroProps) {
   return (
-    <section
-      className={clsx(
-        "relative w-full overflow-hidden rounded-3xl",
-        "py-16 md:py-24 px-6 md:px-12",
-        gradient
-      )}
-    >
-      {pattern && (
-        <div className="pattern-dots absolute inset-0 opacity-20 pointer-events-none" />
-      )}
-      <div className="relative z-10 max-w-3xl">
-        <h1 className="font-display text-4xl md:text-6xl lg:text-7xl text-text-primary leading-tight">
-          {title}
-        </h1>
-        {subtitle && (
-          <p className="mt-4 text-lg md:text-xl text-text-secondary max-w-xl">
-            {subtitle}
-          </p>
+    <section className="relative w-full overflow-hidden">
+      <div className="relative min-h-[220px] flex flex-col justify-end">
+        {/* Background image or gradient */}
+        {imageUrl ? (
+          <>
+            <Image
+              src={imageUrl}
+              alt={title}
+              fill
+              className="object-cover"
+              sizes="430px"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-midnight/20" />
+          </>
+        ) : (
+          <div className={`absolute inset-0 ${gradient || "bg-gradient-to-b from-[#1a1510] via-[#12100a] to-midnight"}`} />
         )}
+
+        {/* Subtle pattern overlay */}
+        {(pattern || !imageUrl) && (
+          <div className="absolute inset-0 pattern-dots opacity-5 pointer-events-none" />
+        )}
+
+        {/* Content */}
+        <div className="relative z-10 px-5 pb-5">
+          <h1 className="font-display text-[28px] leading-tight text-white">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-1.5 text-sm text-white/60 max-w-xs leading-relaxed">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
     </section>
   );

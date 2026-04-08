@@ -28,6 +28,7 @@ export default async function CultureCalendarPage() {
       <CultureHero
         title="Cultural Calendar"
         subtitle="Don't miss what's happening in Compton."
+        imageUrl="/images/art/IMG_2787.jpg"
       />
       <div className="px-5">
         <CultureCalendarClient

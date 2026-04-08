@@ -99,8 +99,10 @@ export default async function ExhibitDetailPage({
         </div>
       </div>
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Description */}

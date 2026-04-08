@@ -44,7 +44,7 @@ export default async function MuralsPage({
       <CultureHero
         title="Compton Murals"
         subtitle="Public art across every neighborhood."
-        gradient="art-mural"
+        imageUrl="/images/art/compton-hub-city-mural.jpg"
       />
 
       {/* District Filter */}

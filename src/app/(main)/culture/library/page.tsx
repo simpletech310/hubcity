@@ -38,10 +38,16 @@ export default function LibraryPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <CultureHero title="Library" subtitle="Books, articles, and essential reading about Compton's culture and history." />
+      <CultureHero
+        title="Library"
+        subtitle="Books, articles, and essential reading about Compton's culture and history."
+        imageUrl="/images/art/IMG_2792.JPG"
+      />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Type filter */}

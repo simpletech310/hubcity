@@ -25,10 +25,16 @@ export default async function ExhibitsPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <CultureHero title="Exhibits" subtitle="Curated collections exploring Compton's story." />
+      <CultureHero
+        title="Exhibits"
+        subtitle="Curated collections exploring Compton's story."
+        imageUrl="/images/art/IMG_2776.JPG"
+      />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Featured Exhibits */}

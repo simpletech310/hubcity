@@ -40,10 +40,12 @@ export default async function DiscussionsPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <CultureHero title="Discussions" subtitle="Community conversations about Compton's culture and heritage." />
+      <CultureHero title="Discussions" subtitle="Community conversations about Compton's culture and heritage." imageUrl="/images/art/IMG_2790.jpg" />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Discussion Prompts */}

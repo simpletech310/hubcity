@@ -38,10 +38,16 @@ export default function GalleryPage() {
 
   return (
     <div className="space-y-6 pb-20">
-      <CultureHero title="Gallery" subtitle="Artworks, photographs, and artifacts from Compton's cultural heritage." />
+      <CultureHero
+        title="Gallery"
+        subtitle="Artworks, photographs, and artifacts from Compton's cultural heritage."
+        imageUrl="/images/art/IMG_2777.JPG"
+      />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Type filter */}

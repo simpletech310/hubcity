@@ -4,6 +4,7 @@ import FeaturedCard from "@/components/ui/FeaturedCard";
 import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
 import MuseumHero from "@/components/culture/MuseumHero";
+import MuseumNav from "@/components/culture/MuseumNav";
 import MuseumWingCard from "@/components/culture/MuseumWingCard";
 import ExhibitCard from "@/components/culture/ExhibitCard";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
@@ -78,6 +79,13 @@ export default async function CulturePage() {
     <div className="space-y-8 pb-20">
       {/* Museum Hero */}
       <MuseumHero />
+
+      {/* Museum Navigation — below hero */}
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
+      </div>
 
       {/* Wing Navigation Cards — title above */}
       <section className="px-5">

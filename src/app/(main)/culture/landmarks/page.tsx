@@ -1,3 +1,5 @@
+import CultureHero from "@/components/culture/CultureHero";
+import MuseumNav from "@/components/culture/MuseumNav";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
@@ -72,10 +74,16 @@ const landmarks: Landmark[] = [
 export default function LandmarksPage() {
   return (
     <div className="space-y-6 pb-20">
-      {/* Header */}
-      <div className="px-5 pt-4">
-        <h1 className="font-display text-2xl text-white mb-1">Compton Landmarks</h1>
-        <p className="text-sm text-txt-secondary">Historic sites and notable places across the city.</p>
+      <CultureHero
+        title="Compton Landmarks"
+        subtitle="Historic sites and notable places across the city."
+        imageUrl="/images/art/IMG_2774.JPG"
+      />
+
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Landmarks Grid */}

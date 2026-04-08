@@ -9,7 +9,6 @@ export const metadata = {
 };
 
 export default function HistoryPage() {
-  // Convert history entries to TimelineView format
   const timelineItems = COMPTON_HISTORY.map((entry) => ({
     year: entry.year,
     title: entry.title,
@@ -22,12 +21,13 @@ export default function HistoryPage() {
       <CultureHero
         title="The Story of Compton"
         subtitle="From a farming settlement to the cultural capital of the West Coast."
-        gradient="art-mural"
-        pattern
+        imageUrl="/images/art/IMG_2785.jpg"
       />
 
-      <div className="px-5">
-        <MuseumNav />
+      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+        <div className="px-5">
+          <MuseumNav />
+        </div>
       </div>
 
       {/* Timeline */}
@@ -48,7 +48,7 @@ export default function HistoryPage() {
 
       {/* CTA */}
       <section className="px-5">
-        <div className="rounded-2xl bg-gradient-to-r from-gold/10 to-purple-900/20 border border-gold/20 p-6 text-center">
+        <div className="rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-6 text-center">
           <h3 className="font-display text-xl text-white">
             Help tell the story
           </h3>
