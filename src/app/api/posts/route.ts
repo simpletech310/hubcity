@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import {
   parseHashtags,
   extractLocationFromText,
@@ -85,9 +86,9 @@ export async function POST(request: Request) {
     let media_type: string | null = null;
     let video_status: string | null = null;
 
-    if (is_highlight && !video_url) {
+    if (is_highlight && !video_url && !image_url) {
       return NextResponse.json(
-        { error: "Highlights require a video" },
+        { error: "Highlights require a photo or video" },
         { status: 400 }
       );
     }
@@ -106,7 +107,9 @@ export async function POST(request: Request) {
     const extractedLocation =
       inputLocation || extractLocationFromText(body);
 
-    const { data: post, error } = await supabase
+    // Use admin client to bypass RLS for insert (auth already validated above)
+    const adminClient = createAdminClient();
+    const { data: post, error } = await adminClient
       .from("posts")
       .insert({
         author_id: user.id,
@@ -137,7 +140,7 @@ export async function POST(request: Request) {
 
     if (issueHashtags.length > 0 && post) {
       // Get user's district for the issue
-      const { data: profile } = await supabase
+      const { data: profile } = await adminClient
         .from("profiles")
         .select("district")
         .eq("id", user.id)
@@ -147,7 +150,7 @@ export async function POST(request: Request) {
         const dept = ISSUE_DEPARTMENT_MAP[issueType];
         const title = generateIssueTitle(issueType, extractedLocation);
 
-        const { data: issue } = await supabase
+        const { data: issue } = await adminClient
           .from("city_issues")
           .insert({
             type: issueType,
@@ -174,7 +177,7 @@ export async function POST(request: Request) {
       // Auto-reply comment on the post about the issue being tracked
       if (createdIssues.length > 0) {
         // Find or use a system bot for the reply
-        const { data: botProfile } = await supabase
+        const { data: botProfile } = await adminClient
           .from("profiles")
           .select("id")
           .eq("is_bot", true)
@@ -185,7 +188,7 @@ export async function POST(request: Request) {
         if (botProfile) {
           const issueWord =
             createdIssues.length === 1 ? "issue" : "issues";
-          await supabase.from("post_comments").insert({
+          await adminClient.from("post_comments").insert({
             post_id: post.id,
             author_id: botProfile.id,
             body: `✅ Thanks for reporting! ${createdIssues.length} city ${issueWord} automatically created and added to the tracker. The relevant department has been notified. Track status at /city-hall/issues`,
@@ -193,7 +196,7 @@ export async function POST(request: Request) {
           });
 
           // Update comment count
-          await supabase
+          await adminClient
             .from("posts")
             .update({ comment_count: 1 })
             .eq("id", post.id);
@@ -205,7 +208,7 @@ export async function POST(request: Request) {
     const mentionedHandles = parseMentions(body);
     if (mentionedHandles.length > 0 && post) {
       // Get author display name
-      const { data: authorProfile } = await supabase
+      const { data: authorProfile } = await adminClient
         .from("profiles")
         .select("display_name")
         .eq("id", user.id)
@@ -215,14 +218,14 @@ export async function POST(request: Request) {
 
       // Look up profiles by handle (case-insensitive via ilike)
       for (const handle of mentionedHandles) {
-        const { data: mentioned } = await supabase
+        const { data: mentioned } = await adminClient
           .from("profiles")
           .select("id")
           .ilike("handle", handle)
           .single();
 
         if (mentioned && mentioned.id !== user.id) {
-          await supabase.from("notifications").insert({
+          await adminClient.from("notifications").insert({
             user_id: mentioned.id,
             type: "mention",
             title: `${authorName} mentioned you`,

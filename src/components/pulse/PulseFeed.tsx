@@ -56,6 +56,7 @@ interface HighlightData {
   id: string;
   body: string;
   video_url: string | null;
+  image_url: string | null;
   created_at: string;
   author: {
     id: string;

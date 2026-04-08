@@ -7,6 +7,7 @@ interface Highlight {
   id: string;
   body: string;
   video_url: string | null;
+  image_url: string | null;
   created_at: string;
   author: {
     id: string;
@@ -173,7 +174,7 @@ export default function HighlightViewer({
         </button>
       </div>
 
-      {/* Video */}
+      {/* Media */}
       <div
         className="absolute inset-0 flex items-center justify-center"
         onClick={handleTap}
@@ -189,9 +190,16 @@ export default function HighlightViewer({
             loop
             className="w-full h-full object-contain"
           />
+        ) : current.image_url ? (
+          <Image
+            src={current.image_url}
+            alt={current.body || "Highlight"}
+            fill
+            className="object-contain"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-[#1a1510] to-black">
-            <p className="text-white/50 text-sm">No video</p>
+            <p className="text-white/50 text-sm">No media</p>
           </div>
         )}
       </div>
