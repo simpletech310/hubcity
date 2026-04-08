@@ -188,7 +188,8 @@ export default function HighlightViewer({
             autoPlay
             playsInline
             loop
-            className="w-full h-full object-contain"
+            muted
+            className="w-full h-full object-cover"
           />
         ) : current.image_url ? (
           <Image

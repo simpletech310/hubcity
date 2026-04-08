@@ -474,17 +474,6 @@ export default function HubCityTV({
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                   Start Watching
                 </button>
-                {canStream && (
-                  <button
-                    onClick={() => setCreateOpen(true)}
-                    className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                    </svg>
-                    Go Live
-                  </button>
-                )}
               </div>
             </>
           )}
@@ -989,7 +978,7 @@ export default function HubCityTV({
                   </svg>
                 </div>
                 <p className="text-sm text-txt-secondary mb-1">No streams scheduled yet</p>
-                {canStream && <p className="text-[12px] text-gold">Tap the camera button to go live</p>}
+                {canStream && <p className="text-[12px] text-gold">Apply for a channel to start streaming</p>}
               </div>
             ) : (
               <div className="space-y-3">
@@ -1243,18 +1232,6 @@ export default function HubCityTV({
         </div>
       )}
 
-      {/* ── FAB - Create Stream ─────────────────────────── */}
-      {canStream && (
-        <button
-          onClick={() => setCreateOpen(true)}
-          className="fixed bottom-24 right-4 w-14 h-14 rounded-full bg-gradient-to-br from-coral to-pink shadow-lg shadow-coral/30 flex items-center justify-center text-white press z-40 hover:scale-105 transition-transform"
-          style={{ maxWidth: "calc((430px - 2rem) + 2rem)", right: "max(1rem, calc((100vw - 430px) / 2 + 1rem))" }}
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-          </svg>
-        </button>
-      )}
       {canStream && <CreateStreamModal isOpen={createOpen} onClose={() => setCreateOpen(false)} />}
     </div>
   );
