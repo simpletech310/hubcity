@@ -61,7 +61,9 @@ export default function HighlightViewer({
     const vid = videoRef.current;
     if (!vid) return;
     vid.currentTime = 0;
+    vid.volume = 1.0;
     vid.muted = false;
+    setIsMuted(false);
     vid.play().catch(() => {
       // Browser blocked unmuted autoplay — retry muted
       vid.muted = true;
