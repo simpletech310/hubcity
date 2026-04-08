@@ -189,7 +189,7 @@ export default function HighlightViewer({
             playsInline
             loop
             muted
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-black"
           />
         ) : current.image_url ? (
           <Image
@@ -197,6 +197,7 @@ export default function HighlightViewer({
             alt={current.body || "Highlight"}
             fill
             className="object-contain"
+            sizes="100vw"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-[#1a1510] to-black">

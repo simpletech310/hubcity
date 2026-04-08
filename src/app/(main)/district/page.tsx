@@ -1,11 +1,31 @@
 import Image from "next/image";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
-import SectionHeader from "@/components/layout/SectionHeader";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
+import { DISTRICT_NAMES } from "@/lib/districts";
+import DistrictMap from "@/components/district/DistrictMap";
+import PollCard from "@/components/pulse/PollCard";
+import SurveyCard from "@/components/pulse/SurveyCard";
+
+export const metadata = {
+  title: "My District | Hub City",
+  description: "Your personalized district hub — council member, events, alerts, and community voice.",
+};
+
+const DISTRICT_COLORS: Record<number, { text: string; bg: string; border: string; accent: string }> = {
+  1: { text: "text-hc-blue", bg: "bg-hc-blue", border: "border-hc-blue", accent: "#3B82F6" },
+  2: { text: "text-hc-purple", bg: "bg-hc-purple", border: "border-hc-purple", accent: "#8B5CF6" },
+  3: { text: "text-emerald", bg: "bg-emerald", border: "border-emerald", accent: "#22C55E" },
+  4: { text: "text-gold", bg: "bg-gold", border: "border-gold", accent: "#F2A900" },
+};
+
+const COUNCIL_HANDLES: Record<number, string> = {
+  1: "council_duhart",
+  2: "council_spicer",
+  3: "council_bowers",
+  4: "council_darden",
+};
 
 export default async function DistrictPage() {
   const supabase = await createClient();
@@ -15,33 +35,115 @@ export default async function DistrictPage() {
   } = await supabase.auth.getUser();
 
   let userDistrict: number | null = null;
+  let userDisplayName: string | null = null;
+  let userId: string | null = user?.id ?? null;
+
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("district")
+      .select("district, display_name")
       .eq("id", user.id)
       .single();
     userDistrict = profile?.district ?? null;
+    userDisplayName = profile?.display_name ?? null;
   }
 
   const today = new Date().toISOString().split("T")[0];
+  const districtColor = userDistrict ? DISTRICT_COLORS[userDistrict] : null;
 
-  // Fetch all real data in parallel
+  // Build queries based on whether user has a district
+  const councilHandle = userDistrict ? COUNCIL_HANDLES[userDistrict] : null;
+
+  // Fetch all data in parallel
   const [
-    { data: upcomingEvents },
-    { count: businessesCount },
-    { count: schoolsCount },
-    { count: eventsCount },
-    { data: activeAlerts },
+    { data: councilMember },
+    { data: mayor },
+    { data: districtEvents },
+    { data: districtAlerts },
+    { data: activePolls },
+    { data: activeSurveys },
     { data: officialPosts },
+    { count: businessCount },
+    { count: schoolCount },
+    { count: parkCount },
+    { data: allCouncil },
   ] = await Promise.all([
+    // Council member for user's district
+    councilHandle
+      ? supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url, bio, role, handle, district")
+          .eq("handle", councilHandle)
+          .single()
+      : Promise.resolve({ data: null }),
+    // Mayor (always shown)
     supabase
-      .from("events")
-      .select("*")
-      .gte("start_date", today)
+      .from("profiles")
+      .select("id, display_name, avatar_url, bio, role, handle, district")
+      .eq("handle", "mayor_sharif")
+      .single(),
+    // Events — filtered by district if signed in
+    userDistrict
+      ? supabase
+          .from("events")
+          .select("*")
+          .gte("start_date", today)
+          .eq("is_published", true)
+          .eq("district", userDistrict)
+          .order("start_date")
+          .limit(5)
+      : supabase
+          .from("events")
+          .select("*")
+          .gte("start_date", today)
+          .eq("is_published", true)
+          .order("start_date")
+          .limit(5),
+    // City alerts — filtered by affected_districts if signed in
+    userDistrict
+      ? supabase
+          .from("city_alerts")
+          .select("id, title, body, alert_type, severity, affected_districts")
+          .eq("is_active", true)
+          .contains("affected_districts", [userDistrict])
+          .order("created_at", { ascending: false })
+          .limit(5)
+      : supabase
+          .from("city_alerts")
+          .select("id, title, body, alert_type, severity, affected_districts")
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(5),
+    // Active polls (global — no district field)
+    supabase
+      .from("polls")
+      .select("*, options:poll_options(*), author:profiles!polls_author_id_fkey(id, display_name, avatar_url, role, handle, verification_status)")
+      .eq("status", "active")
       .eq("is_published", true)
-      .order("start_date")
+      .order("created_at", { ascending: false })
       .limit(3),
+    // Active surveys (global — no district field)
+    supabase
+      .from("surveys")
+      .select("*, questions:survey_questions(*), author:profiles!surveys_author_id_fkey(id, display_name, avatar_url, role, handle, verification_status)")
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
+      .limit(3),
+    // Official posts from district council member
+    councilHandle
+      ? supabase
+          .from("posts")
+          .select("id, body, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role, handle)")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
+          .limit(5)
+      : supabase
+          .from("posts")
+          .select("id, body, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role, handle)")
+          .eq("is_published", true)
+          .order("created_at", { ascending: false })
+          .limit(5),
+    // District stats
     supabase
       .from("businesses")
       .select("id", { count: "exact", head: true })
@@ -51,145 +153,370 @@ export default async function DistrictPage() {
       .select("id", { count: "exact", head: true })
       .eq("is_published", true),
     supabase
-      .from("events")
-      .select("id", { count: "exact", head: true })
-      .gte("start_date", today)
-      .eq("is_published", true),
-    supabase
-      .from("city_alerts")
-      .select("id, title, body, alert_type, severity")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(3),
-    supabase
-      .from("posts")
-      .select("id, body, created_at, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role)")
-      .eq("is_published", true)
-      .eq("profiles.role", "city_official")
-      .order("created_at", { ascending: false })
-      .limit(3),
+      .from("parks")
+      .select("id", { count: "exact", head: true }),
+    // All council members (for non-signed-in view)
+    !userDistrict
+      ? supabase
+          .from("profiles")
+          .select("id, display_name, avatar_url, bio, role, handle, district")
+          .eq("role", "city_official")
+          .order("display_name")
+      : Promise.resolve({ data: null }),
   ]);
 
-  const quickLinks: { label: string; href: string; iconName: IconName }[] = [
-    { label: "City Hall", href: "/city-hall", iconName: "landmark" },
-    { label: "Report Issue", href: "/city-hall/issues", iconName: "alert" },
-    { label: "City Data", href: "/city-data", iconName: "chart" },
-    { label: "Schools", href: "/schools", iconName: "graduation" },
-    { label: "Health", href: "/health", iconName: "heart-pulse" },
-    { label: "Parks", href: "/parks", iconName: "tree" },
-  ];
+  // Filter official posts to city officials only
+  const officialPostsList = (officialPosts ?? []).filter((p) => {
+    const authorArr = p.author as unknown as { role: string; handle: string }[] | null;
+    const author = authorArr?.[0];
+    return author?.role === "city_official";
+  });
 
-  const severityColor: Record<string, string> = {
-    critical: "coral",
-    high: "coral",
-    medium: "gold",
-    low: "cyan",
-    info: "cyan",
+  // For polls/surveys, add user_vote / user_responded info
+  const pollsWithVotes = await Promise.all(
+    (activePolls ?? []).map(async (poll) => {
+      if (!userId) return { ...poll, user_vote: null, total_votes: poll.options?.reduce((sum: number, o: { vote_count: number }) => sum + o.vote_count, 0) ?? 0 };
+      const { data: vote } = await supabase
+        .from("poll_votes")
+        .select("option_id")
+        .eq("poll_id", poll.id)
+        .eq("user_id", userId)
+        .maybeSingle();
+      return {
+        ...poll,
+        user_vote: vote?.option_id ?? null,
+        total_votes: poll.options?.reduce((sum: number, o: { vote_count: number }) => sum + o.vote_count, 0) ?? 0,
+      };
+    })
+  );
+
+  const surveysWithResponses = await Promise.all(
+    (activeSurveys ?? []).map(async (survey) => {
+      if (!userId) return { ...survey, user_responded: false, response_count: survey.response_count ?? 0 };
+      const { count } = await supabase
+        .from("survey_responses")
+        .select("id", { count: "exact", head: true })
+        .eq("survey_id", survey.id)
+        .eq("user_id", userId);
+      return {
+        ...survey,
+        user_responded: (count ?? 0) > 0,
+        response_count: survey.response_count ?? 0,
+      };
+    })
+  );
+
+  const eventsList = districtEvents ?? [];
+  const alertsList = districtAlerts ?? [];
+
+  const severityStyles: Record<string, { icon: IconName; color: string; bg: string }> = {
+    critical: { icon: "alert", color: "text-coral", bg: "bg-coral/10" },
+    high: { icon: "alert", color: "text-coral", bg: "bg-coral/10" },
+    medium: { icon: "alert", color: "text-gold", bg: "bg-gold/10" },
+    low: { icon: "info", color: "text-cyan", bg: "bg-cyan/10" },
+    info: { icon: "info", color: "text-cyan", bg: "bg-cyan/10" },
   };
 
+  const quickLinks: { label: string; href: string; icon: IconName; color: string }[] = [
+    { label: "Report Issue", href: "/city-hall/issues", icon: "megaphone", color: "text-coral" },
+    { label: "City Data", href: "/city-data", icon: "chart", color: "text-cyan" },
+    { label: "Events", href: "/events", icon: "calendar", color: "text-hc-purple" },
+    { label: "Parks", href: "/parks", icon: "tree", color: "text-emerald" },
+    { label: "Schools", href: "/schools", icon: "graduation", color: "text-gold" },
+    { label: "Resources", href: "/resources", icon: "heart-pulse", color: "text-pink" },
+  ];
+
   return (
-    <div className="animate-fade-in space-y-6 pb-6">
-      {/* District Badge */}
-      {userDistrict && (
-        <div className="mx-5 mt-4 bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 rounded-xl px-4 py-3 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center shrink-0">
-            <span className="text-gold font-heading font-bold text-sm">D{userDistrict}</span>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gold">Your District: District {userDistrict}</p>
-            <p className="text-[11px] text-txt-secondary">Verified resident</p>
-          </div>
-        </div>
-      )}
-
-      {/* City Hero */}
-      <div className="px-5 pt-2">
-        <div className="relative h-40 rounded-2xl overflow-hidden">
-          <Image
-            src="/images/city-hall.png"
-            alt="Compton City Hall"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/50 to-transparent" />
-          <div className="pattern-dots absolute inset-0 opacity-20" />
-          <div className="absolute bottom-4 left-4 right-4">
-            <p className="text-[10px] text-gold font-bold tracking-[0.2em] uppercase mb-1">
-              City of
-            </p>
-            <h1 className="font-display text-2xl font-bold">Compton, California</h1>
-          </div>
-        </div>
-      </div>
-
-      {/* City at a Glance */}
-      <div className="px-5">
-        <SectionHeader title="City at a Glance" compact />
-        <div className="grid grid-cols-3 gap-2.5">
-          <Card>
-            <div className="text-center py-1">
-              <p className="font-heading font-bold text-gold text-lg leading-none">{eventsCount ?? 0}</p>
-              <p className="text-[10px] text-txt-secondary mt-1 font-medium">Upcoming Events</p>
+    <div className="min-h-screen bg-midnight text-white pb-28">
+      {/* ── Map Hero ──────────────────────────────────── */}
+      <div className="relative">
+        <DistrictMap
+          district={userDistrict}
+          height="220px"
+          className="w-full"
+        />
+        {/* Gradient overlay at bottom of map */}
+        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-midnight to-transparent" />
+        {/* District label overlay */}
+        <div className="absolute bottom-3 left-5 right-5 z-10">
+          {userDistrict && districtColor ? (
+            <div className="flex items-center gap-2.5">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ backgroundColor: `${districtColor.accent}20`, border: `1px solid ${districtColor.accent}40` }}
+              >
+                <span className="font-heading font-bold text-[15px]" style={{ color: districtColor.accent }}>
+                  D{userDistrict}
+                </span>
+              </div>
+              <div>
+                <h1 className="font-heading text-[18px] font-bold text-white">
+                  {DISTRICT_NAMES[userDistrict] ?? `District ${userDistrict}`}
+                </h1>
+                <p className="text-[11px] text-white/50">
+                  {userDisplayName ? `Welcome back, ${userDisplayName.split(" ")[0]}` : "Your personalized district hub"}
+                </p>
+              </div>
             </div>
-          </Card>
-          <Card>
-            <div className="text-center py-1">
-              <p className="font-heading font-bold text-gold text-lg leading-none">{businessesCount ?? 0}</p>
-              <p className="text-[10px] text-txt-secondary mt-1 font-medium">Businesses</p>
+          ) : (
+            <div>
+              <h1 className="font-heading text-[20px] font-bold text-white">City of Compton</h1>
+              <p className="text-[11px] text-white/50">Explore all 4 council districts</p>
             </div>
-          </Card>
-          <Card>
-            <div className="text-center py-1">
-              <p className="font-heading font-bold text-gold text-lg leading-none">{schoolsCount ?? 0}</p>
-              <p className="text-[10px] text-txt-secondary mt-1 font-medium">Schools</p>
-            </div>
-          </Card>
+          )}
         </div>
       </div>
 
-      {/* City Alerts */}
-      {activeAlerts && activeAlerts.length > 0 && (
-        <div className="px-5">
-          <SectionHeader title="City Alerts" linkText="All Alerts" linkHref="/city-data" compact />
-          <div className="space-y-2.5">
-            {activeAlerts.map((alert) => (
-              <Link key={alert.id} href="/city-data">
-                <Card hover className="border-cyan/10">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-cyan/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <span className="text-cyan text-sm">!</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="font-bold text-[13px] truncate">{alert.title}</p>
-                        <Badge
-                          label={alert.severity ?? "info"}
-                          variant={severityColor[alert.severity ?? "info"] as "coral" | "gold" | "cyan" ?? "cyan"}
-                        />
-                      </div>
-                      {alert.body && (
-                        <p className="text-[11px] text-txt-secondary line-clamp-2">{alert.body}</p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              </Link>
+      <div className="px-5 space-y-5 mt-2">
+        {/* ── Sign In CTA (not signed in) ────────────── */}
+        {!user && (
+          <Link
+            href="/auth"
+            className="block rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-4 press"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                <Icon name="users" size={18} className="text-gold" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold text-gold">Sign in to see your district</p>
+                <p className="text-[11px] text-white/40 mt-0.5">Get personalized content for your area</p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-gold/50" />
+            </div>
+          </Link>
+        )}
+
+        {/* ── No District CTA (signed in but no district) ── */}
+        {user && !userDistrict && (
+          <Link
+            href="/profile"
+            className="block rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-4 press"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                <Icon name="map-pin" size={18} className="text-gold" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold text-gold">Set your district</p>
+                <p className="text-[11px] text-white/40 mt-0.5">Add your address in profile to see district-specific content</p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-gold/50" />
+            </div>
+          </Link>
+        )}
+
+        {/* ── Council Member(s) ──────────────────────── */}
+        <div>
+          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            {userDistrict ? "Your Representatives" : "Meet Your Council"}
+          </p>
+          <div className="space-y-3">
+            {/* Mayor — always shown */}
+            {mayor && (
+              <CouncilCard
+                name={mayor.display_name}
+                title="Mayor"
+                bio={mayor.bio}
+                avatarUrl={mayor.avatar_url}
+                handle={mayor.handle}
+                accentColor="#F2A900"
+              />
+            )}
+
+            {/* District council member (signed in with district) */}
+            {userDistrict && councilMember && (
+              <CouncilCard
+                name={councilMember.display_name}
+                title={`Council Member — District ${userDistrict}`}
+                bio={councilMember.bio}
+                avatarUrl={councilMember.avatar_url}
+                handle={councilMember.handle}
+                accentColor={districtColor?.accent ?? "#F2A900"}
+              />
+            )}
+
+            {/* All council members (not signed in or no district) */}
+            {!userDistrict && allCouncil && allCouncil
+              .filter((c) => c.handle !== "mayor_sharif")
+              .map((member) => {
+                const mDistrict = member.district as number | null;
+                const mColor = mDistrict ? DISTRICT_COLORS[mDistrict]?.accent : "#F2A900";
+                return (
+                  <CouncilCard
+                    key={member.id}
+                    name={member.display_name}
+                    title={mDistrict ? `Council Member — District ${mDistrict}` : "Council Member"}
+                    bio={member.bio}
+                    avatarUrl={member.avatar_url}
+                    handle={member.handle}
+                    accentColor={mColor ?? "#F2A900"}
+                  />
+                );
+              })}
+          </div>
+        </div>
+
+        {/* ── District Stats ─────────────────────────── */}
+        <div>
+          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            {userDistrict ? "District Overview" : "Compton at a Glance"}
+          </p>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: "Events", count: eventsList.length, icon: "calendar" as IconName, color: "text-hc-purple", bg: "from-hc-purple/8 to-hc-purple/3", border: "border-hc-purple/15" },
+              { label: "Businesses", count: businessCount ?? 0, icon: "store" as IconName, color: "text-gold", bg: "from-gold/8 to-gold/3", border: "border-gold/15" },
+              { label: "Schools", count: schoolCount ?? 0, icon: "graduation" as IconName, color: "text-cyan", bg: "from-cyan/8 to-cyan/3", border: "border-cyan/15" },
+              { label: "Parks", count: parkCount ?? 0, icon: "tree" as IconName, color: "text-emerald", bg: "from-emerald/8 to-emerald/3", border: "border-emerald/15" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className={`rounded-xl bg-gradient-to-br ${stat.bg} border ${stat.border} p-2.5 text-center`}
+              >
+                <Icon name={stat.icon} size={16} className={`${stat.color} mx-auto mb-1`} />
+                <p className={`text-[16px] font-heading font-bold ${stat.color}`}>{stat.count}</p>
+                <p className="text-[8px] text-white/40 font-medium">{stat.label}</p>
+              </div>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Recent from City Hall */}
-      {officialPosts && officialPosts.length > 0 && (
-        <div className="px-5">
-          <SectionHeader title="Recent from City Hall" linkText="See All" linkHref="/pulse" compact />
-          <div className="space-y-2.5">
-            {officialPosts.map((post) => {
-              const authorArr = post.author as unknown as { id: string; display_name: string; avatar_url: string | null; role: string }[] | null;
-              const author = authorArr?.[0] ?? null;
-              return (
-                <Link key={post.id} href="/pulse">
-                  <Card hover>
+        {/* ── Alerts ─────────────────────────────────── */}
+        {alertsList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                {userDistrict ? "District Alerts" : "City Alerts"}
+              </p>
+              <Link href="/city-data" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {alertsList.map((alert) => {
+                const style = severityStyles[alert.severity ?? "info"] ?? severityStyles.info;
+                return (
+                  <Link key={alert.id} href="/city-data" className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-white/10 transition-colors">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-8 h-8 rounded-lg ${style.bg} flex items-center justify-center shrink-0`}>
+                        <Icon name={style.icon} size={14} className={style.color} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <p className="text-[12px] font-semibold text-white truncate">{alert.title}</p>
+                          <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full ${style.bg} ${style.color}`}>
+                            {alert.severity ?? "info"}
+                          </span>
+                        </div>
+                        {alert.body && (
+                          <p className="text-[11px] text-white/40 line-clamp-2">{alert.body}</p>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Upcoming Events ────────────────────────── */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              {userDistrict ? "Events in Your District" : "Upcoming Events"}
+            </p>
+            <Link href="/events" className="text-[10px] text-gold font-semibold press">
+              View All
+            </Link>
+          </div>
+          {eventsList.length > 0 ? (
+            <div className="space-y-2">
+              {eventsList.map((event) => {
+                const date = new Date(event.start_date);
+                return (
+                  <Link
+                    key={event.id}
+                    href={`/events/${event.id}`}
+                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-hc-purple/20 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-hc-purple/10 flex flex-col items-center justify-center shrink-0">
+                        <p className="text-[9px] text-hc-purple font-bold uppercase leading-none">
+                          {date.toLocaleDateString("en-US", { month: "short" })}
+                        </p>
+                        <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
+                          {date.getDate()}
+                        </p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-white truncate">{event.title}</p>
+                        {event.location_name && (
+                          <p className="text-[11px] text-white/40 truncate mt-0.5">{event.location_name}</p>
+                        )}
+                        {event.category && (
+                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5">
+                            {event.category}
+                          </span>
+                        )}
+                      </div>
+                      <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+              <Icon name="calendar" size={24} className="text-white/20 mx-auto mb-2" />
+              <p className="text-[12px] text-white/40">
+                {userDistrict ? "No upcoming events in your district" : "No upcoming events"}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Community Voice (Polls & Surveys) ──────── */}
+        {(pollsWithVotes.length > 0 || surveysWithResponses.length > 0) && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">Community Voice</p>
+              <Link href="/pulse" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-3">
+              {pollsWithVotes.map((poll) => (
+                <PollCard key={poll.id} poll={poll as any} userId={userId} />
+              ))}
+              {surveysWithResponses.map((survey) => (
+                <SurveyCard key={survey.id} survey={survey as any} userId={userId} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Recent from City Hall ──────────────────── */}
+        {officialPostsList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                {userDistrict ? "From Your Representatives" : "From City Hall"}
+              </p>
+              <Link href="/pulse" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {officialPostsList.slice(0, 3).map((post) => {
+                const authorArr = post.author as unknown as { id: string; display_name: string; avatar_url: string | null; role: string; handle: string }[] | null;
+                const author = authorArr?.[0] ?? null;
+                return (
+                  <Link
+                    key={post.id}
+                    href="/pulse"
+                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
+                  >
                     <div className="flex items-start gap-3">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-gold/20">
                         {author?.avatar_url ? (
@@ -209,10 +536,10 @@ export default async function DistrictPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
                           <p className="text-[12px] font-bold truncate">{author?.display_name ?? "City Official"}</p>
-                          <Badge label="Official" variant="gold" />
+                          <span className="text-[8px] font-bold text-gold bg-gold/10 rounded-full px-1.5 py-0.5">Official</span>
                         </div>
-                        <p className="text-[12px] text-txt-secondary line-clamp-2">{post.body}</p>
-                        <p className="text-[10px] text-txt-secondary/60 mt-1">
+                        <p className="text-[12px] text-white/50 line-clamp-2">{post.body}</p>
+                        <p className="text-[10px] text-white/30 mt-1">
                           {new Date(post.created_at).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -220,62 +547,112 @@ export default async function DistrictPage() {
                         </p>
                       </div>
                     </div>
-                  </Card>
-                </Link>
-              );
-            })}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Upcoming Events */}
-      {upcomingEvents && upcomingEvents.length > 0 && (
-        <div className="px-5">
-          <SectionHeader title="Upcoming Events" linkText="See All" linkHref="/events" compact />
-          <div className="space-y-2.5">
-            {upcomingEvents.map((event) => (
-              <Link key={event.id} href={`/events/${event.id}`}>
-                <Card hover>
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-14 rounded-lg bg-midnight/50 border border-border-subtle flex flex-col items-center justify-center shrink-0">
-                      <p className="text-[9px] text-gold font-bold uppercase leading-none">
-                        {new Date(event.start_date).toLocaleDateString("en-US", { month: "short" })}
-                      </p>
-                      <p className="text-base font-bold leading-none mt-0.5">
-                        {new Date(event.start_date).getDate()}
-                      </p>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-[13px] truncate">{event.title}</p>
-                      {event.location_name && (
-                        <p className="text-[11px] text-txt-secondary truncate">{event.location_name}</p>
-                      )}
-                    </div>
-                    <Badge label={event.category} variant="purple" />
-                  </div>
-                </Card>
+        {/* ── Quick Links ────────────────────────────── */}
+        <div>
+          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Quick Links</p>
+          <div className="grid grid-cols-3 gap-2">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex flex-col items-center gap-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05] p-3 press hover:border-white/10 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                  <Icon name={link.icon} size={18} className={link.color} />
+                </div>
+                <span className="text-[10px] text-white/50 font-medium">{link.label}</span>
               </Link>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Quick Links */}
-      <div className="px-5">
-        <SectionHeader title="Quick Links" compact />
-        <div className="grid grid-cols-2 gap-2.5">
-          {quickLinks.map((link) => (
-            <Link key={link.href} href={link.href}>
-              <Card hover>
-                <div className="flex items-center gap-3 py-0.5">
-                  <Icon name={link.iconName} size={20} className="text-gold" />
-                  <p className="text-[13px] font-bold">{link.label}</p>
-                </div>
-              </Card>
-            </Link>
-          ))}
+        {/* ── Footer Info ────────────────────────────── */}
+        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 text-center">
+          <p className="text-[11px] text-white/30 leading-relaxed">
+            Compton has 4 city council districts. Each district is represented by a council member.
+            Contact City Hall at <a href="tel:3106035700" className="text-gold press">(310) 603-5700</a> for inquiries.
+          </p>
         </div>
       </div>
     </div>
+  );
+}
+
+/* ── Council Member Card ─────────────────────────── */
+
+function CouncilCard({
+  name,
+  title,
+  bio,
+  avatarUrl,
+  handle,
+  accentColor,
+}: {
+  name: string;
+  title: string;
+  bio: string | null;
+  avatarUrl: string | null;
+  handle: string | null;
+  accentColor: string;
+}) {
+  const initials = name
+    ?.split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase() ?? "?";
+
+  return (
+    <Link
+      href={handle ? `/city-hall/${handle}` : "/city-hall"}
+      className="block glass-card-elevated rounded-2xl p-4 press hover:border-white/10 transition-colors"
+    >
+      <div className="flex items-start gap-3.5">
+        <div
+          className="w-14 h-14 rounded-xl overflow-hidden shrink-0 flex items-center justify-center"
+          style={{
+            background: avatarUrl ? undefined : `linear-gradient(135deg, ${accentColor}30, ${accentColor}10)`,
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
+          {avatarUrl ? (
+            <Image
+              src={avatarUrl}
+              alt={name}
+              width={56}
+              height={56}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <span className="font-heading font-bold text-lg" style={{ color: accentColor }}>
+              {initials}
+            </span>
+          )}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-[14px] font-semibold text-white truncate">{name}</p>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" style={{ color: accentColor }}>
+              <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </div>
+          <p className="text-[11px] font-medium mt-0.5" style={{ color: accentColor }}>
+            {title}
+          </p>
+          {bio && (
+            <p className="text-[11px] text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{bio}</p>
+          )}
+        </div>
+        <Icon name="chevron-right" size={14} className="text-white/20 shrink-0 mt-1" />
+      </div>
+    </Link>
   );
 }
