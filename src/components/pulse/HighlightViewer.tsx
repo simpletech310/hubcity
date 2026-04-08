@@ -192,7 +192,7 @@ export default function HighlightViewer({
 
       {/* Media */}
       <div
-        className="absolute inset-0 flex items-center justify-center"
+        className="absolute inset-0"
         onClick={handleTap}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -207,25 +207,17 @@ export default function HighlightViewer({
             loop
             preload="auto"
             controls={false}
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              width: "auto",
-              height: "auto",
-              margin: "auto",
-              display: "block",
-            }}
+            className="absolute inset-0 w-full h-full"
           />
         ) : current.image_url ? (
-          <Image
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
             src={current.image_url}
             alt={current.body || "Highlight"}
-            fill
-            className="object-contain"
-            sizes="100vw"
+            className="absolute inset-0 w-full h-full"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-[#1a1510] to-black">
+          <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-b from-[#1a1510] to-black">
             <p className="text-white/50 text-sm">No media</p>
           </div>
         )}
