@@ -25,7 +25,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  const allowedRoles = ["business_owner", "city_official", "city_ambassador", "admin", "chamber_admin", "resource_provider"];
+  const allowedRoles = ["business_owner", "city_official", "city_ambassador", "admin", "chamber_admin", "resource_provider", "school_trustee"];
   if (!profile || !allowedRoles.includes(profile.role)) {
     redirect("/");
   }

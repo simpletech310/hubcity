@@ -21,6 +21,7 @@ const serviceItems: { href: string; label: string; iconName: IconName }[] = [
   { href: "/groups", label: "Groups", iconName: "users" },
   { href: "/people", label: "People", iconName: "person" },
   { href: "/resources", label: "Resources", iconName: "book" },
+  { href: "/officials", label: "Officials", iconName: "gavel" },
   { href: "/district", label: "District", iconName: "grid" },
   { href: "/live", label: "Hub TV", iconName: "film" },
 ];

@@ -31,6 +31,7 @@ const quickLinks: { label: string; iconName: IconName; href: string; color: stri
   { label: "Public Records", iconName: "scroll", href: "/city-hall/issues", color: "from-cyan/40 to-cyan/20" },
   { label: "Pay Bills", iconName: "credit-card", href: "https://www.comptoncity.org/departments/finance", color: "from-emerald/40 to-emerald/20", external: true },
   { label: "Report Issue", iconName: "wrench", href: "/city-hall/issues", color: "from-coral/40 to-coral/20" },
+  { label: "Officials", iconName: "gavel", href: "/officials", color: "from-emerald/40 to-emerald/20" },
   { label: "Contact Us", iconName: "phone", href: "/city-hall/departments", color: "from-hc-purple/40 to-hc-purple/20" },
 ];
 
@@ -199,6 +200,38 @@ export default async function CityHallPage() {
           </div>
         </section>
       )}
+
+      {/* School Board / CUSD Section */}
+      <section className="px-5 mb-8">
+        <EditorialHeader kicker="COMPTON UNIFIED" title="School Board" subtitle="CUSD Board of Trustees" />
+        <Link href="/officials?tab=school_board" className="block press">
+          <Card hover>
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                <Icon name="graduation" size={22} className="text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-heading font-bold text-[14px] leading-snug">
+                  CUSD Board of Trustees
+                </h3>
+                <p className="text-[11px] text-txt-secondary leading-relaxed mt-0.5">
+                  View trustee profiles, votes, and accountability scores
+                </p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-emerald-400/50" />
+            </div>
+          </Card>
+        </Link>
+        <div className="mt-3">
+          <Link
+            href="/officials"
+            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gold press"
+          >
+            View All Officials & Accountability
+            <Icon name="chevron-right" size={12} />
+          </Link>
+        </div>
+      </section>
 
       <div className="divider-subtle mx-5 mb-8" />
 

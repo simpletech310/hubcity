@@ -259,6 +259,46 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* -- 3b. Trustee Dashboard Card (school trustees) -- */}
+      {userRole === "school_trustee" && (
+        <section className="px-5">
+          <Link href="/trustee/dashboard" className="block press">
+            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                <Icon name="graduation" size={18} className="text-emerald-400" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold">Trustee Dashboard</p>
+                <p className="text-[11px] text-white/50">
+                  Manage your profile & accountability
+                </p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-emerald-400/50" />
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* -- 3c. City Official Dashboard Card -- */}
+      {userRole === "city_official" && (
+        <section className="px-5">
+          <Link href="/dashboard" className="block press">
+            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
+                <Icon name="landmark" size={18} className="text-gold" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold">Official Dashboard</p>
+                <p className="text-[11px] text-white/50">
+                  Manage city resources & updates
+                </p>
+              </div>
+              <Icon name="chevron-right" size={14} className="text-gold/50" />
+            </div>
+          </Link>
+        </section>
+      )}
+
       {/* -- 4. Quick Actions Grid -- */}
       <section className="px-5">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-5 px-5">

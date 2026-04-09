@@ -35,3 +35,36 @@ export const DISTRICT_NAMES: Record<number, string> = {
   3: "District 3 — Southeast",
   4: "District 4 — Southwest",
 };
+
+// ── CUSD Trustee Areas ──────────────────────────────────────
+export type TrusteeArea = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+
+/**
+ * Maps Compton ZIP codes to CUSD trustee areas (A-G).
+ * Unlike city districts (1:1 mapping), ZIPs can span multiple trustee areas.
+ * This is an approximate mapping — real boundaries use address-level precision.
+ */
+const ZIP_TO_TRUSTEE_AREAS: Record<string, TrusteeArea[]> = {
+  "90220": ["A", "G"],
+  "90221": ["B", "C", "D"],
+  "90222": ["E", "F", "G"],
+  "90223": ["A", "E"],
+  "90224": ["A"],
+  "90059": ["B"],
+  "90061": ["E", "F"],
+  "90262": ["G"],
+};
+
+export function getTrusteeAreasFromZip(zip: string): TrusteeArea[] {
+  return ZIP_TO_TRUSTEE_AREAS[zip.trim()] ?? [];
+}
+
+export const TRUSTEE_AREA_NAMES: Record<TrusteeArea, string> = {
+  A: "Area A — Western Compton",
+  B: "Area B — North Compton",
+  C: "Area C — Central-East Compton",
+  D: "Area D — Central Compton",
+  E: "Area E — South-Central Compton",
+  F: "Area F — East Compton",
+  G: "Area G — Compton to North Carson",
+};

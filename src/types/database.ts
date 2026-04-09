@@ -1,4 +1,4 @@
-export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator" | "city_ambassador" | "chamber_admin" | "resource_provider";
+export type UserRole = "citizen" | "business_owner" | "admin" | "city_official" | "content_creator" | "city_ambassador" | "chamber_admin" | "resource_provider" | "school_trustee";
 export type VerificationStatus =
   | "unverified"
   | "pending"
@@ -1788,4 +1788,134 @@ export interface DistrictProgram {
   is_active: boolean;
   created_at: string;
   updated_at: string;
+}
+
+// ── Civic Officials & Accountability ─────────────────────
+export type OfficialType =
+  | "mayor"
+  | "council_member"
+  | "city_manager"
+  | "school_trustee"
+  | "board_president"
+  | "board_vp"
+  | "board_clerk"
+  | "board_member"
+  | "superintendent";
+
+export type TrusteeArea = "A" | "B" | "C" | "D" | "E" | "F" | "G";
+
+export type VotePosition = "aye" | "nay" | "abstain" | "absent" | "na" | "placed_on_ballot";
+export type ImpactLevel = "low" | "medium" | "high";
+export type FlagSeverity = "info" | "warning" | "critical";
+
+export interface CivicOfficial {
+  id: string;
+  profile_id: string | null;
+  official_type: OfficialType;
+  name: string;
+  title: string;
+  district: number | null;
+  trustee_area: TrusteeArea | null;
+  party: string | null;
+  in_office_since: string | null;
+  term_expires: string | null;
+  running_for: string | null;
+  is_voting_member: boolean;
+  photo_url: string | null;
+  background: string | null;
+  geography: string | null;
+  communities: string[];
+  schools: string[];
+  dual_role: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+  flags?: OfficialFlag[];
+  profile?: Profile;
+}
+
+export interface OfficialFlag {
+  id: string;
+  official_id: string;
+  flag_type: string;
+  title: string;
+  description: string | null;
+  severity: FlagSeverity;
+  source_url: string | null;
+  is_resolved: boolean;
+  flagged_at: string;
+}
+
+export interface CouncilVote {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  vote_date: string;
+  result: string;
+  vote_tally: string | null;
+  impact_level: ImpactLevel;
+  aftermath: string | null;
+  source_url: string | null;
+  created_at: string;
+  rolls?: CouncilVoteRoll[];
+}
+
+export interface CouncilVoteRoll {
+  id: string;
+  vote_id: string;
+  official_id: string;
+  position: VotePosition;
+  notes: string | null;
+  official?: CivicOfficial;
+}
+
+export interface BoardAction {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  action_date: string;
+  result: string;
+  impact_level: ImpactLevel;
+  outcome: string | null;
+  source_url: string | null;
+  created_at: string;
+  rolls?: BoardActionRoll[];
+}
+
+export interface BoardActionRoll {
+  id: string;
+  action_id: string;
+  official_id: string;
+  position: VotePosition;
+  notes: string | null;
+  official?: CivicOfficial;
+}
+
+export interface ManagerAction {
+  id: string;
+  official_id: string;
+  title: string;
+  description: string | null;
+  action_type: string;
+  category: string | null;
+  action_date: string;
+  impact_level: ImpactLevel;
+  outcome: string | null;
+  accountability_notes: string | null;
+  source_url: string | null;
+  created_at: string;
+  official?: CivicOfficial;
+}
+
+export interface AccountabilityVector {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  icon: string | null;
+  watch_for: string[];
+  applies_to: string[];
+  sort_order: number;
 }

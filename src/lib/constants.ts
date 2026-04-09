@@ -18,6 +18,7 @@ export const REACTION_COLORS: Record<ReactionEmoji, { bg: string; text: string }
 
 export const ROLE_BADGE_MAP: Record<string, { label: string; variant: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }> = {
   city_official: { label: "Official", variant: "gold" },
+  school_trustee: { label: "Trustee", variant: "emerald" },
   city_ambassador: { label: "Ambassador", variant: "purple" },
   admin: { label: "Admin", variant: "blue" },
   business_owner: { label: "Business", variant: "emerald" },
@@ -40,4 +41,4 @@ export const CATEGORY_COLORS: Record<string, string> = {
 };
 
 /** Roles that have admin panel access + elevated privileges */
-export const ELEVATED_ROLES = ["admin", "city_official", "city_ambassador"];
+export const ELEVATED_ROLES = ["admin", "city_official", "city_ambassador", "school_trustee"];

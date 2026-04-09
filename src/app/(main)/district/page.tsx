@@ -3,7 +3,9 @@ import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
-import { DISTRICT_NAMES } from "@/lib/districts";
+import { DISTRICT_NAMES, getTrusteeAreasFromZip } from "@/lib/districts";
+import type { TrusteeArea } from "@/lib/districts";
+import OfficialCard from "@/components/officials/OfficialCard";
 import DistrictMap from "@/components/district/DistrictMap";
 import PollCard from "@/components/pulse/PollCard";
 import SurveyCard from "@/components/pulse/SurveyCard";
@@ -38,17 +40,22 @@ export default async function DistrictPage() {
 
   let userDistrict: number | null = null;
   let userDisplayName: string | null = null;
+  let userZip: string | null = null;
   let userId: string | null = user?.id ?? null;
 
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("district, display_name")
+      .select("district, display_name, zip")
       .eq("id", user.id)
       .single();
     userDistrict = profile?.district ?? null;
     userDisplayName = profile?.display_name ?? null;
+    userZip = profile?.zip ?? null;
   }
+
+  // Derive trustee areas from ZIP (client-side mapping + DB lookup)
+  const localTrusteeAreas: TrusteeArea[] = userZip ? getTrusteeAreasFromZip(userZip) : [];
 
   const today = new Date().toISOString().split("T")[0];
   const districtColor = userDistrict ? DISTRICT_COLORS[userDistrict] : null;
@@ -70,6 +77,10 @@ export default async function DistrictPage() {
     { data: districtParks },
     { data: allCouncil },
     { data: parkPrograms },
+    { data: schoolTrustees },
+    { data: trusteeAreaSchools },
+    { data: councilVotes },
+    { data: boardActions },
     { data: districtPrograms },
   ] = await Promise.all([
     // Council member for user's district
@@ -195,6 +206,35 @@ export default async function DistrictPage() {
           .eq("parks.district", userDistrict)
           .limit(10)
       : Promise.resolve({ data: null }),
+    // School trustees for user's trustee areas
+    localTrusteeAreas.length > 0
+      ? supabase
+          .from("civic_officials")
+          .select("*")
+          .in("trustee_area", localTrusteeAreas)
+          .in("official_type", ["school_board_member", "school_board_president", "school_board_vp", "school_board_clerk"])
+          .order("name")
+      : Promise.resolve({ data: null }),
+    // Schools in user's trustee areas
+    localTrusteeAreas.length > 0
+      ? supabase
+          .from("trustee_area_schools")
+          .select("*")
+          .in("trustee_area", localTrusteeAreas)
+          .order("school_name")
+      : Promise.resolve({ data: null }),
+    // Recent council decisions
+    supabase
+      .from("council_votes")
+      .select("*, rolls:council_vote_rolls(*, official:civic_officials(id, name, trustee_area, district))")
+      .order("vote_date", { ascending: false })
+      .limit(5),
+    // Recent school board decisions
+    supabase
+      .from("board_actions")
+      .select("*, rolls:board_action_rolls(*, official:civic_officials(id, name, trustee_area, district))")
+      .order("action_date", { ascending: false })
+      .limit(5),
     // District programs (council-created)
     userDistrict
       ? supabase
@@ -251,6 +291,10 @@ export default async function DistrictPage() {
   const alertsList = districtAlerts ?? [];
   const schoolsList = districtSchools ?? [];
   const parksList = districtParks ?? [];
+  const trusteesList = schoolTrustees ?? [];
+  const areaSchoolsList = trusteeAreaSchools ?? [];
+  const councilVotesList = councilVotes ?? [];
+  const boardActionsList = boardActions ?? [];
 
   const severityStyles: Record<string, { icon: IconName; color: string; bg: string }> = {
     critical: { icon: "alert", color: "text-coral", bg: "bg-coral/10" },
@@ -399,6 +443,248 @@ export default async function DistrictPage() {
               })}
           </div>
         </div>
+
+        {/* ── Your School Trustee(s) ─────────────────── */}
+        {trusteesList.length > 0 && (
+          <div>
+            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+              Your School Trustee{trusteesList.length > 1 ? "s" : ""}
+            </p>
+            <div className="space-y-2">
+              {trusteesList.map((trustee: any) => (
+                <OfficialCard key={trustee.id} official={trustee} compact />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Schools in Your Trustee Area ──────────── */}
+        {areaSchoolsList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                Schools in Your Area
+              </p>
+              <Link href="/schools" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {areaSchoolsList.map((school: any) => (
+                <div
+                  key={school.id}
+                  className="glass-card-elevated rounded-2xl p-3.5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex items-center justify-center shrink-0">
+                      <Icon name="graduation" size={18} className="text-emerald" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[13px] font-semibold text-white truncate">{school.school_name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {school.school_type && (
+                          <span className="text-[9px] font-semibold text-emerald bg-emerald/10 rounded-full px-2 py-0.5 capitalize">
+                            {school.school_type}
+                          </span>
+                        )}
+                        {school.grades && (
+                          <span className="text-[9px] text-white/30">
+                            Grades {school.grades}
+                          </span>
+                        )}
+                        {school.trustee_area && (
+                          <span className="text-[9px] text-hc-purple/60 bg-hc-purple/8 rounded-full px-1.5 py-0.5">
+                            Area {school.trustee_area}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Recent Council Decisions ──────────────── */}
+        {councilVotesList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                Recent Council Decisions
+              </p>
+              <Link href="/officials" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {councilVotesList.map((vote: any) => {
+                const userCouncilRoll = userDistrict
+                  ? (vote.rolls ?? []).find((r: any) => r.official?.district === userDistrict)
+                  : null;
+                return (
+                  <div
+                    key={vote.id}
+                    className="glass-card-elevated rounded-2xl p-3.5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        vote.impact_level === "high"
+                          ? "bg-coral/10 border border-coral/15"
+                          : vote.impact_level === "medium"
+                          ? "bg-gold/10 border border-gold/15"
+                          : "bg-cyan/10 border border-cyan/15"
+                      }`}>
+                        <Icon
+                          name="megaphone"
+                          size={16}
+                          className={
+                            vote.impact_level === "high"
+                              ? "text-coral"
+                              : vote.impact_level === "medium"
+                              ? "text-gold"
+                              : "text-cyan"
+                          }
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-white line-clamp-2">{vote.title}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                            vote.result === "passed" || vote.result === "approved"
+                              ? "text-emerald bg-emerald/10"
+                              : vote.result === "failed" || vote.result === "denied"
+                              ? "text-coral bg-coral/10"
+                              : "text-white/50 bg-white/5"
+                          }`}>
+                            {vote.result}
+                          </span>
+                          <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
+                            vote.impact_level === "high"
+                              ? "text-coral/70 bg-coral/8"
+                              : vote.impact_level === "medium"
+                              ? "text-gold/70 bg-gold/8"
+                              : "text-cyan/70 bg-cyan/8"
+                          }`}>
+                            {vote.impact_level} impact
+                          </span>
+                          <span className="text-[10px] text-white/25">
+                            {new Date(vote.vote_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                        {userCouncilRoll && (
+                          <p className="text-[11px] mt-1.5">
+                            <span className="text-white/40">Your rep voted: </span>
+                            <span className={`font-semibold ${
+                              userCouncilRoll.position === "aye"
+                                ? "text-emerald"
+                                : userCouncilRoll.position === "nay"
+                                ? "text-coral"
+                                : "text-white/50"
+                            }`}>
+                              {userCouncilRoll.position}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Recent School Board Decisions ─────────── */}
+        {boardActionsList.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+                Recent School Board Decisions
+              </p>
+              <Link href="/officials" className="text-[10px] text-gold font-semibold press">
+                View All
+              </Link>
+            </div>
+            <div className="space-y-2">
+              {boardActionsList.map((action: any) => {
+                const userTrusteeRoll = localTrusteeAreas.length > 0
+                  ? (action.rolls ?? []).find((r: any) =>
+                      localTrusteeAreas.includes(r.official?.trustee_area)
+                    )
+                  : null;
+                return (
+                  <div
+                    key={action.id}
+                    className="glass-card-elevated rounded-2xl p-3.5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        action.impact_level === "high"
+                          ? "bg-hc-purple/10 border border-hc-purple/15"
+                          : action.impact_level === "medium"
+                          ? "bg-gold/10 border border-gold/15"
+                          : "bg-cyan/10 border border-cyan/15"
+                      }`}>
+                        <Icon
+                          name="graduation"
+                          size={16}
+                          className={
+                            action.impact_level === "high"
+                              ? "text-hc-purple"
+                              : action.impact_level === "medium"
+                              ? "text-gold"
+                              : "text-cyan"
+                          }
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-semibold text-white line-clamp-2">{action.title}</p>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                            action.result === "passed" || action.result === "approved"
+                              ? "text-emerald bg-emerald/10"
+                              : action.result === "failed" || action.result === "denied"
+                              ? "text-coral bg-coral/10"
+                              : "text-white/50 bg-white/5"
+                          }`}>
+                            {action.result}
+                          </span>
+                          <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
+                            action.impact_level === "high"
+                              ? "text-hc-purple/70 bg-hc-purple/8"
+                              : action.impact_level === "medium"
+                              ? "text-gold/70 bg-gold/8"
+                              : "text-cyan/70 bg-cyan/8"
+                          }`}>
+                            {action.impact_level} impact
+                          </span>
+                          <span className="text-[10px] text-white/25">
+                            {new Date(action.action_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                        {userTrusteeRoll && (
+                          <p className="text-[11px] mt-1.5">
+                            <span className="text-white/40">Your trustee voted: </span>
+                            <span className={`font-semibold ${
+                              userTrusteeRoll.position === "aye"
+                                ? "text-emerald"
+                                : userTrusteeRoll.position === "nay"
+                                ? "text-coral"
+                                : "text-white/50"
+                            }`}>
+                              {userTrusteeRoll.position}
+                            </span>
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ── District Stats ─────────────────────────── */}
         <div>
