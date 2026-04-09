@@ -7,6 +7,8 @@ import { DISTRICT_NAMES } from "@/lib/districts";
 import DistrictMap from "@/components/district/DistrictMap";
 import PollCard from "@/components/pulse/PollCard";
 import SurveyCard from "@/components/pulse/SurveyCard";
+import DistrictFeed from "@/components/district/DistrictFeed";
+import DistrictMessageForm from "@/components/district/DistrictMessageForm";
 
 export const metadata = {
   title: "My District | Hub City",
@@ -402,6 +404,25 @@ export default async function DistrictPage() {
           </div>
         </div>
 
+        {/* ── Quick Links (moved here from bottom) ──── */}
+        <div>
+          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Quick Links</p>
+          <div className="grid grid-cols-3 gap-2">
+            {quickLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex flex-col items-center gap-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05] p-3 press hover:border-white/10 transition-colors"
+              >
+                <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                  <Icon name={link.icon} size={18} className={link.color} />
+                </div>
+                <span className="text-[10px] text-white/50 font-medium">{link.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* ── Alerts ─────────────────────────────────── */}
         {alertsList.length > 0 && (
           <div>
@@ -438,6 +459,21 @@ export default async function DistrictPage() {
                 );
               })}
             </div>
+          </div>
+        )}
+
+        {/* ── District Feed (Updates, Photos, Programs) ── */}
+        {userDistrict && (
+          <div>
+            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+              District Feed
+            </p>
+            <DistrictFeed
+              district={userDistrict}
+              districtColor={districtColor?.accent ?? "#F2A900"}
+              userId={userId}
+              isCouncilMember={false}
+            />
           </div>
         )}
 
@@ -676,24 +712,18 @@ export default async function DistrictPage() {
           </div>
         )}
 
-        {/* ── Quick Links ────────────────────────────── */}
-        <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Quick Links</p>
-          <div className="grid grid-cols-3 gap-2">
-            {quickLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="flex flex-col items-center gap-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05] p-3 press hover:border-white/10 transition-colors"
-              >
-                <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center">
-                  <Icon name={link.icon} size={18} className={link.color} />
-                </div>
-                <span className="text-[10px] text-white/50 font-medium">{link.label}</span>
-              </Link>
-            ))}
+        {/* ── Message Your Council Member ─────────── */}
+        {userDistrict && councilMember && (
+          <div>
+            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+              Contact Your Council Member
+            </p>
+            <DistrictMessageForm
+              district={userDistrict}
+              councilMemberName={councilMember.display_name ?? "Your Council Member"}
+            />
           </div>
-        </div>
+        )}
 
         {/* ── Footer Info ────────────────────────────── */}
         <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 text-center">

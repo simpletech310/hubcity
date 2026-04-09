@@ -1715,3 +1715,77 @@ export interface UserAchievement {
 
 // ── V2: Notification Types Extended ─────────────────
 export type NotificationTypeV2 = NotificationType | 'weather_alert' | 'meeting_reminder' | 'achievement' | 'transit_alert' | 'community_safety';
+
+// ── District Posts & Council ────────────────────────────────
+
+export type DistrictPostType = "update" | "alert" | "photo";
+
+export interface DistrictPost {
+  id: string;
+  district: number;
+  author_id: string;
+  post_type: DistrictPostType;
+  title: string | null;
+  body: string | null;
+  image_url: string | null;
+  video_url: string | null;
+  media_type: MediaType | null;
+  is_pinned: boolean;
+  is_published: boolean;
+  reaction_counts: Record<string, number>;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+  author?: Profile;
+}
+
+export interface DistrictPostComment {
+  id: string;
+  post_id: string;
+  author_id: string;
+  parent_id: string | null;
+  body: string;
+  created_at: string;
+  author?: Profile;
+}
+
+export interface DistrictPostReaction {
+  post_id: string;
+  user_id: string;
+  emoji: ReactionEmoji;
+  created_at: string;
+}
+
+export interface CouncilMessage {
+  id: string;
+  district: number;
+  sender_id: string;
+  council_member_id: string;
+  subject: string;
+  body: string;
+  is_read: boolean;
+  created_at: string;
+  sender?: Profile;
+}
+
+export type ProgramCategory = "community" | "youth" | "sports" | "education" | "health" | "senior" | "arts";
+
+export interface DistrictProgram {
+  id: string;
+  district: number;
+  created_by: string;
+  title: string;
+  description: string | null;
+  category: ProgramCategory;
+  location_name: string | null;
+  schedule: string | null;
+  start_date: string | null;
+  end_date: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  contact_email: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
