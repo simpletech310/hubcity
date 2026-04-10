@@ -146,11 +146,6 @@ export default async function ProfilePage() {
     ? new Date(profile.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric" })
     : null;
 
-  // Redirect citizens to settings
-  if (role === "citizen") {
-    redirect("/profile/settings");
-  }
-
   // Filter upcoming events that haven't passed yet
   const upcomingEvents = (upcomingRsvps ?? [])
     .filter((r: Record<string, unknown>) => {
