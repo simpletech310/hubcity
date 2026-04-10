@@ -49,8 +49,7 @@ export default async function OfficialProfilePage({
       supabase
         .from("official_flags")
         .select("*")
-        .eq("official_id", id)
-        .order("created_at", { ascending: false }),
+        .eq("official_id", id),
       supabase
         .from("accountability_vectors")
         .select("*")
