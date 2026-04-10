@@ -66,8 +66,7 @@ export default async function OfficialProfilePage({
     const { data } = await supabase
       .from("council_vote_rolls")
       .select("*, vote:council_votes(*)")
-      .eq("official_id", id)
-      .order("created_at", { ascending: false });
+      .eq("official_id", id);
     votes = (data ?? []).map((r: any) => ({
       id: r.vote?.id ?? r.id,
       title: r.vote?.title ?? "",
@@ -84,8 +83,7 @@ export default async function OfficialProfilePage({
     const { data } = await supabase
       .from("board_action_rolls")
       .select("*, action:board_actions(*)")
-      .eq("official_id", id)
-      .order("created_at", { ascending: false });
+      .eq("official_id", id);
     votes = (data ?? []).map((r: any) => ({
       id: r.action?.id ?? r.id,
       title: r.action?.title ?? "",
