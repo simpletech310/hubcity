@@ -46,7 +46,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const [lightboxSrc, setLightboxSrc] = useState("");
   const [videoDims, setVideoDims] = useState<{ w: number; h: number } | null>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const [videoMuted, setVideoMuted] = useState(true);
+  const [videoMuted, setVideoMuted] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const videoContainerRef = useRef<HTMLDivElement>(null);
 
@@ -357,10 +357,11 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
               </div>
             </div>
           )}
-          {/* Mute toggle */}
+          {/* Mute toggle — always visible so mobile users can control audio */}
           <button
             onClick={(e) => { e.stopPropagation(); setVideoMuted(!videoMuted); if (videoRef.current) videoRef.current.muted = !videoMuted; }}
-            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-opacity"
+            aria-label={videoMuted ? "Unmute video" : "Mute video"}
           >
             {videoMuted ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
