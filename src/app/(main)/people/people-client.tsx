@@ -19,7 +19,6 @@ interface Profile {
 
 const ROLE_FILTERS = [
   { key: "all", label: "All" },
-  { key: "city_official", label: "Officials" },
   { key: "city_ambassador", label: "Ambassadors" },
   { key: "business_owner", label: "Business" },
   { key: "content_creator", label: "Creators" },
@@ -30,7 +29,6 @@ const ROLE_FILTERS = [
 ] as const;
 
 const ROLE_GRADIENTS: Record<string, string> = {
-  city_official: "from-gold/30 via-gold/10 to-transparent",
   city_ambassador: "from-purple/30 via-purple/10 to-transparent",
   admin: "from-blue/30 via-blue/10 to-transparent",
   business_owner: "from-emerald/30 via-emerald/10 to-transparent",

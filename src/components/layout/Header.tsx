@@ -21,7 +21,7 @@ const pageTitles: Record<string, string> = {
   "/schools": "Schools",
   "/culture": "Culture",
   "/parks": "Parks",
-  "/map": "Map",
+
   "/jobs": "Jobs",
   "/district": "District",
   "/city-data": "City Data",

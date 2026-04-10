@@ -29,8 +29,10 @@ export default async function PeoplePage() {
     .order("created_at", { ascending: true })
     .limit(100);
 
-  // Filter out citizens — only showcase notable roles
-  const notable = (profiles ?? []).filter((p) => p.role !== "citizen");
+  // Filter out citizens and officials (officials have their own /officials page)
+  const notable = (profiles ?? []).filter(
+    (p) => p.role !== "citizen" && p.role !== "city_official" && p.role !== "school_trustee"
+  );
 
   // Sort by role priority
   const sorted = notable.sort((a, b) => {
