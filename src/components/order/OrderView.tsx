@@ -119,6 +119,50 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
 
   return (
     <div className="animate-fade-in pb-32">
+      {/* ── Sticky Cart Header ── */}
+      {itemCount > 0 && !paymentOpen && (
+        <div className="sticky top-0 z-30">
+          <div className="bg-deep/95 backdrop-blur-md border-b border-gold/15 shadow-lg shadow-black/20">
+            <div className="px-5 py-3 flex items-center gap-3">
+              {/* Cart icon + count */}
+              <button
+                onClick={() => setCartOpen(true)}
+                className="relative press"
+                aria-label="Open cart"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                  <svg width="20" height="20" fill="none" stroke="#F2A900" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                  </svg>
+                </div>
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gold text-midnight text-[10px] font-bold flex items-center justify-center shadow-lg">
+                  {itemCount}
+                </span>
+              </button>
+
+              {/* Business name + subtotal */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-white/40 font-medium truncate">{business.name}</p>
+                <p className="text-sm font-bold text-gold">${(subtotal / 100).toFixed(2)}</p>
+              </div>
+
+              {/* View Cart button */}
+              <button
+                onClick={() => setCartOpen(true)}
+                className="bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-[13px] px-5 py-2.5 rounded-xl press flex items-center gap-2 shadow-lg shadow-gold/10"
+              >
+                <span>View Cart</span>
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M5 2l5 5-5 5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Back Button + Business Name */}
       <div className="px-5 pt-4 mb-4">
         <Link
@@ -194,10 +238,10 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
         )}
       </div>
 
-      {/* Cart Summary Bar */}
+      {/* ── Bottom Cart Summary Bar (secondary CTA) ── */}
       {itemCount > 0 && !paymentOpen && (
         <div className="fixed bottom-0 inset-x-0 max-w-[430px] mx-auto z-30">
-          <div className="bg-deep border-t border-border-subtle px-5 py-4">
+          <div className="bg-deep/95 backdrop-blur-md border-t border-gold/15 px-5 py-4">
             <button
               onClick={() => setCartOpen(true)}
               className="w-full bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold py-3 rounded-xl press flex items-center justify-between px-5"
@@ -206,7 +250,7 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
                 <span className="bg-midnight/20 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold">
                   {itemCount}
                 </span>
-                View Cart
+                Checkout
               </span>
               <span className="font-bold">
                 ${(subtotal / 100).toFixed(2)}
