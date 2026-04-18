@@ -106,7 +106,23 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
 
   return (
     <Card className={`!p-0 overflow-hidden ${post.is_pinned ? "border-gold/20 relative" : ""}`}>
-      {/* Pinned accent */}
+      {/* Role-based accent line */}
+      {(() => {
+        const role = author?.role;
+        const accentGradient =
+          role === "city_official" || role === "city_ambassador" || role === "admin"
+            ? "from-gold/50 via-gold/25 to-transparent"
+            : role === "business_owner"
+            ? "from-emerald/50 via-emerald/25 to-transparent"
+            : role === "content_creator"
+            ? "from-hc-purple/50 via-hc-purple/25 to-transparent"
+            : "from-white/[0.04] via-transparent to-transparent";
+        return (
+          <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${accentGradient} z-10`} />
+        );
+      })()}
+
+      {/* Pinned accent — overrides role line */}
       {post.is_pinned && (
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/50 via-gold/25 to-transparent z-10" />
       )}
@@ -307,7 +323,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         {post.hashtags && post.hashtags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {post.hashtags.map((tag: string) => (
-              <span key={tag} className="text-[12px] font-medium text-gold/70 hover:text-gold transition-colors cursor-pointer">
+              <span key={tag} className="text-[11px] font-medium text-gold/60 bg-gold/[0.06] border border-gold/[0.08] rounded-full px-2.5 py-0.5 hover:text-gold hover:bg-gold/10 transition-colors cursor-pointer">
                 #{tag}
               </span>
             ))}
@@ -401,9 +417,22 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         </div>
       )}
 
-      {/* Reactions */}
-      <div className="px-4 pb-3 pt-1">
-        <ReactionBar post={post} userReactions={userReactions} userId={userId} />
+      {/* Reactions + Comment count */}
+      <div className="px-4 pb-3 pt-1 flex items-center gap-3">
+        <div className="flex-1">
+          <ReactionBar post={post} userReactions={userReactions} userId={userId} />
+        </div>
+        {post.comment_count > 0 && (
+          <Link
+            href={`/pulse/${post.id}`}
+            className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/40 transition-colors press"
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+              <path d="M1 6.5C1 3.5 3.5 1 7 1s6 2.5 6 5.5c0 3-2.5 5.5-6 5.5-.6 0-1.2-.1-1.7-.2L2 13l1.3-2.5C1.9 9.3 1 8 1 6.5z" />
+            </svg>
+            <span className="font-semibold">{post.comment_count}</span>
+          </Link>
+        )}
       </div>
 
       {/* Image Lightbox */}

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createMuxClient } from "@/lib/mux";
+import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
 
 export async function POST() {
   try {
@@ -9,6 +10,14 @@ export async function POST() {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(getStrictRateLimiter(), user.id);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded", reset: rl.reset },
+        { status: 429 }
+      );
     }
 
     // Only creators, admins, and city officials can upload

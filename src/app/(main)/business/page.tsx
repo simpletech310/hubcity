@@ -856,45 +856,92 @@ function BusinessRow({ biz }: { biz: Business }) {
   const accentColor = categoryColors[biz.category] || "#F2A900";
   const variant = categoryBadgeVariant[biz.category] || "gold";
 
+  // Determine if open now
+  const dayShort = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const todayKey = dayShort[new Date().getDay()];
+  const todayHours = biz.hours?.[todayKey];
+  let isOpen = false;
+  let hoursLabel = "";
+  if (todayHours && typeof todayHours === "object" && "open" in todayHours && "close" in todayHours) {
+    hoursLabel = `${todayHours.open} - ${todayHours.close}`;
+    // Simple check — parse hours
+    const parseT = (t: string) => {
+      const m = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+      if (!m) return -1;
+      let h = parseInt(m[1]);
+      const mm = parseInt(m[2]);
+      const ap = m[3]?.toUpperCase();
+      if (ap === "PM" && h < 12) h += 12;
+      if (ap === "AM" && h === 12) h = 0;
+      return h * 60 + mm;
+    };
+    const nowMin = new Date().getHours() * 60 + new Date().getMinutes();
+    const openMin = parseT(todayHours.open);
+    const closeMin = parseT(todayHours.close);
+    if (openMin >= 0 && closeMin >= 0) {
+      isOpen = closeMin <= openMin ? (nowMin >= openMin || nowMin <= closeMin) : (nowMin >= openMin && nowMin <= closeMin);
+    }
+  }
+
   return (
     <Link href={`/business/${biz.slug}`}>
       <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-gold/20 transition-colors press relative">
-        {/* Left accent bar */}
-        <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl" style={{ background: accentColor }} />
+        {/* Top accent bar */}
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: accentColor }} />
 
-        <div className="p-3.5 pl-4 flex gap-3.5">
+        <div className="flex gap-0">
           {/* Thumbnail */}
-          <div className="w-16 h-16 rounded-xl shrink-0 overflow-hidden relative">
+          <div className="w-[100px] h-[88px] shrink-0 overflow-hidden relative">
             {biz.image_urls?.[0] ? (
               <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
             ) : (
               <div className={`w-full h-full ${categoryArt[biz.category] ?? "art-city"} flex items-center justify-center`}>
-                <Icon name={categories.find((c) => c.value === biz.category)?.iconName || "store"} size={20} className="opacity-60" />
+                <Icon name={categories.find((c) => c.value === biz.category)?.iconName || "store"} size={22} className="opacity-60" />
               </div>
             )}
             {biz.is_featured && (
-              <div className="absolute inset-0 border-2 border-gold/30 rounded-xl" />
+              <div className="absolute top-1.5 left-1.5">
+                <Badge label="Featured" variant="gold" shine />
+              </div>
             )}
           </div>
 
           {/* Details */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 p-3">
             {/* Name + Rating */}
             <div className="flex items-start justify-between gap-2 mb-0.5">
               <h3 className="font-heading font-bold text-[13px] truncate">{biz.name}</h3>
               {biz.rating_avg > 0 && (
                 <div className="flex items-center gap-1 shrink-0">
-                  <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
+                  <Icon name="star" size={12} className="text-gold" />
                   <span className="text-[11px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
-                  <span className="text-[9px] text-txt-secondary">({biz.rating_count})</span>
                 </div>
               )}
             </div>
 
             {/* Description */}
-            <p className="text-[11px] text-txt-secondary mb-2 line-clamp-1">{biz.description}</p>
+            <p className="text-[11px] text-white/40 mb-1.5 line-clamp-1">{biz.description}</p>
 
-            {/* Bottom row: category + badges + actions */}
+            {/* Open/Closed + Address */}
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              {hoursLabel && (
+                <span className={`inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5 ${
+                  isOpen
+                    ? "text-emerald bg-emerald/10 border border-emerald/20"
+                    : "text-white/25 bg-white/[0.03] border border-white/[0.06]"
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? "bg-emerald animate-pulse" : "bg-white/20"}`} />
+                  {isOpen ? "Open" : "Closed"}
+                </span>
+              )}
+              {biz.address && (
+                <span className="text-[9px] text-white/25 truncate inline-flex items-center gap-0.5">
+                  <Icon name="pin" size={9} /> {biz.address.split(",")[0]}
+                </span>
+              )}
+            </div>
+
+            {/* Bottom row: badges + Order/Book CTA */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <Badge label={biz.category} variant={variant} />
               {biz.account_type === "ads_only" && (
@@ -903,7 +950,7 @@ function BusinessRow({ biz }: { biz: Business }) {
                   Chain
                 </span>
               )}
-              {biz.badges?.slice(0, 2).map((badge) => (
+              {biz.badges?.slice(0, 1).map((badge) => (
                 <span
                   key={badge}
                   className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold border bg-gold/5 border-gold/15 text-gold-light"
@@ -912,15 +959,16 @@ function BusinessRow({ biz }: { biz: Business }) {
                   {formatBadgeLabel(badge)}
                 </span>
               ))}
-              {(biz.accepts_orders || biz.accepts_bookings) && (
-                <span className="ml-auto px-1.5 py-0.5 rounded-md bg-gold/8 text-[8px] font-bold text-gold">
-                  <span className="inline-flex items-center gap-0.5"><Icon name={biz.accepts_orders ? "cart" : "calendar"} size={8} /> {biz.accepts_orders ? "Order" : "Book"}</span>
+
+              {/* CTA */}
+              {(biz.accepts_orders || biz.accepts_bookings) ? (
+                <span className="ml-auto shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-gold/12 border border-gold/20 text-[10px] font-bold text-gold">
+                  <Icon name={biz.accepts_orders ? "cart" : "calendar"} size={11} />
+                  {biz.accepts_orders ? "Order" : "Book"}
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 1l4 4-4 4" /></svg>
                 </span>
-              )}
-              {!biz.accepts_orders && !biz.accepts_bookings && biz.address && (
-                <span className="text-[9px] text-txt-secondary truncate ml-auto inline-flex items-center gap-0.5">
-                  <Icon name="pin" size={9} /> {biz.address.split(",")[0]}
-                </span>
+              ) : (
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15 ml-auto shrink-0" strokeLinecap="round"><path d="M5 2l5 5-5 5" /></svg>
               )}
             </div>
           </div>

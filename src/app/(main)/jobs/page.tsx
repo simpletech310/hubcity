@@ -19,17 +19,18 @@ const jobTypes: { label: string; value: string; iconName: IconName }[] = [
   { label: "Internship", value: "internship", iconName: "graduation" },
 ];
 
-const categoryCards: { label: string; iconName: IconName; value: string; color: string }[] = [
-  { label: "City Jobs", iconName: "landmark", value: "city", color: "text-gold" },
-  { label: "Healthcare", iconName: "heart-pulse", value: "health", color: "text-emerald" },
-  { label: "Education", iconName: "graduation", value: "school", color: "text-hc-blue" },
-  { label: "Business", iconName: "store", value: "business", color: "text-coral" },
-  { label: "Tech", iconName: "lightbulb", value: "tech", color: "text-cyan" },
-  { label: "Services", iconName: "wrench", value: "services", color: "text-hc-purple" },
+const categoryCards: { label: string; iconName: IconName; value: string; color: string; filter: "org_type" | "search" }[] = [
+  { label: "City Jobs", iconName: "landmark", value: "city", color: "text-gold", filter: "org_type" },
+  { label: "Healthcare", iconName: "heart-pulse", value: "healthcare", color: "text-emerald", filter: "search" },
+  { label: "Education", iconName: "graduation", value: "school", color: "text-hc-blue", filter: "org_type" },
+  { label: "Business", iconName: "store", value: "business", color: "text-coral", filter: "org_type" },
+  { label: "Tech", iconName: "lightbulb", value: "tech", color: "text-cyan", filter: "search" },
+  { label: "Services", iconName: "wrench", value: "services", color: "text-hc-purple", filter: "search" },
 ];
 
 export default function JobsPage() {
   const [activeType, setActiveType] = useState("all");
+  const [activeCategory, setActiveCategory] = useState<{ value: string; filter: "org_type" | "search" } | null>(null);
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -39,14 +40,33 @@ export default function JobsPage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (activeType !== "all") params.set("type", activeType);
+      if (activeCategory?.filter === "org_type") {
+        params.set("org_type", activeCategory.value);
+      }
 
       const res = await fetch(`/api/jobs?${params.toString()}`);
       const data = await res.json();
-      setJobs(data.jobs ?? []);
+      let result = data.jobs ?? [];
+
+      // Client-side search filter for industry categories
+      if (activeCategory?.filter === "search") {
+        const q = activeCategory.value.toLowerCase();
+        result = result.filter((j: JobListing) => {
+          const biz = j.business as { name?: string } | null;
+          return (
+            j.title.toLowerCase().includes(q) ||
+            j.description?.toLowerCase().includes(q) ||
+            (j.organization_name ?? "").toLowerCase().includes(q) ||
+            biz?.name?.toLowerCase().includes(q)
+          );
+        });
+      }
+
+      setJobs(result);
       setLoading(false);
     }
     fetchJobs();
-  }, [activeType]);
+  }, [activeType, activeCategory]);
 
   const filtered = search
     ? jobs.filter((j) => {
@@ -137,25 +157,42 @@ export default function JobsPage() {
           )}
 
           {/* ── Job Categories (only when "All" and no search) ── */}
-          {activeType === "all" && !search && (
+          {!search && (
             <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon name="grid" size={16} className="text-txt-secondary" />
-                <h2 className="font-heading font-bold text-sm">Browse by Category</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Icon name="grid" size={16} className="text-txt-secondary" />
+                  <h2 className="font-heading font-bold text-sm">Browse by Category</h2>
+                </div>
+                {activeCategory && (
+                  <button
+                    onClick={() => setActiveCategory(null)}
+                    className="text-[10px] text-gold font-semibold press"
+                  >
+                    Clear
+                  </button>
+                )}
               </div>
               <div className="grid grid-cols-3 gap-2">
-                {categoryCards.map((cat) => (
-                  <button
-                    key={cat.value}
-                    className="glass-surface rounded-xl p-3 flex flex-col items-center gap-2 press hover:border-gold/20 transition-all"
-                    onClick={() => {
-                      // Future: filter by org category
-                    }}
-                  >
-                    <Icon name={cat.iconName} size={22} className={cat.color} />
-                    <span className="text-[10px] font-semibold text-txt-secondary">{cat.label}</span>
-                  </button>
-                ))}
+                {categoryCards.map((cat) => {
+                  const isActive = activeCategory?.value === cat.value;
+                  return (
+                    <button
+                      key={cat.value}
+                      className={`rounded-xl p-3 flex flex-col items-center gap-2 press transition-all ${
+                        isActive
+                          ? "bg-gold/10 border border-gold/30 glow-gold-sm"
+                          : "glass-surface hover:border-gold/20"
+                      }`}
+                      onClick={() => setActiveCategory(isActive ? null : { value: cat.value, filter: cat.filter })}
+                    >
+                      <Icon name={cat.iconName} size={22} className={isActive ? "text-gold" : cat.color} />
+                      <span className={`text-[10px] font-semibold ${
+                        isActive ? "text-gold" : "text-txt-secondary"
+                      }`}>{cat.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           )}

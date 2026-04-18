@@ -67,6 +67,15 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
   const orgIconName = job.organization_type ? orgTypeIconMap[job.organization_type] ?? "briefcase" : "briefcase";
   const businessImage = business?.image_urls?.[0];
 
+  // Accent colors by org type
+  const orgAccentColors: Record<string, string> = { city: "#F2A900", school: "#3B82F6", business: "#EF4444" };
+  const accentColor = orgAccentColors[job.organization_type ?? ""] ?? "#8B5CF6";
+
+  // Deadline urgency
+  const daysUntilDeadline = job.application_deadline
+    ? Math.ceil((new Date(job.application_deadline).getTime() - Date.now()) / 86400000)
+    : null;
+
   if (featured) {
     return (
       <Link href={`/jobs/${job.slug || job.id}`} className="block">
@@ -95,10 +104,24 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
               </span>
             )}
           </div>
-          {job.location && (
-            <div className="flex items-center gap-1.5 mt-3 text-[11px] text-txt-secondary">
-              <Icon name="pin" size={12} />
-              {job.location}
+          {(job.location || daysUntilDeadline !== null) && (
+            <div className="flex items-center gap-3 mt-3 flex-wrap">
+              {job.location && (
+                <span className="text-[11px] text-txt-secondary flex items-center gap-1.5">
+                  <Icon name="pin" size={12} />
+                  {job.location}
+                </span>
+              )}
+              {daysUntilDeadline !== null && daysUntilDeadline > 0 && (
+                <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 inline-flex items-center gap-1 ${
+                  daysUntilDeadline <= 7
+                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    : "text-gold bg-gold/8 border border-gold/15"
+                }`}>
+                  <Icon name="clock" size={10} />
+                  {daysUntilDeadline <= 1 ? "Tomorrow!" : `${daysUntilDeadline}d left`}
+                </span>
+              )}
             </div>
           )}
         </div>
@@ -109,7 +132,10 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
   return (
     <Link href={`/jobs/${job.slug || job.id}`}>
       <Card variant="glass" hover>
-        <div className="flex gap-3">
+        <div className="flex gap-3 relative">
+          {/* Left accent bar */}
+          <div className="absolute left-0 top-0 bottom-0 w-[3px] -ml-4 rounded-full" style={{ background: accentColor }} />
+
           <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative bg-white/5 flex items-center justify-center">
             {businessImage ? (
               <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
@@ -134,6 +160,16 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
                   {salary}
                 </span>
               )}
+              {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
+                <span className={`text-[9px] font-semibold rounded-full px-1.5 py-0.5 inline-flex items-center gap-0.5 ${
+                  daysUntilDeadline <= 7
+                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    : "text-gold bg-gold/8 border border-gold/15"
+                }`}>
+                  <Icon name="clock" size={8} />
+                  {daysUntilDeadline}d
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-3 mt-1.5">
               {job.location && (
@@ -146,6 +182,15 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
                 <Icon name="clock" size={10} className="shrink-0" />
                 {timeAgo(job.created_at)}
               </span>
+            </div>
+          </div>
+
+          {/* Apply arrow */}
+          <div className="shrink-0 flex items-center">
+            <div className="w-7 h-7 rounded-lg bg-white/[0.03] flex items-center justify-center">
+              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-white/20">
+                <path d="M4 1l5 5-5 5" />
+              </svg>
             </div>
           </div>
         </div>

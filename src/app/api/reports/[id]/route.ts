@@ -75,7 +75,7 @@ export async function PATCH(
 
     // Audit log
     await adminClient.from("audit_log").insert({
-      admin_id: user.id,
+      actor_id: user.id,
       action: "report_" + status,
       target_type: "content_report",
       target_id: id,

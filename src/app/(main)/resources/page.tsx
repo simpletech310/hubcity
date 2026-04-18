@@ -596,6 +596,11 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
     ? Math.ceil((new Date(r.deadline).getTime() - Date.now()) / 86400000)
     : null;
 
+  const spotsUsed = r.filled_spots ?? 0;
+  const spotsTotal = r.max_spots ?? 0;
+  const spotsPct = spotsTotal > 0 ? Math.min((spotsUsed / spotsTotal) * 100, 100) : 0;
+  const spotsLeft = spotsTotal > 0 ? spotsTotal - spotsUsed : 0;
+
   return (
     <Link href={`/resources/${r.id}`}>
       <div
@@ -603,58 +608,118 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
           urgent ? "border-compton-red/20" : "border-border-subtle"
         }`}
       >
-        {/* Left accent */}
-        <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl" style={{ background: urgent ? "#EF4444" : accentColor }} />
+        {/* Top accent line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: urgent ? "#EF4444" : accentColor }} />
 
-        <div className="p-4 pl-4.5">
-          {/* Top row: icon, name, status */}
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${accentColor}15` }}
-              >
-                <Icon name={categoryIcons[r.category] || "document"} size={20} className="text-white/70" />
+        <div className="flex gap-0">
+          {/* Image / Icon Panel */}
+          <div className="w-[90px] shrink-0 relative overflow-hidden" style={{ background: `${accentColor}08` }}>
+            {r.image_url ? (
+              <img src={r.image_url} alt={r.name} className="w-full h-full object-cover min-h-[130px]" />
+            ) : (
+              <div className="w-full h-full min-h-[130px] flex flex-col items-center justify-center gap-2">
+                <div
+                  className="w-12 h-12 rounded-xl flex items-center justify-center"
+                  style={{ background: `${accentColor}18` }}
+                >
+                  <Icon name={categoryIcons[r.category] || "document"} size={22} style={{ color: accentColor }} />
+                </div>
+                <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: accentColor }}>
+                  {r.category}
+                </span>
               </div>
-              <div className="min-w-0">
-                <h3 className="font-heading font-bold text-[13px] line-clamp-1">{r.name}</h3>
-                {r.organization && (
-                  <p className="text-[11px] text-txt-secondary font-medium truncate">{r.organization}</p>
-                )}
-              </div>
+            )}
+            {/* Status overlay */}
+            <div className="absolute top-2 left-2">
+              <Badge label={status.label} variant={status.variant} />
             </div>
-            <Badge label={status.label} variant={status.variant} />
           </div>
 
-          {/* Description */}
-          <p className="text-[11px] text-txt-secondary leading-relaxed mb-3 line-clamp-2 ml-[52px]">
-            {r.description}
-          </p>
+          {/* Content Panel */}
+          <div className="flex-1 min-w-0 p-3.5">
+            {/* Name + Org */}
+            <h3 className="font-heading font-bold text-[13px] leading-tight mb-0.5 line-clamp-1">{r.name}</h3>
+            {r.organization && (
+              <p className="text-[10px] text-txt-secondary font-medium truncate mb-1.5">{r.organization}</p>
+            )}
 
-          {/* Bottom row: tags + deadline */}
-          <div className="flex items-center justify-between ml-[52px]">
-            <div className="flex gap-1.5">
+            {/* Description */}
+            <p className="text-[11px] text-white/40 leading-relaxed mb-2 line-clamp-2">
+              {r.description}
+            </p>
+
+            {/* Tags row */}
+            <div className="flex items-center gap-1.5 flex-wrap mb-2">
               <Badge label={r.category} variant={variant} />
               {r.is_free && <Badge label="Free" variant="emerald" />}
+              {r.eligibility && (
+                <span className="text-[9px] text-white/30 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5 truncate max-w-[120px]">
+                  {r.eligibility}
+                </span>
+              )}
             </div>
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-txt-secondary shrink-0" strokeLinecap="round">
-              <path d="M5 2l5 5-5 5" />
-            </svg>
-          </div>
 
-          {/* Deadline warning */}
-          {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
-            <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border-subtle ml-[52px]">
-              <Icon name="clock" size={12} className="text-gold" />
-              <p className={`text-[11px] font-semibold ${daysUntilDeadline <= 7 ? "text-compton-red" : "text-gold"}`}>
-                {daysUntilDeadline <= 1
-                  ? "Deadline tomorrow!"
-                  : daysUntilDeadline <= 7
-                  ? `${daysUntilDeadline} days left to apply`
-                  : `Deadline: ${new Date(r.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
-              </p>
+            {/* Spots progress bar */}
+            {spotsTotal > 0 && (
+              <div className="mb-2">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[9px] text-white/30 font-medium">
+                    {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left` : "Full"}
+                  </span>
+                  <span className="text-[9px] font-bold" style={{ color: spotsPct >= 90 ? "#EF4444" : spotsPct >= 70 ? "#F2A900" : "#22C55E" }}>
+                    {spotsUsed}/{spotsTotal}
+                  </span>
+                </div>
+                <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${spotsPct}%`,
+                      background: spotsPct >= 90 ? "#EF4444" : spotsPct >= 70 ? "#F2A900" : "#22C55E",
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Contact chips + Apply CTA */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {r.phone && (
+                <span className="inline-flex items-center gap-1 text-[9px] text-white/30 bg-white/[0.03] border border-white/[0.06] rounded-full px-2 py-0.5">
+                  <Icon name="phone" size={9} /> {r.phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 14)}
+                </span>
+              )}
+              {r.website && (
+                <span className="inline-flex items-center gap-1 text-[9px] text-cyan/60 bg-cyan/[0.04] border border-cyan/[0.08] rounded-full px-2 py-0.5 truncate max-w-[100px]">
+                  <Icon name="globe" size={9} /> Website
+                </span>
+              )}
+
+              {/* Deadline urgency */}
+              {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
+                <span className={`inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5 ${
+                  daysUntilDeadline <= 7
+                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    : "text-gold bg-gold/8 border border-gold/15"
+                }`}>
+                  <Icon name="clock" size={9} />
+                  {daysUntilDeadline <= 1 ? "Tomorrow!" : `${daysUntilDeadline}d left`}
+                </span>
+              )}
+
+              {/* Apply CTA or arrow */}
+              <span className="ml-auto shrink-0">
+                {r.accepts_applications && r.status === "open" ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: `${accentColor}15`, color: accentColor }}>
+                    Apply
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 1l4 4-4 4" /></svg>
+                  </span>
+                ) : (
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15" strokeLinecap="round"><path d="M5 2l5 5-5 5" /></svg>
+                )}
+              </span>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </Link>

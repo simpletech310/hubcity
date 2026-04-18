@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe, generateOrderNumber, calculatePlatformFee } from "@/lib/stripe";
+import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
 
 const CA_TAX_RATE = 0.095;
 
@@ -22,6 +23,14 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rl = await checkRateLimit(getStrictRateLimiter(), user.id);
+    if (!rl.success) {
+      return NextResponse.json(
+        { error: "Rate limit exceeded", reset: rl.reset },
+        { status: 429 }
+      );
     }
 
     const {

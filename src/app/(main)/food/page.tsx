@@ -199,9 +199,9 @@ function FoodCard({ business, featured = false }: { business: Business; featured
       <Card variant="glass" hover padding={false}>
         <div className="flex gap-0">
           {/* Image */}
-          <div className="w-[100px] h-[100px] shrink-0 relative">
+          <div className="w-[110px] h-[110px] shrink-0 relative overflow-hidden">
             {heroImage ? (
-              <Image src={heroImage} alt={business.name} fill className="object-cover" sizes="100px" />
+              <Image src={heroImage} alt={business.name} fill className="object-cover" sizes="110px" />
             ) : (
               <div className="w-full h-full art-food flex items-center justify-center">
                 <Icon name={business.is_mobile_vendor ? "truck" : "utensils"} size={24} />
@@ -213,6 +213,8 @@ function FoodCard({ business, featured = false }: { business: Business; featured
                 <span className="text-[8px] font-bold text-white">LIVE</span>
               </div>
             )}
+            {/* Top accent */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-coral/50 to-transparent" />
           </div>
 
           {/* Info */}
@@ -229,9 +231,12 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               <p className="text-[11px] text-white/40 line-clamp-1 mb-2">{business.description}</p>
             )}
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-2 flex-wrap mb-1.5">
               {open && (
-                <span className="text-[9px] font-semibold text-emerald bg-emerald/10 rounded-full px-2 py-0.5">Open</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-emerald bg-emerald/10 border border-emerald/20 rounded-full px-2 py-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
+                  Open
+                </span>
               )}
               {business.is_mobile_vendor && (
                 <span className="text-[9px] font-semibold text-coral bg-coral/10 rounded-full px-2 py-0.5">Food Truck</span>
@@ -239,11 +244,26 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               {business.accepts_orders && (
                 <span className="text-[9px] font-semibold text-gold bg-gold/10 rounded-full px-2 py-0.5">Pickup</span>
               )}
+              {business.min_order > 0 && (
+                <span className="text-[9px] text-white/25">${(business.min_order / 100).toFixed(0)} min</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
               {business.address && !business.is_mobile_vendor && (
-                <span className="text-[10px] text-white/30 truncate">{business.address.split(",")[0]}</span>
+                <span className="text-[10px] text-white/25 truncate">{business.address.split(",")[0]}</span>
               )}
               {business.is_mobile_vendor && business.current_location_name && (
-                <span className="text-[10px] text-white/30 truncate">{business.current_location_name}</span>
+                <span className="text-[10px] text-white/25 truncate inline-flex items-center gap-0.5">
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="#F2A900" className="shrink-0"><circle cx="12" cy="12" r="8"/></svg>
+                  {business.current_location_name}
+                </span>
+              )}
+              {business.accepts_orders && (
+                <span className="ml-auto shrink-0 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-gold/10 border border-gold/20 text-[9px] font-bold text-gold">
+                  Order Now
+                  <svg width="8" height="8" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M2 1l3 3-3 3" /></svg>
+                </span>
               )}
             </div>
           </div>

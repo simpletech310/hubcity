@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
     const search = searchParams.get("search");
+    const orgType = searchParams.get("org_type");
 
     let query = supabase
       .from("job_listings")
@@ -18,6 +19,10 @@ export async function GET(request: Request) {
 
     if (type && type !== "all") {
       query = query.eq("job_type", type);
+    }
+
+    if (orgType && orgType !== "all") {
+      query = query.eq("organization_type", orgType);
     }
 
     const { data: jobs, error } = await query;
