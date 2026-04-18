@@ -66,37 +66,52 @@ export async function updateSession(request: NextRequest) {
 
   // Check profile for verification and role (only for authenticated users on protected routes)
   if (user && isProtectedRoute(pathname)) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("verification_status, role, is_suspended")
-      .eq("id", user.id)
-      .single();
+    try {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("verification_status, role, is_suspended")
+        .eq("id", user.id)
+        .single();
 
-    // Skip verification check if profile doesn't exist yet (new user)
-    if (profile) {
-      // Suspended users can only see a suspended page or log out
-      if (profile.is_suspended && !pathname.startsWith("/suspended")) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/suspended";
-        return NextResponse.redirect(redirectUrl);
+      if (profileError) {
+        console.error("Middleware Profile Fetch Error:", profileError);
+        // Fallback: allow the request to proceed if the query fails due to schema issues
+        // Unless it's a critical path like /admin
+        if (isAdminRoute) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/";
+          return NextResponse.redirect(redirectUrl);
+        }
       }
 
-      if (profile.verification_status === "unverified" && !isVerifyRoute && !isAdminRoute) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/verify-address";
-        return NextResponse.redirect(redirectUrl);
-      }
+      // Skip verification check if profile doesn't exist yet (new user) or if there was an error
+      if (profile) {
+        // Suspended users can only see a suspended page or log out
+        if (profile.is_suspended && !pathname.startsWith("/suspended")) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/suspended";
+          return NextResponse.redirect(redirectUrl);
+        }
 
-      if (
-        isAdminRoute &&
-        profile.role !== "admin" &&
-        profile.role !== "city_official" &&
-        profile.role !== "city_ambassador"
-      ) {
-        const redirectUrl = request.nextUrl.clone();
-        redirectUrl.pathname = "/";
-        return NextResponse.redirect(redirectUrl);
+        if (profile.verification_status === "unverified" && !isVerifyRoute && !isAdminRoute) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/verify-address";
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        if (
+          isAdminRoute &&
+          profile.role !== "admin" &&
+          profile.role !== "city_official" &&
+          profile.role !== "city_ambassador"
+        ) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/";
+          return NextResponse.redirect(redirectUrl);
+        }
       }
+    } catch (e) {
+      console.error("Critical Middleware Error:", e);
     }
   }
 
