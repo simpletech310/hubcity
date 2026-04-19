@@ -10,6 +10,7 @@ import Chip from "@/components/ui/Chip";
 import StreamCard from "./StreamCard";
 import CreateStreamModal from "./CreateStreamModal";
 import PreRollAd from "./PreRollAd";
+import LiveSimulatedPlayer from "./LiveSimulatedPlayer";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import type {
@@ -19,7 +20,10 @@ import type {
   TimeBlock,
   ChannelType,
   VideoAd,
+  Show,
+  ScheduledBroadcast,
 } from "@/types/database";
+import { LOCAL_CHANNEL_TYPES } from "@/types/database";
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
@@ -36,23 +40,49 @@ const TABS: { id: TabId; label: string; icon?: string }[] = [
   { id: "schedule", label: "Schedule" },
 ];
 
-const CHANNEL_FILTERS: { label: string; value: ChannelType | "all" }[] = [
+const NATIONAL_CHANNEL_FILTERS: { label: string; value: ChannelType | "all" }[] = [
   { label: "All", value: "all" },
-  { label: "Schools", value: "school" },
-  { label: "City", value: "city" },
-  { label: "Community", value: "community" },
-  { label: "Media", value: "media" },
+  { label: "Food", value: "food" },
+  { label: "Home", value: "home" },
+  { label: "Art", value: "art" },
+  { label: "Fashion", value: "fashion" },
+  { label: "Wellness", value: "wellness" },
+  { label: "Comedy", value: "comedy" },
+  { label: "Talk", value: "talk" },
+  { label: "Business", value: "business" },
+  { label: "Tech", value: "tech" },
+  { label: "Learn", value: "education" },
+  { label: "Civic", value: "civic" },
+  { label: "Music", value: "music" },
+  { label: "Faith", value: "faith" },
+  { label: "Sports", value: "sports" },
 ];
 
-const TYPE_BADGE: Record<
-  ChannelType,
-  { label: string; variant: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }
-> = {
+type TypeBadgeVariant = "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink";
+
+const TYPE_BADGE: Record<ChannelType, { label: string; variant: TypeBadgeVariant }> = {
+  // Legacy local types
   school: { label: "School", variant: "emerald" },
   city: { label: "City", variant: "cyan" },
   organization: { label: "Org", variant: "purple" },
   media: { label: "Media", variant: "pink" },
   community: { label: "Community", variant: "blue" },
+  museum: { label: "Museum", variant: "cyan" },
+  // New national thematic types
+  food: { label: "Food", variant: "coral" },
+  home: { label: "Home", variant: "emerald" },
+  art: { label: "Art", variant: "purple" },
+  fashion: { label: "Fashion", variant: "pink" },
+  wellness: { label: "Wellness", variant: "emerald" },
+  comedy: { label: "Comedy", variant: "gold" },
+  talk: { label: "Talk", variant: "blue" },
+  business: { label: "Business", variant: "gold" },
+  tech: { label: "Tech", variant: "cyan" },
+  education: { label: "Learn", variant: "blue" },
+  civic: { label: "Civic", variant: "cyan" },
+  music: { label: "Music", variant: "purple" },
+  faith: { label: "Faith", variant: "gold" },
+  sports: { label: "Sports", variant: "coral" },
 };
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -70,18 +100,7 @@ const VIDEO_TYPE_LABEL: Record<string, string> = {
   replay: "Replay",
 };
 
-// ── Compton Stars ──────────────────────────────────────────
-// Each star maps to a real working Mux video with a valid playback ID
-const COMPTON_STARS = [
-  { name: "Kendrick Lamar", title: "Pulitzer Prize Winner", initials: "KL", gradient: "from-gold to-amber-600", videoId: "33e3916a-a8bd-4c41-be32-b06a9e825134", playbackId: "f4Ug00QD4QexEgZGgQDng3qqrte5gR6RByNVK131oWZE" },
-  { name: "Serena Williams", title: "Tennis Legend", initials: "SW", gradient: "from-emerald-500 to-emerald-700", videoId: "d3cc7275-48f6-4d33-92f5-9c791d16faf0", playbackId: "ebtNRHkj3RpaUpDK3pLZrcgdd02PuxKhAAvixF7Xes018" },
-  { name: "Venus Williams", title: "Tennis Champion", initials: "VW", gradient: "from-purple-500 to-purple-700", videoId: "d9b84dd7-9209-44ce-92c7-094e34ce1f43", playbackId: "kFDhcP1lcGuDbw7LPywhHyuaYlctLdavMlrP9zSIRCM" },
-  { name: "Dr. Dre", title: "Music Mogul", initials: "DD", gradient: "from-red-500 to-red-700", videoId: "4fc91fcb-7f14-4f46-9f00-cbeb7d60aa2a", playbackId: "FusUwGulDYINjFmmiWwIqy7JRw5Jtc7PKoR00luhEqW4" },
-  { name: "Ice Cube", title: "Entertainment Icon", initials: "IC", gradient: "from-blue-500 to-blue-700", videoId: "fb007744-d894-4ede-9059-960887c8274e", playbackId: "ZRXLTip00QsIHSYRlWmGRIfRF4waRhycuQ007OuIulU7g" },
-  { name: "The Game", title: "West Coast Legend", initials: "TG", gradient: "from-orange-500 to-orange-700", videoId: "007fdd0c-8b9b-473e-8a8d-6af321ae5682", playbackId: "YALEP43HilUrxW5tFI48UiNg7ufyX02Je02YuEOdsUKi4" },
-  { name: "A'ja Wilson", title: "WNBA MVP", initials: "AW", gradient: "from-pink-500 to-pink-700", videoId: "742fedd3-bb35-4cdc-9313-c70deb2811d9", playbackId: "q7nnuKNqscJKCJkNhZs91NlYuozN5Uf3i47fEjZMu3c" },
-  { name: "Coolio", title: "Grammy Winner", initials: "CO", gradient: "from-cyan-500 to-cyan-700", videoId: "39f153f8-9465-49ff-aa25-c98ee5f8022b", playbackId: "wFMOU618MPNMnV7LikddlMm01QztefAzMn89XjqBoHu4" },
-];
+// Local (verified-address-only) channel types are defined in @/types/database.
 
 // ── Helpers ────────────────────────────────────────────────
 function channelInitials(name: string) {
@@ -139,22 +158,50 @@ interface KnectTVProps {
   streams: LiveStream[];
   featuredVideos: ChannelVideo[];
   recentVideos: ChannelVideo[];
+  shows: Show[];
   timeBlocks: TimeBlock[];
+  liveSchedule: ScheduledBroadcast[];
+  walmartAd: VideoAd | null;
   canStream: boolean;
   userId: string | null;
+  isVerified: boolean;
   followedChannelIds: string[];
+  purchasedVideoIds: string[];
 }
 
 export default function KnectTV({
-  channels,
+  channels: allChannels,
   streams,
-  featuredVideos,
-  recentVideos,
-  timeBlocks,
+  featuredVideos: allFeaturedVideos,
+  recentVideos: allRecentVideos,
+  shows,
+  timeBlocks: allTimeBlocks,
+  liveSchedule,
+  walmartAd,
   canStream,
   userId,
+  isVerified,
   followedChannelIds: initialFollowed,
+  purchasedVideoIds,
 }: KnectTVProps) {
+  // ── Scope gating: hide local channels/videos unless address-verified ──
+  const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
+    if (!c) return false;
+    // Knect TV Live is always visible (even though scope=national, it's our flagship)
+    if ((c as unknown as { slug?: string }).slug === "knect-tv-live") return true;
+    if (c.scope === "national") return true;
+    if (c.scope === "local") return isVerified;
+    // Legacy rows with no scope: treat by type
+    if (c.type && LOCAL_CHANNEL_TYPES.includes(c.type)) return isVerified;
+    return true;
+  };
+  const channels = allChannels.filter((c) => c.slug !== "knect-tv-live" && visible(c));
+  const localChannels = allChannels.filter(
+    (c) => c.scope === "local" || (c.type && LOCAL_CHANNEL_TYPES.includes(c.type))
+  );
+  const featuredVideos = allFeaturedVideos.filter((v) => !v.channel || visible(v.channel));
+  const recentVideos = allRecentVideos.filter((v) => !v.channel || visible(v.channel));
+  const timeBlocks = allTimeBlocks.filter((tb) => !tb.channel || visible(tb.channel));
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [channelFilter, setChannelFilter] = useState<ChannelType | "all">("all");
@@ -304,7 +351,7 @@ export default function KnectTV({
         </div>
         <div className="px-5 mb-4">
           <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40">
-            <MuxPlayer playbackId={playingVideo.mux_playback_id} streamType="on-demand" autoPlay="muted" accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: playingVideo.title, viewer_user_id: userId || "anon" }} />
+            <MuxPlayer playbackId={playingVideo.mux_playback_id} streamType="on-demand" autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: playingVideo.title, viewer_user_id: userId || "anon" }} />
           </div>
         </div>
         <div className="px-5 space-y-3">
@@ -357,7 +404,7 @@ export default function KnectTV({
         </div>
         <div className="px-5 mb-4">
           <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40">
-            <MuxPlayer playbackId={watchingStream.mux_playback_id} streamType={watchingStream.status === "active" ? "live" : "on-demand"} autoPlay="muted" accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: watchingStream.title, viewer_user_id: userId || "anon" }} />
+            <MuxPlayer playbackId={watchingStream.mux_playback_id} streamType={watchingStream.status === "active" ? "live" : "on-demand"} autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: watchingStream.title, viewer_user_id: userId || "anon" }} />
           </div>
         </div>
         <div className="px-5 space-y-3">
@@ -522,7 +569,10 @@ export default function KnectTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "home" && (
         <div className="animate-fade-in">
-          {/* ── Live Now ── */}
+          {/* ── Knect TV Live (simulated linear channel) ── */}
+          <LiveSimulatedPlayer schedule={liveSchedule} walmartAd={walmartAd} userId={userId} />
+
+          {/* ── Live Now (real live streams) ── */}
           {activeStreams.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center gap-2 px-5 mb-3">
@@ -632,46 +682,95 @@ export default function KnectTV({
             </section>
           )}
 
-          {/* ── Compton Stars ── */}
-          <section className="mb-8">
-            <div className="px-5 mb-3">
-              <h2 className="font-heading font-bold text-[18px]">Compton <span className="text-gold">Stars</span></h2>
-              <p className="text-[12px] text-warm-gray mt-0.5">Legends who started here</p>
-            </div>
-            <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-              {COMPTON_STARS.map((star, i) => (
-                <button
-                  key={i}
-                  onClick={() => playVideo({
-                    id: star.videoId,
-                    title: `${star.name} — ${star.title}`,
-                    mux_playback_id: star.playbackId,
-                    mux_asset_id: null,
-                    channel_id: "",
-                    description: null,
-                    thumbnail_url: null,
-                    duration: null,
-                    video_type: "featured",
-                    view_count: 0,
-                    is_published: true,
-                    published_at: new Date().toISOString(),
-                    created_at: new Date().toISOString(),
-                  } as ChannelVideo)}
-                  className="shrink-0 flex flex-col items-center gap-2 w-[80px] press"
-                >
-                  <div className="w-[64px] h-[64px] rounded-full bg-gradient-to-br from-gold/40 via-gold/20 to-gold/40 p-[2px]">
-                    <div className={`w-full h-full rounded-full bg-gradient-to-br ${star.gradient} flex items-center justify-center`}>
-                      <span className="text-white font-heading font-bold text-[18px] drop-shadow-lg">{star.initials}</span>
+          {/* ── Shows (on-demand poster grid) ── */}
+          {shows.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between px-5 mb-3">
+                <h2 className="font-heading font-bold text-[18px]">
+                  <span className="text-gold">Shows</span> On Demand
+                </h2>
+                <Link href="/live/submit-show" className="text-[12px] text-gold font-semibold press">
+                  Pitch a Show →
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-3 px-5">
+                {shows.map((show) => (
+                  <Link
+                    key={show.id}
+                    href={`/live/shows/${show.slug}`}
+                    className="press group"
+                  >
+                    <div className="aspect-[2/3] rounded-xl overflow-hidden bg-white/[0.06] mb-2 relative">
+                      {show.poster_url ? (
+                        <img
+                          src={show.poster_url}
+                          alt={show.title}
+                          className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gold/30">
+                          <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3" />
+                          </svg>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-[10px] uppercase tracking-wider text-gold font-semibold">
+                          {show.channel?.name}
+                        </p>
+                      </div>
                     </div>
+                    <p className="font-heading font-bold text-[13px] truncate">{show.title}</p>
+                    {show.tagline && (
+                      <p className="text-[11px] text-txt-secondary truncate">{show.tagline}</p>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── Compton Local (verified-address only) ── */}
+          {isVerified && localChannels.length > 0 && (
+            <section className="mb-8">
+              <div className="px-5 mb-3">
+                <h2 className="font-heading font-bold text-[18px]">
+                  🌉 Compton <span className="text-gold">Local</span>
+                </h2>
+                <p className="text-[12px] text-warm-gray mt-0.5">
+                  Channels for verified Compton residents
+                </p>
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
+                {localChannels.map((ch) => (
+                  <ChannelBubble key={ch.id} channel={ch} />
+                ))}
+              </div>
+            </section>
+          )}
+          {!isVerified && (
+            <section className="mb-8 px-5">
+              <Link
+                href="/profile"
+                className="block rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/10 via-midnight to-midnight p-5 press hover:border-gold/40 transition-colors"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">🌉</span>
+                  <div className="flex-1">
+                    <h3 className="font-heading font-bold text-[15px] mb-1">
+                      Compton Local — locked
+                    </h3>
+                    <p className="text-[12px] text-txt-secondary leading-relaxed">
+                      Verify your Compton address to unlock school, city, and neighborhood channels
+                      made for residents.
+                    </p>
+                    <p className="mt-2 text-[11px] text-gold font-semibold">Verify address →</p>
                   </div>
-                  <div className="text-center">
-                    <p className="text-[11px] font-semibold leading-tight">{star.name}</p>
-                    <p className="text-[9px] text-warm-gray">{star.title}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
+                </div>
+              </Link>
+            </section>
+          )}
 
           {/* ── Featured Videos ── */}
           {featuredVideos.length > 0 && (
@@ -1103,7 +1202,7 @@ export default function KnectTV({
 
           {/* Filter chips */}
           <div className="flex gap-2 px-5 mb-4 overflow-x-auto scrollbar-hide pb-1">
-            {CHANNEL_FILTERS.map((f) => (
+            {NATIONAL_CHANNEL_FILTERS.map((f) => (
               <Chip key={f.value} label={f.label} active={channelFilter === f.value} onClick={() => setChannelFilter(f.value)} />
             ))}
           </div>

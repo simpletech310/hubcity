@@ -7,9 +7,9 @@
 import fs from "fs";
 import path from "path";
 
-const MUX_TOKEN_ID = "130b2ec4-c099-4605-993c-c4921db299ea";
+const MUX_TOKEN_ID = "a9b71f93-1893-4c1f-9766-61c6c0277f2b";
 const MUX_TOKEN_SECRET =
-  "kgny3kqbXFmsrjrRWk8Vwi+cdLBzlrDoYhp2hpuVMT9AdJjXXbgqMHm0Os8GLtajaGmcqFujUyP";
+  "oKjxTigBfYMsPQj5Os8J8/kpWUYmRj1N634/S0XUodKczfXBy8TtaYFnDR4rjO0KvB5QIUTZmHv";
 const MUX_AUTH = Buffer.from(`${MUX_TOKEN_ID}:${MUX_TOKEN_SECRET}`).toString(
   "base64"
 );

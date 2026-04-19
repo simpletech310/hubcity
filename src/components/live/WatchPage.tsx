@@ -22,6 +22,21 @@ const TYPE_BADGE: Record<
   organization: { label: "Org", variant: "purple" },
   media: { label: "Media", variant: "pink" },
   community: { label: "Community", variant: "blue" },
+  museum: { label: "Museum", variant: "cyan" },
+  food: { label: "Food", variant: "coral" },
+  home: { label: "Home", variant: "emerald" },
+  art: { label: "Art", variant: "purple" },
+  fashion: { label: "Fashion", variant: "pink" },
+  wellness: { label: "Wellness", variant: "emerald" },
+  comedy: { label: "Comedy", variant: "gold" },
+  talk: { label: "Talk", variant: "blue" },
+  business: { label: "Business", variant: "gold" },
+  tech: { label: "Tech", variant: "cyan" },
+  education: { label: "Learn", variant: "blue" },
+  civic: { label: "Civic", variant: "cyan" },
+  music: { label: "Music", variant: "purple" },
+  faith: { label: "Faith", variant: "gold" },
+  sports: { label: "Sports", variant: "coral" },
 };
 
 function channelInitials(name: string) {

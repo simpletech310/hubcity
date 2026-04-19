@@ -326,7 +326,18 @@ export interface LiveStream {
 }
 
 // ── Channels ───────────────────────────────────────────
-export type ChannelType = "school" | "city" | "organization" | "media" | "community";
+export type ChannelType =
+  // Legacy "local" (Compton-specific) types
+  | "school" | "city" | "organization" | "media" | "community" | "museum"
+  // National thematic types (Knect TV pivot)
+  | "food" | "home" | "art" | "fashion" | "wellness" | "comedy" | "talk"
+  | "business" | "tech" | "education" | "civic" | "music" | "faith" | "sports";
+
+export type ChannelScope = "national" | "local";
+
+export const LOCAL_CHANNEL_TYPES: ChannelType[] = [
+  "school", "city", "organization", "media", "community", "museum",
+];
 
 export interface Channel {
   id: string;
@@ -334,6 +345,8 @@ export interface Channel {
   slug: string;
   description: string | null;
   type: ChannelType;
+  scope: ChannelScope;
+  is_live_simulated: boolean;
   avatar_url: string | null;
   banner_url: string | null;
   owner_id: string | null;
@@ -348,9 +361,29 @@ export interface Channel {
 export type VideoStatus2 = "processing" | "ready" | "errored";
 export type VideoType = "on_demand" | "featured" | "original" | "podcast" | "city_hall" | "replay";
 
+export interface Show {
+  id: string;
+  channel_id: string;
+  slug: string;
+  title: string;
+  tagline: string | null;
+  description: string | null;
+  poster_url: string | null;
+  runtime_minutes: number | null;
+  format: string | null;
+  creator_id: string | null;
+  is_active: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  channel?: Channel;
+}
+
 export interface ChannelVideo {
   id: string;
   channel_id: string;
+  show_id: string | null;
+  episode_number: number | null;
   title: string;
   description: string | null;
   video_type: VideoType;
@@ -363,10 +396,14 @@ export interface ChannelVideo {
   view_count: number;
   is_featured: boolean;
   is_published: boolean;
+  is_premium: boolean;
+  price_cents: number | null;
+  preview_seconds: number | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
   channel?: Channel;
+  show?: Show;
 }
 
 export interface TimeBlock {
@@ -379,6 +416,45 @@ export interface TimeBlock {
   is_recurring: boolean;
   is_active: boolean;
   channel?: Channel;
+}
+
+export interface ScheduledBroadcast {
+  id: string;
+  channel_id: string;
+  video_id: string;
+  starts_at: string;
+  ends_at: string;
+  position: number;
+  is_ad_slot: boolean;
+  created_at: string;
+  video?: ChannelVideo;
+  show?: Show;
+}
+
+export interface VideoPurchase {
+  id: string;
+  user_id: string;
+  video_id: string;
+  stripe_payment_intent_id: string;
+  amount_cents: number;
+  created_at: string;
+}
+
+export interface ShowSubmission {
+  id: string;
+  submitter_id: string;
+  show_title: string;
+  channel_slug: string | null;
+  tagline: string | null;
+  synopsis: string;
+  format: string | null;
+  pilot_video_url: string | null;
+  social_links: Record<string, string>;
+  status: "pending" | "approved" | "rejected" | "needs_info";
+  reviewer_id: string | null;
+  reviewer_notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ChannelFollow {

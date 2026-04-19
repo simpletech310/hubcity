@@ -88,8 +88,10 @@ function ProfileIcon({ active }: { active: boolean }) {
 /* ── Main component ── */
 export default function BottomNav({
   accessMode = "anonymous",
+  hasActiveCity = false,
 }: {
   accessMode?: AccessMode;
+  hasActiveCity?: boolean;
 } = {}) {
   const pathname = usePathname();
   const router = useRouter();
@@ -99,6 +101,13 @@ export default function BottomNav({
   const serviceItems: ServiceItem[] = showVerifiedOnly
     ? [...BASE_SERVICES, ...VERIFIED_ONLY_SERVICES]
     : BASE_SERVICES;
+
+  // If the visitor hasn't chosen a city yet, every service tap routes
+  // through the picker: /choose-city?next=/events. The picker sets the
+  // active_city cookie and redirects to the requested service.
+  const needsCityPick = !hasActiveCity && accessMode !== "verified";
+  const resolveServiceHref = (href: string) =>
+    needsCityPick ? `/choose-city?next=${encodeURIComponent(href)}` : href;
 
   // Close services sheet on route change
   useEffect(() => {
@@ -129,7 +138,7 @@ export default function BottomNav({
 
   const handleServiceNav = (href: string) => {
     setServicesOpen(false);
-    router.push(href);
+    router.push(resolveServiceHref(href));
   };
 
   return (

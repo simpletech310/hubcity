@@ -4,21 +4,36 @@ import { getCityBySlug } from "@/lib/cities";
 
 /**
  * City entry point. /c/:city sets the active-city cookie and bounces to the
- * home feed, which reads the cookie (via src/lib/current-city helpers) to
- * scope content. This avoids forking the entire public tree under /c/[city]
- * immediately — the tree can migrate page-by-page in a follow-on PR.
+ * ?then= path (or /) so the feed scopes to this city on every subsequent
+ * request. This avoids forking the entire public tree under /c/[city]
+ * immediately — individual pages can migrate under /c/[city]/ over time.
+ *
+ * Valid `then` values: same-origin absolute paths only (must start with "/"
+ * and not "//"). Invalid values fall back to "/".
  */
-export default async function CityLandingPage({
-  params,
-}: {
+type PageProps = {
   params: Promise<{ city: string }>;
-}) {
+  searchParams: Promise<{ then?: string }>;
+};
+
+function safeThen(raw: string | undefined): string {
+  if (!raw) return "/";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/";
+  return raw.split("#")[0];
+}
+
+export default async function CityLandingPage({ params, searchParams }: PageProps) {
   const { city: slug } = await params;
+  const { then } = await searchParams;
   const city = await getCityBySlug(slug);
   if (!city || city.launch_status === "hidden") notFound();
 
   if (city.launch_status === "coming_soon") {
-    redirect(`/choose-city?pending=${city.slug}`);
+    redirect(
+      `/choose-city?pending=${encodeURIComponent(city.name)}${
+        then ? `&next=${encodeURIComponent(then)}` : ""
+      }`
+    );
   }
 
   const jar = await cookies();
@@ -33,5 +48,5 @@ export default async function CityLandingPage({
     maxAge: 60 * 60 * 24 * 365,
   });
 
-  redirect("/");
+  redirect(safeThen(then));
 }
