@@ -3,7 +3,7 @@ import {
   notificationEmailTemplate,
 } from "@/lib/email";
 
-const BASE_URL = "https://hubcityapp.com";
+const BASE_URL = "https://knect.app";
 
 /**
  * Welcome email when a user signs up
@@ -14,15 +14,15 @@ export async function sendWelcomeEmail(
 ): Promise<void> {
   try {
     const html = notificationEmailTemplate(
-      `Welcome to Hub City, ${displayName}!`,
+      `Welcome to Knect, ${displayName}!`,
       "You're now part of Compton's digital town hall. Explore local businesses, stay updated on city events, report issues in your neighborhood, and connect with your community.",
       `${BASE_URL}/feed`,
-      "Explore Hub City"
+      "Explore Knect"
     );
 
     await sendEmail({
       to: email,
-      subject: `Welcome to Hub City, ${displayName}!`,
+      subject: `Welcome to Knect, ${displayName}!`,
       html,
     });
   } catch (error) {
@@ -48,7 +48,7 @@ export async function sendBroadcastEmail(
 
     await sendEmail({
       to: email,
-      subject: `Hub City: ${title}`,
+      subject: `Knect: ${title}`,
       html,
     });
   } catch (error) {
@@ -169,7 +169,7 @@ export async function sendBadgeEarnedEmail(
   try {
     const html = notificationEmailTemplate(
       `${badgeIcon} Badge Earned: ${badgeName}`,
-      `Congratulations! You've earned the "${badgeName}" badge on Hub City. Keep engaging with your community to unlock more achievements!`,
+      `Congratulations! You've earned the "${badgeName}" badge on Knect. Keep engaging with your community to unlock more achievements!`,
       `${BASE_URL}/profile`,
       "View Your Badges"
     );

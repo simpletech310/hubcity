@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
     .single();
 
   return {
-    title: profile ? `${profile.display_name} -- Hub City` : "Profile -- Hub City",
+    title: profile ? `${profile.display_name} -- Knect` : "Profile -- Knect",
   };
 }
 

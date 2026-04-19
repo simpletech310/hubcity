@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { sendTransactionalEmail } from "@/lib/email";
+import { refundedEmail } from "@/lib/emails/orders/refunded";
 
 export async function POST(
   request: Request,
@@ -61,6 +64,8 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
     const refundAmount: number | undefined = body.amount;
+    const refundReason: string =
+      typeof body.reason === "string" ? body.reason.trim() : "";
 
     // Validate partial refund amount
     if (refundAmount !== undefined) {
@@ -90,18 +95,81 @@ export async function POST(
 
     const refund = await stripe.refunds.create(refundParams);
 
-    // Update order status to cancelled
+    const isPartial = !!refundAmount && refundAmount < order.total;
+
+    // Update order status + capture reason. Partial refunds keep the order
+    // active (status not forced to cancelled); full refunds cancel it.
+    const orderUpdate: Record<string, unknown> = {
+      completed_at: new Date().toISOString(),
+    };
+    if (isPartial) {
+      if (refundReason) orderUpdate.partial_refund_reason = refundReason;
+    } else {
+      orderUpdate.status = "cancelled";
+      orderUpdate.cancelled_at = new Date().toISOString();
+      if (refundReason) orderUpdate.cancellation_reason = refundReason;
+    }
+
     const { error: updateError } = await supabase
       .from("orders")
-      .update({
-        status: "cancelled",
-        completed_at: new Date().toISOString(),
-      })
+      .update(orderUpdate)
       .eq("id", id);
 
     if (updateError) {
       console.error("Failed to update order status after refund:", updateError);
     }
+
+    // Audit log (fire-and-forget).
+    supabase
+      .from("order_audit_log")
+      .insert({
+        order_id: id,
+        actor_id: user.id,
+        action: isPartial ? "partial_refund" : "refund",
+        metadata: {
+          stripe_refund_id: refund.id,
+          amount: refund.amount,
+          reason: refundReason || null,
+        },
+      })
+      .then(({ error: auditErr }) => {
+        if (auditErr) console.error("Order audit log insert error:", auditErr);
+      });
+
+    // Send refunded email (fire-and-forget).
+    (async () => {
+      try {
+        const adminClient = createAdminClient();
+        const { data: authUser } = await adminClient.auth.admin.getUserById(
+          order.customer_id
+        );
+        const customerEmail = authUser?.user?.email ?? null;
+        if (!customerEmail) return;
+        const { data: profile } = await adminClient
+          .from("profiles")
+          .select("display_name")
+          .eq("id", order.customer_id)
+          .single();
+        const { data: biz } = await adminClient
+          .from("businesses")
+          .select("name")
+          .eq("id", order.business_id)
+          .single();
+        const { subject, html, text } = refundedEmail({
+          customerName: profile?.display_name || "there",
+          businessName: biz?.name || "your vendor",
+          orderNumber: order.order_number,
+          orderId: order.id,
+          refundAmountCents: refund.amount ?? order.total,
+          originalTotalCents: order.total,
+          reason: refundReason,
+          isPartial,
+        });
+        await sendTransactionalEmail({ to: customerEmail, subject, html, text });
+      } catch (emailErr) {
+        console.error("Refund email error (non-fatal):", emailErr);
+      }
+    })();
 
     // Notify customer
     if (order.customer_id) {

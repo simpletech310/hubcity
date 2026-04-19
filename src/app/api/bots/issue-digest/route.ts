@@ -11,7 +11,7 @@ export async function POST() {
     const { data: existing } = await adminClient
       .from("bot_posts")
       .select("id")
-      .eq("bot_name", "hubcity")
+      .eq("bot_name", "knect")
       .eq("post_type", "issue_digest")
       .gte("created_at", `${today}T00:00:00`)
       .limit(1);
@@ -61,19 +61,19 @@ export async function POST() {
     body += `\n🔧 ${activeCount} total active issue${activeCount !== 1 ? "s" : ""} being tracked\n`;
     body += `\nReport an issue with #pothole, #streetlight, #graffiti, and more! 🏙️`;
 
-    // Get the Hub City bot profile
+    // Get the Knect bot profile
     const { data: botProfile } = await adminClient
       .from("profiles")
       .select("id")
       .eq("is_bot", true)
-      .eq("handle", "hubcity")
+      .eq("handle", "knect")
       .single();
 
     if (!botProfile) {
       return NextResponse.json(
         {
           error:
-            "Hub City bot profile not found. Create a profile with handle 'hubcity' and is_bot=true",
+            "Knect bot profile not found. Create a profile with handle 'knect' and is_bot=true",
         },
         { status: 400 }
       );
@@ -97,7 +97,7 @@ export async function POST() {
 
     // Log the bot post
     await adminClient.from("bot_posts").insert({
-      bot_name: "hubcity",
+      bot_name: "knect",
       post_type: "issue_digest",
       post_id: post.id,
       data: {

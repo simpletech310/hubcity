@@ -196,7 +196,7 @@ export default function LiveFeed({ streams, canStream, userId }: LiveFeedProps) 
               </div>
               <div className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-gold/15 text-gold flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
-                <p>Start broadcasting — the stream appears live for all Hub City users</p>
+                <p>Start broadcasting — the stream appears live for all Knect users</p>
               </div>
             </div>
           </div>

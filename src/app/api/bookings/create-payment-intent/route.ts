@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe, calculatePlatformFee } from "@/lib/stripe";
+import {
+  cacheIntent,
+  findCachedIntent,
+  readIdempotencyKey,
+} from "@/lib/idempotency";
 
 export async function POST(request: Request) {
   try {
@@ -11,6 +16,18 @@ export async function POST(request: Request) {
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { key: idempotencyKey } = readIdempotencyKey(request);
+
+    const cached = await findCachedIntent(supabase, user.id, idempotencyKey);
+    if (cached) {
+      return NextResponse.json({
+        booking_id: cached.resource_id,
+        client_secret: cached.client_secret,
+        charge_amount: cached.amount_cents,
+        idempotent_replay: true,
+      });
     }
 
     const { business_id, service_id, date, start_time, end_time, notes, staff_id, staff_name } =
@@ -106,32 +123,48 @@ export async function POST(request: Request) {
 
     if (bookingError) throw bookingError;
 
-    // Create Stripe PaymentIntent (with Connect if business has Stripe account)
+    // Create Stripe PaymentIntent (with Connect if business has Stripe account).
+    // The idempotencyKey is forwarded to Stripe so a retry with the same key
+    // returns the same intent rather than creating a duplicate charge.
     const stripe = getStripe();
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: chargeAmount,
-      currency: "usd",
-      metadata: {
-        booking_id: booking.id,
-        business_id,
-        customer_id: user.id,
-        service_name: service.name,
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: chargeAmount,
+        currency: "usd",
+        metadata: {
+          booking_id: booking.id,
+          business_id,
+          customer_id: user.id,
+          service_name: service.name,
+          idempotency_key: idempotencyKey,
+        },
+        description: `Booking: ${service.name} at ${business?.name || "Knect Business"}`,
+        automatic_payment_methods: { enabled: true },
+        ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
+          ? {
+              application_fee_amount: platformFee,
+              transfer_data: { destination: stripeAccount.stripe_account_id },
+            }
+          : {}),
       },
-      description: `Booking: ${service.name} at ${business?.name || "Hub City Business"}`,
-      automatic_payment_methods: { enabled: true },
-      ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
-        ? {
-            application_fee_amount: platformFee,
-            transfer_data: { destination: stripeAccount.stripe_account_id },
-          }
-        : {}),
-    });
+      { idempotencyKey }
+    );
 
-    // Save payment intent on booking
     await supabase
       .from("bookings")
       .update({ stripe_payment_intent_id: paymentIntent.id })
       .eq("id", booking.id);
+
+    await cacheIntent(supabase, {
+      idempotency_key: idempotencyKey,
+      user_id: user.id,
+      resource_type: "booking",
+      resource_id: booking.id,
+      stripe_payment_intent_id: paymentIntent.id,
+      amount_cents: chargeAmount,
+      currency: "usd",
+      client_secret: paymentIntent.client_secret ?? null,
+    });
 
     return NextResponse.json({
       booking_id: booking.id,

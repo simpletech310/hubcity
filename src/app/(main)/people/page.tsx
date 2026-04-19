@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import PeopleClient from "./people-client";
 
 export const metadata = {
-  title: "People | Hub City",
+  title: "People | Knect",
   description: "Community directory for Compton, CA",
 };
 

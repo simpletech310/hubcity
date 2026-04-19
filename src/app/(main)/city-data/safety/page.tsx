@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import SectionHeader from "@/components/layout/SectionHeader";
 
 export const metadata = {
-  title: "Community Safety - Hub City",
+  title: "Community Safety - Knect",
   description: "Safety resources, issue tracking, and emergency contacts for Compton, CA.",
 };
 

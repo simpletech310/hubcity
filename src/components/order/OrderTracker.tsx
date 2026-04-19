@@ -51,6 +51,10 @@ export default function OrderTracker({
   const supabase = createClient();
 
   useEffect(() => {
+    // Subscribe to both the parent order row AND the deliveries row for this
+    // order. Deliveries status changes are what drive the text-based "live"
+    // feel during the courier handoff (picked_up -> delivered). No GPS pings
+    // — status is the only signal per the in-house courier product decision.
     const channel = supabase
       .channel(`order-${orderId}`)
       .on(
@@ -64,6 +68,25 @@ export default function OrderTracker({
         (payload) => {
           if (payload.new?.status) {
             setStatus(payload.new.status as OrderStatus);
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "deliveries",
+          filter: `order_id=eq.${orderId}`,
+        },
+        (payload) => {
+          const delStatus = (payload.new as { status?: string } | null)?.status;
+          // Mirror delivery status into the order tracker so customers see
+          // "out_for_delivery" / "delivered" without waiting for a refresh.
+          if (delStatus === "picked_up") {
+            setStatus("out_for_delivery" as OrderStatus);
+          } else if (delStatus === "delivered") {
+            setStatus("delivered" as OrderStatus);
           }
         }
       )

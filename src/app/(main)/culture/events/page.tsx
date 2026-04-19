@@ -4,7 +4,7 @@ import MuseumNav from "@/components/culture/MuseumNav";
 import CultureCalendarClient from "../calendar/CultureCalendarClient";
 
 export const metadata = {
-  title: "Cultural Events | Compton Culture | Hub City",
+  title: "Cultural Events | Compton Culture | Knect",
   description: "Upcoming cultural events in Compton.",
 };
 

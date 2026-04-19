@@ -70,8 +70,8 @@ export async function POST() {
         .gte("created_at", weekAgo),
     ]);
 
-    let body = `📊 This Week in Compton — Hub City Weekly Recap\n\n`;
-    body += `👥 ${newUsers ?? 0} new residents joined Hub City\n`;
+    let body = `📊 This Week in Compton — Knect Weekly Recap\n\n`;
+    body += `👥 ${newUsers ?? 0} new residents joined Knect\n`;
     body += `🏪 ${newBusinesses ?? 0} new businesses listed\n`;
     body += `🗓️ ${newEvents ?? 0} events created\n`;
     body += `💬 ${newPosts ?? 0} community posts\n`;
@@ -95,7 +95,7 @@ export async function POST() {
       .from("profiles")
       .select("id")
       .eq("is_bot", true)
-      .eq("handle", "hubcity")
+      .eq("handle", "knect")
       .single();
 
     if (!botProfile) {
@@ -121,7 +121,7 @@ export async function POST() {
     if (error) throw error;
 
     await adminClient.from("bot_posts").insert({
-      bot_name: "hubcity",
+      bot_name: "knect",
       post_type: "weekly_stats",
       post_id: post.id,
       data: {

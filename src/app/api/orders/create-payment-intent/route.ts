@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe, generateOrderNumber, calculatePlatformFee } from "@/lib/stripe";
 import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
+import {
+  cacheIntent,
+  findCachedIntent,
+  readIdempotencyKey,
+} from "@/lib/idempotency";
 
 const CA_TAX_RATE = 0.095;
 
@@ -33,6 +38,26 @@ export async function POST(request: Request) {
       );
     }
 
+    const { key: idempotencyKey } = readIdempotencyKey(request);
+
+    const cached = await findCachedIntent(supabase, user.id, idempotencyKey);
+    if (cached) {
+      const { data: existingOrder } = cached.resource_id
+        ? await supabase
+            .from("orders")
+            .select("id,order_number,total")
+            .eq("id", cached.resource_id)
+            .maybeSingle()
+        : { data: null };
+      return NextResponse.json({
+        order_id: cached.resource_id,
+        order_number: existingOrder?.order_number ?? null,
+        client_secret: cached.client_secret,
+        total: cached.amount_cents,
+        idempotent_replay: true,
+      });
+    }
+
     const {
       business_id,
       items,
@@ -48,6 +73,68 @@ export async function POST(request: Request) {
         { error: "business_id, items, and type are required" },
         { status: 400 }
       );
+    }
+
+    // Store-hours enforcement (P5). If no hours rows are configured for today,
+    // allow the order (grandfather businesses that haven't set hours). If hours
+    // are configured, the current time must fall within an active window.
+    {
+      const nowLa = new Date().toLocaleString("en-US", {
+        timeZone: "America/Los_Angeles",
+        hour12: false,
+      });
+      // nowLa looks like "4/19/2026, 14:35:02" — parse it back into pieces.
+      const parsed = new Date(nowLa.replace(",", ""));
+      const dow = parsed.getDay(); // 0=Sun..6=Sat
+      const mins = parsed.getHours() * 60 + parsed.getMinutes();
+
+      const { data: hours } = await supabase
+        .from("food_vendor_hours")
+        .select("opens_at, closes_at, active")
+        .eq("business_id", business_id)
+        .eq("day_of_week", dow)
+        .eq("active", true);
+
+      if (hours && hours.length > 0) {
+        const toMinutes = (t: string | null) => {
+          if (!t) return null;
+          const [hh, mm] = t.split(":").map(Number);
+          return hh * 60 + (mm || 0);
+        };
+        const isOpen = hours.some((h) => {
+          const o = toMinutes(h.opens_at);
+          const c = toMinutes(h.closes_at);
+          if (o == null || c == null) return false;
+          // Allow "closes at midnight" (24:00) or wrap-around like 18:00-02:00
+          return c >= o ? mins >= o && mins < c : mins >= o || mins < c;
+        });
+        if (!isOpen) {
+          // Compute the next opening for a helpful error message.
+          let next_open: string | null = null;
+          for (let offset = 0; offset < 8 && !next_open; offset++) {
+            const d = (dow + offset) % 7;
+            const { data: futureHours } = await supabase
+              .from("food_vendor_hours")
+              .select("opens_at")
+              .eq("business_id", business_id)
+              .eq("day_of_week", d)
+              .eq("active", true)
+              .order("opens_at", { ascending: true })
+              .limit(1);
+            if (futureHours && futureHours.length > 0 && futureHours[0].opens_at) {
+              const op = futureHours[0].opens_at as string;
+              const opMins =
+                Number(op.split(":")[0]) * 60 + Number(op.split(":")[1] || 0);
+              if (offset === 0 && opMins <= mins) continue;
+              next_open = `day_of_week=${d} ${op}`;
+            }
+          }
+          return NextResponse.json(
+            { error: "Store is closed", next_open },
+            { status: 400 }
+          );
+        }
+      }
     }
 
     // Stock validation
@@ -165,6 +252,7 @@ export async function POST(request: Request) {
         coupon_id: validCouponId,
         delivery_address: delivery_address || null,
         delivery_notes: delivery_notes || null,
+        idempotency_key: idempotencyKey,
       })
       .select("id")
       .single();
@@ -188,32 +276,48 @@ export async function POST(request: Request) {
 
     if (itemsError) throw itemsError;
 
-    // Create Stripe PaymentIntent (with Connect if business has Stripe account)
+    // Create Stripe PaymentIntent (with Connect if business has Stripe account).
+    // The idempotencyKey is forwarded to Stripe so duplicate submits return the
+    // same intent instead of double-charging.
     const stripe = getStripe();
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: total,
-      currency: "usd",
-      metadata: {
-        order_id: order.id,
-        order_number,
-        business_id,
-        customer_id: user.id,
+    const paymentIntent = await stripe.paymentIntents.create(
+      {
+        amount: total,
+        currency: "usd",
+        metadata: {
+          order_id: order.id,
+          order_number,
+          business_id,
+          customer_id: user.id,
+          idempotency_key: idempotencyKey,
+        },
+        description: `Order ${order_number} at ${business?.name || "Knect Business"}`,
+        automatic_payment_methods: { enabled: true },
+        ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
+          ? {
+              application_fee_amount: platform_fee,
+              transfer_data: { destination: stripeAccount.stripe_account_id },
+            }
+          : {}),
       },
-      description: `Order ${order_number} at ${business?.name || "Hub City Business"}`,
-      automatic_payment_methods: { enabled: true },
-      ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
-        ? {
-            application_fee_amount: platform_fee,
-            transfer_data: { destination: stripeAccount.stripe_account_id },
-          }
-        : {}),
-    });
+      { idempotencyKey }
+    );
 
-    // Save payment intent ID on order
     await supabase
       .from("orders")
       .update({ stripe_payment_intent_id: paymentIntent.id })
       .eq("id", order.id);
+
+    await cacheIntent(supabase, {
+      idempotency_key: idempotencyKey,
+      user_id: user.id,
+      resource_type: "order",
+      resource_id: order.id,
+      stripe_payment_intent_id: paymentIntent.id,
+      amount_cents: total,
+      currency: "usd",
+      client_secret: paymentIntent.client_secret ?? null,
+    });
 
     return NextResponse.json({
       order_id: order.id,

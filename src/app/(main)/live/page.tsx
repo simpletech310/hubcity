@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import HubCityTV from "@/components/live/HubCityTV";
+import KnectTV from "@/components/live/KnectTV";
 import type { Channel, ChannelVideo, LiveStream, TimeBlock } from "@/types/database";
 
 export default async function LivePage() {
@@ -75,7 +75,7 @@ export default async function LivePage() {
   const canStream = userRole === "admin" || userRole === "city_official" || userRole === "city_ambassador";
 
   return (
-    <HubCityTV
+    <KnectTV
       channels={(rawChannels as Channel[]) || []}
       streams={(rawStreams as LiveStream[]) || []}
       featuredVideos={(rawFeatured as ChannelVideo[]) || []}

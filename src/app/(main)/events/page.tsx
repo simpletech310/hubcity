@@ -437,7 +437,7 @@ export default function EventsPage() {
                   Got something planned?
                 </p>
                 <h3 className="font-heading font-bold text-[18px] mb-1.5">
-                  Host Your Event on Hub City
+                  Host Your Event on Knect
                 </h3>
                 <p className="font-display italic text-[13px] text-warm-gray leading-relaxed mb-4 max-w-[280px]">
                   Reach every citizen in Compton. List your event for free.

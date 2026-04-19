@@ -30,7 +30,7 @@ export const COMPTON_HISTORY: HistoryEntry[] = [
     year: "1920s",
     title: "A Growing Agricultural Hub",
     description:
-      "Compton grew as a thriving agricultural community. Japanese-American farmers cultivated strawberry fields and nurseries throughout the area. The city's central location between LA and Long Beach earned it the name 'Hub City' — a name that endures today.",
+      "Compton grew as a thriving agricultural community. Japanese-American farmers cultivated strawberry fields and nurseries throughout the area. The city's central location between LA and Long Beach earned it the name 'Knect' — a name that endures today.",
     color: "#6B8E23",
     category: "founding",
   },
@@ -102,7 +102,7 @@ export const COMPTON_HISTORY: HistoryEntry[] = [
     year: "2020s",
     title: "The Compton Renaissance",
     description:
-      "A new generation of creators, entrepreneurs, and civic leaders are reshaping Compton. Hub City TV amplifies local voices, new businesses are opening, murals are transforming neighborhoods, and the Compton Art & History Museum preserves the culture for future generations. The Hub City's best chapter is being written now.",
+      "A new generation of creators, entrepreneurs, and civic leaders are reshaping Compton. Knect TV amplifies local voices, new businesses are opening, murals are transforming neighborhoods, and the Compton Art & History Museum preserves the culture for future generations. The Knect's best chapter is being written now.",
     color: "#C5A04E",
     category: "renaissance",
   },

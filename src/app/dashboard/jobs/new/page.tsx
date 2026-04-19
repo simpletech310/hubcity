@@ -21,6 +21,44 @@ const salaryTypeOptions: { value: SalaryType; label: string }[] = [
   { value: "tips", label: "Tips" },
 ];
 
+type ExperienceLevel = "entry" | "mid" | "senior" | "executive";
+type EmploymentType =
+  | "full_time"
+  | "part_time"
+  | "contract"
+  | "internship"
+  | "seasonal"
+  | "temporary";
+
+const experienceOptions: { value: ExperienceLevel; label: string }[] = [
+  { value: "entry", label: "Entry level" },
+  { value: "mid", label: "Mid level" },
+  { value: "senior", label: "Senior" },
+  { value: "executive", label: "Executive" },
+];
+
+const employmentTypeOptions: { value: EmploymentType; label: string }[] = [
+  { value: "full_time", label: "Full-time" },
+  { value: "part_time", label: "Part-time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+  { value: "seasonal", label: "Seasonal" },
+  { value: "temporary", label: "Temporary" },
+];
+
+const BENEFIT_OPTIONS = [
+  "Health insurance",
+  "Dental insurance",
+  "Vision insurance",
+  "401(k)",
+  "Paid time off",
+  "Parental leave",
+  "Remote work",
+  "Flexible schedule",
+  "Employee discount",
+  "Tuition reimbursement",
+];
+
 interface UserBusiness {
   id: string;
   name: string;
@@ -47,6 +85,11 @@ export default function NewJobPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [organizationName, setOrganizationName] = useState("");
+  const [category, setCategory] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | "">("");
+  const [employmentType, setEmploymentType] = useState<EmploymentType | "">("");
+  const [benefits, setBenefits] = useState<string[]>([]);
+  const [expiresAt, setExpiresAt] = useState("");
 
   useEffect(() => {
     async function loadContext() {
@@ -87,6 +130,11 @@ export default function NewJobPage() {
         contact_email: contactEmail || null,
         contact_phone: contactPhone || null,
         organization_name: organizationName || null,
+        category: category || null,
+        experience_level: experienceLevel || null,
+        employment_type: employmentType || null,
+        benefits: benefits.length > 0 ? benefits : null,
+        expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
       };
 
       if (!isVolunteer) {
@@ -306,6 +354,117 @@ export default function NewJobPage() {
             className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border-subtle text-sm text-white outline-none focus:border-gold/30 transition-colors"
           />
         </div>
+
+        {/* Expires at */}
+        <div>
+          <label className="block text-xs font-semibold text-txt-secondary mb-1.5">
+            Listing Expires
+          </label>
+          <input
+            type="date"
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border-subtle text-sm text-white outline-none focus:border-gold/30 transition-colors"
+          />
+          <p className="mt-1 text-[11px] text-txt-secondary">
+            Listing auto-deactivates after this date.
+          </p>
+        </div>
+
+        {/* Category */}
+        <div>
+          <label className="block text-xs font-semibold text-txt-secondary mb-1.5">
+            Category
+          </label>
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="e.g. Food Service, Retail, Administrative"
+            className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border-subtle text-sm text-white placeholder:text-txt-secondary/50 outline-none focus:border-gold/30 transition-colors"
+          />
+        </div>
+
+        {/* Experience level */}
+        {!isVolunteer && (
+          <div>
+            <label className="block text-xs font-semibold text-txt-secondary mb-1.5">
+              Experience Level
+            </label>
+            <select
+              value={experienceLevel}
+              onChange={(e) => setExperienceLevel(e.target.value as ExperienceLevel)}
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border-subtle text-sm text-white outline-none focus:border-gold/30 transition-colors"
+            >
+              <option value="" className="bg-deep">
+                Any level
+              </option>
+              {experienceOptions.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-deep">
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Employment type (standardized taxonomy) */}
+        {!isVolunteer && (
+          <div>
+            <label className="block text-xs font-semibold text-txt-secondary mb-1.5">
+              Employment Classification
+            </label>
+            <select
+              value={employmentType}
+              onChange={(e) => setEmploymentType(e.target.value as EmploymentType)}
+              className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-border-subtle text-sm text-white outline-none focus:border-gold/30 transition-colors"
+            >
+              <option value="" className="bg-deep">
+                Not specified
+              </option>
+              {employmentTypeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-deep">
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-txt-secondary">
+              Helps your listing match Indeed/LinkedIn-style filters.
+            </p>
+          </div>
+        )}
+
+        {/* Benefits */}
+        {!isVolunteer && (
+          <div>
+            <label className="block text-xs font-semibold text-txt-secondary mb-1.5">
+              Benefits
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {BENEFIT_OPTIONS.map((b) => {
+                const on = benefits.includes(b);
+                return (
+                  <button
+                    type="button"
+                    key={b}
+                    onClick={() =>
+                      setBenefits((prev) =>
+                        prev.includes(b) ? prev.filter((x) => x !== b) : [...prev, b]
+                      )
+                    }
+                    className={`px-3 py-1.5 rounded-full border text-xs transition-colors ${
+                      on
+                        ? "bg-gold/15 border-gold/40 text-gold"
+                        : "bg-white/[0.04] border-border-subtle text-txt-secondary hover:border-gold/30"
+                    }`}
+                  >
+                    {b}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Contact */}
         <div className="grid grid-cols-2 gap-2">

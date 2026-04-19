@@ -19,7 +19,7 @@ export async function POST() {
       .from("profiles")
       .select("id")
       .eq("is_bot", true)
-      .eq("handle", "hubcity")
+      .eq("handle", "knect")
       .single();
 
     if (!bot) {

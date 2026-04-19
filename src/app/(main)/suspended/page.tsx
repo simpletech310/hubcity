@@ -9,13 +9,13 @@ export default function SuspendedPage() {
         </div>
         <h1 className="font-heading text-2xl font-bold mb-2">Account Suspended</h1>
         <p className="text-sm text-txt-secondary leading-relaxed mb-6">
-          Your Hub City account has been suspended. This may be due to a
+          Your Knect account has been suspended. This may be due to a
           violation of our community guidelines. If you believe this is an
           error, please contact us.
         </p>
         <div className="space-y-3">
           <a
-            href="mailto:support@hubcityapp.com"
+            href="mailto:support@knect.app"
             className="block w-full py-3 rounded-xl bg-gold/10 text-gold font-bold text-sm"
           >
             Contact Support

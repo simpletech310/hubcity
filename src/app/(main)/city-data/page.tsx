@@ -20,7 +20,7 @@ interface CityAlert {
 }
 
 export const metadata = {
-  title: "City Data - Hub City",
+  title: "City Data - Knect",
   description: "Compton at a glance: weather, air quality, alerts, and community data.",
 };
 

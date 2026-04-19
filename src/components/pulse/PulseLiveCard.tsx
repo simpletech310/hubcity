@@ -52,7 +52,7 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-[13px] font-bold truncate">
-              {stream.creator?.display_name || "Hub City"}
+              {stream.creator?.display_name || "Knect"}
             </p>
             <Badge label="LIVE" variant="coral" shine />
           </div>
@@ -90,7 +90,7 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
             style={{ aspectRatio: "16/9", width: "100%" }}
             metadata={{
               video_title: stream.title,
-              viewer_user_id: "hubcity-pulse",
+              viewer_user_id: "knect-pulse",
             }}
           />
         </div>

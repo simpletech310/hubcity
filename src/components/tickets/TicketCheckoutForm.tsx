@@ -107,7 +107,7 @@ function CheckoutInner({
       </Button>
 
       <p className="text-center text-xs text-txt-secondary">
-        Secured by Stripe. Your payment info is never stored by Hub City.
+        Secured by Stripe. Your payment info is never stored by Knect.
       </p>
     </form>
   );

@@ -210,7 +210,7 @@ function PaymentForm({
       </div>
 
       <p className="text-center text-[11px] text-txt-secondary">
-        Your payment info is never stored by Hub City
+        Your payment info is never stored by Knect
       </p>
     </form>
   );

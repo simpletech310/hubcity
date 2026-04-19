@@ -5,7 +5,7 @@ import type { TrusteeArea } from "@/lib/districts";
 import TrusteeDashboardClient from "./trustee-dashboard-client";
 
 export const metadata = {
-  title: "Trustee Dashboard | Hub City",
+  title: "Trustee Dashboard | Knect",
   description: "Manage your trustee area — posts, messages, and programs.",
 };
 

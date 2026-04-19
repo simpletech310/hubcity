@@ -174,7 +174,7 @@ export default async function ArtDetailPage({
               Know the artist or have art to share?
             </p>
             <p className="text-[13px] font-medium">
-              Hub City celebrates Compton&apos;s creative spirit. Submit your art
+              Knect celebrates Compton&apos;s creative spirit. Submit your art
               or murals to be featured.
             </p>
           </div>

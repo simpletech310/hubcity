@@ -69,16 +69,27 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Only city_ambassador, city_official, admin can create groups
+    // Only non-citizen roles can create groups
     const { data: profile } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["city_ambassador", "city_official", "admin"].includes(profile.role)) {
+    const allowedRoles = [
+      "business_owner",
+      "city_official",
+      "admin",
+      "content_creator",
+      "city_ambassador",
+      "chamber_admin",
+      "resource_provider",
+      "school_trustee",
+    ];
+
+    if (!profile || !allowedRoles.includes(profile.role)) {
       return NextResponse.json(
-        { error: "Only city ambassadors and officials can create groups" },
+        { error: "Only authorized roles can create groups" },
         { status: 403 }
       );
     }

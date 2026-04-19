@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { isComptonZip } from "@/lib/districts";
+import { resolveCityByZip, listLiveCities } from "@/lib/cities";
 import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
 
 export async function POST(request: Request) {
@@ -32,13 +32,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify address is in Compton by extracting ZIP
-    const zipMatch = address.match(/\b(9\d{4})\b/);
-    if (!zipMatch || !isComptonZip(zipMatch[1])) {
+    // Resolve ZIP → one of the live cities. Ambiguous or unknown ZIPs are rejected.
+    const zipMatch = address.match(/\b(\d{5})\b/);
+    if (!zipMatch) {
+      return NextResponse.json(
+        { error: "Could not detect a ZIP code in the address." },
+        { status: 400 }
+      );
+    }
+    const { city: matchedCity, ambiguous } = await resolveCityByZip(zipMatch[1]);
+    if (!matchedCity || matchedCity.launch_status !== "live") {
+      const live = await listLiveCities();
+      const liveNames = live.map((c) => c.name).join(", ");
       return NextResponse.json(
         {
-          error:
-            "Business address must be located in Compton, CA. Valid ZIP codes include 90220-90224.",
+          error: ambiguous
+            ? `ZIP ${zipMatch[1]} matches multiple cities; please contact support.`
+            : `Business address must be in a supported city (${liveNames}).`,
         },
         { status: 400 }
       );
@@ -55,6 +65,7 @@ export async function POST(request: Request) {
       .from("businesses")
       .insert({
         owner_id: user.id,
+        city_id: matchedCity.id,
         name,
         slug,
         category,

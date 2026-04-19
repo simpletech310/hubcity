@@ -3,6 +3,7 @@ import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
+import { getAccess, canSee } from "@/lib/access";
 import { DISTRICT_NAMES, getTrusteeAreasFromZip } from "@/lib/districts";
 import type { TrusteeArea } from "@/lib/districts";
 import OfficialCard from "@/components/officials/OfficialCard";
@@ -13,7 +14,7 @@ import DistrictFeed from "@/components/district/DistrictFeed";
 import DistrictMessageForm from "@/components/district/DistrictMessageForm";
 
 export const metadata = {
-  title: "My District | Hub City",
+  title: "My District | Knect",
   description: "Your personalized district hub — council member, events, alerts, and community voice.",
 };
 
@@ -34,9 +35,20 @@ const COUNCIL_HANDLES: Record<number, string> = {
 export default async function DistrictPage() {
   const supabase = await createClient();
 
+  const access = await getAccess();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // Gate the verified-only "District Programs" overlay: visible to a verified
+  // resident when viewing their home city. Everyone else sees a prompt to
+  // verify their address. See src/lib/access.ts for the full matrix.
+  const canSeeDistrictPrograms = canSee(
+    "district_programs",
+    access.mode,
+    access.homeCityId,
+    access.homeCityId
+  );
 
   let userDistrict: number | null = null;
   let userDisplayName: string | null = null;
@@ -824,8 +836,8 @@ export default async function DistrictPage() {
                 </div>
               )}
 
-              {/* District Programs (council-created) */}
-              {districtPrograms && districtPrograms.length > 0 && (
+              {/* District Programs (council-created) — verified residents only */}
+              {districtPrograms && districtPrograms.length > 0 && canSeeDistrictPrograms && (
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2.5">
                     <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
@@ -847,6 +859,27 @@ export default async function DistrictPage() {
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Gated prompt: shown to signed-in users who haven't verified */}
+              {!canSeeDistrictPrograms && access.mode !== "anonymous" && (
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
+                      <Icon name="pin" size={14} className="text-gold" />
+                    </div>
+                    <p className="text-[12px] font-semibold text-white">Community Programs</p>
+                  </div>
+                  <p className="text-[11px] text-white/50 pl-9 mb-2">
+                    Verify your address to see council-run programs, workshops, and events for your district.
+                  </p>
+                  <Link
+                    href="/verify-address"
+                    className="inline-block text-[11px] font-semibold text-gold hover:text-gold/80 press pl-9"
+                  >
+                    Verify your address →
+                  </Link>
                 </div>
               )}
 

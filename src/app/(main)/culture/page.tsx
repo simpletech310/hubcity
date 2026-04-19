@@ -13,7 +13,7 @@ import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "The Compton Museum | Hub City",
+  title: "The Compton Museum | Knect",
   description:
     "Immerse yourself in Compton's rich culture — exhibits, gallery, notable people, music heritage, history, and community stories curated by the Compton Museum.",
 };

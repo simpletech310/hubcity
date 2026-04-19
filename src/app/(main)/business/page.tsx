@@ -156,7 +156,7 @@ const localDeals: LocalDeal[] = [
   },
   {
     id: "d4",
-    businessName: "Hub City Fitness",
+    businessName: "Knect Fitness",
     businessSlug: "hub-city-fitness",
     category: "health",
     title: "No Sign-Up Fee",
@@ -192,7 +192,7 @@ const localDeals: LocalDeal[] = [
 
 const trendingBusinesses: TrendingBiz[] = [
   { name: "Compton Cuts", slug: "compton-cuts", category: "barber", tagline: "The freshest fades in the city", iconName: "scissors", stat: "340+", statLabel: "cuts/mo" },
-  { name: "Hub City Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
+  { name: "Knect Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
   { name: "Glow Up Beauty", slug: "glow-up-beauty", category: "beauty", tagline: "Look good, feel good", iconName: "sparkle", stat: "4.9", statLabel: "rating" },
   { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", iconName: "wrench", stat: "18yrs", statLabel: "serving" },
 ];
@@ -674,7 +674,7 @@ export default function BusinessPage() {
             </div>
           </section>
 
-          {/* ── Advertise with Hub City CTA ── */}
+          {/* ── Advertise with Knect CTA ── */}
           <div className="px-5 mt-8 mb-3">
             <div className="rounded-2xl bg-gradient-to-r from-hc-purple/10 via-gold/5 to-transparent border border-hc-purple/15 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-hc-purple via-gold to-transparent" />

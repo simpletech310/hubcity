@@ -1162,12 +1162,12 @@ export default async function SchoolDetailPage({
 
         <div className="divider-subtle mb-6" />
 
-        {/* Hub City TV Channel */}
+        {/* Knect TV Channel */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-heading font-bold text-base flex items-center gap-2">
               <div className="w-1 h-5 rounded-full bg-pink" />
-              Hub City TV
+              Knect TV
             </h2>
             {channel && (
               <Link href={`/live/channel/${channel.id}`} className="text-[11px] text-gold font-semibold press">
@@ -1238,7 +1238,7 @@ export default async function SchoolDetailPage({
                 </div>
                 <div className="flex-1">
                   <p className="text-[13px] font-medium text-white/40">Channel Coming Soon</p>
-                  <p className="text-[11px] text-white/25">Hub City TV channel for this school is on the way</p>
+                  <p className="text-[11px] text-white/25">Knect TV channel for this school is on the way</p>
                 </div>
               </div>
             </div>

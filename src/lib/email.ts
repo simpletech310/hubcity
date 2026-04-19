@@ -5,8 +5,8 @@ if (apiKey) {
   sgMail.setApiKey(apiKey);
 }
 
-const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@hubcityapp.com";
-const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Hub City";
+const FROM_EMAIL = process.env.SENDGRID_FROM_EMAIL || "noreply@knect.app";
+const FROM_NAME = process.env.SENDGRID_FROM_NAME || "Knect";
 
 interface EmailOptions {
   to: string;
@@ -34,6 +34,16 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     console.error("[Email] Send failed:", error);
     return false;
   }
+}
+
+/**
+ * Transactional-email wrapper used by templated flows (jobs, bookings, etc.).
+ * Thin alias over sendEmail that keeps the call site explicit about intent
+ * and lets us route transactional mail through a dedicated IP pool later
+ * without changing callers.
+ */
+export async function sendTransactionalEmail(options: EmailOptions): Promise<boolean> {
+  return sendEmail(options);
 }
 
 export async function sendBulkEmail(
@@ -99,15 +109,15 @@ export function notificationEmailTemplate(
       <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#999999;">${body}</p>
       ${
         ctaUrl
-          ? `<a href="${ctaUrl}" style="display:inline-block;background:linear-gradient(135deg,#F2A900,#FFD666);color:#0A0A0A;font-weight:700;font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none;">${ctaText || "View in Hub City"}</a>`
+          ? `<a href="${ctaUrl}" style="display:inline-block;background:linear-gradient(135deg,#F2A900,#FFD666);color:#0A0A0A;font-weight:700;font-size:14px;padding:12px 24px;border-radius:10px;text-decoration:none;">${ctaText || "View in Knect"}</a>`
           : ""
       }
     </div>
 
     <!-- Footer -->
     <div style="text-align:center;">
-      <p style="margin:0;font-size:11px;color:#666666;">Hub City — Compton's Digital Town Hall</p>
-      <p style="margin:4px 0 0;font-size:11px;color:#444444;">You received this because you're a Hub City member.</p>
+      <p style="margin:0;font-size:11px;color:#666666;">Knect — Compton's Digital Town Hall</p>
+      <p style="margin:4px 0 0;font-size:11px;color:#444444;">You received this because you're a Knect member.</p>
     </div>
   </div>
 </body>
@@ -140,7 +150,7 @@ export function issueDigestEmailTemplate(
     </div>
     <div style="background-color:#141414;border:1px solid #2A2A2A;border-radius:16px;padding:32px;">
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#FFFFFF;">Daily Issue Digest</h1>
-      <p style="margin:0 0 24px;font-size:13px;color:#999999;">New city issues reported by Hub City residents</p>
+      <p style="margin:0 0 24px;font-size:13px;color:#999999;">New city issues reported by Knect residents</p>
       <table style="width:100%;border-collapse:collapse;">
         <thead>
           <tr style="border-bottom:2px solid #F2A900;">
@@ -154,7 +164,7 @@ export function issueDigestEmailTemplate(
       </table>
     </div>
     <div style="text-align:center;margin-top:24px;">
-      <p style="margin:0;font-size:11px;color:#666666;">Hub City — Compton's Digital Town Hall</p>
+      <p style="margin:0;font-size:11px;color:#666666;">Knect — Compton's Digital Town Hall</p>
     </div>
   </div>
 </body>

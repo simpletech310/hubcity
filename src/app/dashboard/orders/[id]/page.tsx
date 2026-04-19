@@ -6,6 +6,7 @@ import Badge from "@/components/ui/Badge";
 import type { Order, OrderItem } from "@/types/database";
 import OrderStatusUpdater from "./OrderStatusUpdater";
 import RefundButton from "./RefundButton";
+import AssignCourier from "./AssignCourier";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -72,6 +73,45 @@ export default async function OrderDetailPage({
     items: OrderItem[];
   };
 
+  // For delivery orders: check for an existing delivery assignment; if none,
+  // fetch available couriers in the order's city so the vendor can assign.
+  type ExistingDelivery = {
+    id: string;
+    status: string;
+    courier?: { display_name: string | null; phone: string | null } | null;
+  };
+  let existingDelivery: ExistingDelivery | null = null;
+  let availableCouriers: {
+    id: string;
+    display_name: string | null;
+    phone: string | null;
+    vehicle_type: string | null;
+  }[] = [];
+
+  if (typedOrder.type === "delivery") {
+    const { data: delivery } = await supabase
+      .from("deliveries")
+      .select(
+        "id, status, courier:couriers(display_name, phone)"
+      )
+      .eq("order_id", typedOrder.id)
+      .maybeSingle();
+    existingDelivery = delivery as unknown as ExistingDelivery | null;
+
+    if (!existingDelivery) {
+      const { data: couriers } = await supabase
+        .from("couriers")
+        .select("id, display_name, phone, vehicle_type")
+        .eq("status", "available")
+        .eq("active", true)
+        .eq(
+          "city_id",
+          (typedOrder as Order & { city_id?: string | null }).city_id ?? ""
+        );
+      availableCouriers = couriers ?? [];
+    }
+  }
+
   const canRefund =
     typedOrder.status !== "cancelled" &&
     typedOrder.status !== "pending" &&
@@ -128,6 +168,35 @@ export default async function OrderDetailPage({
           />
         )}
       </div>
+
+      {/* Courier Assignment — only when delivery has no courier yet. */}
+      {typedOrder.type === "delivery" && !existingDelivery && (
+        <AssignCourier orderId={typedOrder.id} couriers={availableCouriers} />
+      )}
+
+      {/* Active courier summary — visible once a delivery row exists. */}
+      {typedOrder.type === "delivery" && existingDelivery ? (
+        (() => {
+          const d = existingDelivery as ExistingDelivery;
+          return (
+            <Card className="glass-card-elevated border-emerald-500/20">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                <h3 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
+                  Courier
+                </h3>
+                <Badge label={d.status} variant="cyan" size="sm" />
+              </div>
+              <p className="text-sm font-medium">
+                {d.courier?.display_name || "Unnamed courier"}
+              </p>
+              {d.courier?.phone && (
+                <p className="text-xs text-txt-secondary mt-0.5">{d.courier.phone}</p>
+              )}
+            </Card>
+          );
+        })()
+      ) : null}
 
       {/* Delivery Info - only for delivery orders */}
       {typedOrder.type === "delivery" && (

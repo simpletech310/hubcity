@@ -19,8 +19,8 @@ export async function generateMetadata({
 
   return {
     title: stop
-      ? `${stop.name}${stop.route_name ? ` - ${stop.route_name}` : ""} | Transit | Hub City`
-      : "Transit Stop | Hub City",
+      ? `${stop.name}${stop.route_name ? ` - ${stop.route_name}` : ""} | Transit | Knect`
+      : "Transit Stop | Knect",
   };
 }
 
@@ -190,7 +190,7 @@ export default async function TransitStopDetailPage({
                   href={`/map?lat=${stop.latitude}&lng=${stop.longitude}&zoom=16`}
                   className="text-sm text-gold font-medium hover:underline"
                 >
-                  View on Hub City Map
+                  View on Knect Map
                 </Link>
               </div>
             )}

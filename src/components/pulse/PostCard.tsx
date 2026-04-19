@@ -399,7 +399,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
             streamType="on-demand"
             accentColor="#D4A017"
             style={{ aspectRatio: "16/9", width: "100%" }}
-            metadata={{ video_title: "Hub City Post" }}
+            metadata={{ video_title: "Knect Post" }}
           />
         </div>
       )}

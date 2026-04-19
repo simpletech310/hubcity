@@ -134,7 +134,7 @@ export default function LiveNowBanner({ streams }: LiveNowBannerProps) {
                   style={{ aspectRatio: "16/9", width: "100%" }}
                   metadata={{
                     video_title: stream.title,
-                    viewer_user_id: "hubcity-home",
+                    viewer_user_id: "knect-home",
                   }}
                 />
               </div>

@@ -70,7 +70,7 @@ export default function LivePlayer({ stream, onBack }: LivePlayerProps) {
               style={{ aspectRatio: "16/9", width: "100%" }}
               metadata={{
                 video_title: stream.title,
-                viewer_user_id: "hubcity-viewer",
+                viewer_user_id: "knect-viewer",
               }}
             />
           ) : (

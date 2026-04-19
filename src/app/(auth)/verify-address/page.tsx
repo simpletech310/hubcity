@@ -1,62 +1,73 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import { getDistrictFromZip } from "@/lib/districts";
 import Icon from "@/components/ui/Icon";
+
+type VerifyOutcome =
+  | { kind: "verified" }
+  | { kind: "pending_review"; message: string }
+  | { kind: "rejected"; message: string; supported?: string[] };
 
 export default function VerifyAddressPage() {
   const [address, setAddress] = useState("");
+  const [address2, setAddress2] = useState("");
   const [zip, setZip] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [outcome, setOutcome] = useState<VerifyOutcome | null>(null);
   const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
 
   async function handleVerify(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setOutcome(null);
     setLoading(true);
 
-    const district = getDistrictFromZip(zip);
-    if (!district) {
-      setError(
-        "We couldn't verify your address as a Compton residence. Please check your ZIP code."
-      );
+    if (!/^\d{5}$/.test(zip)) {
+      setError("Please enter a valid 5-digit ZIP code.");
       setLoading(false);
       return;
     }
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    try {
+      const res = await fetch("/api/verification/verify-address", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          address_line1: address,
+          address_line2: address2 || undefined,
+          zip,
+        }),
+      });
+      const data = await res.json();
 
-    if (!user) {
-      router.push("/login");
-      return;
-    }
+      if (res.status === 202 && data.status === "pending_review") {
+        setOutcome({ kind: "pending_review", message: data.message });
+        setLoading(false);
+        return;
+      }
 
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({
-        address_line1: address,
-        zip,
-        district,
-        verification_status: "verified",
-      })
-      .eq("id", user.id);
+      if (res.ok && data.status === "verified") {
+        setOutcome({ kind: "verified" });
+        router.push("/");
+        router.refresh();
+        return;
+      }
 
-    if (updateError) {
-      setError("Failed to verify address. Please try again.");
+      // Rejected / error path
+      setOutcome({
+        kind: "rejected",
+        message: data.error ?? "We couldn't verify that address.",
+        supported: Array.isArray(data.supported) ? data.supported : undefined,
+      });
       setLoading(false);
-      return;
+    } catch {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
     }
-
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -80,22 +91,43 @@ export default function VerifyAddressPage() {
           onChange={(e) => setAddress(e.target.value)}
           required
         />
-        <div className="grid grid-cols-2 gap-3">
-          <Input label="City" value="Compton" disabled />
-          <Input
-            label="ZIP Code"
-            placeholder="90220"
-            value={zip}
-            onChange={(e) => setZip(e.target.value)}
-            maxLength={5}
-            required
-          />
-        </div>
+        <Input
+          label="Apt / Suite (optional)"
+          placeholder="Apt 2B"
+          value={address2}
+          onChange={(e) => setAddress2(e.target.value)}
+        />
+        <Input
+          label="ZIP Code"
+          placeholder="90220"
+          value={zip}
+          onChange={(e) => setZip(e.target.value)}
+          maxLength={5}
+          required
+        />
 
         {error && (
           <p className="text-sm text-coral bg-coral/10 rounded-lg px-3 py-2">
             {error}
           </p>
+        )}
+
+        {outcome?.kind === "pending_review" && (
+          <div className="rounded-lg bg-gold/10 border border-gold/20 px-3 py-3 text-sm text-gold">
+            <p className="font-semibold mb-1">We&rsquo;re reviewing your address</p>
+            <p className="text-gold/80">{outcome.message}</p>
+          </div>
+        )}
+
+        {outcome?.kind === "rejected" && (
+          <div className="rounded-lg bg-coral/10 border border-coral/20 px-3 py-3 text-sm">
+            <p className="font-semibold text-coral mb-1">{outcome.message}</p>
+            {outcome.supported && outcome.supported.length > 0 && (
+              <p className="text-coral/80">
+                Currently supported cities: {outcome.supported.join(", ")}.
+              </p>
+            )}
+          </div>
         )}
 
         <Button type="submit" fullWidth loading={loading}>

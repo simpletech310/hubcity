@@ -1,7 +1,7 @@
 /**
  * Kevel Ad Server Integration
  *
- * Kevel (formerly Adzerk) Decision API for serving ads across Hub City
+ * Kevel (formerly Adzerk) Decision API for serving ads across Knect
  * Network ID, Site ID, and Zone IDs are configured via env vars
  *
  * Zones:
@@ -103,7 +103,7 @@ async function getKevelDecision(
     const body = {
       placements: [
         {
-          divName: `hubcity-${req.zone}`,
+          divName: `knect-${req.zone}`,
           networkId: parseInt(KEVEL_NETWORK_ID!),
           siteId: parseInt(KEVEL_SITE_ID!),
           adTypes: [getAdTypeForZone(req.zone)],
@@ -131,7 +131,7 @@ async function getKevelDecision(
     if (!res.ok) return null;
 
     const data = await res.json();
-    const decision = data.decisions?.[`hubcity-${req.zone}`];
+    const decision = data.decisions?.[`knect-${req.zone}`];
 
     if (!decision || decision.length === 0) return null;
 

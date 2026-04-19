@@ -108,6 +108,12 @@ export async function POST(request: Request) {
       contact_phone,
       organization_name: orgNameOverride,
       organization_type: orgTypeOverride,
+      category,
+      experience_level,
+      employment_type,
+      salary_period,
+      benefits,
+      expires_at,
     } = body;
 
     if (!title || !description || !job_type) {
@@ -167,6 +173,12 @@ export async function POST(request: Request) {
         application_deadline: application_deadline || null,
         contact_email: contact_email || null,
         contact_phone: contact_phone || null,
+        category: category || null,
+        experience_level: experience_level || null,
+        employment_type: employment_type || null,
+        salary_period: salary_period || null,
+        benefits: Array.isArray(benefits) && benefits.length > 0 ? benefits : null,
+        expires_at: expires_at || null,
         is_active: true,
         application_count: 0,
         views_count: 0,

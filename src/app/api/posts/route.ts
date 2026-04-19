@@ -181,7 +181,7 @@ export async function POST(request: Request) {
           .from("profiles")
           .select("id")
           .eq("is_bot", true)
-          .eq("handle", "hubcity")
+          .eq("handle", "knect")
           .limit(1)
           .single();
 

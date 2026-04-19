@@ -105,6 +105,7 @@ export async function PATCH(
       "salary_min",
       "salary_max",
       "salary_type",
+      "salary_period",
       "location",
       "is_remote",
       "is_active",
@@ -112,6 +113,11 @@ export async function PATCH(
       "contact_email",
       "contact_phone",
       "organization_name",
+      "category",
+      "experience_level",
+      "employment_type",
+      "benefits",
+      "expires_at",
     ];
     const updates: Record<string, unknown> = {};
     for (const field of allowedFields) {

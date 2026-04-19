@@ -101,7 +101,7 @@ const SUGGESTIONS = [
   "Local businesses",
 ];
 
-const RECENT_KEY = "hubcity_recent_searches";
+const RECENT_KEY = "knect_recent_searches";
 const MAX_RECENT = 8;
 
 /* ------------------------------------------------------------------ */

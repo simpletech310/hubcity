@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Ad types & shared utilities for Hub City ad system
+// Ad types & shared utilities for Knect ad system
 // ---------------------------------------------------------------------------
 
 export interface AdDecision {

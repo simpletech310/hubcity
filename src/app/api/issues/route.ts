@@ -175,7 +175,7 @@ export async function POST(request: Request) {
 
     // Forward email to department (fire-and-forget)
     if (departmentEmail) {
-      const issueUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://hubcityapp.com"}/city-hall/issues/${issue.id}`;
+      const issueUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://knect.app"}/city-hall/issues/${issue.id}`;
       const emailHtml = notificationEmailTemplate(
         `New ${type.charAt(0).toUpperCase() + type.slice(1)} Report`,
         `<strong>${issue.title}</strong><br/><br/>${
@@ -189,7 +189,7 @@ export async function POST(request: Request) {
 
       sendEmail({
         to: departmentEmail,
-        subject: `[Hub City] New ${type} report: ${issue.title}`,
+        subject: `[Knect] New ${type} report: ${issue.title}`,
         html: emailHtml,
       }).then((sent) => {
         if (sent) {

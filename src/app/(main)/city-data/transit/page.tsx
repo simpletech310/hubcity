@@ -1,7 +1,7 @@
 import TransitClient from "./TransitClient";
 
 export const metadata = {
-  title: "Transit - Hub City",
+  title: "Transit - Knect",
   description: "LA Metro routes and transit information serving Compton, CA.",
 };
 

@@ -38,24 +38,25 @@ export async function POST(request: Request) {
     const signature = request.headers.get("mux-signature");
     const secret = process.env.MUX_WEBHOOK_SECRET;
 
-    if (secret) {
-      if (!signature) {
-        console.error("Missing mux-signature header");
-        return NextResponse.json(
-          { error: "Missing signature" },
-          { status: 401 }
-        );
-      }
-      if (!verifyMuxSignature(rawBody, signature, secret)) {
-        console.error("Invalid Mux webhook signature");
-        return NextResponse.json(
-          { error: "Invalid signature" },
-          { status: 401 }
-        );
-      }
-    } else {
-      console.warn(
-        "MUX_WEBHOOK_SECRET not configured — skipping signature verification"
+    if (!secret) {
+      console.error("MUX_WEBHOOK_SECRET is not configured");
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 }
+      );
+    }
+    if (!signature) {
+      console.error("Missing mux-signature header");
+      return NextResponse.json(
+        { error: "Missing signature" },
+        { status: 401 }
+      );
+    }
+    if (!verifyMuxSignature(rawBody, signature, secret)) {
+      console.error("Invalid Mux webhook signature");
+      return NextResponse.json(
+        { error: "Invalid signature" },
+        { status: 401 }
       );
     }
 

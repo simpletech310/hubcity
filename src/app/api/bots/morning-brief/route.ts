@@ -34,7 +34,7 @@ export async function POST() {
     const { data: existing } = await adminClient
       .from("bot_posts")
       .select("id")
-      .eq("bot_name", "hubcity")
+      .eq("bot_name", "knect")
       .eq("post_type", "morning_brief")
       .gte("created_at", `${today}T00:00:00`)
       .limit(1);
@@ -82,7 +82,7 @@ export async function POST() {
 
     // Build the post
     let body = `☀️ Good morning, Compton! Happy ${dayName}, ${monthDay}.\n\n`;
-    body += `📊 Hub City Pulse:\n`;
+    body += `📊 Knect Pulse:\n`;
     body += `• ${bizCount ?? 0} local businesses on the platform\n`;
 
     if ((newBizCount ?? 0) > 0) {
@@ -108,22 +108,22 @@ export async function POST() {
       body += `\n🔧 ${activeIssues} active city issues being tracked\n`;
     }
 
-    body += `\nHave a great day, Hub City! 🏆`;
+    body += `\nHave a great day, Knect! 🏆`;
 
-    // Get or create the Hub City bot profile
+    // Get or create the Knect bot profile
     // For now, use a system approach - find bot profile
     const { data: botProfile } = await adminClient
       .from("profiles")
       .select("id")
       .eq("is_bot", true)
-      .eq("handle", "hubcity")
+      .eq("handle", "knect")
       .single();
 
     if (!botProfile) {
       return NextResponse.json(
         {
           error:
-            "Hub City bot profile not found. Create a profile with handle 'hubcity' and is_bot=true",
+            "Knect bot profile not found. Create a profile with handle 'knect' and is_bot=true",
         },
         { status: 400 }
       );
@@ -147,7 +147,7 @@ export async function POST() {
 
     // Log the bot post
     await adminClient.from("bot_posts").insert({
-      bot_name: "hubcity",
+      bot_name: "knect",
       post_type: "morning_brief",
       post_id: post.id,
       data: { event_count: eventCount, biz_count: bizCount },

@@ -32,7 +32,7 @@ export async function POST() {
       .from("profiles")
       .select("id")
       .eq("is_bot", true)
-      .eq("handle", "hubcity")
+      .eq("handle", "knect")
       .single();
 
     if (!botProfile) {
@@ -75,7 +75,7 @@ export async function POST() {
     if (error) throw error;
 
     await adminClient.from("bot_posts").insert({
-      bot_name: "hubcity",
+      bot_name: "knect",
       post_type: "event_reminders",
       post_id: post.id,
       data: { event_count: events.length },

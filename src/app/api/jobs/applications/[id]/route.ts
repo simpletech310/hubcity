@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { sendTransactionalEmail } from "@/lib/email";
+import { statusChangedEmail } from "@/lib/emails/jobs/status-changed";
+import { offeredEmail } from "@/lib/emails/jobs/offered";
+import { rejectedEmail } from "@/lib/emails/jobs/rejected";
 
 export async function PATCH(
   request: Request,
@@ -19,7 +23,7 @@ export async function PATCH(
     // Get the application and verify ownership via posted_by
     const { data: application } = await supabase
       .from("job_applications")
-      .select("id, job_listing_id")
+      .select("id, job_listing_id, status, full_name, email")
       .eq("id", applicationId)
       .single();
 
@@ -33,7 +37,7 @@ export async function PATCH(
     // Check if user is the poster of the parent job listing
     const { data: listing } = await supabase
       .from("job_listings")
-      .select("id, posted_by")
+      .select("id, posted_by, title, organization_name")
       .eq("id", application.job_listing_id)
       .single();
 
@@ -50,7 +54,10 @@ export async function PATCH(
       }
     }
 
-    const { status, reviewer_notes } = await request.json();
+    const { status, reviewer_notes } = (await request.json()) as {
+      status?: string;
+      reviewer_notes?: string;
+    };
 
     const updates: Record<string, unknown> = {};
     if (status) {
@@ -67,6 +74,29 @@ export async function PATCH(
       .single();
 
     if (error) throw error;
+
+    // Notify the applicant whenever the stage moves. Best-effort.
+    if (status && status !== application.status && application.email) {
+      try {
+        const ctx = {
+          applicantName: application.full_name,
+          jobTitle: listing?.title || "your application",
+          organizationName: listing?.organization_name || "the hiring team",
+          applicationId,
+        };
+        let mail;
+        if (status === "offered") {
+          mail = offeredEmail({ ...ctx, message: reviewer_notes ?? null });
+        } else if (status === "rejected") {
+          mail = rejectedEmail({ ...ctx, message: reviewer_notes ?? null });
+        } else {
+          mail = statusChangedEmail({ ...ctx, status });
+        }
+        await sendTransactionalEmail({ to: application.email, ...mail });
+      } catch (mailErr) {
+        console.error("Status change email failed:", mailErr);
+      }
+    }
 
     return NextResponse.json({ application: updated });
   } catch (error) {

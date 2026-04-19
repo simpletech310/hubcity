@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────
-// HubCity Icon System — Centralized SVG icon component
+// Knect Icon System — Centralized SVG icon component
 // Replaces all emoji usage with cohesive stroke icons
 // ─────────────────────────────────────────────────────────
 

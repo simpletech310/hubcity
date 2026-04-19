@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import ShareButton from "./ShareButton";
 
 export const metadata = {
-  title: "RSVP Details | Hub City",
+  title: "RSVP Details | Knect",
   description: "Your RSVP details for this event.",
 };
 

@@ -1,5 +1,5 @@
 /**
- * Hub City @Mention Parser
+ * Knect @Mention Parser
  * Extracts @mentions from post/comment text
  */
 

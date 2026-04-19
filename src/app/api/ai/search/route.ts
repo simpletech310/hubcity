@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const SYSTEM_PROMPT = `You are Hub City AI, the official assistant for the Hub City app — a civic platform for Compton, CA.
+const SYSTEM_PROMPT = `You are Knect AI, the official assistant for the Knect app — a civic platform for Compton, CA.
 You help residents find local businesses, events, jobs, food vendors, health resources, parks, schools, community programs, and city information.
 
 IMPORTANT RULES:
@@ -285,7 +285,7 @@ export async function POST(request: Request) {
           { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
-            content: `Here is the current Hub City database for Compton, CA:\n${contextData}\n\n---\nResident's question: ${query}`,
+            content: `Here is the current Knect database for Compton, CA:\n${contextData}\n\n---\nResident's question: ${query}`,
           },
         ],
         max_tokens: 800,

@@ -23,14 +23,14 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Hub City App — Compton, CA",
+  title: "Knect — Compton, CA",
   description:
     "Your all-in-one connection to Compton. Discover local businesses, events, resources, and community updates.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Hub City",
+    title: "Knect",
   },
 };
 

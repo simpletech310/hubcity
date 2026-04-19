@@ -1,5 +1,5 @@
 /**
- * AI utilities for Hub City App
+ * AI utilities for Knect
  * Uses OpenAI for sentiment analysis and topic extraction
  */
 

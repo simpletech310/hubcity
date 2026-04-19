@@ -95,7 +95,7 @@ export default function AdminNotificationsPage() {
           Send Notification
         </h1>
         <p className="text-sm text-txt-secondary">
-          Broadcast messages to Hub City users
+          Broadcast messages to Knect users
         </p>
       </div>
 

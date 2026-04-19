@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: park } = await query.single();
 
   return {
-    title: park ? `${park.name} | Parks | Hub City` : "Park | Hub City",
+    title: park ? `${park.name} | Parks | Knect` : "Park | Knect",
     description: park?.description || "Park details for Compton, CA",
   };
 }
@@ -405,7 +405,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
               { text: "Picnic shelters can be reserved for groups and events", icon: "calendar" as IconName },
               ...(hasBBQ ? [{ text: "BBQ grills are first-come, first-served. Bring your own charcoal", icon: "bbq" as IconName }] : []),
               { text: "All programs at this park are free for Compton residents", icon: "star" as IconName },
-              { text: "Report maintenance issues through the Hub City app", icon: "megaphone" as IconName },
+              { text: "Report maintenance issues through the Knect app", icon: "megaphone" as IconName },
               { text: "Dogs must be on leash at all times", icon: "alert" as IconName },
             ].map((tip) => (
               <div key={tip.text} className="flex items-start gap-2.5">

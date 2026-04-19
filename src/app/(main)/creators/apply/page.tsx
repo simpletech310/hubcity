@@ -12,7 +12,7 @@ import type { User } from "@supabase/supabase-js";
 const PILLARS: { iconName: IconName; title: string; subtitle: string; desc: string; color: string }[] = [
   {
     iconName: "live",
-    title: "Hub City App",
+    title: "Knect",
     subtitle: "Distribution Platform",
     desc: "Live & on-demand streaming, creator profiles, and direct audience connection across Compton.",
     color: "#F2A900",
@@ -26,7 +26,7 @@ const PILLARS: { iconName: IconName; title: string; subtitle: string; desc: stri
   },
   {
     iconName: "film",
-    title: "Hub City Studios",
+    title: "Knect Studios",
     subtitle: "Content Network",
     desc: "Scripted shows, news, cooking, animation, and original programming made in Compton.",
     color: "#8B5CF6",
@@ -260,7 +260,7 @@ export default function CreatorApplyPage() {
               </div>
               <h3 className="font-heading font-bold text-base mb-2">Sign in to Apply</h3>
               <p className="text-xs text-txt-secondary mb-5 max-w-xs mx-auto">
-                You need a Hub City account to apply to the Creator Program.
+                You need a Knect account to apply to the Creator Program.
               </p>
               <Link href="/login?redirect=/creators/apply">
                 <Button variant="primary">Sign In to Apply</Button>
@@ -391,7 +391,7 @@ export default function CreatorApplyPage() {
               <p className="text-[10px] text-txt-secondary text-center">
                 By applying, you agree to the{" "}
                 <Link href="/creators/terms" className="text-gold underline underline-offset-2 hover:text-gold-light transition-colors">
-                  Hub City Creator Program terms
+                  Knect Creator Program terms
                 </Link>{" "}
                 and{" "}
                 <Link href="/community-guidelines" className="text-gold underline underline-offset-2 hover:text-gold-light transition-colors">

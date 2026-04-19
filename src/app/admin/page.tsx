@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
     <div>
       <h1 className="font-heading text-2xl font-bold mb-1">Dashboard</h1>
       <p className="text-sm text-txt-secondary mb-6">
-        Hub City App admin overview
+        Knect admin overview
       </p>
 
       {/* Stats Grid */}

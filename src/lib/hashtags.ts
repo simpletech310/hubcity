@@ -1,6 +1,6 @@
 /**
 import Icon from "@/components/ui/Icon";
- * Hub City Hashtag Parser
+ * Knect Hashtag Parser
  * Extracts hashtags from post text and determines if any trigger actions
  */
 

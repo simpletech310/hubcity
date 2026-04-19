@@ -36,6 +36,11 @@
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "query-biz.ts",
+    "seed-cusd.ts",
+    "download-heritage.py",
+    "scripts/local/**",
+    "supabase/functions/**"
   ]
 }

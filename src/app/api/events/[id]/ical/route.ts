@@ -30,7 +30,7 @@ export async function GET(
       endDate: event.end_date ?? undefined,
       endTime: event.end_time ?? undefined,
       location: locationParts.length > 0 ? locationParts.join(", ") : undefined,
-      url: `https://hubcityapp.com/events/${id}`,
+      url: `https://knect.app/events/${id}`,
     });
 
     return new Response(ics, {

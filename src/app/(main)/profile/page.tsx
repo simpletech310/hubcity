@@ -514,11 +514,11 @@ export default async function ProfilePage() {
       {/* -- Achievements / Badges -- */}
       <BadgesSection />
 
-      {/* -- Hub City Digital ID Card -- */}
+      {/* -- Knect Digital ID Card -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">My Hub City Card</h2>
+          <h2 className="font-heading font-bold text-base">My Knect Card</h2>
         </div>
         <CitizenIDCard
           avatarUrl={profile?.avatar_url}
@@ -528,7 +528,7 @@ export default async function ProfilePage() {
           memberSince={memberSince}
           isVerified={verificationStatus === "verified"}
           role={role}
-          profileUrl={`hubcity.app/profile/${profile?.handle || profile?.id || ""}`}
+          profileUrl={`knect.app/profile/${profile?.handle || profile?.id || ""}`}
         />
       </section>
 
@@ -705,7 +705,7 @@ export default async function ProfilePage() {
           { label: "Language", icon: "globe" as IconName, comingSoon: true, detail: profile?.language || "English" },
           { label: "Privacy & Data", icon: "lock" as IconName, comingSoon: true },
           { label: "Help & Support", icon: "info" as IconName, comingSoon: true },
-          { label: "About Hub City", icon: "info" as IconName, comingSoon: true },
+          { label: "About Knect", icon: "info" as IconName, comingSoon: true },
         ] as { label: string; icon: IconName; href?: string; count?: number; highlight?: boolean; comingSoon?: boolean; detail?: string }[]).map((item) => {
           const content = (
             <div className={`flex items-center justify-between py-3 px-1 rounded-xl transition-colors ${item.comingSoon ? "opacity-50 cursor-default" : "hover:bg-white/[0.03] press"}`}>
@@ -758,7 +758,7 @@ export default async function ProfilePage() {
           {user.email}
         </p>
         <p className="text-center text-[10px] text-txt-secondary/50 mt-1">
-          Hub City v1.0.0 -- Made with love in Compton
+          Knect v1.0.0 -- Made with love in Compton
         </p>
       </div>
     </div>

@@ -97,7 +97,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
               </svg>
             </div>
             <div>
-              <h2 className="font-heading font-bold text-base">Hub City AI</h2>
+              <h2 className="font-heading font-bold text-base">Knect AI</h2>
               <p className="text-[10px] text-txt-secondary">Powered by AI · Compton data</p>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
                 <Badge label="AI Response" variant="gold" shine />
                 {source && (
                   <span className="text-[10px] text-txt-secondary">
-                    via {source === "openai" ? "OpenAI" : "Hub City"}
+                    via {source === "openai" ? "OpenAI" : "Knect"}
                   </span>
                 )}
               </div>
@@ -211,7 +211,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
 
               <div className="mt-8 text-center">
                 <p className="text-[10px] text-txt-secondary/50 leading-relaxed">
-                  Hub City AI searches local businesses, events, and resources in Compton.
+                  Knect AI searches local businesses, events, and resources in Compton.
                   <br />
                   Results are based on community data.
                 </p>

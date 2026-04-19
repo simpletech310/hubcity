@@ -134,7 +134,7 @@ function timeUntil(dateStr: string) {
 }
 
 // ── Props ──────────────────────────────────────────────────
-interface HubCityTVProps {
+interface KnectTVProps {
   channels: Channel[];
   streams: LiveStream[];
   featuredVideos: ChannelVideo[];
@@ -145,7 +145,7 @@ interface HubCityTVProps {
   followedChannelIds: string[];
 }
 
-export default function HubCityTV({
+export default function KnectTV({
   channels,
   streams,
   featuredVideos,
@@ -154,7 +154,7 @@ export default function HubCityTV({
   canStream,
   userId,
   followedChannelIds: initialFollowed,
-}: HubCityTVProps) {
+}: KnectTVProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("home");
   const [channelFilter, setChannelFilter] = useState<ChannelType | "all">("all");
@@ -461,7 +461,7 @@ export default function HubCityTV({
           ) : (
             <>
               <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
-                Hub City <span className="text-gold">TV</span>
+                Knect <span className="text-gold">TV</span>
               </h1>
               <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
                 Compton&apos;s community television. Free. Local. Always on.
@@ -538,7 +538,7 @@ export default function HubCityTV({
             </section>
           )}
 
-          {/* ── Trending on Hub City TV ── */}
+          {/* ── Trending on Knect TV ── */}
           {trendingVideos.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
@@ -582,12 +582,12 @@ export default function HubCityTV({
             </section>
           )}
 
-          {/* ── Hub City Originals ── */}
+          {/* ── Knect Originals ── */}
           {originals.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px]">
-                  <span className="text-gold">Hub City</span> Originals
+                  <span className="text-gold">Knect</span> Originals
                 </h2>
                 <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
               </div>
@@ -782,7 +782,7 @@ export default function HubCityTV({
                   </div>
                 </div>
                 <p className="text-[13px] text-white/60 leading-relaxed mb-4">
-                  Got a podcast, cooking show, or community event? Hub City TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
+                  Got a podcast, cooking show, or community event? Knect TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
                 </p>
                 <div className="flex gap-2">
                   <Link href="/profile/settings" className="flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-xl font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20">
@@ -797,7 +797,7 @@ export default function HubCityTV({
             </div>
           </section>
 
-          {/* ── What's On Hub City TV ── */}
+          {/* ── What's On Knect TV ── */}
           <section className="mb-8 px-5">
             <h2 className="font-heading font-bold text-[18px] mb-3 flex items-center gap-2">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold">
@@ -863,7 +863,7 @@ export default function HubCityTV({
             </div>
           </section>
 
-          {/* ── Today on Hub City TV ── */}
+          {/* ── Today on Knect TV ── */}
           {todayBlocks.length > 0 && (
             <section className="mb-8 px-5">
               <div className="flex items-center justify-between mb-3">
@@ -893,7 +893,7 @@ export default function HubCityTV({
                   <h3 className="font-heading font-bold text-[15px]">Got a Podcast?</h3>
                 </div>
                 <p className="text-[12px] text-white/50 mb-3 leading-relaxed">
-                  Record it. Upload it. Compton listens. Hub City TV hosts local podcasts, talk shows, and audio content from the community.
+                  Record it. Upload it. Compton listens. Knect TV hosts local podcasts, talk shows, and audio content from the community.
                 </p>
                 <Link href="/podcasts" className="inline-flex items-center gap-1.5 text-[12px] text-coral font-semibold press">
                   Explore Podcasts
@@ -903,9 +903,9 @@ export default function HubCityTV({
             </div>
           </section>
 
-          {/* ── Why Hub City TV ── */}
+          {/* ── Why Knect TV ── */}
           <section className="mb-8 px-5">
-            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Hub City TV</span>?</h2>
+            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Knect TV</span>?</h2>
             <div className="space-y-3">
               {[
                 { emoji: "1", title: "100% Free", desc: "No subscriptions, no ads for viewers, no paywall. Just Compton.", color: "#22C55E" },
@@ -1010,7 +1010,7 @@ export default function HubCityTV({
         <div className="animate-fade-in">
           <div className="px-5 mb-6">
             <h2 className="font-heading font-bold text-[22px] mb-1">
-              <span className="text-gold">Hub City</span> Originals
+              <span className="text-gold">Knect</span> Originals
             </h2>
             <p className="font-display italic text-[14px] text-warm-gray">
               Premium content. Made in Compton. Streaming to the world.
@@ -1045,7 +1045,7 @@ export default function HubCityTV({
                         </div>
                       </div>
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Hub City Original</span>
+                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Knect Original</span>
                       </div>
                       {video.duration && (
                         <div className="absolute bottom-3 right-3 bg-black/70 rounded px-1.5 py-0.5 text-[10px] font-mono text-white">
@@ -1077,7 +1077,7 @@ export default function HubCityTV({
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="font-heading font-bold text-base">All Videos</h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">Latest from Hub City TV</p>
+                <p className="text-[12px] text-warm-gray mt-0.5">Latest from Knect TV</p>
               </div>
               <div className="px-5 space-y-3">
                 {recentVideos.filter((v) => v.video_type !== "original").map((video) => (

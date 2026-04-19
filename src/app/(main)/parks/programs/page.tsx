@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Park Programs | Hub City",
+  title: "Park Programs | Knect",
   description: "Free recreation programs across Compton parks.",
 };
 

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Discussions | The Compton Museum | Hub City",
+  title: "Discussions | The Compton Museum | Knect",
   description: "Community conversations about Compton's culture, history, and heritage.",
 };
 

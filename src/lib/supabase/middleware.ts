@@ -1,11 +1,16 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { VERIFIED_ONLY_PREFIXES } from "@/lib/access";
 
 // Routes that require authentication
 const PROTECTED_ROUTES = ["/profile", "/admin", "/verify-address"];
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
+}
+
+function isVerifiedOnlyRoute(pathname: string): boolean {
+  return VERIFIED_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 export async function updateSession(request: NextRequest) {
@@ -45,10 +50,11 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAdminRoute = pathname.startsWith("/admin");
   const isVerifyRoute = pathname.startsWith("/verify-address");
+  const isVerifiedOnly = isVerifiedOnlyRoute(pathname);
 
-  // Public routes — allow browsing without login
-  // Only redirect to login for protected routes (profile, admin, verify-address)
-  if (!user && !isAuthRoute && isProtectedRoute(pathname)) {
+  // Unauthenticated access to verified-only routes → send to login, then
+  // onward to /verify-address after sign-in.
+  if (!user && !isAuthRoute && (isProtectedRoute(pathname) || isVerifiedOnly)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("redirect", pathname);
@@ -64,8 +70,9 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check profile for verification and role (only for authenticated users on protected routes)
-  if (user && isProtectedRoute(pathname)) {
+  // Check profile for verification and role (authenticated users on protected
+  // or verified-only routes).
+  if (user && (isProtectedRoute(pathname) || isVerifiedOnly)) {
     try {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -76,8 +83,8 @@ export async function updateSession(request: NextRequest) {
       if (profileError) {
         console.error("Middleware Profile Fetch Error:", profileError);
         // Fallback: allow the request to proceed if the query fails due to schema issues
-        // Unless it's a critical path like /admin
-        if (isAdminRoute) {
+        // Unless it's a critical path like /admin or a verified-only overlay.
+        if (isAdminRoute || isVerifiedOnly) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/";
           return NextResponse.redirect(redirectUrl);
@@ -93,7 +100,18 @@ export async function updateSession(request: NextRequest) {
           return NextResponse.redirect(redirectUrl);
         }
 
-        if (profile.verification_status === "unverified" && !isVerifyRoute && !isAdminRoute) {
+        const isUnverified = profile.verification_status === "unverified";
+
+        // Verified-only overlay routes: unverified users get bounced to
+        // /verify-address with a next= hint so we can return them after.
+        if (isUnverified && isVerifiedOnly) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/verify-address";
+          redirectUrl.searchParams.set("next", pathname);
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        if (isUnverified && !isVerifyRoute && !isAdminRoute && isProtectedRoute(pathname)) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/verify-address";
           return NextResponse.redirect(redirectUrl);

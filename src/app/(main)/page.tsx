@@ -636,7 +636,7 @@ export default async function HomePage() {
           href="/district"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gold/20 bg-gold/5 text-gold text-[13px] font-heading font-semibold press hover:bg-gold/10 transition-colors"
         >
-          Explore more on Hub City
+          Explore more on Knect
           <Icon name="chevron-right" size={14} className="text-gold" />
         </Link>
       </section>

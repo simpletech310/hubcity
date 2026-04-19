@@ -5,7 +5,7 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Parks & Recreation | Hub City",
+  title: "Parks & Recreation | Knect",
   description: "Explore Compton's parks, playgrounds, recreation centers, and community programs.",
 };
 
@@ -276,7 +276,7 @@ export default async function ParksPage({
               { text: "Shelter reservations available for large groups and events", icon: "calendar" as IconName },
               { text: "All programs are free for Compton residents", icon: "star" as IconName },
               { text: "Dogs must be on leash in all parks", icon: "alert" as IconName },
-              { text: "Report maintenance issues through the Hub City app", icon: "megaphone" as IconName },
+              { text: "Report maintenance issues through the Knect app", icon: "megaphone" as IconName },
             ].map((rule) => (
               <div key={rule.text} className="flex items-start gap-2.5">
                 <div className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">

@@ -3,6 +3,9 @@ import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateTicketCode } from "@/lib/tickets";
+import { bookingConfirmationEmail } from "@/lib/emails/booking/confirmation";
+import { orderConfirmationEmail } from "@/lib/emails/orders/confirmation";
+import { sendTransactionalEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -103,7 +106,9 @@ export async function POST(request: Request) {
           const bookingId = paymentIntent.metadata.booking_id;
           const { data: booking } = await supabase
             .from("bookings")
-            .select("id, customer_id, business_id, status")
+            .select(
+              "id, customer_id, business_id, status, service_name, date, start_time, end_time, staff_name, price"
+            )
             .eq("id", bookingId)
             .single();
 
@@ -112,6 +117,75 @@ export async function POST(request: Request) {
               .from("bookings")
               .update({ status: "confirmed" })
               .eq("id", booking.id);
+
+            // Append audit log (fire-and-forget).
+            supabase
+              .from("booking_audit_log")
+              .insert({
+                booking_id: booking.id,
+                actor_id: booking.customer_id,
+                action: "confirmed",
+                metadata: {
+                  stripe_payment_intent_id: paymentIntent.id,
+                  amount: paymentIntent.amount,
+                },
+              })
+              .then(({ error: auditErr }) => {
+                if (auditErr)
+                  console.error("Booking audit log insert error (non-fatal):", auditErr);
+              });
+
+            // Send confirmation email (fire-and-forget, non-blocking).
+            (async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from("profiles")
+                  .select("display_name")
+                  .eq("id", booking.customer_id)
+                  .single();
+                const { data: authUser } = await supabase.auth.admin.getUserById(
+                  booking.customer_id
+                );
+                const customerEmail = authUser?.user?.email ?? null;
+                const { data: biz } = await supabase
+                  .from("businesses")
+                  .select("name")
+                  .eq("id", booking.business_id)
+                  .single();
+                // Look up timezone from the service (best-effort name match).
+                let tz: string | undefined = undefined;
+                const { data: svc } = await supabase
+                  .from("services")
+                  .select("timezone")
+                  .eq("business_id", booking.business_id)
+                  .eq("name", booking.service_name)
+                  .maybeSingle();
+                if (svc?.timezone) tz = svc.timezone;
+
+                if (customerEmail) {
+                  const { subject, html, text } = bookingConfirmationEmail({
+                    customerName: profile?.display_name || "there",
+                    businessName: biz?.name || "your provider",
+                    serviceName: booking.service_name,
+                    date: booking.date,
+                    startTime: booking.start_time,
+                    endTime: booking.end_time,
+                    timezone: tz,
+                    staffName: booking.staff_name ?? null,
+                    priceCents: booking.price ?? null,
+                    bookingId: booking.id,
+                  });
+                  await sendTransactionalEmail({
+                    to: customerEmail,
+                    subject,
+                    html,
+                    text,
+                  });
+                }
+              } catch (emailErr) {
+                console.error("Booking confirmation email error (non-fatal):", emailErr);
+              }
+            })();
 
             // Update business_customers tracking (fire-and-forget)
             try {
@@ -170,18 +244,107 @@ export async function POST(request: Request) {
             }
           }
         } else {
-          // Regular order flow — confirm and earn loyalty points
+          // Regular order flow — confirm, pull receipt URL, send email,
+          // append audit log, and earn loyalty points.
           const { data: order } = await supabase
             .from("orders")
-            .select("id, customer_id, business_id, total")
+            .select(
+              "id, order_number, customer_id, business_id, total, type, status"
+            )
             .eq("stripe_payment_intent_id", paymentIntent.id)
             .single();
 
           if (order) {
+            // Pull Stripe-hosted receipt URL from the latest charge (no PDF
+            // generation on our side). Expanding charges makes the URL
+            // available directly on the webhook payload object.
+            let receiptUrl: string | null = null;
+            try {
+              const stripe = getStripe();
+              const full = await stripe.paymentIntents.retrieve(paymentIntent.id, {
+                expand: ["latest_charge"],
+              });
+              const latest = full.latest_charge as Stripe.Charge | null;
+              receiptUrl = latest?.receipt_url ?? null;
+            } catch (recErr) {
+              console.error("Receipt URL lookup error (non-fatal):", recErr);
+            }
+
             await supabase
               .from("orders")
-              .update({ status: "confirmed" })
+              .update({
+                status: "confirmed",
+                store_accepted_at: new Date().toISOString(),
+                ...(receiptUrl ? { receipt_url: receiptUrl } : {}),
+              })
               .eq("id", order.id);
+
+            // Append audit log (fire-and-forget).
+            supabase
+              .from("order_audit_log")
+              .insert({
+                order_id: order.id,
+                actor_id: order.customer_id,
+                action: "confirmed",
+                metadata: {
+                  stripe_payment_intent_id: paymentIntent.id,
+                  amount: paymentIntent.amount,
+                  receipt_url: receiptUrl,
+                },
+              })
+              .then(({ error: auditErr }) => {
+                if (auditErr)
+                  console.error("Order audit log insert error (non-fatal):", auditErr);
+              });
+
+            // Send confirmation email (fire-and-forget).
+            (async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from("profiles")
+                  .select("display_name")
+                  .eq("id", order.customer_id)
+                  .single();
+                const { data: authUser } = await supabase.auth.admin.getUserById(
+                  order.customer_id
+                );
+                const customerEmail = authUser?.user?.email ?? null;
+                const { data: biz } = await supabase
+                  .from("businesses")
+                  .select("name")
+                  .eq("id", order.business_id)
+                  .single();
+                const { data: items } = await supabase
+                  .from("order_items")
+                  .select("name, quantity, price")
+                  .eq("order_id", order.id);
+
+                if (customerEmail) {
+                  const { subject, html, text } = orderConfirmationEmail({
+                    customerName: profile?.display_name || "there",
+                    businessName: biz?.name || "your vendor",
+                    orderNumber: order.order_number,
+                    orderId: order.id,
+                    totalCents: order.total,
+                    type: order.type === "delivery" ? "delivery" : "pickup",
+                    items: (items || []).map((it) => ({
+                      name: it.name,
+                      quantity: it.quantity,
+                      price: it.price,
+                    })),
+                    receiptUrl,
+                  });
+                  await sendTransactionalEmail({
+                    to: customerEmail,
+                    subject,
+                    html,
+                    text,
+                  });
+                }
+              } catch (emailErr) {
+                console.error("Order confirmation email error (non-fatal):", emailErr);
+              }
+            })();
 
             // Award loyalty points (fire-and-forget)
             try {

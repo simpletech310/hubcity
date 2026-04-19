@@ -613,7 +613,7 @@ export default function MapExplorer({
                       </svg>
                     </div>
                     <span className="text-[11px] font-bold text-gold uppercase tracking-wider">
-                      Hub City AI
+                      Knect AI
                     </span>
                   </div>
                   <button

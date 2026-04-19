@@ -4,7 +4,7 @@ import TimelineView from "@/components/culture/TimelineView";
 import { COMPTON_HISTORY } from "@/lib/compton-history";
 
 export const metadata = {
-  title: "History | The Compton Museum | Hub City",
+  title: "History | The Compton Museum | Knect",
   description: "An interactive timeline of Compton's history from its 1867 founding to the present day renaissance.",
 };
 

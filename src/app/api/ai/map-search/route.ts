@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const SYSTEM_PROMPT = `You are Hub City AI, the local guide for Compton, CA inside the Hub City app.
+const SYSTEM_PROMPT = `You are Knect AI, the local guide for Compton, CA inside the Knect app.
 Residents ask you natural-language questions like "where can I get a burrito" or "free food near me" or "best park for kids".
 
 RULES:

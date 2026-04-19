@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "My RSVPs | Hub City",
+  title: "My RSVPs | Knect",
   description: "Events you've RSVP'd to.",
 };
 

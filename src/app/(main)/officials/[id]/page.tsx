@@ -16,10 +16,10 @@ export async function generateMetadata({
     .eq("id", id)
     .single();
 
-  if (!official) return { title: "Official Not Found | Hub City" };
+  if (!official) return { title: "Official Not Found | Knect" };
 
   return {
-    title: `${official.name} — ${official.title} | Hub City`,
+    title: `${official.name} — ${official.title} | Knect`,
     description: `Profile, voting record, flags, and accountability tracking for ${official.name}, ${official.title} in Compton.`,
   };
 }

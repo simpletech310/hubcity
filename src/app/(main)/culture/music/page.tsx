@@ -3,7 +3,7 @@ import TimelineView from "@/components/culture/TimelineView";
 import type { TimelineItem } from "@/components/culture/TimelineView";
 
 export const metadata = {
-  title: "Music Heritage | Compton Culture | Hub City",
+  title: "Music Heritage | Compton Culture | Knect",
   description:
     "A timeline of Compton's legendary music history, from the birth of West Coast sound to today.",
 };
@@ -39,9 +39,9 @@ const MUSIC_TIMELINE: TimelineItem[] = [
   },
   {
     year: "2020s",
-    title: "Hub City Creators and Beyond",
+    title: "Knect Creators and Beyond",
     description:
-      "A new wave of Compton creators blends music, visual art, and digital media. Hub City TV and independent artists are building platforms that amplify local voices and carry the culture forward.",
+      "A new wave of Compton creators blends music, visual art, and digital media. Knect TV and independent artists are building platforms that amplify local voices and carry the culture forward.",
     color: "#C5A04E",
   },
 ];
@@ -73,7 +73,7 @@ export default function MusicHeritagePage() {
           </h3>
           <p className="text-text-secondary text-sm mt-2 max-w-md mx-auto">
             Help us document the full story. Submit an artist or music
-            landmark to be featured on Hub City.
+            landmark to be featured on Knect.
           </p>
           <a
             href="/culture/artists"

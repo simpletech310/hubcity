@@ -99,7 +99,7 @@ export default function JobsPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/80 to-midnight" />
 
         <div className="relative z-10 px-5 pt-4 pb-5">
-          <EditorialHeader kicker="OPPORTUNITY AWAITS" title="Jobs in Compton" subtitle="Find your next opportunity in the Hub City." />
+          <EditorialHeader kicker="OPPORTUNITY AWAITS" title="Jobs in Compton" subtitle="Find your next opportunity in the Knect." />
 
           {/* Glass Search Bar */}
           <div className="glass-card-elevated flex items-center gap-3 rounded-2xl px-4 py-3.5 focus-within:border-gold/30 transition-all mt-4">

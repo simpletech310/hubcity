@@ -65,7 +65,7 @@ export default function CitizenIDCard({
                 className="font-heading font-bold text-[11px] tracking-[0.25em] uppercase"
                 style={{ color: "#D4A017" }}
               >
-                Hub City
+                Knect
               </h3>
               <div className="h-px w-16 bg-gradient-to-r from-gold/60 to-transparent mt-1" />
             </div>
@@ -180,7 +180,7 @@ export default function CitizenIDCard({
                 </div>
               ) : (
                 <span className="text-[10px] font-semibold text-gold/60">
-                  Hub City Resident
+                  Knect Resident
                 </span>
               )}
             </div>

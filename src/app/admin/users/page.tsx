@@ -26,9 +26,10 @@ const roleVariant: Record<string, BadgeVariant> = {
   business_owner: "purple",
   admin: "gold",
   city_official: "emerald",
+  courier: "coral",
 };
 
-const ROLES = ["citizen", "business_owner", "city_official", "admin"];
+const ROLES = ["citizen", "business_owner", "city_official", "courier", "admin"];
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<UserProfile[]>([]);

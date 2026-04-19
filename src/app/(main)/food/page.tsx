@@ -920,7 +920,7 @@ export default function FoodPage() {
             <Icon name="store" size={24} className="block mb-2" />
             <h3 className="font-heading font-bold text-lg mb-1">Own a Food Business?</h3>
             <p className="text-[12px] text-white/40 leading-relaxed mb-3">
-              List your restaurant, food truck, or cart on Hub City. Reach customers, manage orders, and post daily specials.
+              List your restaurant, food truck, or cart on Knect. Reach customers, manage orders, and post daily specials.
             </p>
             <Link
               href="/signup"

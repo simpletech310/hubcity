@@ -82,7 +82,7 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
     const url = `${window.location.origin}/pulse/${post.id}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "Hub City Post", url });
+        await navigator.share({ title: "Knect Post", url });
       } catch {
         // User cancelled or share failed
       }
