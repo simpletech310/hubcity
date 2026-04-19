@@ -434,7 +434,7 @@ export default function DashboardShell({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-xs text-midnight">
-              HC
+              K
             </div>
             <div>
               <h1 className="font-heading font-bold text-sm leading-tight truncate max-w-[200px]">
@@ -476,7 +476,7 @@ export default function DashboardShell({
         <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-border-subtle">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-[10px] text-midnight">
-              HC
+              K
             </div>
             <span className="font-heading font-bold text-sm text-white truncate max-w-[140px]">
               {headerTitle}

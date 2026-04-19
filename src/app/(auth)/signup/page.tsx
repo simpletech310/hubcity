@@ -46,7 +46,7 @@ export default function SignupPage() {
       {/* Logo */}
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 bg-gradient-to-br from-gold to-gold-light rounded-xl flex items-center justify-center font-heading font-extrabold text-xl text-midnight">
-          HC
+          K
         </div>
         <span className="font-heading font-bold text-2xl tracking-tight">
           K<span className="text-gold">nect</span>

@@ -100,7 +100,7 @@ export function notificationEmailTemplate(
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <!-- Logo -->
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="display:inline-block;width:48px;height:48px;background:linear-gradient(135deg,#F2A900,#FFD666);border-radius:12px;line-height:48px;font-weight:900;font-size:18px;color:#0A0A0A;">HC</div>
+      <div style="display:inline-block;width:48px;height:48px;background:linear-gradient(135deg,#F2A900,#FFD666);border-radius:12px;line-height:48px;font-weight:900;font-size:18px;color:#0A0A0A;">K</div>
     </div>
 
     <!-- Card -->
@@ -146,7 +146,7 @@ export function issueDigestEmailTemplate(
 <body style="margin:0;padding:0;background-color:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <div style="display:inline-block;width:48px;height:48px;background:linear-gradient(135deg,#F2A900,#FFD666);border-radius:12px;line-height:48px;font-weight:900;font-size:18px;color:#0A0A0A;">HC</div>
+      <div style="display:inline-block;width:48px;height:48px;background:linear-gradient(135deg,#F2A900,#FFD666);border-radius:12px;line-height:48px;font-weight:900;font-size:18px;color:#0A0A0A;">K</div>
     </div>
     <div style="background-color:#141414;border:1px solid #2A2A2A;border-radius:16px;padding:32px;">
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:#FFFFFF;">Daily Issue Digest</h1>

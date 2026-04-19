@@ -37,7 +37,7 @@ export default function AdminNav({
       <aside className="w-64 border-r border-border-subtle bg-deep p-5 shrink-0 hidden md:block">
         <Link href="/" className="flex items-center gap-2.5 mb-8">
           <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-light rounded-[10px] flex items-center justify-center font-heading font-extrabold text-[15px] text-midnight">
-            HC
+            K
           </div>
           <span className="font-heading font-bold text-lg tracking-tight">
             K<span className="text-gold">nect</span>
@@ -87,7 +87,7 @@ export default function AdminNav({
         <div className="flex items-center justify-between mb-3">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-xs text-midnight">
-              HC
+              K
             </div>
             <span className="font-heading font-bold text-sm">
               Admin

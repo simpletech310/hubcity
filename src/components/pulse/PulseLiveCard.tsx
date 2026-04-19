@@ -22,7 +22,7 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
     .map((w) => w[0])
     .join("")
     .slice(0, 2)
-    .toUpperCase() || "HC";
+    .toUpperCase() || "K";
 
   return (
     <Card className="border-coral/25 relative overflow-hidden !p-0">

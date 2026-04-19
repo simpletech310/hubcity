@@ -869,7 +869,7 @@ export default function KnectTV({
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-gold" />
-                  Today on HubTV
+                  Today on Knect TV
                 </h2>
                 <button onClick={() => setActiveTab("schedule")} className="text-[12px] text-gold font-semibold press">Full Schedule →</button>
               </div>
