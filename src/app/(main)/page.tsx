@@ -12,6 +12,7 @@ import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
+import { getAccess } from "@/lib/access";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
@@ -27,13 +28,22 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-const quickActions: { label: string; href: string; icon: IconName }[] = [
+type QuickAction = { label: string; href: string; icon: IconName };
+
+// Quick actions visible to everyone (anonymous / unverified / verified).
+const BASE_QUICK_ACTIONS: QuickAction[] = [
   { label: "Order Food", href: "/food", icon: "utensils" },
   { label: "Find Jobs", href: "/jobs", icon: "briefcase" },
   { label: "Events", href: "/events", icon: "calendar" },
+  { label: "Health", href: "/health", icon: "heart-pulse" },
+  { label: "Culture", href: "/culture", icon: "palette" },
+  { label: "Resources", href: "/resources", icon: "book" },
+];
+
+// Verified-only quick actions (city-specific overlays).
+const VERIFIED_QUICK_ACTIONS: QuickAction[] = [
   { label: "Report Issue", href: "/city-hall/issues", icon: "alert" },
   { label: "Parks", href: "/parks", icon: "tree" },
-  { label: "Health", href: "/health", icon: "heart-pulse" },
   { label: "City Hall", href: "/city-hall", icon: "landmark" },
 ];
 
@@ -171,6 +181,12 @@ export default async function HomePage() {
   const pulsePosts: Post[] = (recentPosts ?? []) as Post[];
   const greeting = getGreeting();
   const featuredArt = getFeaturedArt();
+
+  const { mode: accessMode } = await getAccess();
+  const quickActions =
+    accessMode === "verified"
+      ? [...BASE_QUICK_ACTIONS, ...VERIFIED_QUICK_ACTIONS]
+      : BASE_QUICK_ACTIONS;
 
   const featuredBusiness = businesses?.[0] ?? null;
   const hasLive = liveStreams && liveStreams.length > 0;

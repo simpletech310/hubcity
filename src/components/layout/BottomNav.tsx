@@ -5,25 +5,34 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import type { AccessMode } from "@/lib/access";
 
-/* ── Service grid items ── */
-const serviceItems: { href: string; label: string; iconName: IconName }[] = [
+type ServiceItem = { href: string; label: string; iconName: IconName };
+
+/* Base services — visible to everyone (anonymous, unverified, verified).
+ * These are the 10 sections that don't need a verified address to be useful. */
+const BASE_SERVICES: ServiceItem[] = [
   { href: "/events", label: "Events", iconName: "calendar" },
   { href: "/food", label: "Food", iconName: "utensils" },
   { href: "/business", label: "Business", iconName: "briefcase" },
-  { href: "/city-hall", label: "City Hall", iconName: "landmark" },
   { href: "/health", label: "Health", iconName: "heart-pulse" },
-  { href: "/schools", label: "Schools", iconName: "graduation" },
   { href: "/culture", label: "Culture", iconName: "palette" },
-  { href: "/parks", label: "Parks", iconName: "tree" },
-
   { href: "/jobs", label: "Jobs", iconName: "briefcase" },
   { href: "/groups", label: "Groups", iconName: "users" },
   { href: "/people", label: "People", iconName: "person" },
   { href: "/resources", label: "Resources", iconName: "book" },
-  { href: "/officials", label: "Officials", iconName: "gavel" },
+  { href: "/live", label: "Knect TV", iconName: "film" },
+];
+
+/* Verified-only overlays — city-specific sections that require a verified
+ * home address. Hidden for anonymous and unverified users; the middleware
+ * also guards direct navigation. */
+const VERIFIED_ONLY_SERVICES: ServiceItem[] = [
   { href: "/district", label: "District", iconName: "grid" },
-  { href: "/live", label: "Hub TV", iconName: "film" },
+  { href: "/officials", label: "Officials", iconName: "gavel" },
+  { href: "/city-hall", label: "City Hall", iconName: "landmark" },
+  { href: "/schools", label: "Schools", iconName: "graduation" },
+  { href: "/parks", label: "Parks", iconName: "tree" },
 ];
 
 /* ── Nav tab icons ── */
@@ -77,10 +86,19 @@ function ProfileIcon({ active }: { active: boolean }) {
 }
 
 /* ── Main component ── */
-export default function BottomNav() {
+export default function BottomNav({
+  accessMode = "anonymous",
+}: {
+  accessMode?: AccessMode;
+} = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [servicesOpen, setServicesOpen] = useState(false);
+
+  const showVerifiedOnly = accessMode === "verified";
+  const serviceItems: ServiceItem[] = showVerifiedOnly
+    ? [...BASE_SERVICES, ...VERIFIED_ONLY_SERVICES]
+    : BASE_SERVICES;
 
   // Close services sheet on route change
   useEffect(() => {
@@ -167,6 +185,30 @@ export default function BottomNav() {
                 );
               })}
             </div>
+
+            {/* Verify-to-unlock CTA for anonymous + unverified users. */}
+            {!showVerifiedOnly && (
+              <div className="mt-5 mx-1 rounded-xl border border-gold/25 bg-gold/5 p-3 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center flex-shrink-0">
+                  <Icon name="lock" size={14} className="text-gold" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[12px] font-semibold text-white leading-snug">
+                    Unlock your city
+                  </p>
+                  <p className="text-[11px] text-white/60 leading-snug">
+                    Verify your address to see district, council, schools, and more.
+                  </p>
+                </div>
+                <Link
+                  href={accessMode === "anonymous" ? "/login?redirect=/verify-address" : "/verify-address"}
+                  onClick={() => setServicesOpen(false)}
+                  className="text-[11px] font-semibold text-gold px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/30 hover:bg-gold/15"
+                >
+                  {accessMode === "anonymous" ? "Sign in" : "Verify"}
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

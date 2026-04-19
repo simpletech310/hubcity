@@ -147,7 +147,7 @@ export default function Header() {
               </div>
               <div className="flex flex-col">
                 <span className="font-heading font-bold text-lg tracking-tight leading-none">
-                  Hub<span className="text-gold">City</span>
+                  K<span className="text-gold">nect</span>
                 </span>
                 <span className="text-[9px] text-txt-secondary tracking-[0.15em] uppercase leading-none mt-0.5">
                   Compton, CA

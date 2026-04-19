@@ -167,7 +167,7 @@ export default function BusinessSignupPage() {
           HC
         </div>
         <span className="font-heading font-bold text-2xl tracking-tight">
-          Hub<span className="text-gold">City</span>
+          K<span className="text-gold">nect</span>
         </span>
       </div>
 
