@@ -64,13 +64,20 @@ export default async function EventDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: event } = await supabase
-    .from("events")
-    .select("*")
-    .eq("id", id)
-    .single();
-
-  if (!event) notFound();
+  // Accept either a slug or a UUID. UUIDs match /^[0-9a-f-]{36}$/; anything
+  // else tries the slug column first.
+  const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  let eventRow = null;
+  if (looksLikeUuid) {
+    const { data } = await supabase.from("events").select("*").eq("id", id).maybeSingle();
+    eventRow = data;
+  }
+  if (!eventRow) {
+    const { data } = await supabase.from("events").select("*").eq("slug", id).maybeSingle();
+    eventRow = data;
+  }
+  if (!eventRow) notFound();
+  const event = eventRow;
 
   const ev = event as Event;
 
@@ -84,7 +91,7 @@ export default async function EventDetailPage({
     const { data: rsvp } = await supabase
       .from("event_rsvps")
       .select("status")
-      .match({ event_id: id, user_id: user.id })
+      .match({ event_id: event.id, user_id: user.id })
       .single();
     userRsvpStatus = rsvp?.status ?? null;
   }
@@ -97,7 +104,7 @@ export default async function EventDetailPage({
     const { data: configs } = await supabase
       .from("event_ticket_config")
       .select("*, venue_section:venue_sections(*)")
-      .eq("event_id", id)
+      .eq("event_id", event.id)
       .eq("is_active", true)
       .order("venue_section(sort_order)");
 

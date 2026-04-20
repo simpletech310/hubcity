@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
@@ -6,12 +5,12 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
-import { formatDistanceToNow } from "date-fns";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
 import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
+import UserPostsGrid from "@/components/profile/UserPostsGrid";
 import ReelsRail from "@/components/reels/ReelsRail";
-import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage, Reel } from "@/types/database";
+import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage, Reel, ReactionEmoji } from "@/types/database";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
@@ -113,6 +112,23 @@ export default async function PublicProfilePage({
   const gallery = (galleryRaw ?? []) as ProfileGalleryImage[];
   const profileReels = (reelsRaw ?? []) as unknown as Reel[];
 
+  // Collect the viewer's reactions to these posts so the PostCard render
+  // inside the grid overlay can show their existing reactions.
+  const userReactions: Record<string, ReactionEmoji[]> = {};
+  if (currentUser && userPosts.length > 0) {
+    const { data: rx } = await supabase
+      .from("post_reactions")
+      .select("post_id, emoji")
+      .eq("user_id", currentUser.id)
+      .in(
+        "post_id",
+        userPosts.map((p) => p.id)
+      );
+    for (const r of (rx ?? []) as { post_id: string; emoji: ReactionEmoji }[]) {
+      (userReactions[r.post_id] ||= []).push(r.emoji);
+    }
+  }
+
   // Top 3 latest videos if channel exists
   let channelVideos: ChannelVideo[] = [];
   if (channel) {
@@ -159,9 +175,6 @@ export default async function PublicProfilePage({
   // Parse social links
   const socialLinks = profile.social_links as Record<string, string> | null;
 
-  // Separate posts with images for Instagram grid
-  const postsWithImages = userPosts.filter((p) => p.image_url);
-  const postsTextOnly = userPosts.filter((p) => !p.image_url);
 
   return (
     <div className="animate-fade-in pb-24">
@@ -357,93 +370,11 @@ export default async function PublicProfilePage({
         <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
           <Icon name={roleIcon} size={16} style={{ color: accentColor }} /> Recent Posts
         </h2>
-
-        {userPosts.length === 0 ? (
-          <div className="text-center py-12 text-white/30 text-sm">
-            No posts yet
-          </div>
-        ) : (
-          <>
-            {/* Instagram-style 3-col image grid */}
-            {postsWithImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-0.5 rounded-xl overflow-hidden mb-4">
-                {postsWithImages.map((post) => (
-                  <div key={post.id} className="relative aspect-square group">
-                    <Image
-                      src={post.image_url!}
-                      alt={"Post"}
-                      fill
-                      className="object-cover transition-opacity group-hover:opacity-80"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                      <div className="flex items-center gap-3 w-full">
-                        <span className="text-[10px] text-white flex items-center gap-1">
-                          <Icon name="heart-pulse" size={10} className="text-white" />
-                          {post.reaction_counts
-                            ? Object.values(post.reaction_counts).reduce((sum, n) => sum + ((n as number) ?? 0), 0)
-                            : 0}
-                        </span>
-                        <span className="text-[10px] text-white flex items-center gap-1">
-                          <Icon name="chat" size={10} className="text-white" />
-                          {post.comment_count ?? 0}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Text-only posts as cards */}
-            {postsTextOnly.length > 0 && (
-              <div className="flex flex-col gap-3">
-                {postsTextOnly.map((post) => {
-                  const totalReactions = post.reaction_counts
-                    ? Object.values(post.reaction_counts).reduce((sum, n) => sum + ((n as number) ?? 0), 0)
-                    : 0;
-
-                  return (
-                    <Card key={post.id} variant="glass" className="relative overflow-hidden">
-                      {/* Top accent line */}
-                      <div
-                        className="absolute top-0 left-0 right-0 h-[2px] opacity-40"
-                        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
-                      />
-
-                      <p className="text-[13px] leading-relaxed mb-2.5">{post.body}</p>
-
-                      {/* Hashtags */}
-                      {post.hashtags && post.hashtags.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 mb-2.5">
-                          {post.hashtags.map((tag: string) => (
-                            <span key={tag} className="text-[11px] font-medium" style={{ color: accentColor }}>
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Footer */}
-                      <div className="flex items-center justify-between pt-2.5 border-t border-white/[0.04]">
-                        <div className="flex items-center gap-4">
-                          <span className="text-xs text-white/40 flex items-center gap-1">
-                            <Icon name="heart-pulse" size={12} className="text-white/40" /> {totalReactions}
-                          </span>
-                          <span className="text-xs text-white/40 flex items-center gap-1">
-                            <Icon name="chat" size={12} className="text-white/40" /> {post.comment_count ?? 0}
-                          </span>
-                        </div>
-                        <span className="text-[11px] text-white/25">
-                          {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                        </span>
-                      </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
+        <UserPostsGrid
+          posts={userPosts}
+          userId={currentUser?.id ?? null}
+          userReactions={userReactions}
+        />
       </div>
     </div>
   );
