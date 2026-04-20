@@ -26,6 +26,7 @@ const ALLOWED_TOP_SECTIONS = new Set([
   "health",
   "resources",
   "live",
+  "creators",
   "city-hall",
   "city-data",
   "schools",

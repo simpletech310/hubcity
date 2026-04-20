@@ -1,17 +1,34 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
 
+const CREATOR_ROLES = [
+  "content_creator",
+  "creator",
+  "city_ambassador",
+  "resource_provider",
+  "chamber_admin",
+] as const;
+
+type BadgeVariant = "gold" | "emerald" | "coral" | "cyan" | "pink" | "purple" | "blue";
+
+const ROLE_BADGE: Record<string, { label: string; variant: BadgeVariant }> = {
+  content_creator: { label: "Creator", variant: "coral" },
+  creator: { label: "Creator", variant: "coral" },
+  city_ambassador: { label: "Ambassador", variant: "purple" },
+  resource_provider: { label: "Community", variant: "cyan" },
+  chamber_admin: { label: "Chamber", variant: "gold" },
+};
+
+const CITY_BADGE_VARIANT: BadgeVariant = "blue";
+
 export async function generateMetadata(): Promise<Metadata> {
-  const city = await getActiveCity();
-  const name = city?.name ?? "Your City";
   return {
-    title: `Discover | ${name} | Knect`,
-    description: `Watch, follow, and discover creators making things in ${name}.`,
+    title: `Discover | Knect`,
+    description: `Watch, follow, and discover creators across every Knect city.`,
   };
 }
 
@@ -23,6 +40,8 @@ type CreatorProfile = {
   bio: string | null;
   role: string | null;
   verification_status: string | null;
+  profile_tags: string[] | null;
+  city: { slug: string; name: string } | null;
 };
 
 type CreatorPost = {
@@ -62,27 +81,28 @@ type CreatorVideo = {
 };
 
 export default async function CreatorsPage() {
-  const city = await getActiveCity();
-  if (!city) redirect("/choose-city");
   const supabase = await createClient();
+  const activeCity = await getActiveCity();
 
-  // All content_creator profiles in this city — handle required so their
-  // profile page has a stable URL.
+  // Global roster — NOT scoped to the active city. Discover is supposed
+  // to surface every creator type across every Knect city so users can
+  // find people they wouldn't otherwise bump into.
   const { data: creatorRows } = await supabase
     .from("profiles")
-    .select("id, display_name, handle, avatar_url, bio, role, verification_status")
-    .eq("role", "content_creator")
-    .eq("city_id", city.id)
+    .select(
+      "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, city:cities!profiles_city_id_fkey(slug, name)"
+    )
+    .in("role", CREATOR_ROLES as unknown as string[])
     .not("handle", "is", null)
     .order("display_name", { ascending: true });
 
-  const creators = (creatorRows ?? []) as CreatorProfile[];
+  const creators = (creatorRows ?? []) as unknown as CreatorProfile[];
   if (creators.length === 0) {
     return (
       <div className="animate-fade-in pb-safe px-5 pt-6">
         <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
         <p className="text-sm text-txt-secondary mb-8">
-          No creators in {city.name} yet.
+          No creators on the platform yet.
         </p>
       </div>
     );
@@ -165,7 +185,8 @@ export default async function CreatorsPage() {
         <div className="relative px-5 pt-6 pb-5">
           <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
           <p className="text-sm text-txt-secondary">
-            Cool things to watch from unique creators in {city.name}.
+            Cool things to watch from creators across every Knect city
+            {activeCity ? ` — including ${activeCity.name}` : ""}.
           </p>
         </div>
       </div>
@@ -203,18 +224,36 @@ export default async function CreatorsPage() {
                   )}
                 </Link>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <Link href={`/user/${creator.handle}`} className="font-heading font-bold text-[15px] truncate hover:underline">
                       {creator.display_name}
                     </Link>
                     {creator.verification_status === "verified" && (
                       <Icon name="verified" size={11} className="text-cyan" />
                     )}
-                    <Badge label="Creator" variant="coral" />
+                    {(() => {
+                      const rb = creator.role ? ROLE_BADGE[creator.role] : null;
+                      return rb ? <Badge label={rb.label} variant={rb.variant} /> : null;
+                    })()}
+                    {creator.city && (
+                      <Badge label={creator.city.name} variant={CITY_BADGE_VARIANT} />
+                    )}
                   </div>
                   <p className="text-[11px] text-white/40">@{creator.handle}</p>
                   {creator.bio && (
                     <p className="text-[12px] text-white/60 mt-1 line-clamp-2">{creator.bio}</p>
+                  )}
+                  {creator.profile_tags && creator.profile_tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {creator.profile_tags.slice(0, 4).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[10px] font-medium text-white/50 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
                   )}
                 </div>
                 <Link
