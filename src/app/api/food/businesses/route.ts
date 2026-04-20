@@ -10,7 +10,7 @@ export async function GET(request: Request) {
 
     let query = supabase
       .from("businesses")
-      .select("*")
+      .select("*, city:cities(id, slug, name)")
       .eq("is_published", true)
       .order("is_featured", { ascending: false })
       .order("rating_avg", { ascending: false });

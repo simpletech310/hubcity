@@ -156,8 +156,10 @@ export interface Business {
   chamber_status: ChamberStatus;
   chamber_paused_at: string | null;
   chamber_notes: string | null;
+  city_id: string | null;
   created_at: string;
   updated_at: string;
+  city?: { id: string; slug: string; name: string } | null;
 }
 
 export interface Event {

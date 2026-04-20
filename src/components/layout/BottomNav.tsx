@@ -102,12 +102,11 @@ export default function BottomNav({
     ? [...BASE_SERVICES, ...VERIFIED_ONLY_SERVICES]
     : BASE_SERVICES;
 
-  // If the visitor hasn't chosen a city yet, every service tap routes
-  // through the picker: /choose-city?next=/events. The picker sets the
-  // active_city cookie and redirects to the requested service.
-  const needsCityPick = !hasActiveCity && accessMode !== "verified";
-  const resolveServiceHref = (href: string) =>
-    needsCityPick ? `/choose-city?next=${encodeURIComponent(href)}` : href;
+  // Service tabs route directly to each page now — every browse page
+  // shows content from every city and users filter down by city there.
+  // `hasActiveCity` is kept as a prop for backwards compatibility.
+  void hasActiveCity;
+  const resolveServiceHref = (href: string) => href;
 
   // Close services sheet on route change
   useEffect(() => {

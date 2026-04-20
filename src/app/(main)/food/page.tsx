@@ -14,6 +14,11 @@ import type {
   FoodTour,
   FoodChallenge,
 } from "@/types/database";
+import { createClient } from "@/lib/supabase/client";
+import CityOwnershipFilter, {
+  DEFAULT_OWNERSHIP_OPTIONS,
+  type CityOption,
+} from "@/components/filters/CityOwnershipFilter";
 
 // ─── Category Config ───────────────────────────────
 const categories: { label: string; value: string; iconName: IconName; color: string }[] = [
@@ -437,6 +442,22 @@ export default function FoodPage() {
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [cities, setCities] = useState<CityOption[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [selectedOwnership, setSelectedOwnership] = useState<string[]>([]);
+
+  // Load cities once
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("cities")
+      .select("slug, name")
+      .eq("launch_status", "live")
+      .order("name")
+      .then(({ data }) => {
+        if (data) setCities(data.map((c) => ({ slug: c.slug, name: c.name })));
+      });
+  }, []);
   const [specials, setSpecials] = useState<FoodSpecial[]>([]);
   const [vendors, setVendors] = useState<Array<{
     id: string; name: string; slug: string;
@@ -488,12 +509,25 @@ export default function FoodPage() {
     fetchAll();
   }, []);
 
-  // Derived data
-  const featuredSpots = useMemo(() => businesses.filter(b => b.is_featured), [businesses]);
-  const openNow = useMemo(() => businesses.filter(b => isOpenNow(b.hours)), [businesses]);
-  const lateNight = useMemo(() => businesses.filter(b => isLateNight(b.hours)), [businesses]);
-  const alwaysOpen = useMemo(() => businesses.filter(b => isAlwaysOpen(b.hours)), [businesses]);
-  const withPickup = useMemo(() => businesses.filter(b => b.accepts_orders), [businesses]);
+  // Apply city + ownership filters first, then derive sections from the narrowed set
+  const filteredBusinesses = useMemo(() => {
+    let result = businesses;
+    if (selectedCities.length > 0) {
+      result = result.filter((b) => b.city?.slug && selectedCities.includes(b.city.slug));
+    }
+    if (selectedOwnership.length > 0) {
+      result = result.filter((b) =>
+        selectedOwnership.some((badge) => b.badges?.includes(badge))
+      );
+    }
+    return result;
+  }, [businesses, selectedCities, selectedOwnership]);
+
+  const featuredSpots = useMemo(() => filteredBusinesses.filter(b => b.is_featured), [filteredBusinesses]);
+  const openNow = useMemo(() => filteredBusinesses.filter(b => isOpenNow(b.hours)), [filteredBusinesses]);
+  const lateNight = useMemo(() => filteredBusinesses.filter(b => isLateNight(b.hours)), [filteredBusinesses]);
+  const alwaysOpen = useMemo(() => filteredBusinesses.filter(b => isAlwaysOpen(b.hours)), [filteredBusinesses]);
+  const withPickup = useMemo(() => filteredBusinesses.filter(b => b.accepts_orders), [filteredBusinesses]);
   const activeTrucks = useMemo(() => vendors.filter(v => v.vendor_status === "active" || v.vendor_status === "en_route"), [vendors]);
 
   return (
@@ -567,6 +601,27 @@ export default function FoodPage() {
         ))}
       </div>
 
+      {/* ─── City + Ownership Filter ─── */}
+      <div className="mb-5">
+        <CityOwnershipFilter
+          cities={cities}
+          selectedCities={selectedCities}
+          onCityToggle={(slug) =>
+            setSelectedCities((prev) =>
+              prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+            )
+          }
+          onClearCities={() => setSelectedCities([])}
+          ownership={DEFAULT_OWNERSHIP_OPTIONS}
+          selectedOwnership={selectedOwnership}
+          onOwnershipToggle={(badge) =>
+            setSelectedOwnership((prev) =>
+              prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
+            )
+          }
+        />
+      </div>
+
       {/* ─── Category Tabs ─── */}
       <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
         {categories.map((cat) => {
@@ -589,11 +644,11 @@ export default function FoodPage() {
         })}
       </div>
 
-      {/* ─── Compton Favorites ─── */}
+      {/* ─── Local Favorites ─── */}
       {!search && activeTab === "all" && (
         <section className="mb-6">
           <div className="px-5 mb-3">
-            <h2 className="font-heading font-bold text-base">Compton Favorites</h2>
+            <h2 className="font-heading font-bold text-base">Local Favorites</h2>
             <p className="text-[11px] text-white/30">The flavors that define our city</p>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
@@ -713,8 +768,8 @@ export default function FoodPage() {
             {moodSections.map((mood) => {
               const count = mood.filter === "late_night" ? lateNight.length
                 : mood.filter === "always_open" ? alwaysOpen.length
-                : mood.filter === "quick" ? businesses.length
-                : businesses.length;
+                : mood.filter === "quick" ? filteredBusinesses.length
+                : filteredBusinesses.length;
               return (
                 <button
                   key={mood.filter}
@@ -788,11 +843,11 @@ export default function FoodPage() {
             <h2 className="font-heading font-bold text-base">
               {search ? `Results for "${search}"` : activeTab === "all" ? "All Food Spots" : `${categories.find(c => c.value === activeTab)?.label || "Food Spots"}`}
             </h2>
-            <p className="text-[11px] text-white/30">{businesses.length} spots</p>
+            <p className="text-[11px] text-white/30">{filteredBusinesses.length} spots</p>
           </div>
-          {(search || activeTab !== "all") && (
+          {(search || activeTab !== "all" || selectedCities.length > 0 || selectedOwnership.length > 0) && (
             <button
-              onClick={() => { setSearch(""); setActiveTab("all"); }}
+              onClick={() => { setSearch(""); setActiveTab("all"); setSelectedCities([]); setSelectedOwnership([]); }}
               className="flex items-center gap-1 bg-gold/10 rounded-full px-2.5 py-1 border border-gold/20 press"
             >
               <span className="text-[10px] font-medium text-gold">Clear</span>
@@ -809,10 +864,10 @@ export default function FoodPage() {
           </div>
         ) : (
           <div className="space-y-2.5 stagger">
-            {businesses.map((biz) => (
+            {filteredBusinesses.map((biz) => (
               <FoodCard key={biz.id} business={biz} />
             ))}
-            {businesses.length === 0 && (
+            {filteredBusinesses.length === 0 && (
               <div className="text-center py-16">
                 <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
                   <Icon name="utensils" size={30} />

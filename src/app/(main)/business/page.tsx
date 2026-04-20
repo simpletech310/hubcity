@@ -11,6 +11,10 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
 import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
+import CityOwnershipFilter, {
+  DEFAULT_OWNERSHIP_OPTIONS,
+  type CityOption,
+} from "@/components/filters/CityOwnershipFilter";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -211,21 +215,37 @@ const quickActions: { label: string; iconName: IconName; filter: string; color: 
 export default function BusinessPage() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [cities, setCities] = useState<CityOption[]>([]);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [selectedOwnership, setSelectedOwnership] = useState<string[]>([]);
   const [specials, setSpecials] = useState<FoodSpecial[]>([]);
   const [promotions, setPromotions] = useState<FoodPromotion[]>([]);
   const [search, setSearch] = useState("");
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Load cities once
+  useEffect(() => {
+    const supabase = createClient();
+    supabase
+      .from("cities")
+      .select("slug, name, launch_status")
+      .eq("launch_status", "live")
+      .order("name")
+      .then(({ data }) => {
+        if (data) setCities(data.map((c) => ({ slug: c.slug, name: c.name })));
+      });
+  }, []);
+
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
       const supabase = createClient();
 
-      // Fetch businesses
+      // Fetch businesses with city join
       let query = supabase
         .from("businesses")
-        .select("*")
+        .select("*, city:cities(id, slug, name)")
         .eq("is_published", true)
         .neq("category", "restaurant")
         .order("is_featured", { ascending: false })
@@ -264,6 +284,18 @@ export default function BusinessPage() {
   const filtered = useMemo(() => {
     let result = businesses;
 
+    // City filter (empty = all)
+    if (selectedCities.length > 0) {
+      result = result.filter((b) => b.city?.slug && selectedCities.includes(b.city.slug));
+    }
+
+    // Ownership filter (empty = all; match ANY selected badge)
+    if (selectedOwnership.length > 0) {
+      result = result.filter((b) =>
+        selectedOwnership.some((badge) => b.badges?.includes(badge))
+      );
+    }
+
     // Quick filter
     if (quickFilter === "new") {
       result = result.filter((b) => b.badges?.includes("new_business"));
@@ -284,7 +316,7 @@ export default function BusinessPage() {
       );
     }
     return result;
-  }, [businesses, search, quickFilter]);
+  }, [businesses, search, quickFilter, selectedCities, selectedOwnership]);
 
   const featured = filtered.filter((b) => b.is_featured);
   const regular = filtered.filter((b) => !b.is_featured);
@@ -318,10 +350,12 @@ export default function BusinessPage() {
           </div>
 
           <h1 className="font-display text-[28px] font-bold leading-tight mb-1">
-            Compton <span className="text-gold-gradient">Businesses</span>
+            Local <span className="text-gold-gradient">Businesses</span>
           </h1>
           <p className="text-sm text-txt-secondary mb-5">
-            Deals, specials & the city&apos;s best — all in one place.
+            {selectedCities.length === 1
+              ? `${cities.find((c) => c.slug === selectedCities[0])?.name || "Your city"} — filter by category or ownership.`
+              : "Every city, every category — filter by ownership and more."}
           </p>
 
           {/* Quick Action Pills */}
@@ -367,6 +401,27 @@ export default function BusinessPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* ── City + Ownership Filter ── */}
+      <div className="mb-5">
+        <CityOwnershipFilter
+          cities={cities}
+          selectedCities={selectedCities}
+          onCityToggle={(slug) =>
+            setSelectedCities((prev) =>
+              prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+            )
+          }
+          onClearCities={() => setSelectedCities([])}
+          ownership={DEFAULT_OWNERSHIP_OPTIONS}
+          selectedOwnership={selectedOwnership}
+          onOwnershipToggle={(badge) =>
+            setSelectedOwnership((prev) =>
+              prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
+            )
+          }
+        />
       </div>
 
       {/* ── Today's Deals & Specials ── */}
