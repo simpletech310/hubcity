@@ -2173,6 +2173,7 @@ export interface ExploreItem {
       handle: string;
     };
     isAd?: boolean;
+    memberCount?: number;
   };
 }
 
