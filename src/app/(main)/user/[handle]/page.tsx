@@ -8,6 +8,7 @@ import { ROLE_BADGE_MAP } from "@/lib/constants";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileBusinessStrip from "@/components/profile/ProfileBusinessStrip";
 import ProfileDealsRow from "@/components/profile/ProfileDealsRow";
+import ProfileProductsRow from "@/components/profile/ProfileProductsRow";
 import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
 import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
 import UserPostsGrid from "@/components/profile/UserPostsGrid";
@@ -171,8 +172,17 @@ export default async function PublicProfilePage({
     business_slug: string | null;
     business_id: string;
   };
+  type ProductItem = {
+    id: string;
+    name: string;
+    description: string | null;
+    price: number;
+    image_url: string | null;
+    category: string | null;
+  };
   let ownedBusiness: BusinessSummary | null = null;
   const deals: DealItem[] = [];
+  let products: ProductItem[] = [];
   if (profile.role === "business_owner") {
     const { data: bizRows } = await supabase
       .from("businesses")
@@ -190,6 +200,15 @@ export default async function PublicProfilePage({
       const bizId = ownedBusiness.id;
       const bizSlug = ownedBusiness.slug;
       const nowISO = new Date().toISOString();
+      const { data: productRows } = await supabase
+        .from("menu_items")
+        .select("id, name, description, price, image_url, category")
+        .eq("business_id", bizId)
+        .eq("is_available", true)
+        .order("sort_order", { ascending: true })
+        .limit(8);
+      products = (productRows ?? []) as ProductItem[];
+
       const [promosRes, couponsRes, specialsRes] = await Promise.all([
         supabase
           .from("food_promotions")
@@ -456,6 +475,18 @@ export default async function PublicProfilePage({
         {/* Business strip — direct link to their business page */}
         {ownedBusiness && <ProfileBusinessStrip business={ownedBusiness} />}
       </div>
+
+      {/* Products preview — sample of what the business sells */}
+      {products.length > 0 && ownedBusiness && (
+        <div className="mb-6">
+          <ProfileProductsRow
+            products={products}
+            businessSlug={ownedBusiness.slug}
+            businessId={ownedBusiness.id}
+            title={ownedBusiness.category === "retail" ? "Shop" : "Menu"}
+          />
+        </div>
+      )}
 
       {/* Deals / coupons the business owner has published */}
       {deals.length > 0 && (

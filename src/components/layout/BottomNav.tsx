@@ -20,7 +20,7 @@ const BASE_SERVICES: ServiceItem[] = [
   { href: "/culture", label: "Culture", iconName: "palette" },
   { href: "/jobs", label: "Jobs", iconName: "briefcase" },
   { href: "/groups", label: "Groups", iconName: "users" },
-  { href: "/people", label: "People", iconName: "person" },
+  { href: "/people", label: "Explore", iconName: "sparkle" },
   { href: "/resources", label: "Resources", iconName: "book" },
   { href: "/live", label: "Knect TV", iconName: "film" },
 ];
