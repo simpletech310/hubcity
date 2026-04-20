@@ -174,10 +174,7 @@ export default function ReelPlayer({
   const author = reel.author;
 
   return (
-    <div
-      className="relative w-full h-full bg-black snap-start flex items-center justify-center overflow-hidden"
-      style={{ height: "100%" }}
-    >
+    <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
       <video
         ref={videoRef}
         src={reel.video_url}

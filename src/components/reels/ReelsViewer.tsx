@@ -103,11 +103,18 @@ export default function ReelsViewer({
     );
   }
 
+  // Each reel item needs an EXPLICIT pixel-based height so the <video>
+  // element inside it renders at a real size. `h-full` / `height: 100%`
+  // inside an overflow-y scroll container doesn't resolve reliably
+  // across browsers, which was rendering items at 0px tall — the reel
+  // kept playing audio but the video was invisible.
+  const ITEM_HEIGHT = "calc(100dvh - 76px - env(safe-area-inset-bottom, 0px))";
+
   return (
     <div
       className="fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full bg-black z-40"
       style={{
-        bottom: "calc(76px + env(safe-area-inset-bottom, 0px))",
+        height: ITEM_HEIGHT,
       }}
     >
       <div
@@ -120,7 +127,8 @@ export default function ReelsViewer({
             key={reel.id}
             ref={setItemRef(idx)}
             data-index={idx}
-            className="w-full snap-start snap-always h-full"
+            className="w-full snap-start snap-always"
+            style={{ height: ITEM_HEIGHT }}
           >
             <ReelPlayer
               reel={reel}
