@@ -8,14 +8,22 @@ import MenuItemCard from "./MenuItemCard";
 import CartSheet from "./CartSheet";
 import PaymentSheet from "./PaymentSheet";
 import ProductDetailModal from "./ProductDetailModal";
-import type { Business, MenuItem } from "@/types/database";
+import type { Business, MenuItem, VendorVehicle } from "@/types/database";
 
 interface OrderViewProps {
   business: Business;
   menuItems: MenuItem[];
+  vehicles?: VendorVehicle[];
+  /** When the user clicked a pin on /food, this is the vehicle id to pre-select as pickup. */
+  preselectedVehicleId?: string | null;
 }
 
-export default function OrderView({ business, menuItems }: OrderViewProps) {
+export default function OrderView({
+  business,
+  menuItems,
+  vehicles = [],
+  preselectedVehicleId = null,
+}: OrderViewProps) {
   const router = useRouter();
   const { state, dispatch, subtotal, itemCount } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
@@ -41,6 +49,22 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
       payload: { id: business.id, name: business.name },
     });
   }, [business.id, business.name, dispatch]);
+
+  // Pre-seed pickup location if navigated here from a food-truck pin
+  useEffect(() => {
+    if (!preselectedVehicleId) return;
+    const v = vehicles.find((x) => x.id === preselectedVehicleId);
+    if (!v) return;
+    dispatch({ type: "SET_ORDER_TYPE", payload: "pickup" });
+    dispatch({
+      type: "SET_PICKUP_LOCATION",
+      payload: {
+        kind: "vehicle",
+        vehicleId: v.id,
+        name: `${v.name}${v.current_location_name ? ` — ${v.current_location_name}` : ""}`,
+      },
+    });
+  }, [preselectedVehicleId, vehicles, dispatch]);
 
   // Group menu items by category
   const grouped = useMemo(() => {
@@ -79,6 +103,15 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
           })),
           delivery_address:
             state.orderType === "delivery" ? "" : null,
+          pickup_location_name:
+            state.orderType === "pickup" && state.pickupLocation
+              ? state.pickupLocation.name
+              : null,
+          pickup_vehicle_id:
+            state.orderType === "pickup" &&
+            state.pickupLocation?.kind === "vehicle"
+              ? state.pickupLocation.vehicleId ?? null
+              : null,
           tip: state.tip,
           coupon_id: opts?.couponId ?? null,
         }),
@@ -266,6 +299,8 @@ export default function OrderView({ business, menuItems }: OrderViewProps) {
         onClose={() => setCartOpen(false)}
         onCheckout={handleCheckout}
         loading={checkoutLoading}
+        business={business}
+        vehicles={vehicles}
       />
 
       {/* Payment Sheet */}

@@ -74,6 +74,10 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
       : null;
 
   const vendorHref = biz ? `/food/vendor/${biz.slug || biz.id}` : "#";
+  const orderHref =
+    biz && biz.accepts_orders
+      ? `/business/${biz.slug || biz.id}/order?pickup_vehicle=${vehicle.id}`
+      : null;
 
   return (
     <div className="relative rounded-2xl border border-white/[0.08] bg-card p-4 animate-fade-in">
@@ -150,23 +154,33 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Link
-          href={vendorHref}
-          className="flex-1 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] text-center text-[12px] font-bold text-white press hover:bg-white/[0.1]"
-        >
-          View menu
-        </Link>
-        {directionsHref && (
-          <a
-            href={directionsHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex-1 py-2 rounded-xl bg-gold text-midnight text-center text-[12px] font-bold press hover:bg-gold-light"
+      <div className="flex flex-col gap-2">
+        {orderHref && (
+          <Link
+            href={orderHref}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight text-center text-[13px] font-bold press hover:brightness-110 flex items-center justify-center gap-1.5"
           >
-            Directions
-          </a>
+            <Icon name="cart" size={14} /> Order for pickup or delivery
+          </Link>
         )}
+        <div className="flex gap-2">
+          <Link
+            href={vendorHref}
+            className="flex-1 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] text-center text-[12px] font-bold text-white press hover:bg-white/[0.1]"
+          >
+            View menu
+          </Link>
+          {directionsHref && (
+            <a
+              href={directionsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] text-center text-[12px] font-bold text-white press hover:bg-white/[0.1]"
+            >
+              Directions
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

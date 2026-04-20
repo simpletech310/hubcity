@@ -549,6 +549,9 @@ export default function FoodPage() {
         })}
       </div>
 
+      {/* ─── Food Truck Tracker (live map + fleet cards) ─── */}
+      <FoodTruckTracker />
+
       {/* ─── Local Favorites ─── */}
       {!search && activeTab === "all" && (
         <section className="mb-6">
@@ -599,9 +602,6 @@ export default function FoodPage() {
           </div>
         </section>
       )}
-
-      {/* ─── Food Truck Tracker (live map + fleet cards) ─── */}
-      <FoodTruckTracker />
 
       {/* ─── Featured Spots (horizontal scroll) ─── */}
       {!search && featuredSpots.length > 0 && (

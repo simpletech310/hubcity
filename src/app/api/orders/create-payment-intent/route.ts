@@ -66,6 +66,8 @@ export async function POST(request: Request) {
       delivery_address,
       delivery_notes,
       coupon_id,
+      pickup_location_name,
+      pickup_vehicle_id,
     } = await request.json();
 
     if (!business_id || !items || !items.length || !type) {
@@ -252,6 +254,10 @@ export async function POST(request: Request) {
         coupon_id: validCouponId,
         delivery_address: delivery_address || null,
         delivery_notes: delivery_notes || null,
+        pickup_location_name:
+          type === "pickup" ? (pickup_location_name || null) : null,
+        pickup_vehicle_id:
+          type === "pickup" ? (pickup_vehicle_id || null) : null,
         idempotency_key: idempotencyKey,
       })
       .select("id")

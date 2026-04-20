@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Card from "@/components/ui/Card";
-import { useCart } from "@/lib/cart";
+import Icon from "@/components/ui/Icon";
+import { useCart, type PickupLocation } from "@/lib/cart";
+import type { Business, VendorVehicle } from "@/types/database";
 
 interface AppliedCoupon {
   id: string;
@@ -17,6 +19,8 @@ interface CartSheetProps {
   onClose: () => void;
   onCheckout: (opts?: { couponId?: string; discount?: number }) => void;
   loading?: boolean;
+  business?: Business;
+  vehicles?: VendorVehicle[];
 }
 
 const TAX_RATE = 0.095;
@@ -26,9 +30,46 @@ export default function CartSheet({
   onClose,
   onCheckout,
   loading = false,
+  business,
+  vehicles = [],
 }: CartSheetProps) {
   const { state, dispatch, subtotal, itemCount } = useCart();
   const [deliveryAddress, setDeliveryAddress] = useState("");
+
+  // Build the list of pickup options (store + each active, non-offline vehicle)
+  const pickupOptions: PickupLocation[] = useMemo(() => {
+    const opts: PickupLocation[] = [];
+    // A storefront option shows whenever the business has a physical
+    // address — even if it also runs mobile vehicles (mixed model).
+    if (business?.address) {
+      opts.push({
+        kind: "store",
+        name: `${business.name} — ${business.address.split(",")[0]}`,
+      });
+    }
+    for (const v of vehicles) {
+      if (!v.is_active) continue;
+      if (v.vendor_status === "closed" || v.vendor_status === "inactive" || v.vendor_status === "cancelled") {
+        continue;
+      }
+      const typeLabel = v.vehicle_type === "cart" ? "Cart" : "Truck";
+      const spot = v.current_location_name ? ` — ${v.current_location_name}` : "";
+      opts.push({
+        kind: "vehicle",
+        vehicleId: v.id,
+        name: `${typeLabel}: ${v.name}${spot}`,
+      });
+    }
+    return opts;
+  }, [business, vehicles]);
+
+  // Default-select first pickup option if none chosen yet and we're on pickup
+  useEffect(() => {
+    if (state.orderType !== "pickup") return;
+    if (state.pickupLocation) return;
+    if (pickupOptions.length === 0) return;
+    dispatch({ type: "SET_PICKUP_LOCATION", payload: pickupOptions[0] });
+  }, [state.orderType, state.pickupLocation, pickupOptions, dispatch]);
 
   // Coupon state
   const [showCouponInput, setShowCouponInput] = useState(false);
@@ -140,6 +181,67 @@ export default function CartSheet({
                 Delivery
               </button>
             </div>
+
+            {/* Pickup Location Picker */}
+            {state.orderType === "pickup" && pickupOptions.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-[11px] font-bold uppercase tracking-wider text-white/50">
+                  Pick up from
+                </p>
+                <div className="space-y-1.5">
+                  {pickupOptions.map((opt) => {
+                    const selected =
+                      state.pickupLocation?.kind === opt.kind &&
+                      (opt.kind === "store"
+                        ? state.pickupLocation?.kind === "store"
+                        : state.pickupLocation?.vehicleId === opt.vehicleId);
+                    return (
+                      <button
+                        key={opt.kind === "store" ? "store" : opt.vehicleId}
+                        onClick={() =>
+                          dispatch({ type: "SET_PICKUP_LOCATION", payload: opt })
+                        }
+                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors press ${
+                          selected
+                            ? "bg-gold/10 border border-gold/40"
+                            : "bg-white/[0.04] border border-border-subtle hover:border-white/[0.12]"
+                        }`}
+                      >
+                        <div
+                          className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
+                            selected ? "border-gold" : "border-white/30"
+                          }`}
+                        >
+                          {selected && (
+                            <div className="w-2.5 h-2.5 rounded-full bg-gold" />
+                          )}
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0">
+                          <Icon
+                            name={
+                              opt.kind === "store"
+                                ? "store"
+                                : opt.name.startsWith("Cart")
+                                  ? "cart"
+                                  : "truck"
+                            }
+                            size={16}
+                            className={selected ? "text-gold" : "text-white/60"}
+                          />
+                        </div>
+                        <span
+                          className={`text-[13px] font-semibold truncate flex-1 ${
+                            selected ? "text-white" : "text-white/80"
+                          }`}
+                        >
+                          {opt.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Delivery Address */}
             {state.orderType === "delivery" && (
@@ -342,7 +444,10 @@ export default function CartSheet({
                 }
                 loading={loading}
                 disabled={
-                  state.orderType === "delivery" && !deliveryAddress.trim()
+                  (state.orderType === "delivery" && !deliveryAddress.trim()) ||
+                  (state.orderType === "pickup" &&
+                    pickupOptions.length > 0 &&
+                    !state.pickupLocation)
                 }
               >
                 Checkout - ${(total / 100).toFixed(2)}

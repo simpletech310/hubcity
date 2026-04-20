@@ -9,11 +9,20 @@ import {
 } from "react";
 import type { CartItem } from "@/types/database";
 
+export interface PickupLocation {
+  /** "store" means the business's brick-and-mortar address; "vehicle"
+   * means a specific truck/cart from the fleet. */
+  kind: "store" | "vehicle";
+  vehicleId?: string;
+  name: string;
+}
+
 interface CartState {
   businessId: string | null;
   businessName: string | null;
   items: CartItem[];
   orderType: "pickup" | "delivery";
+  pickupLocation: PickupLocation | null;
   tip: number; // cents
 }
 
@@ -23,6 +32,7 @@ type CartAction =
   | { type: "UPDATE_QUANTITY"; payload: { menuItemId: string; variantId?: string; quantity: number } }
   | { type: "SET_BUSINESS"; payload: { id: string; name: string } }
   | { type: "SET_ORDER_TYPE"; payload: "pickup" | "delivery" }
+  | { type: "SET_PICKUP_LOCATION"; payload: PickupLocation | null }
   | { type: "SET_TIP"; payload: number }
   | { type: "CLEAR" }
   | { type: "LOAD"; payload: CartState };
@@ -32,6 +42,7 @@ const initialState: CartState = {
   businessName: null,
   items: [],
   orderType: "pickup",
+  pickupLocation: null,
   tip: 0,
 };
 
@@ -97,6 +108,8 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       };
     case "SET_ORDER_TYPE":
       return { ...state, orderType: action.payload };
+    case "SET_PICKUP_LOCATION":
+      return { ...state, pickupLocation: action.payload };
     case "SET_TIP":
       return { ...state, tip: action.payload };
     case "CLEAR":
