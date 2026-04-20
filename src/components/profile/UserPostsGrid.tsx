@@ -149,16 +149,17 @@ export default function UserPostsGrid({
           aria-modal="true"
           aria-label="Posts"
         >
-          {/* Sticky close bar */}
+          {/* Sticky top bar (has a secondary close; the primary is the
+              thumb-reachable floating button below) */}
           <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-midnight via-midnight/90 to-transparent pointer-events-none">
             <button
               onClick={() => setOpenIndex(null)}
-              className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white press hover:bg-black/80 pointer-events-auto shadow-lg"
+              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white press hover:bg-black/80 pointer-events-auto shadow-lg"
               aria-label="Close posts"
             >
               <svg
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -172,11 +173,11 @@ export default function UserPostsGrid({
             <span className="font-heading font-bold text-white text-sm drop-shadow pointer-events-none">
               Posts
             </span>
-            <div className="w-11 h-11" />
+            <div className="w-10 h-10" />
           </div>
 
           {/* Stacked posts */}
-          <div className="max-w-[430px] mx-auto flex flex-col gap-3 px-3 pb-24 -mt-12">
+          <div className="max-w-[430px] mx-auto flex flex-col gap-3 px-3 pb-32 -mt-12">
             {posts.map((post, idx) => (
               <div
                 key={post.id}
@@ -193,6 +194,28 @@ export default function UserPostsGrid({
               </div>
             ))}
           </div>
+
+          {/* Thumb-reachable floating close (bottom-right). Sits above the
+              bottom safe-area so it's usable on every device. */}
+          <button
+            onClick={() => setOpenIndex(null)}
+            className="fixed right-5 z-20 w-14 h-14 rounded-full bg-gold text-midnight shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-center press hover:bg-gold-light transition-colors"
+            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
+            aria-label="Close posts"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </div>
       )}
     </>

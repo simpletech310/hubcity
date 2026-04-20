@@ -31,6 +31,7 @@ const WHAT_FILTERS: { key: ExploreWhatFilter; label: string; kinds: ExploreKind[
   { key: "event", label: "Events", kinds: ["event"] },
   { key: "show", label: "Shows", kinds: ["show"] },
   { key: "business", label: "Businesses", kinds: ["business"] },
+  { key: "group", label: "Groups", kinds: ["group", "group_post"] },
   { key: "culture", label: "Culture", kinds: ["exhibit", "artwork", "mural"] },
 ];
 

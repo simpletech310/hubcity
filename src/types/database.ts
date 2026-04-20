@@ -2121,7 +2121,9 @@ export type ExploreKind =
   | "business"
   | "exhibit"
   | "artwork"
-  | "mural";
+  | "mural"
+  | "group"
+  | "group_post";
 
 export type ExploreWhoFilter =
   | "all"
@@ -2140,6 +2142,7 @@ export type ExploreWhatFilter =
   | "event"
   | "show"
   | "business"
+  | "group"
   | "culture";
 
 export type ExploreBadgeVariant =

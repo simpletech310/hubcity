@@ -171,6 +171,26 @@ export default function ReelsViewer({
         <div className="w-11 h-11" />
       </div>
 
+      {/* Thumb-reachable floating close (bottom-left so it doesn't collide
+          with the reel action column on the right) */}
+      <button
+        onClick={() => {
+          if (onClose) { onClose(); return; }
+          if (typeof window !== "undefined" && window.history.length > 1) {
+            router.back();
+          } else {
+            router.push("/pulse");
+          }
+        }}
+        className="fixed left-5 z-30 w-14 h-14 rounded-full bg-black/80 backdrop-blur-md border border-white/30 text-white shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex items-center justify-center press hover:bg-black"
+        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 90px)" }}
+        aria-label="Close reels"
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
+
       {/* Tap-to-unmute hint — shown when the browser blocks audio autoplay */}
       {showUnmuteHint && (
         <button

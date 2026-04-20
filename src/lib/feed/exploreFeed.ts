@@ -189,6 +189,25 @@ type MuralRow = {
   image_urls: string[] | null;
 };
 
+type GroupRow = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
+  avatar_url: string | null;
+  member_count: number | null;
+};
+
+type GroupPostRow = {
+  id: string;
+  image_url: string | null;
+  body: string | null;
+  created_at: string;
+  group?: { id: string; slug: string; name: string; avatar_url: string | null } | null;
+};
+
 function firstImage(urls: string[] | null | undefined): string | null {
   return urls && urls.length > 0 ? urls[0] : null;
 }
@@ -257,6 +276,22 @@ export async function buildExploreFeed(
     .eq("is_published", true);
   if (cityId) muralsQ = muralsQ.eq("city_id", cityId);
 
+  let groupsQ = supabase
+    .from("community_groups")
+    .select("id, slug, name, description, category, image_url, avatar_url, member_count")
+    .eq("is_active", true)
+    .eq("is_public", true);
+  if (cityId) groupsQ = groupsQ.eq("city_id", cityId);
+
+  let groupPostsQ = supabase
+    .from("group_posts")
+    .select(
+      "id, image_url, body, created_at, group:community_groups!group_posts_group_id_fkey(id, slug, name, avatar_url)"
+    )
+    .not("image_url", "is", null)
+    .eq("is_published", true);
+  if (cityId) groupPostsQ = groupPostsQ.eq("city_id", cityId);
+
   const [
     { data: creatorRows },
     { data: postRows },
@@ -266,6 +301,8 @@ export async function buildExploreFeed(
     { data: exhibitRows },
     { data: galleryRows },
     { data: muralRows },
+    { data: groupRows },
+    { data: groupPostRows },
   ] = await Promise.all([
     creatorsQ.limit(30),
     postsQ.order("created_at", { ascending: false }).limit(20),
@@ -287,6 +324,8 @@ export async function buildExploreFeed(
       .limit(8),
     galleryQ.order("display_order", { ascending: true }).limit(12),
     muralsQ.limit(8),
+    groupsQ.order("member_count", { ascending: false }).limit(8),
+    groupPostsQ.order("created_at", { ascending: false }).limit(15),
   ]);
 
   const items: ExploreItem[] = [];
@@ -418,6 +457,36 @@ export async function buildExploreFeed(
       subtitle: mural.artist_name ?? undefined,
       aspectHint: "landscape",
       chip: { label: "Mural", variant: "coral" },
+    });
+  }
+
+  for (const group of (groupRows ?? []) as GroupRow[]) {
+    items.push({
+      id: `group:${group.id}`,
+      kind: "group",
+      href: `/groups/${group.id}`,
+      image_url: group.image_url ?? group.avatar_url,
+      title: group.name,
+      subtitle:
+        group.description ??
+        (group.member_count ? `${group.member_count} members` : undefined),
+      aspectHint: "square",
+      chip: { label: "Group", variant: "blue" },
+      meta: { memberCount: group.member_count ?? 0 },
+    });
+  }
+
+  for (const gp of (groupPostRows ?? []) as unknown as GroupPostRow[]) {
+    if (!gp.image_url) continue;
+    items.push({
+      id: `group_post:${gp.id}`,
+      kind: "group_post",
+      href: gp.group ? `/groups/${gp.group.id}` : "/groups",
+      image_url: gp.image_url,
+      title: gp.group?.name ?? "Group post",
+      subtitle: gp.body?.slice(0, 80) ?? undefined,
+      aspectHint: "portrait",
+      chip: { label: "Group", variant: "blue" },
     });
   }
 
