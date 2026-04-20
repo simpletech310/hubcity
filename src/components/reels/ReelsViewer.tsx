@@ -104,7 +104,12 @@ export default function ReelsViewer({
   }
 
   return (
-    <div className="fixed inset-0 bg-black z-40">
+    <div
+      className="fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full bg-black z-40"
+      style={{
+        bottom: "calc(76px + env(safe-area-inset-bottom, 0px))",
+      }}
+    >
       <div
         ref={containerRef}
         className="h-full w-full overflow-y-auto snap-y snap-mandatory scrollbar-hide"
@@ -115,8 +120,7 @@ export default function ReelsViewer({
             key={reel.id}
             ref={setItemRef(idx)}
             data-index={idx}
-            className="w-full snap-start snap-always"
-            style={{ height: "100dvh" }}
+            className="w-full snap-start snap-always h-full"
           >
             <ReelPlayer
               reel={reel}
