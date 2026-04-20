@@ -270,7 +270,6 @@ export interface Post {
   longitude: number | null;
   edited_at: string | null;
   school_id: string | null;
-  is_highlight: boolean;
   is_pinned: boolean;
   is_published: boolean;
   created_at: string;
@@ -1996,6 +1995,38 @@ export interface AccountabilityVector {
   watch_for: string[];
   applies_to: string[];
   sort_order: number;
+}
+
+// ── Reels (short-form video: Reels + Stories) ────────
+export interface Reel {
+  id: string;
+  author_id: string;
+  video_url: string;
+  video_path: string;
+  poster_url: string | null;
+  poster_path: string | null;
+  caption: string | null;
+  duration_seconds: number | null;
+  width: number | null;
+  height: number | null;
+  view_count: number;
+  like_count: number;
+  comment_count: number;
+  reaction_counts: Partial<Record<ReactionEmoji, number>>;
+  hashtags: string[];
+  is_story: boolean;
+  is_published: boolean;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+  author?: Profile;
+}
+
+export interface ReelReaction {
+  reel_id: string;
+  user_id: string;
+  emoji: ReactionEmoji;
+  created_at: string;
 }
 
 // ── Profile gallery ──────────────────────────────────

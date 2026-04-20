@@ -161,7 +161,6 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           body: body.trim() || (imageUrl ? "Shared a photo" : "Shared a video"),
           image_url: imageUrl,
           video_url: videoUrl,
-          is_highlight: false,
         }),
       });
 

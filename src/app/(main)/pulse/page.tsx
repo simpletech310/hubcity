@@ -1,12 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import PulseFeed from "@/components/pulse/PulseFeed";
-import type { Post, ReactionEmoji, LiveStream, Poll, Survey } from "@/types/database";
+import type { Post, ReactionEmoji, LiveStream, Poll, Survey, Reel } from "@/types/database";
 
 export default async function PulsePage() {
   const supabase = await createClient();
   const today = new Date().toISOString().split("T")[0];
+  const nowISO = new Date().toISOString();
 
-  // Fetch posts, live streams, polls, surveys, events, and promotions in parallel
+  // Fetch posts, live streams, polls, surveys, events, promotions, reels in parallel
   const [
     { data: rawPosts },
     { data: rawLiveStreams },
@@ -16,6 +17,7 @@ export default async function PulsePage() {
     { data: rawPromos },
     { count: trafficAlertCount },
     { data: rawSuggestedProfiles },
+    { data: rawReels },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -78,6 +80,16 @@ export default async function PulsePage() {
       .select("id, display_name, handle, avatar_url, role, verification_status, bio")
       .in("role", ["content_creator", "creator", "city_ambassador", "city_official", "business_owner"])
       .limit(10),
+    // Reels — active (non-expired), newest 20
+    supabase
+      .from("reels")
+      .select(
+        "*, author:profiles!reels_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)"
+      )
+      .eq("is_published", true)
+      .or(`expires_at.is.null,expires_at.gt.${nowISO}`)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const posts: Post[] = (rawPosts as Post[]) || [];
@@ -87,6 +99,7 @@ export default async function PulsePage() {
   const events = rawEvents || [];
   const promotions = rawPromos || [];
   const suggestedProfiles = rawSuggestedProfiles || [];
+  const reels = (rawReels as unknown as Reel[]) || [];
 
   // Get current user
   const {
@@ -177,6 +190,7 @@ export default async function PulsePage() {
       promotions={promotions}
       trafficAlertCount={trafficAlertCount ?? 0}
       suggestedProfiles={suggestedProfiles}
+      reels={reels}
     />
   );
 }

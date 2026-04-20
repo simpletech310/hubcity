@@ -10,7 +10,8 @@ import { formatDistanceToNow } from "date-fns";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
 import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
-import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage } from "@/types/database";
+import ReelsRail from "@/components/reels/ReelsRail";
+import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage, Reel } from "@/types/database";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
@@ -50,14 +51,16 @@ export default async function PublicProfilePage({
   const isOwner = currentUser?.id === profile.id;
 
   const todayISO = new Date().toISOString().slice(0, 10);
+  const nowISO = new Date().toISOString();
 
-  // Fetch posts, channel, stats, upcoming events, gallery in parallel
+  // Fetch posts, channel, stats, upcoming events, gallery, reels in parallel
   const [
     { data: posts },
     { data: channels },
     { count: postCount },
     { data: upcomingEvents },
     { data: galleryRaw },
+    { data: reelsRaw },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -91,6 +94,16 @@ export default async function PublicProfilePage({
       .order("display_order", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(40),
+    supabase
+      .from("reels")
+      .select(
+        "*, author:profiles!reels_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)"
+      )
+      .eq("author_id", profile.id)
+      .eq("is_published", true)
+      .or(`expires_at.is.null,expires_at.gt.${nowISO}`)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
 
   const badge = profile.role ? ROLE_BADGE_MAP[profile.role] : null;
@@ -98,6 +111,7 @@ export default async function PublicProfilePage({
   const userPosts = (posts ?? []) as Post[];
   const events = (upcomingEvents ?? []) as Event[];
   const gallery = (galleryRaw ?? []) as ProfileGalleryImage[];
+  const profileReels = (reelsRaw ?? []) as unknown as Reel[];
 
   // Top 3 latest videos if channel exists
   let channelVideos: ChannelVideo[] = [];
@@ -311,6 +325,16 @@ export default async function PublicProfilePage({
           </div>
           <ProfileEventsRow events={events} accentColor={accentColor} />
         </div>
+      )}
+
+      {/* --- Reels --- */}
+      {(profileReels.length > 0 || isOwner) && (
+        <ReelsRail
+          reels={profileReels}
+          label="Reels"
+          showSeeAll={false}
+          canPost={isOwner}
+        />
       )}
 
       {/* --- Gallery --- */}

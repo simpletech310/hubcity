@@ -14,8 +14,9 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
 import CityPulseBar from "./CityPulseBar";
+import ReelsRail from "@/components/reels/ReelsRail";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
-import type { Post, ReactionEmoji, LiveStream, Poll, Survey } from "@/types/database";
+import type { Post, ReactionEmoji, LiveStream, Poll, Survey, Reel } from "@/types/database";
 
 // ─── Types ──────────────────────────────────────────
 interface CityEvent {
@@ -249,6 +250,7 @@ interface PulseFeedProps {
   promotions?: Promotion[];
   trafficAlertCount?: number;
   suggestedProfiles?: SuggestedProfile[];
+  reels?: Reel[];
 }
 
 export default function PulseFeed({
@@ -264,6 +266,7 @@ export default function PulseFeed({
   promotions = [],
   trafficAlertCount = 0,
   suggestedProfiles = [],
+  reels = [],
 }: PulseFeedProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [composeOpen, setComposeOpen] = useState(false);
@@ -292,10 +295,10 @@ export default function PulseFeed({
 
   const filteredPosts =
     activeFilter === "all" || activeFilter === "polls" || activeFilter === "surveys"
-      ? posts.filter((p) => !p.is_highlight)
+      ? posts
       : activeFilter === "jobs"
-        ? posts.filter((p) => !p.is_highlight && (p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring")))
-        : posts.filter((p) => !p.is_highlight && p.author?.role === activeFilter);
+        ? posts.filter((p) => p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring"))
+        : posts.filter((p) => p.author?.role === activeFilter);
 
   // Build unified feed
   type FeedItem =
@@ -339,6 +342,13 @@ export default function PulseFeed({
       <div className="pt-4">
         <CityPulseBar trafficAlertCount={trafficAlertCount} />
       </div>
+
+      {/* ─── Reels Rail ─── */}
+      {(reels.length > 0 || canPost) && (
+        <div className="pt-4">
+          <ReelsRail reels={reels} canPost={!!canPost} />
+        </div>
+      )}
 
       {/* ─── Inline Compose Bar ─── */}
       {canPost && (
