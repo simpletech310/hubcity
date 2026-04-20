@@ -1,10 +1,18 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
+import {
+  HeroBlock,
+  EditorialNumber,
+  SectionKicker,
+  SnapCarousel,
+  EditorialCard,
+  Tag,
+  IssueDivider,
+} from "@/components/ui/editorial";
+import PullQuote from "@/components/ui/PullQuote";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileBusinessStrip from "@/components/profile/ProfileBusinessStrip";
 import ProfileDealsRow from "@/components/profile/ProfileDealsRow";
@@ -25,9 +33,24 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
     .single();
 
   return {
-    title: profile ? `${profile.display_name} -- Knect` : "Profile -- Knect",
+    title: profile ? `${profile.display_name} -- Culture` : "Profile -- Culture",
   };
 }
+
+const ROLE_LABEL_MAP: Record<string, string> = {
+  city_official: "City Official",
+  school_trustee: "School Trustee",
+  city_ambassador: "City Ambassador",
+  admin: "Admin",
+  business_owner: "Business Owner",
+  creator: "Creator",
+  content_creator: "Creator",
+  community_leader: "Community Leader",
+  resource_provider: "Resource Provider",
+  chamber_admin: "Chamber",
+  school: "School",
+  resident: "Resident",
+};
 
 export default async function PublicProfilePage({
   params,
@@ -292,20 +315,6 @@ export default async function PublicProfilePage({
     }
   }
 
-  const roleColors: Record<string, string> = {
-    city_official: "#F2A900",
-    city_ambassador: "#8B5CF6",
-    business_owner: "#3B82F6",
-    community_leader: "#22C55E",
-    admin: "#8B5CF6",
-    content_creator: "#EC4899",
-    creator: "#EC4899",
-    chamber_admin: "#8B5CF6",
-    resource_provider: "#06B6D4",
-    school: "#22C55E",
-  };
-  const accentColor = profile.role ? (roleColors[profile.role] || "#F2A900") : "#F2A900";
-
   const roleIcons: Record<string, IconName> = {
     city_official: "landmark",
     city_ambassador: "flag",
@@ -319,240 +328,380 @@ export default async function PublicProfilePage({
     school: "graduation",
   };
   const roleIcon: IconName = profile.role ? (roleIcons[profile.role] || "chat") : "chat";
+  const roleLabel = profile.role ? (ROLE_LABEL_MAP[profile.role] ?? badge?.label ?? "Member") : "Member";
 
   // Parse social links
   const socialLinks = profile.social_links as Record<string, string> | null;
 
+  // Cover image: prefer channel banner, then first gallery image, then avatar
+  const coverImage =
+    channel?.banner_url ||
+    gallery[0]?.image_url ||
+    profile.avatar_url ||
+    null;
+
+  // Build the numbered section list dynamically so the numerals stay correct
+  // regardless of which sections the profile surfaces.
+  const numberedSections: string[] = ["posts"];
+  if (profileReels.length > 0 || isOwner) numberedSections.push("reels");
+  if (events.length > 0) numberedSections.push("events");
+  if (channel) numberedSections.push("channel");
+  if (ownedBusiness) numberedSections.push("business");
+  if (deals.length > 0) numberedSections.push("deals");
+  const sectionIndex = (key: string) => numberedSections.indexOf(key) + 1;
+
+  const totalLikes = userPosts.reduce((sum, p) => sum + (p.like_count ?? 0), 0);
 
   return (
-    <div className="animate-fade-in pb-24">
-      {/* --- Cover / Header --- */}
-      <div className="relative">
-        {/* Banner gradient */}
-        <div
-          className="h-[160px] relative overflow-hidden"
-          style={{
-            background: `linear-gradient(135deg, ${accentColor}30 0%, var(--color-midnight) 50%, ${accentColor}15 100%)`,
-          }}
-        >
-          {channel?.banner_url && (
-            <img
-              src={channel.banner_url}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-30"
-            />
+    <div className="animate-fade-in pb-24 bg-ink text-ivory">
+      {/* --- № COVER --- */}
+      <HeroBlock
+        image={coverImage}
+        aspect="3/2"
+        alt={profile.display_name}
+        className="w-full"
+      >
+        {/* Top-right status chips */}
+        <div className="absolute top-6 right-10 flex items-center gap-2">
+          {profile.district && (
+            <Tag tone="gold" size="xs">District {profile.district}</Tag>
           )}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-midnight" />
+          {profile.verification_status === "verified" && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.12em] bg-cyan/10 border border-cyan/30 text-cyan backdrop-blur-sm"
+              title="Verified"
+            >
+              <Icon name="verified" size={10} strokeWidth={2.4} />
+              Verified
+            </span>
+          )}
         </div>
 
-        {/* Avatar + name overlay */}
-        <div className="absolute bottom-0 left-0 right-0 translate-y-1/2 px-5">
+        {/* Bottom overlay — name + handle */}
+        <div className="absolute inset-x-0 bottom-0 px-6 pb-7">
           <div className="flex items-end gap-4">
-            <div
-              className="w-[88px] h-[88px] rounded-2xl overflow-hidden border-4 shrink-0"
-              style={{ borderColor: `${accentColor}40`, background: "var(--color-royal)" }}
-            >
+            {/* Avatar thumb */}
+            <div className="w-16 h-16 rounded-xl overflow-hidden border border-gold/30 shrink-0 bg-midnight">
               {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.avatar_url}
                   alt={profile.display_name}
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div
-                  className="w-full h-full flex items-center justify-center text-2xl font-bold"
-                  style={{ color: accentColor }}
-                >
+                <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gold">
                   {profile.display_name?.split(" ").map((w: string) => w[0]).join("").slice(0, 2)}
                 </div>
               )}
             </div>
+            <div className="min-w-0 flex-1 pb-0.5">
+              <h1 className="font-display text-white text-[44px] leading-[0.95] tracking-[-0.01em] truncate">
+                {profile.display_name}
+              </h1>
+              <div className="mt-1.5 flex items-center gap-2 text-ivory/70">
+                <span className="text-[12px] font-semibold tracking-[0.14em] uppercase text-gold">
+                  @{profile.handle}
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+      </HeroBlock>
+
+      {/* --- BYLINE STRIP --- */}
+      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <EditorialNumber n={1} size="md" />
+            <SectionKicker tone="gold">PROFILE</SectionKicker>
+            <span className="block h-px w-10 bg-gold/60" />
+            <SectionKicker tone="muted">{roleLabel}</SectionKicker>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            {badge && <Tag tone="gold" size="xs">{badge.label}</Tag>}
+            {profile.district && (
+              <Tag tone="default" size="xs">District {profile.district}</Tag>
+            )}
+          </div>
+        </div>
+
+        {/* Small-screen meta chips */}
+        <div className="sm:hidden mt-3 flex flex-wrap items-center gap-2">
+          {badge && <Tag tone="gold" size="xs">{badge.label}</Tag>}
+          {profile.district && (
+            <Tag tone="default" size="xs">District {profile.district}</Tag>
+          )}
         </div>
       </div>
 
-      {/* Spacer for avatar overlap */}
-      <div className="h-14" />
+      {/* --- PULL QUOTE (bio) --- */}
+      {profile.bio && (
+        <div className="px-6 py-8">
+          <PullQuote
+            quote={profile.bio}
+            attribution={profile.display_name}
+            size="lg"
+          />
+        </div>
+      )}
 
-      {/* --- Profile Info --- */}
-      <div className="px-5 mb-6">
-        <Card variant="glass-elevated" padding={false} className="p-5 mb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="font-heading font-bold text-xl">{profile.display_name}</h1>
-            {profile.verification_status === "verified" && (
-              <span className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: `${accentColor}25` }}>
-                <Icon name="verified" size={12} style={{ color: accentColor }} strokeWidth={2} />
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-sm text-white/40">@{profile.handle}</span>
-            {badge && <Badge label={badge.label} variant={badge.variant} />}
-            {profile.district && (
-              <span className="text-[10px] font-semibold text-white/30 bg-white/[0.06] rounded-full px-2 py-0.5">
-                District {profile.district}
-              </span>
-            )}
-          </div>
-
-          {profile.bio && (
-            <p className="text-sm text-white/60 leading-relaxed">{profile.bio}</p>
+      {/* --- Stats triptych --- */}
+      <div className="px-5 pb-6">
+        <div className="grid grid-cols-3 gap-3">
+          <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
+            <p className="font-display text-[28px] leading-none text-ivory tabular-nums">
+              {postCount ?? 0}
+            </p>
+            <p className="mt-2 text-[10px] text-ivory/50 uppercase tracking-editorial">
+              Posts
+            </p>
+          </EditorialCard>
+          {channel ? (
+            <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
+              <p className="font-display text-[28px] leading-none text-ivory tabular-nums">
+                {channel.follower_count?.toLocaleString() ?? 0}
+              </p>
+              <p className="mt-2 text-[10px] text-ivory/50 uppercase tracking-editorial">
+                Followers
+              </p>
+            </EditorialCard>
+          ) : (
+            <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
+              <p className="font-display text-[28px] leading-none text-ivory tabular-nums">
+                {gallery.length}
+              </p>
+              <p className="mt-2 text-[10px] text-ivory/50 uppercase tracking-editorial">
+                Gallery
+              </p>
+            </EditorialCard>
           )}
+          <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
+            <p className="font-display text-[28px] leading-none text-ivory tabular-nums">
+              {totalLikes.toLocaleString()}
+            </p>
+            <p className="mt-2 text-[10px] text-ivory/50 uppercase tracking-editorial">
+              Likes
+            </p>
+          </EditorialCard>
+        </div>
 
-          {/* Social Links */}
-          {(socialLinks && Object.keys(socialLinks).length > 0 || profile.website_url) && (
-            <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/[0.04]">
-              {profile.website_url && (
-                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-                  <Icon name="globe" size={14} />
-                </a>
-              )}
-              {socialLinks?.instagram && (
-                <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-pink transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                </a>
-              )}
-              {(socialLinks?.twitter || socialLinks?.x) && (
-                <a href={`https://x.com/${socialLinks.twitter || socialLinks.x}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-white transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </a>
-              )}
-              {socialLinks?.facebook && (
-                <a href={`https://facebook.com/${socialLinks.facebook}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-blue transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </a>
-              )}
-              {socialLinks?.tiktok && (
-                <a href={`https://tiktok.com/@${socialLinks.tiktok}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-white transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.98a8.21 8.21 0 004.76 1.52V7.05a4.84 4.84 0 01-1-.36z"/></svg>
-                </a>
-              )}
-              {socialLinks?.youtube && (
-                <a href={`https://youtube.com/${socialLinks.youtube}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-coral transition-colors">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                </a>
-              )}
-            </div>
-          )}
-        </Card>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 mb-4">
-          <button className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press">
+        {/* Action buttons — gold filled + gold-bordered ghost */}
+        <div className="mt-4 flex items-center gap-3">
+          <button className="flex-1 py-2.5 rounded-xl bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors">
             Follow
           </button>
-          <button className="flex-1 py-2.5 rounded-xl bg-white/[0.06] border border-border-subtle text-white font-semibold text-sm press hover:bg-white/[0.08] transition-colors">
+          <button className="flex-1 py-2.5 rounded-xl bg-transparent border border-gold/40 text-gold font-semibold text-sm press hover:bg-gold/10 transition-colors">
             Message
           </button>
         </div>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-3 mb-4">
-          <Card variant="glass" className="flex-1 text-center !py-3">
-            <p className="font-heading font-bold text-lg tabular-nums">{postCount ?? 0}</p>
-            <p className="text-[10px] text-white/40 uppercase tracking-wider">Posts</p>
-          </Card>
-          {channel && (
-            <Card variant="glass" className="flex-1 text-center !py-3">
-              <p className="font-heading font-bold text-lg tabular-nums">{channel.follower_count?.toLocaleString()}</p>
-              <p className="text-[10px] text-white/40 uppercase tracking-wider">Followers</p>
-            </Card>
-          )}
-          <Card variant="glass" className="flex-1 text-center !py-3">
-            <p className="font-heading font-bold text-lg tabular-nums">
-              {userPosts.reduce((sum, p) => sum + (p.like_count ?? 0), 0).toLocaleString()}
-            </p>
-            <p className="text-[10px] text-white/40 uppercase tracking-wider">Likes</p>
-          </Card>
-        </div>
-
-        {/* Elevated channel strip */}
-        {channel && (
-          <ProfileChannelStrip channel={channel} videos={channelVideos} />
+        {/* Social links */}
+        {(socialLinks && Object.keys(socialLinks).length > 0 || profile.website_url) && (
+          <div className="mt-5 flex items-center gap-3">
+            {profile.website_url && (
+              <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <Icon name="globe" size={14} />
+              </a>
+            )}
+            {socialLinks?.instagram && (
+              <a href={`https://instagram.com/${socialLinks.instagram}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+            )}
+            {(socialLinks?.twitter || socialLinks?.x) && (
+              <a href={`https://x.com/${socialLinks.twitter || socialLinks.x}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            )}
+            {socialLinks?.facebook && (
+              <a href={`https://facebook.com/${socialLinks.facebook}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+            )}
+            {socialLinks?.tiktok && (
+              <a href={`https://tiktok.com/@${socialLinks.tiktok}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.98a8.21 8.21 0 004.76 1.52V7.05a4.84 4.84 0 01-1-.36z"/></svg>
+              </a>
+            )}
+            {socialLinks?.youtube && (
+              <a href={`https://youtube.com/${socialLinks.youtube}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center text-ivory/70 hover:text-gold transition-colors">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+              </a>
+            )}
+          </div>
         )}
-
-        {/* Business strip — direct link to their business page */}
-        {ownedBusiness && <ProfileBusinessStrip business={ownedBusiness} />}
       </div>
 
-      {/* Products preview — sample of what the business sells */}
-      {products.length > 0 && ownedBusiness && (
-        <div className="mb-6">
-          <ProfileProductsRow
-            products={products}
-            businessSlug={ownedBusiness.slug}
-            businessId={ownedBusiness.id}
-            title={ownedBusiness.category === "retail" ? "Shop" : "Menu"}
+      {/* --- № 01 POSTS --- */}
+      <section className="pt-4 pb-2">
+        <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <EditorialNumber n={sectionIndex("posts")} size="md" />
+            <SectionKicker tone="muted">Posts</SectionKicker>
+          </div>
+          <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+            {postCount ?? userPosts.length}
+          </span>
+        </div>
+        <div className="px-5 mb-4">
+          <div className="rule-hairline" />
+        </div>
+        <div className="px-5">
+          <UserPostsGrid
+            posts={userPosts}
+            userId={currentUser?.id ?? null}
+            userReactions={userReactions}
           />
         </div>
-      )}
+      </section>
 
-      {/* Deals / coupons the business owner has published */}
-      {deals.length > 0 && (
-        <div className="mb-6">
-          <div className="px-5 mb-3 flex items-center justify-between">
-            <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider flex items-center gap-2">
-              <Icon name="tag" size={16} className="text-emerald" /> Deals & Coupons
-            </h2>
-            <span className="text-[10px] text-white/30 font-semibold tabular-nums">
-              {deals.length}
-            </span>
-          </div>
-          <ProfileDealsRow deals={deals} />
-        </div>
-      )}
-
-      {/* --- Events by this creator --- */}
-      {events.length > 0 && (
-        <div className="mb-6">
-          <div className="px-5 mb-3 flex items-center justify-between">
-            <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider flex items-center gap-2">
-              <Icon name="calendar" size={16} style={{ color: accentColor }} /> Upcoming Events
-            </h2>
-            <span className="text-[10px] text-white/30 font-semibold tabular-nums">
-              {events.length}
-            </span>
-          </div>
-          <ProfileEventsRow events={events} accentColor={accentColor} />
-        </div>
-      )}
-
-      {/* --- Reels --- */}
+      {/* --- № XX REELS --- */}
       {(profileReels.length > 0 || isOwner) && (
-        <ReelsRail
-          reels={profileReels}
-          label="Reels"
-          showSeeAll={false}
-          canPost={isOwner}
-        />
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline gap-3">
+              <EditorialNumber n={sectionIndex("reels")} size="md" />
+              <SectionKicker tone="muted">Reels</SectionKicker>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <ReelsRail
+              reels={profileReels}
+              label=""
+              showSeeAll={false}
+              canPost={isOwner}
+            />
+          </section>
+        </>
       )}
 
-      {/* --- Gallery --- */}
+      {/* --- № XX EVENTS --- */}
+      {events.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("events")} size="md" />
+                <SectionKicker tone="muted">Upcoming Events</SectionKicker>
+              </div>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+                {events.length}
+              </span>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <ProfileEventsRow events={events} accentColor="#F2A900" />
+          </section>
+        </>
+      )}
+
+      {/* --- № XX CHANNEL --- */}
+      {channel && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline gap-3">
+              <EditorialNumber n={sectionIndex("channel")} size="md" />
+              <SectionKicker tone="muted">Channel</SectionKicker>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <div className="px-5">
+              <ProfileChannelStrip channel={channel} videos={channelVideos} />
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* --- № XX BUSINESS --- */}
+      {ownedBusiness && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline gap-3">
+              <EditorialNumber n={sectionIndex("business")} size="md" />
+              <SectionKicker tone="muted">Business</SectionKicker>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <div className="px-5">
+              <ProfileBusinessStrip business={ownedBusiness} />
+            </div>
+
+            {products.length > 0 && (
+              <div className="mt-5">
+                <ProfileProductsRow
+                  products={products}
+                  businessSlug={ownedBusiness.slug}
+                  businessId={ownedBusiness.id}
+                  title={ownedBusiness.category === "retail" ? "Shop" : "Menu"}
+                />
+              </div>
+            )}
+          </section>
+        </>
+      )}
+
+      {/* --- № XX DEALS --- */}
+      {deals.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("deals")} size="md" />
+                <SectionKicker tone="muted">Deals &amp; Coupons</SectionKicker>
+              </div>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+                {deals.length}
+              </span>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <ProfileDealsRow deals={deals} />
+          </section>
+        </>
+      )}
+
+      {/* --- Gallery (unnumbered supplement) --- */}
       {(isOwner || gallery.length > 0) && (
-        <div className="px-5 mb-6">
-          <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Icon name="photo" size={16} style={{ color: accentColor }} /> Gallery
-          </h2>
-          <ProfileGalleryMasonry
-            images={gallery}
-            ownerName={profile.display_name}
-            isOwner={isOwner}
-            accentColor={accentColor}
-          />
-        </div>
+        <>
+          <IssueDivider />
+          <section className="px-5">
+            <div className="mb-3 flex items-baseline gap-3">
+              <SectionKicker tone="gold">Plates</SectionKicker>
+              <span className="block h-px flex-1 bg-white/[0.06]" />
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 flex items-center gap-1.5">
+                <Icon name="photo" size={12} className="text-gold" />
+                Gallery
+              </span>
+            </div>
+            <ProfileGalleryMasonry
+              images={gallery}
+              ownerName={profile.display_name}
+              isOwner={isOwner}
+              accentColor="#F2A900"
+            />
+          </section>
+        </>
       )}
 
-      {/* --- Posts Feed --- */}
-      <div className="px-5">
-        <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
-          <Icon name={roleIcon} size={16} style={{ color: accentColor }} /> Recent Posts
-        </h2>
-        <UserPostsGrid
-          posts={userPosts}
-          userId={currentUser?.id ?? null}
-          userReactions={userReactions}
-        />
+      {/* --- Colophon / close --- */}
+      <IssueDivider label="END" />
+      <div className="px-6 pb-2 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase text-ivory/40">
+        <span className="flex items-center gap-2">
+          <Icon name={roleIcon} size={12} className="text-gold" />
+          {roleLabel}
+        </span>
+        <span className="tabular-nums text-ivory/30">@{profile.handle}</span>
       </div>
     </div>
   );

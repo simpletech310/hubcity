@@ -146,7 +146,7 @@ function SurveyRow({ survey }: { survey: SurveySummary }) {
             </p>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-2xl font-bold text-hc-purple">{survey.response_count}</span>
+            <span className="text-2xl font-bold text-gold">{survey.response_count}</span>
             <p className="text-[10px] text-txt-secondary">responses</p>
           </div>
         </div>

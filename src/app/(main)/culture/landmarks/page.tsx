@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Landmarks | Compton Culture | Knect",
+  title: "Landmarks | Compton Culture | Culture",
   description: "Historic landmarks and notable sites in Compton, California.",
 };
 

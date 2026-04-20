@@ -109,7 +109,7 @@ export default function ApplyButton({
                       Need Help Applying?
                     </p>
                     <p className="text-xs text-txt-secondary">
-                      Ask Knect AI for step-by-step guidance
+                      Ask Culture AI for step-by-step guidance
                     </p>
                   </div>
                 </div>

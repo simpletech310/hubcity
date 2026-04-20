@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import ShareButton from "./ShareButton";
 
 export const metadata = {
-  title: "RSVP Details | Knect",
+  title: "RSVP Details | Culture",
   description: "Your RSVP details for this event.",
 };
 
@@ -280,7 +280,7 @@ export default async function RsvpDetailPage({
           {event.category && (
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-hc-purple/10 flex items-center justify-center shrink-0">
-                <Icon name="tag" size={16} className="text-hc-purple" />
+                <Icon name="tag" size={16} className="text-gold" />
               </div>
               <Badge variant="purple" label={event.category} />
             </div>

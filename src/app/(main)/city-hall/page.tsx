@@ -111,7 +111,7 @@ export default async function CityHallPage() {
               Your digital gateway to Compton city government services and information.
             </p>
             <p className="text-gold/70 text-[11px] font-medium mt-2">
-              Serving the Knect since 1888
+              Serving the Culture since 1888
             </p>
           </div>
         </div>

@@ -126,16 +126,25 @@ export default function GroupsPage() {
 
   return (
     <div className="animate-fade-in pb-24">
-      {/* Hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple/20 via-midnight to-midnight" />
-        <div className="relative px-5 pt-6 pb-8">
-          <h1 className="font-heading text-2xl font-bold mb-1">Community Groups</h1>
-          <p className="text-sm text-txt-secondary">
-            Connect with neighbors, share interests, organize together.
-          </p>
+      {/* Editorial Masthead */}
+      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+            VOL · 01 · ISSUE COMMUNITY
+          </span>
+          <span className="block w-1 h-1 rounded-full bg-gold/60" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+            {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          </span>
         </div>
-      </div>
+        <h1 className="masthead text-white text-[44px]">COMMUNITY.</h1>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="block h-[2px] w-8 bg-gold" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+            Neighbors, interests, and the people organizing it
+          </span>
+        </div>
+      </header>
 
       {/* Create CTA - only for officials */}
       {userRole && ["city_ambassador", "city_official", "admin"].includes(userRole) && (

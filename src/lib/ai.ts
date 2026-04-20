@@ -1,5 +1,5 @@
 /**
- * AI utilities for Knect
+ * AI utilities for Culture
  * Uses OpenAI for sentiment analysis and topic extraction
  */
 

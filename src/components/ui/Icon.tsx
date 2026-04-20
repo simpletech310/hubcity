@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────
-// Knect Icon System — Centralized SVG icon component
+// Culture Icon System — Centralized SVG icon component
 // Replaces all emoji usage with cohesive stroke icons
 // ─────────────────────────────────────────────────────────
 
@@ -46,7 +46,9 @@ export type IconName =
   // Misc
   | "grid" | "list" | "map-pin" | "navigation" | "ticket"
   | "receipt" | "credit-card" | "qr-code" | "photo"
-  | "video" | "headphones" | "podcast" | "radio";
+  | "video" | "headphones" | "podcast" | "radio"
+  // Editorial
+  | "arrow-right-thin" | "quote-mark" | "film-frame" | "editorial-tick";
 
 interface IconProps {
   name: IconName;
@@ -229,6 +231,12 @@ const iconPaths: Record<IconName, string> = {
   headphones: "M3 13v-3a7 7 0 0114 0v3 M3 13a2 2 0 00-2 2v1a2 2 0 002 2 M17 13a2 2 0 012 2v1a2 2 0 01-2 2 M3 18V13 M17 18V13",
   podcast: "M10 12a2 2 0 100-4 2 2 0 000 4z M10 12v6 M6 8a5 5 0 018 0 M4 6a7 7 0 0112 0",
   radio: "M3 7h14a1 1 0 011 1v9a1 1 0 01-1 1H3a1 1 0 01-1-1V8a1 1 0 011-1z M13 12a2 2 0 100-4 2 2 0 000 4z M6 11h2 M6 14h2 M5 2l5 5",
+
+  // ── Editorial ──
+  "arrow-right-thin": "M3 10h14 M12 5l5 5-5 5",
+  "quote-mark": "M5 10V6a1 1 0 011-1h2v5H5v3 M12 10V6a1 1 0 011-1h2v5h-3v3",
+  "film-frame": "M3 3h14v14H3z M3 7h14 M3 13h14 M7 3v14 M13 3v14",
+  "editorial-tick": "M2 8 V2 H8 M14 2 H20 V8 M20 14 V20 H14 M8 20 H2 V14",
 };
 
 export default function Icon({ name, size = 20, className = "", strokeWidth = 1.5, style }: IconProps) {

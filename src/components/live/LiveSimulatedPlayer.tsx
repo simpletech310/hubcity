@@ -130,7 +130,7 @@ export default function LiveSimulatedPlayer({
       <div className="px-5 pt-4 mb-6">
         <div className="rounded-2xl border border-border-subtle bg-white/[0.04] p-8 text-center">
           <p className="font-heading text-lg text-txt-secondary">
-            Knect TV Live is off the air.
+            Culture TV Live is off the air.
           </p>
           <p className="text-xs text-txt-secondary mt-1">
             The schedule hasn&apos;t been generated yet.
@@ -144,10 +144,10 @@ export default function LiveSimulatedPlayer({
     <div className="px-5 pt-4 mb-6 animate-fade-in">
       {/* Branding strip */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-compton-red/15 border border-compton-red/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-          <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.1em]">
-            KNECT TV LIVE
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30">
+          <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+          <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">
+            CULTURE TV LIVE
           </span>
         </div>
         {phase === "content" && currentShow && (

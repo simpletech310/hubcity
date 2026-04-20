@@ -24,7 +24,7 @@ const variantStyles: Record<BadgeVariant, string> = {
   coral: "bg-coral/15 text-coral border-coral/20",
   cyan: "bg-cyan/15 text-cyan border-cyan/20",
   pink: "bg-pink/15 text-pink border-pink/20",
-  purple: "bg-hc-purple/15 text-hc-purple border-hc-purple/20",
+  purple: "bg-hc-purple/15 text-gold border-gold/20",
   blue: "bg-hc-blue/15 text-hc-blue border-hc-blue/20",
 };
 

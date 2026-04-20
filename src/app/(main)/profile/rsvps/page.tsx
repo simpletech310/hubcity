@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
-  title: "My RSVPs | Knect",
+  title: "My RSVPs | Culture",
   description: "Events you've RSVP'd to.",
 };
 
@@ -123,7 +123,7 @@ export default async function MyRsvpsPage() {
                           )}
                         </div>
                         {event.category && (
-                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5 capitalize">
+                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-hc-purple/10 rounded-full px-2 py-0.5 capitalize">
                             {event.category}
                           </span>
                         )}

@@ -470,7 +470,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   <div className="flex items-center gap-1">
                     {m.role === "member" && (
                       <button onClick={() => handleChangeRole(m.user!.id, "moderator")}
-                        className="px-2 py-1 text-[9px] bg-purple/10 text-hc-purple rounded-lg hover:bg-purple/20 transition-colors flex items-center gap-1"
+                        className="px-2 py-1 text-[9px] bg-purple/10 text-gold rounded-lg hover:bg-purple/20 transition-colors flex items-center gap-1"
                       >
                         <Icon name="crown" size={10} /> Mod
                       </button>

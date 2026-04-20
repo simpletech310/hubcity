@@ -155,7 +155,7 @@ export default async function CreatorDashboardPage() {
             <p className="text-[10px] font-semibold text-txt-secondary uppercase tracking-wider mb-1">
               PPV Sales (30d)
             </p>
-            <p className="font-heading font-bold text-2xl text-hc-purple leading-none">
+            <p className="font-heading font-bold text-2xl text-gold leading-none">
               {ppvCount}
             </p>
           </Card>

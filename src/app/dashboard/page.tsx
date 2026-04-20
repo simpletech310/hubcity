@@ -281,7 +281,7 @@ export default async function DashboardOverview() {
               <Card className="relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-[3px] h-full bg-hc-purple rounded-r" />
                 <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Customers</p>
-                <p className="text-xl font-heading font-bold text-hc-purple">{totalCustomers}</p>
+                <p className="text-xl font-heading font-bold text-gold">{totalCustomers}</p>
               </Card>
               {business.business_type === "food" && (
                 <Card className="relative overflow-hidden">
@@ -385,7 +385,7 @@ export default async function DashboardOverview() {
               {/* Services & Staff */}
               <Link href="/dashboard/services">
                 <Card hover className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-hc-purple">
+                  <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-gold">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
@@ -623,7 +623,7 @@ export default async function DashboardOverview() {
               </Link>
               <Link href="/dashboard/settings">
                 <Card hover className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-hc-purple">
+                  <div className="w-9 h-9 rounded-xl bg-hc-purple/10 flex items-center justify-center text-gold">
                     <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

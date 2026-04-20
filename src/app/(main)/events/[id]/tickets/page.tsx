@@ -180,8 +180,8 @@ function PaymentForm({
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-compton-red/10 border border-compton-red/20">
-          <p className="text-compton-red text-sm">{error}</p>
+        <div className="p-3 rounded-xl bg-coral/10 border border-coral/20">
+          <p className="text-coral text-sm">{error}</p>
         </div>
       )}
 
@@ -210,7 +210,7 @@ function PaymentForm({
       </div>
 
       <p className="text-center text-[11px] text-txt-secondary">
-        Your payment info is never stored by Knect
+        Your payment info is never stored by Culture
       </p>
     </form>
   );
@@ -486,8 +486,8 @@ export default function TicketSelectionPage() {
 
         {/* Error state (on initial load) */}
         {!loading && error && !checkout && configs.length === 0 && (
-          <div className="p-4 rounded-2xl bg-compton-red/10 border border-compton-red/20 text-center">
-            <p className="text-compton-red text-sm mb-3">{error}</p>
+          <div className="p-4 rounded-2xl bg-coral/10 border border-coral/20 text-center">
+            <p className="text-coral text-sm mb-3">{error}</p>
             <Button
               size="sm"
               variant="outline"
@@ -610,8 +610,8 @@ export default function TicketSelectionPage() {
                     <div className="flex items-center justify-between mt-3 ml-5">
                       {isSoldOut ? (
                         <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 rounded-full bg-compton-red" />
-                          <span className="text-xs text-compton-red font-semibold">Sold Out</span>
+                          <div className="w-1.5 h-1.5 rounded-full bg-coral" />
+                          <span className="text-xs text-coral font-semibold">Sold Out</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5">
@@ -668,8 +668,8 @@ export default function TicketSelectionPage() {
 
             {/* Inline error for checkout failures */}
             {error && (
-              <div className="p-3 rounded-xl bg-compton-red/10 border border-compton-red/20">
-                <p className="text-compton-red text-sm">{error}</p>
+              <div className="p-3 rounded-xl bg-coral/10 border border-coral/20">
+                <p className="text-coral text-sm">{error}</p>
               </div>
             )}
           </div>

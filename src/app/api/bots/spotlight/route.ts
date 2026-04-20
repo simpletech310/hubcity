@@ -104,7 +104,7 @@ export async function POST() {
       body += `${stars}${reviews}\n\n`;
     }
 
-    body += `Support local! Check them out on Knect → /business/${biz.slug}\n\n`;
+    body += `Support local! Check them out on Culture → /business/${biz.slug}\n\n`;
     body += `#shoplocal #compton #${biz.category.replace(/[^a-z]/gi, "").toLowerCase()}`;
 
     const { error } = await supabase.from("posts").insert({

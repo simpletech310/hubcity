@@ -31,13 +31,13 @@ const AMENITY_ICONS: Record<string, { icon: IconName; color: string }> = {
   walking: { icon: "tree", color: "text-emerald" },
   dog_park: { icon: "alert", color: "text-gold" },
   gym: { icon: "trophy", color: "text-hc-blue" },
-  skatepark: { icon: "skateboard", color: "text-hc-purple" },
+  skatepark: { icon: "skateboard", color: "text-gold" },
   splash_pad: { icon: "swimming", color: "text-cyan" },
 };
 
 const DISTRICT_COLORS: Record<number, string> = {
   1: "text-hc-blue bg-hc-blue/10 border-hc-blue/20",
-  2: "text-hc-purple bg-hc-purple/10 border-hc-purple/20",
+  2: "text-gold bg-hc-purple/10 border-gold/20",
   3: "text-emerald bg-emerald/10 border-emerald/20",
   4: "text-gold bg-gold/10 border-gold/20",
 };

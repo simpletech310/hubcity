@@ -1,5 +1,5 @@
 /**
- * Knect @Mention Parser
+ * Culture @Mention Parser
  * Extracts @mentions from post/comment text
  */
 

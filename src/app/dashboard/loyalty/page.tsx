@@ -78,7 +78,7 @@ export default function LoyaltyDashboardPage() {
             <p className="text-[10px] text-txt-secondary mt-0.5">Loyalty Members</p>
           </Card>
           <Card className="text-center">
-            <p className="text-2xl font-heading font-bold text-hc-purple">
+            <p className="text-2xl font-heading font-bold text-gold">
               {stats.active_rewards}
             </p>
             <p className="text-[10px] text-txt-secondary mt-0.5">Active Rewards</p>

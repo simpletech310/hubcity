@@ -1,11 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
-import Badge from "@/components/ui/Badge";
-import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
-import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/server";
+import {
+  HeroBlock,
+  EditorialNumber,
+  SectionKicker,
+  EditorialCard,
+  Tag,
+  IssueDivider,
+} from "@/components/ui/editorial";
+import PullQuote from "@/components/ui/PullQuote";
 import type {
   Business,
   MenuItem,
@@ -14,17 +19,33 @@ import type {
   VendorVehicle,
 } from "@/types/database";
 
+type StatusTone = "emerald" | "gold" | "coral" | "ghost";
+
 const statusConfig: Record<
   VendorStatus,
-  { label: string; color: string; dot: string }
+  { label: string; tone: StatusTone; pulse: boolean }
 > = {
-  active: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
-  open: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
-  en_route: { label: "On the way", color: "text-gold", dot: "bg-gold" },
-  inactive: { label: "Offline", color: "text-txt-secondary", dot: "bg-txt-secondary" },
-  closed: { label: "Closed", color: "text-txt-secondary", dot: "bg-txt-secondary" },
-  sold_out: { label: "Sold Out", color: "text-coral", dot: "bg-coral" },
-  cancelled: { label: "Cancelled", color: "text-coral", dot: "bg-coral" },
+  active: { label: "Open Now", tone: "emerald", pulse: true },
+  open: { label: "Open Now", tone: "emerald", pulse: true },
+  en_route: { label: "On the way", tone: "gold", pulse: true },
+  inactive: { label: "Offline", tone: "ghost", pulse: false },
+  closed: { label: "Closed", tone: "ghost", pulse: false },
+  sold_out: { label: "Sold Out", tone: "coral", pulse: false },
+  cancelled: { label: "Cancelled", tone: "coral", pulse: false },
+};
+
+const dotClass: Record<StatusTone, string> = {
+  emerald: "bg-emerald",
+  gold: "bg-gold",
+  coral: "bg-coral",
+  ghost: "bg-ivory/40",
+};
+
+const textClass: Record<StatusTone, string> = {
+  emerald: "text-emerald",
+  gold: "text-gold",
+  coral: "text-coral",
+  ghost: "text-ivory/50",
 };
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -116,83 +137,338 @@ export default async function VendorDetailPage({
     .eq("is_active", true)
     .gt("valid_until", new Date().toISOString());
 
+  const menu = (menuItems as MenuItem[]) ?? [];
+  const activeSpecials = (specials as FoodSpecial[]) ?? [];
+
+  // Build the numbered-section order dynamically so the № labels stay sequential
+  const numberedSections: string[] = ["menu"];
+  if (activeSpecials.length > 0) numberedSections.push("specials");
+  numberedSections.push("hours");
+  if (vehicles.length > 0) numberedSections.push("fleet");
+  const sectionIndex = (key: string) => numberedSections.indexOf(key) + 1;
+
+  const today = new Date().getDay();
+  const categoryLabel = biz.category ? biz.category.replace(/_/g, " ") : "Food Vendor";
+
   return (
-    <div className="animate-fade-in">
-      {/* Back */}
-      <div className="px-5 pt-4 mb-3">
+    <div className="animate-fade-in pb-24 bg-ink text-ivory">
+      {/* Back chip (minimal) */}
+      <div className="px-5 pt-4 pb-3">
         <Link
           href="/food"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-gold text-[11px] font-bold uppercase tracking-editorial press"
         >
-          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M10 12L6 8l4-4" />
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M9 11L5 7l4-4" />
           </svg>
           Food
         </Link>
       </div>
 
-      {/* Hero */}
-      <div className="mx-5 h-44 rounded-2xl relative overflow-hidden mb-5">
-        {heroImage ? (
-          <Image src={heroImage} alt={biz.name} fill className="object-cover" />
-        ) : (
-          <div className="w-full h-full art-food" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge label={vehicles.length > 1 ? "Fleet" : "Food Truck"} variant="coral" size="md" />
+      {/* --- COVER --- */}
+      <HeroBlock image={heroImage} aspect="3/2" alt={biz.name}>
+        {/* Top-right status */}
+        <div className="absolute top-6 right-10 flex items-center gap-2">
+          <Tag tone="gold" size="xs">
+            {vehicles.length > 1 ? "Fleet" : "Food Truck"}
+          </Tag>
+          {biz.badges?.includes("verified") && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.12em] bg-cyan/10 border border-cyan/30 text-cyan backdrop-blur-sm"
+              title="Verified"
+            >
+              <Icon name="verified" size={10} strokeWidth={2.4} />
+              Verified
+            </span>
+          )}
+        </div>
+
+        {/* Bottom overlay — name + category + live status */}
+        <div className="absolute inset-x-0 bottom-0 px-6 pb-7">
+          <h1 className="font-display text-white text-[44px] leading-[0.95] tracking-[-0.01em]">
+            {biz.name}
+          </h1>
+          <div className="mt-2 flex items-center gap-3 flex-wrap">
+            <span className="text-[12px] font-semibold tracking-[0.14em] uppercase text-gold">
+              {categoryLabel}
+            </span>
             {headlineStatus && (
-              <div className="flex items-center gap-1.5">
-                <div
-                  className={`w-2.5 h-2.5 rounded-full ${headlineStatus.dot} ${
-                    headline?.vendor_status === "open" || headline?.vendor_status === "active"
-                      ? "animate-pulse"
-                      : ""
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className={`w-2 h-2 rounded-full ${dotClass[headlineStatus.tone]} ${
+                    headlineStatus.pulse ? "animate-pulse" : ""
                   }`}
                 />
-                <span className={`text-xs font-semibold ${headlineStatus.color}`}>
+                <span className={`text-[11px] font-semibold uppercase tracking-[0.12em] ${textClass[headlineStatus.tone]}`}>
                   {headlineStatus.label}
                 </span>
-              </div>
+              </span>
+            )}
+            {biz.rating_count && biz.rating_count > 0 ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-ivory/85">
+                <Icon name="star" size={12} className="text-gold" />
+                <span className="text-gold">{Number(biz.rating_avg).toFixed(1)}</span>
+                <span className="text-ivory/50">({biz.rating_count})</span>
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </HeroBlock>
+
+      {/* --- BYLINE STRIP --- */}
+      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-baseline gap-3 min-w-0">
+            <EditorialNumber n={1} size="md" />
+            <SectionKicker tone="gold">VENDOR</SectionKicker>
+            <span className="block h-px w-10 bg-gold/60" />
+            <SectionKicker tone="muted">
+              {vehicles.length > 1 ? `Fleet · ${vehicles.length} Vehicles` : "Mobile Vendor"}
+            </SectionKicker>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
+            {biz.accepts_orders && <Tag tone="gold" size="xs">Orders</Tag>}
+            {headline?.current_location_name && (
+              <Tag tone="default" size="xs">
+                <Icon name="pin" size={9} className="text-gold mr-1" />
+                {headline.current_location_name.length > 18
+                  ? headline.current_location_name.slice(0, 18) + "..."
+                  : headline.current_location_name}
+              </Tag>
             )}
           </div>
         </div>
       </div>
 
-      <div className="px-5">
-        {/* Name & Rating */}
-        <div className="flex items-start justify-between mb-2">
-          <h1 className="font-heading text-2xl font-bold">{biz.name}</h1>
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="text-gold"><Icon name="star" size={16} className="text-gold" /></span>
-            <span className="font-bold">
-              {Number(biz.rating_avg).toFixed(1)}
-            </span>
-            <span className="text-xs text-txt-secondary">
-              ({biz.rating_count})
-            </span>
-          </div>
+      {/* --- PULL QUOTE (tagline / description) --- */}
+      {biz.description && (
+        <div className="px-6 py-8">
+          <PullQuote
+            quote={biz.description}
+            attribution={biz.name}
+            size="lg"
+          />
         </div>
+      )}
 
-        {biz.description && (
-          <p className="text-[13px] text-txt-secondary mb-4 leading-relaxed">
-            {biz.description}
-          </p>
-        )}
+      {/* --- № 01 MENU --- */}
+      {menu.length > 0 && (
+        <section>
+          <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+            <div className="flex items-baseline gap-3 min-w-0">
+              <EditorialNumber n={sectionIndex("menu")} size="md" />
+              <SectionKicker tone="muted">Menu</SectionKicker>
+            </div>
+            {biz.accepts_orders && (
+              <Link
+                href={`/business/${biz.slug || biz.id}/order`}
+                className="text-[10px] font-bold tracking-editorial-tight uppercase text-gold press whitespace-nowrap"
+              >
+                Full Menu →
+              </Link>
+            )}
+          </div>
+          <div className="px-5 mb-4">
+            <div className="rule-hairline" />
+          </div>
+          <div className="px-5 space-y-2">
+            {menu.map((item) => (
+              <EditorialCard key={item.id} variant="ink" border="subtle" className="p-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-[18px] leading-tight text-ivory truncate">
+                      {item.name}
+                    </h3>
+                    {item.category && (
+                      <p className="mt-1 text-[10px] uppercase tracking-editorial text-ivory/50">
+                        {item.category}
+                      </p>
+                    )}
+                    {item.description && (
+                      <p className="mt-1.5 text-[12px] text-ivory/70 leading-relaxed line-clamp-2">
+                        {item.description}
+                      </p>
+                    )}
+                  </div>
+                  <span className="font-display text-[20px] text-gold tabular-nums shrink-0">
+                    ${(item.price / 100).toFixed(2)}
+                  </span>
+                </div>
+              </EditorialCard>
+            ))}
+          </div>
+        </section>
+      )}
 
-        {/* ── Fleet ─────────────────────────────────── */}
-        {vehicles.length > 0 && (
-          <div className="mb-5">
-            <h2 className="font-heading font-bold text-base mb-3">
-              {vehicles.length > 1 ? `Fleet (${vehicles.length})` : "Current Vehicle"}
-            </h2>
-            <div className="space-y-3">
+      {/* --- № 02 SPECIALS --- */}
+      {activeSpecials.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("specials")} size="md" />
+                <SectionKicker tone="muted">Active Specials</SectionKicker>
+              </div>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+                {activeSpecials.length}
+              </span>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <div className="px-5 space-y-2">
+              {activeSpecials.map((special) => {
+                const savings = special.original_price - special.special_price;
+                const pctOff =
+                  special.original_price > 0
+                    ? Math.round((savings / special.original_price) * 100)
+                    : 0;
+                return (
+                  <EditorialCard
+                    key={special.id}
+                    variant="ink"
+                    border="gold"
+                    className="p-4"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Tag tone="gold" size="xs">Special</Tag>
+                          {pctOff > 0 && (
+                            <span className="text-[10px] font-bold uppercase tracking-editorial-tight text-gold">
+                              {pctOff}% off
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-display text-[18px] leading-tight text-ivory truncate">
+                          {special.title}
+                        </h3>
+                        {special.description && (
+                          <p className="mt-1 text-[12px] text-ivory/70 leading-relaxed line-clamp-2">
+                            {special.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <div className="text-[11px] text-ivory/50 line-through tabular-nums">
+                          ${(special.original_price / 100).toFixed(2)}
+                        </div>
+                        <div className="font-display text-[22px] text-gold tabular-nums leading-none mt-0.5">
+                          ${(special.special_price / 100).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  </EditorialCard>
+                );
+              })}
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* --- № XX HOURS & LOCATION --- */}
+      <IssueDivider />
+      <section>
+        <div className="px-5 mb-3 flex items-baseline gap-3">
+          <EditorialNumber n={sectionIndex("hours")} size="md" />
+          <SectionKicker tone="muted">Hours &amp; Location</SectionKicker>
+        </div>
+        <div className="px-5 mb-4">
+          <div className="rule-hairline" />
+        </div>
+        <div className="px-5">
+          <EditorialCard variant="ink" border="subtle" className="p-5">
+            <div className="space-y-4">
+              {headline?.current_location_name ? (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 border border-gold/25 flex items-center justify-center shrink-0">
+                    <Icon name="pin" size={14} className="text-gold" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-editorial text-ivory/50 font-bold">
+                      Current Stop
+                    </p>
+                    <p className="mt-0.5 text-[14px] text-ivory/85 leading-tight">
+                      {headline.current_location_name}
+                    </p>
+                    {headline.location_updated_at && (
+                      <p className="mt-0.5 text-[11px] text-ivory/50">
+                        Updated {timeAgo(headline.location_updated_at)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                    <Icon name="pin" size={14} className="text-ivory/50" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] uppercase tracking-editorial text-ivory/50 font-bold">
+                      Location
+                    </p>
+                    <p className="mt-0.5 text-[13px] text-ivory/70">
+                      Check the fleet below for today&apos;s stops
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {biz.phone && (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                    <Icon name="phone" size={14} className="text-gold" />
+                  </div>
+                  <a href={`tel:${biz.phone}`} className="text-[14px] font-medium text-gold">
+                    {biz.phone}
+                  </a>
+                </div>
+              )}
+
+              {biz.website && (
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                    <Icon name="globe" size={14} className="text-gold" />
+                  </div>
+                  <a
+                    href={biz.website.startsWith("http") ? biz.website : `https://${biz.website}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[14px] font-medium text-gold truncate"
+                  >
+                    {biz.website}
+                  </a>
+                </div>
+              )}
+            </div>
+          </EditorialCard>
+        </div>
+      </section>
+
+      {/* --- № XX FLEET (per-vehicle route + directions) --- */}
+      {vehicles.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("fleet")} size="md" />
+                <SectionKicker tone="muted">
+                  {vehicles.length > 1 ? "Fleet" : "Current Vehicle"}
+                </SectionKicker>
+              </div>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+                {vehicles.length}
+              </span>
+            </div>
+            <div className="px-5 mb-4">
+              <div className="rule-hairline" />
+            </div>
+            <div className="px-5 space-y-3">
               {vehicles.map((v) => {
                 const status = statusConfig[v.vendor_status] ?? statusConfig.inactive;
-                const isLive = v.vendor_status === "open" || v.vendor_status === "active";
                 const typeLabel = v.vehicle_type === "cart" ? "Cart" : "Truck";
-                const today = new Date().getDay();
                 const todaysStops = (v.vendor_route ?? [])
                   .filter((s) => s.day_of_week === today)
                   .sort((a, b) => a.start_time.localeCompare(b.start_time));
@@ -202,9 +478,9 @@ export default async function VendorDetailPage({
                     : null;
 
                 return (
-                  <Card key={v.id}>
+                  <EditorialCard key={v.id} variant="ink" border="subtle" className="p-4">
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/25 flex items-center justify-center shrink-0">
                         <Icon
                           name={v.vehicle_type === "cart" ? "cart" : "truck"}
                           size={18}
@@ -213,20 +489,24 @@ export default async function VendorDetailPage({
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <h3 className="font-heading font-bold text-sm truncate">
+                          <h3 className="font-display text-[16px] leading-none text-ivory truncate">
                             {v.name}
                           </h3>
-                          <span className="text-[10px] text-white/40 shrink-0">{typeLabel}</span>
+                          <span className="text-[10px] uppercase tracking-editorial text-ivory/40 shrink-0">
+                            {typeLabel}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <div
-                            className={`w-2 h-2 rounded-full ${status.dot} ${isLive ? "animate-pulse" : ""}`}
+                          <span
+                            className={`w-2 h-2 rounded-full ${dotClass[status.tone]} ${
+                              status.pulse ? "animate-pulse" : ""
+                            }`}
                           />
-                          <span className={`text-[11px] font-semibold ${status.color}`}>
+                          <span className={`text-[11px] font-semibold uppercase tracking-[0.1em] ${textClass[status.tone]}`}>
                             {status.label}
                           </span>
                           {v.location_updated_at && (
-                            <span className="text-[10px] text-white/30">
+                            <span className="text-[10px] text-ivory/40">
                               &middot; {timeAgo(v.location_updated_at)}
                             </span>
                           )}
@@ -235,25 +515,25 @@ export default async function VendorDetailPage({
                     </div>
 
                     {v.current_location_name && (
-                      <p className="text-[12px] text-white/80 flex items-center gap-1.5 mb-2">
+                      <p className="text-[12px] text-ivory/85 flex items-center gap-1.5 mb-3">
                         <Icon name="pin" size={12} className="text-gold shrink-0" />
                         <span className="truncate">{v.current_location_name}</span>
                       </p>
                     )}
 
                     {todaysStops.length > 0 && (
-                      <div className="rounded-lg bg-white/[0.02] border border-white/[0.04] p-2 mb-2">
-                        <p className="text-[9px] uppercase tracking-wider text-white/40 font-bold mb-1">
+                      <div className="rounded-lg bg-black/30 border border-white/[0.04] p-3 mb-3">
+                        <p className="text-[9px] uppercase tracking-editorial text-gold font-bold mb-1.5">
                           Today &mdash; {dayNames[today]}
                         </p>
                         <div className="space-y-1">
                           {todaysStops.map((stop, i) => (
                             <div
                               key={i}
-                              className="flex items-center justify-between text-[11px] text-white/70"
+                              className="flex items-center justify-between text-[11px] text-ivory/70"
                             >
                               <span className="truncate">{stop.name}</span>
-                              <span className="shrink-0 tabular-nums text-white/50">
+                              <span className="shrink-0 tabular-nums text-ivory/50">
                                 {fmtTime(stop.start_time)} &ndash; {fmtTime(stop.end_time)}
                               </span>
                             </div>
@@ -267,119 +547,45 @@ export default async function VendorDetailPage({
                         href={directionsHref}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block w-full text-center py-2 rounded-xl bg-gold text-midnight text-[12px] font-bold press hover:bg-gold-light"
+                        className="block w-full text-center py-2 rounded-xl bg-transparent border border-gold/40 text-gold text-[12px] font-bold uppercase tracking-editorial press hover:bg-gold/10 transition-colors"
                       >
                         Get directions
                       </a>
                     )}
-                  </Card>
+                  </EditorialCard>
                 );
               })}
             </div>
-          </div>
-        )}
+          </section>
+        </>
+      )}
 
-        {/* Active Specials */}
-        {specials && specials.length > 0 && (
-          <div className="mb-5">
-            <h2 className="font-heading font-bold text-base mb-3">Active Specials</h2>
-            <div className="space-y-2">
-              {(specials as FoodSpecial[]).map((special) => (
-                <Card key={special.id} hover>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-[13px] font-bold">{special.title}</h3>
-                      {special.description && (
-                        <p className="text-[11px] text-txt-secondary">{special.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-xs text-txt-secondary line-through">
-                        ${(special.original_price / 100).toFixed(2)}
-                      </span>
-                      <span className="font-heading font-bold text-gold">
-                        ${(special.special_price / 100).toFixed(2)}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+      {/* --- CTA footer --- */}
+      <IssueDivider label="END" />
 
-        {/* Menu Preview */}
-        {menuItems && menuItems.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-heading font-bold text-base">Menu</h2>
-              {biz.accepts_orders && (
-                <Link
-                  href={`/business/${biz.slug || biz.id}/order`}
-                  className="text-xs text-gold font-semibold press"
-                >
-                  Full Menu
-                </Link>
-              )}
-            </div>
-            <div className="space-y-2">
-              {(menuItems as MenuItem[]).map((item) => (
-                <Card key={item.id} hover>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-[13px] font-bold">{item.name}</h3>
-                      {item.category && (
-                        <p className="text-[10px] text-txt-secondary/70 uppercase tracking-wide">
-                          {item.category}
-                        </p>
-                      )}
-                    </div>
-                    <span className="font-heading font-bold text-gold">
-                      ${(item.price / 100).toFixed(2)}
-                    </span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* CTA */}
-        {biz.accepts_orders && (
-          <div className="mb-6">
-            <Link href={`/business/${biz.slug || biz.id}/order`}>
-              <Button fullWidth size="lg">Order Now</Button>
-            </Link>
-          </div>
-        )}
-
-        {/* Contact */}
-        <Card className="mb-6">
-          <div className="space-y-3">
-            {biz.phone && (
-              <div className="flex items-center gap-3">
-                <span className="text-lg"><Icon name="phone" size={20} /></span>
-                <a href={`tel:${biz.phone}`} className="text-sm font-medium text-gold">
-                  {biz.phone}
-                </a>
-              </div>
-            )}
-            {biz.website && (
-              <div className="flex items-center gap-3">
-                <span className="text-lg"><Icon name="globe" size={20} /></span>
-                <a
-                  href={biz.website.startsWith("http") ? biz.website : `https://${biz.website}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-gold truncate"
-                >
-                  {biz.website}
-                </a>
-              </div>
-            )}
-          </div>
-        </Card>
-      </div>
+      {biz.accepts_orders ? (
+        <div className="px-5">
+          <Link
+            href={`/business/${biz.slug || biz.id}/order`}
+            className="block w-full text-center py-3.5 rounded-xl bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors uppercase tracking-[0.14em]"
+          >
+            Order Now
+          </Link>
+          <p className="mt-3 text-center text-[10px] uppercase tracking-editorial text-ivory/40">
+            Delivered to your table. Straight from the kitchen.
+          </p>
+        </div>
+      ) : (
+        <div className="px-6 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase text-ivory/40">
+          <span className="flex items-center gap-2">
+            <Icon name="truck" size={12} className="text-gold" />
+            {categoryLabel}
+          </span>
+          <span className="tabular-nums text-ivory/30">
+            {biz.slug ? `@${biz.slug}` : ""}
+          </span>
+        </div>
+      )}
     </div>
   );
 }

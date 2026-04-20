@@ -27,7 +27,7 @@ const SECTION_HINT: Record<string, { icon: string; label: string }> = {
   "/people": { icon: "sparkle", label: "Explore" },
   "/creators": { icon: "film", label: "Discover" },
   "/resources": { icon: "book", label: "Resources" },
-  "/live": { icon: "film", label: "Knect TV" },
+  "/live": { icon: "film", label: "Culture TV" },
 };
 
 export default async function ChooseCityPage({

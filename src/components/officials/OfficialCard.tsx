@@ -86,7 +86,7 @@ export default function OfficialCard({ official, compact = false }: OfficialCard
 
             {/* Trustee Area badge */}
             {official.trustee_area && (
-              <span className="inline-flex items-center rounded-full border border-hc-purple/20 bg-hc-purple/10 px-2 py-0.5 text-[9px] font-semibold text-hc-purple uppercase tracking-wide">
+              <span className="inline-flex items-center rounded-full border border-gold/20 bg-hc-purple/10 px-2 py-0.5 text-[9px] font-semibold text-gold uppercase tracking-wide">
                 Area {official.trustee_area}
               </span>
             )}

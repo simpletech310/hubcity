@@ -297,7 +297,7 @@ export async function POST(request: Request) {
           customer_id: user.id,
           idempotency_key: idempotencyKey,
         },
-        description: `Order ${order_number} at ${business?.name || "Knect Business"}`,
+        description: `Order ${order_number} at ${business?.name || "Culture Business"}`,
         automatic_payment_methods: { enabled: true },
         ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
           ? {

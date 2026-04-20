@@ -23,14 +23,18 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Knect — Your City, Connected",
+  metadataBase: new URL("https://hubcity.4everforward.net"),
+  title: {
+    default: "Culture — Your City, Curated",
+    template: "%s · Culture",
+  },
   description:
-    "Your all-in-one connection to your city. Discover local businesses, events, resources, and community updates.",
+    "The editorial field guide to your city. Discover local businesses, events, creators, and the culture that moves your neighborhood.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Knect",
+    title: "Culture",
   },
 };
 

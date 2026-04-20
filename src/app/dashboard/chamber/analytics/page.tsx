@@ -117,7 +117,7 @@ export default function ChamberAnalyticsPage() {
               <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">
                 New Businesses
               </p>
-              <p className="text-xl font-heading font-bold text-hc-purple">
+              <p className="text-xl font-heading font-bold text-gold">
                 {analytics.new_businesses_count}
               </p>
             </Card>

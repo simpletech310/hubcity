@@ -137,6 +137,26 @@ export default function EventsPage() {
 
   return (
     <div className="animate-fade-in">
+      {/* Editorial Masthead */}
+      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+            VOL · 01 · ISSUE EVENTS
+          </span>
+          <span className="block w-1 h-1 rounded-full bg-gold/60" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+            {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          </span>
+        </div>
+        <h1 className="masthead text-white text-[44px]">EVENTS.</h1>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="block h-[2px] w-8 bg-gold" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+            What&apos;s happening in {activeCity?.name ?? "your city"}
+          </span>
+        </div>
+      </header>
+
       {/* ══════════════════════════════════════════════════════
           HERO BANNER — Cinematic event spotlight
           ══════════════════════════════════════════════════════ */}
@@ -175,9 +195,9 @@ export default function EventsPage() {
           <div className="relative z-10 px-5 pt-8 pb-8">
             {/* Live tag if today */}
             {isToday(heroEvent.start_date) && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-compton-red/20 border border-compton-red/40 mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-                <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.1em]">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/20 border border-coral/40 mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+                <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">
                   HAPPENING TODAY
                 </span>
               </div>
@@ -310,7 +330,7 @@ export default function EventsPage() {
           {todayEvents.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center gap-2 px-5 mb-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-compton-red animate-pulse" />
+                <div className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
                 <h2 className="font-heading font-bold text-[18px]">Happening Today</h2>
                 <Badge label={`${todayEvents.length} LIVE`} variant="coral" shine />
               </div>
@@ -443,7 +463,7 @@ export default function EventsPage() {
                   Got something planned?
                 </p>
                 <h3 className="font-heading font-bold text-[18px] mb-1.5">
-                  Host Your Event on Knect
+                  Host Your Event on Culture
                 </h3>
                 <p className="font-display italic text-[13px] text-warm-gray leading-relaxed mb-4 max-w-[280px]">
                   Reach every citizen in {activeCity?.name ?? "your city"}. List your event for free.
@@ -485,7 +505,7 @@ function EventCardHot({ event }: { event: Event }) {
           <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
 
           {/* Live pulse */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-compton-red/80 backdrop-blur-sm">
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-coral/80 backdrop-blur-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
             <span className="text-[10px] font-bold text-white tracking-wider">TODAY</span>
           </div>

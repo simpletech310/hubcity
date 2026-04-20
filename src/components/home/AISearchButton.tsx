@@ -24,7 +24,7 @@ export default function AISearchButton() {
         </div>
         <div className="relative flex-1">
           <span className="text-sm text-txt-secondary">
-            Ask Knect AI anything...
+            Ask Culture AI anything...
           </span>
           <span className="block text-[10px] text-txt-secondary/60 mt-0.5">
             &ldquo;Best food near Rosecrans&rdquo; &ldquo;Youth programs&rdquo;

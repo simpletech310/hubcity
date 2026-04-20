@@ -4,7 +4,7 @@ import ReelComposer from "@/components/reels/ReelComposer";
 import Icon from "@/components/ui/Icon";
 import Link from "next/link";
 
-export const metadata = { title: "New Reel | Knect" };
+export const metadata = { title: "New Reel | Culture" };
 
 export default async function NewReelPage() {
   const supabase = await createClient();

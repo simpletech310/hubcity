@@ -115,7 +115,7 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
               {daysUntilDeadline !== null && daysUntilDeadline > 0 && (
                 <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 inline-flex items-center gap-1 ${
                   daysUntilDeadline <= 7
-                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    ? "text-coral bg-coral/8 border border-coral/15"
                     : "text-gold bg-gold/8 border border-gold/15"
                 }`}>
                   <Icon name="clock" size={10} />
@@ -163,7 +163,7 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
               {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
                 <span className={`text-[9px] font-semibold rounded-full px-1.5 py-0.5 inline-flex items-center gap-0.5 ${
                   daysUntilDeadline <= 7
-                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    ? "text-coral bg-coral/8 border border-coral/15"
                     : "text-gold bg-gold/8 border border-gold/15"
                 }`}>
                   <Icon name="clock" size={8} />

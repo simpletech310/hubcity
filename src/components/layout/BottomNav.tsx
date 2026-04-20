@@ -23,7 +23,7 @@ const BASE_SERVICES: ServiceItem[] = [
   { href: "/people", label: "Explore", iconName: "sparkle" },
   { href: "/creators", label: "Discover", iconName: "film" },
   { href: "/resources", label: "Resources", iconName: "book" },
-  { href: "/live", label: "Knect TV", iconName: "film" },
+  { href: "/live", label: "Culture TV", iconName: "film" },
 ];
 
 /* Verified-only overlays — city-specific sections that require a verified

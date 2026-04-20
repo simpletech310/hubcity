@@ -70,8 +70,8 @@ export async function POST() {
         .gte("created_at", weekAgo),
     ]);
 
-    let body = `📊 This Week in Compton — Knect Weekly Recap\n\n`;
-    body += `👥 ${newUsers ?? 0} new residents joined Knect\n`;
+    let body = `📊 This Week in Compton — Culture Weekly Recap\n\n`;
+    body += `👥 ${newUsers ?? 0} new residents joined Culture\n`;
     body += `🏪 ${newBusinesses ?? 0} new businesses listed\n`;
     body += `🗓️ ${newEvents ?? 0} events created\n`;
     body += `💬 ${newPosts ?? 0} community posts\n`;

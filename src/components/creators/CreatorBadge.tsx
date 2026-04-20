@@ -21,8 +21,8 @@ const tierConfig: Record<CreatorTier, { label: string; bg: string; text: string;
   partner: {
     label: "Partner",
     bg: "bg-hc-purple/15",
-    text: "text-hc-purple",
-    border: "border-hc-purple/20",
+    text: "text-gold",
+    border: "border-gold/20",
   },
   premium: {
     label: "Premium",

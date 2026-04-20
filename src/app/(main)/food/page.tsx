@@ -446,24 +446,35 @@ export default function FoodPage() {
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ─── Hero ─── */}
+      {/* ─── Editorial Hero / Masthead ─── */}
       <div className="relative h-64 overflow-hidden">
-        <Image src="/images/generated/food-hero.png" alt={`Food & Dining in ${activeCity?.name ?? "your city"}`} fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-midnight/50 via-midnight/80 to-midnight" />
-        <div className="absolute inset-0 pattern-dots opacity-20" />
+        <Image src="/images/generated/food-hero.png" alt={`Food in ${activeCity?.name ?? "your city"}`} fill className="object-cover" priority />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/85 to-ink" />
+        <div
+          className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+          }}
+        />
 
-        <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 bg-coral/15 border border-coral/25 rounded-full px-3 py-1 text-[10px] font-bold text-coral badge-shine uppercase tracking-wide">
-              {activeCity?.name ?? "Local"} Eats
+        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+              VOL · 01 · ISSUE EAT
+            </span>
+            <span className="block w-1 h-1 rounded-full bg-gold/60" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+              {activeCity?.name ?? "Local"}
             </span>
           </div>
-          <h1 className="font-display text-3xl font-bold leading-tight mb-1">
-            Food & <span className="text-gold-gradient">Flavor</span>
-          </h1>
-          <p className="text-sm text-white/50">
-            Discover the best food in {activeCity?.name ?? "your city"} — from brick & mortar to rolling kitchens
-          </p>
+          <h1 className="masthead text-white text-[44px]">EAT.</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="block h-[2px] w-8 bg-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+              The kitchen issue · {activeCity?.name ?? "your city"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -854,7 +865,7 @@ export default function FoodPage() {
             <Icon name="store" size={24} className="block mb-2" />
             <h3 className="font-heading font-bold text-lg mb-1">Own a Food Business?</h3>
             <p className="text-[12px] text-white/40 leading-relaxed mb-3">
-              List your restaurant, food truck, or cart on Knect. Reach customers, manage orders, and post daily specials.
+              List your restaurant, food truck, or cart on Culture. Reach customers, manage orders, and post daily specials.
             </p>
             <Link
               href="/signup"

@@ -6,7 +6,7 @@ import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Media | The Compton Museum | Knect",
+  title: "Media | The Compton Museum | Culture",
   description: "Videos, documentaries, and cultural media from Compton's heritage.",
 };
 

@@ -1,7 +1,7 @@
 /**
  * Kevel Ad Server Integration
  *
- * Kevel (formerly Adzerk) Decision API for serving ads across Knect
+ * Kevel (formerly Adzerk) Decision API for serving ads across Culture
  * Network ID, Site ID, and Zone IDs are configured via env vars
  *
  * Zones:

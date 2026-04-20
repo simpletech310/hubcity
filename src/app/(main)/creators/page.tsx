@@ -3,7 +3,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
-import Badge from "@/components/ui/Badge";
+import PullQuote from "@/components/ui/PullQuote";
+import MagazineGrid from "@/components/ui/MagazineGrid";
+import {
+  EditorialNumber,
+  FeatureSpread,
+  HeroBlock,
+  SectionKicker,
+  SnapCarousel,
+  Tag,
+} from "@/components/ui/editorial";
 
 // Valid user_role enum values that count as a "creator" in Discover.
 // 'creator' was an alias in an earlier draft but it's NOT in the
@@ -34,12 +43,10 @@ const ROLE_BADGE: Record<string, { label: string; variant: BadgeVariant }> = {
   chamber_admin: { label: "Chamber", variant: "gold" },
 };
 
-const CITY_BADGE_VARIANT: BadgeVariant = "blue";
-
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: `Discover | Knect`,
-    description: `Watch, follow, and discover creators across every Knect city.`,
+    title: `Discover | Culture`,
+    description: `Watch, follow, and discover creators across every Culture city.`,
   };
 }
 
@@ -225,11 +232,11 @@ export default async function CreatorsPage({
     <div className="animate-fade-in pb-safe">
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/20 via-midnight to-midnight" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-midnight" />
         <div className="relative px-5 pt-6 pb-5">
           <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
           <p className="text-sm text-txt-secondary">
-            Cool things to watch from creators across every Knect city
+            Cool things to watch from creators across every Culture city
             {activeCity ? ` — including ${activeCity.name}` : ""}.
           </p>
         </div>
@@ -239,7 +246,9 @@ export default async function CreatorsPage({
       <div className="px-5 pt-2 pb-3 flex flex-col gap-3">
         {/* Type */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider font-semibold text-white/40 mb-1.5">Type</p>
+          <p className="mb-1.5">
+            <SectionKicker tone="muted">Type</SectionKicker>
+          </p>
           <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 pb-1">
               <Link
@@ -271,7 +280,9 @@ export default async function CreatorsPage({
 
         {/* City */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider font-semibold text-white/40 mb-1.5">City</p>
+          <p className="mb-1.5">
+            <SectionKicker tone="muted">City</SectionKicker>
+          </p>
           <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
             <div className="flex gap-2 pb-1">
               <Link
@@ -358,67 +369,29 @@ export default async function CreatorsPage({
             null;
 
           const roleBadge = creator.role ? ROLE_BADGE[creator.role] : null;
-          const indexLabel = String(creatorIdx + 1).padStart(2, "0");
+          const kickerLine = `${roleBadge?.label ?? "Creator"} · ${creator.city?.name ?? "Everywhere"}`;
 
           // Numbered section index that only counts sections the creator
           // actually has content for — so the numbering reads naturally
           // regardless of whether they have reels / posts / show.
           let sectionCounter = 0;
-          const sectionIdx = () => String(++sectionCounter).padStart(2, "0");
+          const nextSection = () => ++sectionCounter;
 
           return (
-            <article
+            <FeatureSpread
               key={creator.id}
-              className="relative border-t border-white/[0.06] first:border-t-0"
+              index={creatorIdx + 1}
+              total={creators.length}
+              kicker={kickerLine}
+              first={creatorIdx === 0}
             >
-              {/* Index marker + kicker line */}
-              <div className="px-5 pt-8 pb-4 flex items-end justify-between">
-                <div className="flex items-baseline gap-3">
-                  <span className="font-display text-gold text-[34px] leading-none tabular-nums">
-                    №{indexLabel}
-                  </span>
-                  <span className="text-[10px] font-bold tracking-[0.28em] text-white/40 uppercase">
-                    {roleBadge?.label ?? "Creator"} · {creator.city?.name ?? "Everywhere"}
-                  </span>
-                </div>
-                <div className="text-[10px] font-bold tracking-[0.28em] text-white/25 uppercase tabular-nums">
-                  {indexLabel} / {String(creators.length).padStart(2, "0")}
-                </div>
-              </div>
-
-              {/* Hero block */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-midnight">
-                {heroImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={heroImage}
-                    alt={creator.display_name}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/40 via-royal/20 to-black" />
-                )}
-
-                {/* Duotone sepia vignette that ties everything back to the
-                    black-canvas + gold palette. */}
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0)_0%,rgba(0,0,0,0.6)_100%)]" />
-                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/80 to-transparent" />
-                {/* Tiny film-grain — kept very subtle so it reads as
-                    "print quality" rather than noise. */}
-                <div
-                  className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
-                  style={{
-                    backgroundImage:
-                      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
-                  }}
-                />
-
+              {/* Hero block — 4:5 cinematic with avatar/tags/name overlay */}
+              <HeroBlock image={heroImage} aspect="4/5" alt={creator.display_name}>
                 {/* Avatar — pinned top-left like a clipped polaroid */}
                 <Link
                   href={`/user/${creator.handle}`}
                   aria-label={`${creator.display_name} profile`}
-                  className="absolute top-5 left-5 w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
+                  className="absolute top-5 left-5 w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-[0_8px_30px_rgba(0,0,0,0.5)] z-10"
                 >
                   {creator.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -428,33 +401,25 @@ export default async function CreatorsPage({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-royal to-hc-purple text-gold font-heading font-bold">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink to-midnight text-gold font-heading font-bold">
                       {initials}
                     </div>
                   )}
                 </Link>
 
-                {/* Corner tick marks — editorial crop marks */}
-                <svg width="22" height="22" className="absolute top-4 right-4 text-gold/70" fill="none" stroke="currentColor" strokeWidth="1.2">
-                  <path d="M2 8 V2 H8 M14 2 H20 V8 M20 14 V20 H14 M8 20 H2 V14" />
-                </svg>
-
                 {/* Profile tags, right rail */}
                 {creator.profile_tags && creator.profile_tags.length > 0 && (
-                  <div className="absolute top-20 right-5 flex flex-col items-end gap-1.5 max-w-[45%]">
+                  <div className="absolute top-20 right-5 flex flex-col items-end gap-1.5 max-w-[45%] z-10">
                     {creator.profile_tags.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[9px] font-semibold tracking-[0.12em] text-white/80 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2 py-0.5 uppercase"
-                      >
+                      <Tag key={tag} size="xs" tone="default">
                         #{tag}
-                      </span>
+                      </Tag>
                     ))}
                   </div>
                 )}
 
                 {/* Name + handle, anchored bottom */}
-                <div className="absolute bottom-6 left-5 right-5">
+                <div className="absolute bottom-6 left-5 right-5 z-10">
                   <h2 className="font-display text-[44px] leading-[0.95] tracking-tight text-white drop-shadow-[0_6px_30px_rgba(0,0,0,0.7)]">
                     {creator.display_name}
                   </h2>
@@ -468,209 +433,170 @@ export default async function CreatorsPage({
                     )}
                   </div>
                 </div>
-              </div>
+              </HeroBlock>
 
               {/* Pull-quote bio — cold open below the hero */}
               {creator.bio && (
                 <div className="px-5 pt-6">
-                  <div className="flex gap-3">
-                    <div className="w-[2px] shrink-0 self-stretch bg-gold" />
-                    <p className="font-display italic text-[17px] leading-snug text-white/85">
-                      &ldquo;{creator.bio}&rdquo;
-                    </p>
-                  </div>
+                  <PullQuote quote={creator.bio} />
                 </div>
               )}
 
               {/* Reels */}
-              {creatorReels.length > 0 && (() => {
-                const n = sectionIdx();
-                return (
-                  <section className="pt-8">
-                    <div className="px-5 mb-3 flex items-baseline justify-between">
-                      <div className="flex items-baseline gap-3">
-                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
-                          {n}
+              {creatorReels.length > 0 && (
+                <div className="pt-8">
+                  <SnapCarousel
+                    number={nextSection()}
+                    kicker="Reels"
+                    seeAllHref="/reels"
+                    seeAllLabel="Watch →"
+                    itemGap="gap-2"
+                  >
+                    {creatorReels.map((r, i) => (
+                      <Link
+                        key={r.id}
+                        href="/reels"
+                        className="shrink-0 w-[120px] aspect-[9/16] rounded-xl overflow-hidden relative group press snap-start"
+                        style={{ transform: i % 2 === 1 ? "translateY(6px)" : undefined }}
+                      >
+                        {r.poster_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={r.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
+                            <Icon name="video" size={22} className="text-white/30" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+                        <span className="absolute top-1.5 left-1.5 z-10">
+                          <EditorialNumber n={i + 1} size="sm" prefix="" className="drop-shadow" />
                         </span>
-                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
-                          Reels
-                        </span>
-                      </div>
-                      <Link href="/reels" className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press">
-                        Watch →
+                        <div className="absolute bottom-1.5 left-2 right-2 flex items-center gap-1">
+                          <Icon name="video" size={10} className="text-white" />
+                          <span className="text-[10px] font-bold text-white tracking-wide">
+                            {r.like_count.toLocaleString()}
+                          </span>
+                        </div>
                       </Link>
-                    </div>
-                    <div className="overflow-x-auto scrollbar-hide">
-                      <div className="flex gap-2 pl-5 pr-5 pb-1">
-                        {creatorReels.map((r, i) => (
-                          <Link
-                            key={r.id}
-                            href="/reels"
-                            className="shrink-0 w-[120px] aspect-[9/16] rounded-xl overflow-hidden relative group press"
-                            style={{ transform: i % 2 === 1 ? "translateY(6px)" : undefined }}
-                          >
-                            {r.poster_url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={r.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-                            ) : (
-                              <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
-                                <Icon name="video" size={22} className="text-white/30" />
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
-                            <span className="absolute top-1.5 left-1.5 font-display text-[13px] leading-none text-gold drop-shadow tabular-nums">
-                              {String(i + 1).padStart(2, "0")}
-                            </span>
-                            <div className="absolute bottom-1.5 left-2 right-2 flex items-center gap-1">
-                              <Icon name="video" size={10} className="text-white" />
-                              <span className="text-[10px] font-bold text-white tracking-wide">
-                                {r.like_count.toLocaleString()}
-                              </span>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </section>
-                );
-              })()}
+                    ))}
+                  </SnapCarousel>
+                </div>
+              )}
 
-              {/* Latest posts */}
+              {/* Latest posts — featured + asymmetric grid */}
               {creatorPosts.length > 0 && (() => {
-                const n = sectionIdx();
                 const featured = creatorPosts[0];
                 const rest = creatorPosts.slice(1, 5);
                 return (
-                  <section className="pt-8">
-                    <div className="px-5 mb-3 flex items-baseline justify-between">
-                      <div className="flex items-baseline gap-3">
-                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
-                          {n}
-                        </span>
-                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
-                          Latest Work
-                        </span>
-                      </div>
-                      <Link href={`/user/${creator.handle}`} className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press">
-                        Full feed →
-                      </Link>
-                    </div>
-
-                    {/* Featured post + 2x2 supporting grid — asymmetric */}
-                    <div className="px-5 grid grid-cols-3 gap-1">
-                      <Link
-                        href={`/user/${creator.handle}`}
-                        className="col-span-2 row-span-2 relative aspect-square bg-white/[0.04] overflow-hidden group"
-                      >
-                        {featured.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={featured.image_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
-                        ) : featured.media_type === "video" ? (
-                          <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
-                            <Icon name="video" size={28} className="text-white/30" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-full p-4 flex items-center bg-gradient-to-br from-royal/15 via-midnight to-midnight">
-                            <p className="font-display italic text-[16px] text-white/75 line-clamp-6 leading-snug">&ldquo;{featured.body}&rdquo;</p>
-                          </div>
-                        )}
-                        {featured.media_type === "video" && (
-                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
-                            <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="6,4 20,12 6,20" /></svg>
-                            <span className="text-[9px] font-bold text-white tracking-wide">VIDEO</span>
-                          </div>
-                        )}
-                      </Link>
-                      {rest.map((p) => (
+                  <div className="pt-8">
+                    <SnapCarousel
+                      number={nextSection()}
+                      kicker="Latest Work"
+                      seeAllHref={`/user/${creator.handle}`}
+                      seeAllLabel="Full feed →"
+                      rail={false}
+                    >
+                      {/* Featured post + 2x2 supporting grid — asymmetric */}
+                      <MagazineGrid variant="featured-4" className="px-5 !gap-1">
                         <Link
-                          key={p.id}
                           href={`/user/${creator.handle}`}
                           className="relative aspect-square bg-white/[0.04] overflow-hidden group"
                         >
-                          {p.image_url ? (
+                          {featured.image_url ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
-                          ) : p.media_type === "video" ? (
+                            <img src={featured.image_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                          ) : featured.media_type === "video" ? (
                             <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
-                              <Icon name="video" size={16} className="text-white/30" />
+                              <Icon name="video" size={28} className="text-white/30" />
                             </div>
                           ) : (
-                            <div className="w-full h-full p-1.5 flex items-center">
-                              <p className="text-[9px] text-white/70 line-clamp-4 leading-snug">{p.body}</p>
+                            <div className="w-full h-full p-4 flex items-center bg-gradient-to-br from-ink via-midnight to-midnight">
+                              <p className="font-display italic text-[16px] text-ivory/75 line-clamp-6 leading-snug">&ldquo;{featured.body}&rdquo;</p>
                             </div>
                           )}
-                          {p.media_type === "video" && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                          {featured.media_type === "video" && (
+                            <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
                               <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="6,4 20,12 6,20" /></svg>
+                              <span className="text-[9px] font-bold text-white tracking-wide">VIDEO</span>
                             </div>
                           )}
                         </Link>
-                      ))}
-                    </div>
-                  </section>
+                        {rest.map((p) => (
+                          <Link
+                            key={p.id}
+                            href={`/user/${creator.handle}`}
+                            className="relative aspect-square bg-white/[0.04] overflow-hidden group"
+                          >
+                            {p.image_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
+                            ) : p.media_type === "video" ? (
+                              <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
+                                <Icon name="video" size={16} className="text-white/30" />
+                              </div>
+                            ) : (
+                              <div className="w-full h-full p-1.5 flex items-center">
+                                <p className="text-[9px] text-ivory/70 line-clamp-4 leading-snug">{p.body}</p>
+                              </div>
+                            )}
+                            {p.media_type === "video" && (
+                              <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                                <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="6,4 20,12 6,20" /></svg>
+                              </div>
+                            )}
+                          </Link>
+                        ))}
+                      </MagazineGrid>
+                    </SnapCarousel>
+                  </div>
                 );
               })()}
 
               {/* Channel / Show */}
-              {channel && creatorVideos.length > 0 && (() => {
-                const n = sectionIdx();
-                return (
-                  <section className="pt-8">
-                    <div className="px-5 mb-3 flex items-baseline justify-between">
-                      <div className="flex items-baseline gap-3">
-                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
-                          {n}
-                        </span>
-                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
-                          From the Channel
-                        </span>
-                      </div>
-                      <Link
-                        href={`/live/channel/${channel.slug || channel.id}`}
-                        className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press"
-                      >
-                        Tune in →
-                      </Link>
-                    </div>
-                    <p className="px-5 mb-3 font-display text-[18px] leading-tight text-white">
-                      {channel.name}
-                    </p>
-                    <div className="overflow-x-auto scrollbar-hide">
-                      <div className="flex gap-3 pl-5 pr-5 pb-1">
-                        {creatorVideos.map((v) => {
-                          const thumb = v.thumbnail_url
-                            ?? (v.mux_playback_id ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=320&height=180&time=5` : null);
-                          return (
-                            <Link
-                              key={v.id}
-                              href={`/live/watch/${v.id}`}
-                              className="shrink-0 w-[190px] group press"
-                            >
-                              <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-white/[0.05]">
-                                {thumb ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img src={thumb} alt={v.title} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center">
-                                    <Icon name="film" size={18} className="text-white/30" />
-                                  </div>
-                                )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                {v.duration && (
-                                  <span className="absolute bottom-1 right-1 bg-black/80 rounded px-1.5 py-0.5 text-[9px] font-mono text-white tracking-wider">
-                                    {Math.floor(v.duration / 60)}:{Math.floor(v.duration % 60).toString().padStart(2, "0")}
-                                  </span>
-                                )}
+              {channel && creatorVideos.length > 0 && (
+                <div className="pt-8">
+                  <p className="px-5 mb-3 font-display text-[18px] leading-tight text-ivory">
+                    {channel.name}
+                  </p>
+                  <SnapCarousel
+                    number={nextSection()}
+                    kicker="From the Channel"
+                    seeAllHref={`/live/channel/${channel.slug || channel.id}`}
+                    seeAllLabel="Tune in →"
+                    itemGap="gap-3"
+                  >
+                    {creatorVideos.map((v) => {
+                      const thumb = v.thumbnail_url
+                        ?? (v.mux_playback_id ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=320&height=180&time=5` : null);
+                      return (
+                        <Link
+                          key={v.id}
+                          href={`/live/watch/${v.id}`}
+                          className="shrink-0 w-[190px] group press snap-start"
+                        >
+                          <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-white/[0.05]">
+                            {thumb ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={thumb} alt={v.title} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Icon name="film" size={18} className="text-white/30" />
                               </div>
-                              <p className="font-heading font-semibold text-[12px] text-white line-clamp-1 mt-1.5">{v.title}</p>
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </section>
-                );
-              })()}
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                            {v.duration && (
+                              <span className="absolute bottom-1 right-1 bg-black/80 rounded px-1.5 py-0.5 text-[9px] font-mono text-white tracking-wider">
+                                {Math.floor(v.duration / 60)}:{Math.floor(v.duration % 60).toString().padStart(2, "0")}
+                              </span>
+                            )}
+                          </div>
+                          <p className="font-heading font-semibold text-[12px] text-white line-clamp-1 mt-1.5">{v.title}</p>
+                        </Link>
+                      );
+                    })}
+                  </SnapCarousel>
+                </div>
+              )}
 
               {/* Visit CTA — full-width letter-spaced bar */}
               <div className="px-5 pt-8 pb-10">
@@ -689,7 +615,7 @@ export default async function CreatorsPage({
                   <div className="h-[1px] bg-gradient-to-r from-gold/10 via-gold/40 to-gold/10 group-hover:bg-midnight/60 transition-colors" />
                 </Link>
               </div>
-            </article>
+            </FeatureSpread>
           );
         })}
       </div>

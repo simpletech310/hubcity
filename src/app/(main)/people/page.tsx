@@ -4,12 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import { buildExploreFeed } from "@/lib/feed/exploreFeed";
 import ExploreMosaic from "@/components/explore/ExploreMosaic";
+import { Masthead } from "@/components/ui/editorial";
 
 export async function generateMetadata(): Promise<Metadata> {
   const city = await getActiveCity();
   const name = city?.name ?? "Your City";
   return {
-    title: `Explore | ${name} | Knect`,
+    title: `Explore | ${name} | Culture`,
     description: `Discover creators, events, shows, and culture in ${name}.`,
   };
 }
@@ -23,17 +24,12 @@ export default async function PeoplePage() {
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-midnight" />
-        <div className="relative px-5 pt-6 pb-5">
-          <h1 className="font-heading text-2xl font-bold mb-1">Explore</h1>
-          <p className="text-sm text-txt-secondary">
-            Who&apos;s creating, what&apos;s happening in {city.name}.
-          </p>
-        </div>
-      </div>
-
+      <Masthead
+        volume="VOL · 01"
+        issue="ISSUE EXPLORE"
+        headline="EXPLORE."
+        strap={`Who's making, what's happening in ${city.name}`}
+      />
       <ExploreMosaic items={items} />
     </div>
   );

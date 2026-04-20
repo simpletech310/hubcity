@@ -613,7 +613,7 @@ export default function MapExplorer({
                       </svg>
                     </div>
                     <span className="text-[11px] font-bold text-gold uppercase tracking-wider">
-                      Knect AI
+                      Culture AI
                     </span>
                   </div>
                   <button

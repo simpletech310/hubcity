@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const city = await getActiveCity();
   const name = city?.name ?? "Your City";
   return {
-    title: `Culture | ${name} | Knect`,
+    title: `Culture | ${name} | Culture`,
     description: `Immerse yourself in ${name}'s culture — exhibits, gallery, notable people, music heritage, history, and community stories.`,
   };
 }
@@ -105,6 +105,25 @@ export default async function CulturePage() {
 
   return (
     <div className="space-y-8 pb-20">
+      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+            VOL · 01 · ISSUE HERITAGE
+          </span>
+          <span className="block w-1 h-1 rounded-full bg-gold/60" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+            {city.name.toUpperCase()}
+          </span>
+        </div>
+        <h1 className="masthead text-white text-[44px]">HERITAGE.</h1>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="block h-[2px] w-8 bg-gold" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+            The museum, muralists, and landmarks of {city.name}.
+          </span>
+        </div>
+      </header>
+
       {/* Generic city culture hero — same structure for every city */}
       <section className="relative w-full overflow-hidden">
         <div className="relative min-h-[220px] flex flex-col justify-end">

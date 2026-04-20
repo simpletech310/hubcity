@@ -243,7 +243,7 @@ export default function EmergencyPage() {
                   </div>
                   <a
                     href={`tel:${resource.number.replace(/[^0-9]/g, "")}`}
-                    className="shrink-0 bg-hc-purple/15 text-hc-purple border border-hc-purple/20 rounded-full px-3 py-1.5 text-[11px] font-bold press"
+                    className="shrink-0 bg-hc-purple/15 text-gold border border-gold/20 rounded-full px-3 py-1.5 text-[11px] font-bold press"
                   >
                     {resource.number}
                   </a>

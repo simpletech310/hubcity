@@ -4,7 +4,7 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Park Programs | Knect",
+  title: "Park Programs | Culture",
   description: "Free recreation programs across Compton parks.",
 };
 
@@ -117,7 +117,7 @@ export default async function ParkProgramsPage({
                           </span>
                         )}
                         {program.age_range && (
-                          <span className="text-[10px] text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5">
+                          <span className="text-[10px] text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
                             Ages {program.age_range}
                           </span>
                         )}

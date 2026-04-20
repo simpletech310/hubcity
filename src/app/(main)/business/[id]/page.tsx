@@ -2,10 +2,17 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import SaveButton from "@/components/ui/SaveButton";
+import {
+  EditorialNumber,
+  SectionKicker,
+  SnapCarousel,
+  EditorialCard,
+  Tag,
+  IssueDivider,
+} from "@/components/ui/editorial";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessReview } from "@/types/database";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
@@ -13,30 +20,6 @@ import ReviewSection from "./ReviewSection";
 import HeroGallery from "@/components/business/HeroGallery";
 import ShareQrButton from "@/components/business/ShareQrButton";
 import OpenNowBadge from "@/components/business/OpenNowBadge";
-
-const categoryColors: Record<string, string> = {
-  barber: "#8B5CF6",
-  retail: "#3B82F6",
-  services: "#06B6D4",
-  auto: "#EF4444",
-  health: "#22C55E",
-  beauty: "#FF006E",
-  entertainment: "#F2A900",
-  restaurant: "#FF6B6B",
-  other: "#9E9A93",
-};
-
-const categoryBadgeVariant: Record<string, "purple" | "blue" | "cyan" | "coral" | "emerald" | "pink" | "gold"> = {
-  barber: "purple",
-  retail: "blue",
-  services: "cyan",
-  auto: "coral",
-  health: "emerald",
-  beauty: "pink",
-  entertainment: "gold",
-  restaurant: "coral",
-  other: "gold",
-};
 
 const categoryArt: Record<string, string> = {
   restaurant: "art-food",
@@ -218,9 +201,7 @@ export default async function BusinessDetailPage({
   const biz = await loadBusiness(id);
   if (!biz) notFound();
 
-  const accentColor = categoryColors[biz.category] || "#F2A900";
   const artClass = categoryArt[biz.category] ?? "art-city";
-  const variant = categoryBadgeVariant[biz.category] || "gold";
 
   const isRetail = biz.category === "retail";
   const profileUrl = `${SITE_DOMAIN}/business/${biz.slug || biz.id}`;
@@ -354,8 +335,16 @@ export default async function BusinessDetailPage({
   const today = dayNames[now.getDay()];
   const todayHours = biz.hours?.[today];
 
+  const categoryLabel = (biz.category || "local").toUpperCase();
+  const cityName = biz.city?.name || "Compton";
+  const todayLine = new Date().toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   return (
-    <div className="animate-fade-in pb-safe">
+    <article className="animate-fade-in pb-safe bg-midnight">
       {/* SEO JSON-LD */}
       <script
         type="application/ld+json"
@@ -363,65 +352,113 @@ export default async function BusinessDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── Cinematic Hero Gallery ── */}
+      {/* ── Cover ── */}
       <div className="relative">
+        {/* HeroGallery is an existing component; we keep it but wrap the
+            overlay content so it matches the editorial treatment. */}
         <HeroGallery
           images={heroImages}
           alt={biz.name}
           fallback={<div className={`w-full h-full ${artClass} pattern-dots`} />}
         />
 
-        {/* Gradient overlay (desktop hero is taller, mobile is 256px) */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
+        {/* Duotone + paper overlay so the hero feels like HeroBlock even
+            though the carousel owns the img element. */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(0,0,0,0)_0%,rgba(0,0,0,0.5)_100%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/80 to-transparent" />
+
+        {/* Crop-mark ticks — editorial hero signature */}
+        <svg width="22" height="22" className="absolute top-4 left-4 text-gold/70 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M2 8 V2 H8" />
+        </svg>
+        <svg width="22" height="22" className="absolute top-4 right-4 text-gold/70 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M14 2 H20 V8" />
+        </svg>
+        <svg width="22" height="22" className="absolute bottom-4 left-4 text-gold/50 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M2 14 V20 H8" />
+        </svg>
+        <svg width="22" height="22" className="absolute bottom-4 right-4 text-gold/50 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
+          <path d="M20 14 V20 H14" />
+        </svg>
 
         {/* Back button */}
-        <div className="absolute top-4 left-4 z-10">
-          <Link href={biz.category === "restaurant" ? "/food" : "/business"} className="w-9 h-9 rounded-full glass flex items-center justify-center press">
-            <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+        <div className="absolute top-4 left-12 z-20">
+          <Link
+            href={biz.category === "restaurant" ? "/food" : "/business"}
+            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center press"
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ivory">
               <path d="M11 13L7 9l4-4" />
             </svg>
           </Link>
         </div>
 
         {/* Save button */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-12 z-20">
           <SaveButton itemType="business" itemId={biz.id} />
         </div>
 
-        {/* Rating pill */}
+        {/* Rating pill (gold-only) */}
         {biz.rating_avg > 0 && (
-          <div className="absolute top-4 left-16 z-10 bg-midnight/70 backdrop-blur-sm rounded-lg px-2.5 py-1 flex items-center gap-1.5">
-            <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
-            <span className="text-xs font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
-            <span className="text-[9px] text-txt-secondary">({biz.rating_count})</span>
+          <div className="absolute top-16 left-5 z-10 bg-black/50 backdrop-blur-sm border border-gold/25 rounded-full px-3 py-1 flex items-center gap-1.5">
+            <Icon name="star" size={12} className="text-gold" />
+            <span className="text-[11px] font-bold text-ivory tabular-nums">{Number(biz.rating_avg).toFixed(1)}</span>
+            <span className="text-[9px] text-ivory/60">({biz.rating_count})</span>
           </div>
         )}
 
-        {/* Bottom content */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-4 z-10">
-          {/* Category + Status */}
-          <div className="flex items-center gap-2 mb-2">
-            <Badge label={biz.category} variant={variant} size="md" />
+        {/* Bottom content — kicker, title, gold rule, meta */}
+        <div className="absolute inset-x-0 bottom-0 px-6 pb-7 z-10">
+          <div className="flex items-center gap-2 mb-3">
+            <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
             <OpenNowBadge hours={biz.hours} />
             {biz.district && (
-              <Badge label={`District ${biz.district}`} variant="cyan" size="sm" />
+              <Tag tone="default" size="sm">District {biz.district}</Tag>
             )}
           </div>
-          <h1 className="font-heading text-2xl font-bold leading-tight drop-shadow-lg">{biz.name}</h1>
+
+          <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[24ch]">
+            {biz.name}
+          </h1>
+
+          <div className="mt-5 h-px w-16 bg-gold" />
+
+          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+            <span className="text-ivory">{categoryLabel}</span>
+            <span className="text-ivory/40">·</span>
+            <span>{cityName}</span>
+            {biz.address && (
+              <>
+                <span className="text-ivory/40">·</span>
+                <span className="truncate max-w-[22ch]">{biz.address}</span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* ── City Badges Strip ── */}
+      {/* ── Byline Strip ── */}
+      <div className="px-5 mt-6 flex items-baseline gap-4">
+        <EditorialNumber n={1} size="sm" />
+        <SectionKicker tone="gold">Feature · {categoryLabel}</SectionKicker>
+        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
+        <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 whitespace-nowrap">
+          {cityName} · {todayLine}
+        </span>
+      </div>
+
+      {/* ── City Badges ── */}
       {biz.badges && biz.badges.length > 0 && (
-        <div className="px-5 mt-4">
+        <div className="px-5 mt-6">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
             {biz.badges.map((badge) => (
               <div
                 key={badge}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gold/5 border border-gold/15"
+                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-gold/5 border border-gold/25"
               >
                 <Icon name={badgeIcons[badge] || "tag"} size={14} className="text-gold" />
-                <span className="text-[11px] font-bold text-gold-light whitespace-nowrap">
+                <span className="text-[10px] uppercase tracking-editorial-tight font-bold text-gold whitespace-nowrap">
                   {formatBadgeLabel(badge)}
                 </span>
               </div>
@@ -433,24 +470,49 @@ export default async function BusinessDetailPage({
       {/* ── Chain / Ads-Only Notice ── */}
       {biz.account_type === "ads_only" && (
         <div className="px-5 mt-4">
-          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-white/[0.03] border border-border-subtle">
-            <Icon name="globe" size={16} className="text-txt-secondary shrink-0" />
-            <div>
-              <p className="text-[11px] font-semibold text-txt-secondary">National Chain</p>
-              <p className="text-[10px] text-muted-gray">Visit their website or app for ordering & reservations</p>
+          <EditorialCard variant="ink" border="subtle" className="px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <Icon name="globe" size={16} className="text-ivory/60 shrink-0" />
+              <div>
+                <p className="text-[11px] font-semibold text-ivory/70 uppercase tracking-editorial-tight">National Chain</p>
+                <p className="text-[10px] text-ivory/50 mt-0.5">Visit their website or app for ordering &amp; reservations</p>
+              </div>
             </div>
-          </div>
+          </EditorialCard>
         </div>
       )}
 
-      {/* ── Sticky Action Bar (Call / Directions / Website / Share+QR) ── */}
-      <div className="sticky top-0 z-20 bg-midnight/85 backdrop-blur-md border-b border-border-subtle">
+      {/* ── Body — Magazine Column (About) ── */}
+      {biz.description && (
+        <section className="px-5 mt-8 max-w-[68ch]">
+          <p className="font-display text-[22px] leading-snug text-ivory first-letter:font-display first-letter:text-[56px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
+            {biz.description}
+          </p>
+        </section>
+      )}
+
+      {/* ── Pull quote — the story tagline ── */}
+      {biz.story && (
+        <aside className="px-5 mt-8 max-w-[68ch]">
+          <div className="border-l-2 border-gold pl-5 py-2">
+            <p className="font-display text-[24px] leading-snug text-ivory/90 whitespace-pre-line line-clamp-4">
+              &ldquo;{biz.story}&rdquo;
+            </p>
+            <p className="mt-2 text-[10px] uppercase tracking-editorial text-gold">
+              {biz.name} · {cityName}
+            </p>
+          </div>
+        </aside>
+      )}
+
+      {/* ── Action Strip ── */}
+      <section className="sticky top-0 z-20 bg-midnight/85 backdrop-blur-md border-b border-gold/10 mt-6">
         <div className="px-5 py-3">
           <div className="grid grid-cols-4 gap-2">
             {([
-              { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined, disabled: !biz.phone },
-              { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined, disabled: !biz.address },
-              { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined, disabled: !biz.website },
+              { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined },
+              { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined },
+              { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined },
             ]).map((action) => {
               const isExternal = action.href?.startsWith("http");
               if (!action.href) {
@@ -459,10 +521,10 @@ export default async function BusinessDetailPage({
                     key={action.label}
                     type="button"
                     disabled
-                    className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 opacity-40 cursor-not-allowed"
+                    className="flex flex-col items-center gap-1.5 rounded-xl border border-gold/15 bg-transparent py-3 opacity-40 cursor-not-allowed"
                   >
-                    <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
-                    <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
+                    <Icon name={action.iconName} size={18} className="text-gold" />
+                    <span className="text-[9px] font-semibold text-ivory/60 uppercase tracking-editorial-tight">{action.label}</span>
                   </button>
                 );
               }
@@ -471,10 +533,10 @@ export default async function BusinessDetailPage({
                   key={action.label}
                   href={action.href}
                   {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 press hover:border-gold/20 transition-colors"
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-gold/25 bg-transparent py-3 press hover:bg-gold/5 transition-colors"
                 >
-                  <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
-                  <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
+                  <Icon name={action.iconName} size={18} className="text-gold" />
+                  <span className="text-[9px] font-semibold text-ivory/70 uppercase tracking-editorial-tight">{action.label}</span>
                 </a>
               );
             })}
@@ -482,81 +544,60 @@ export default async function BusinessDetailPage({
               url={profileUrl}
               title={biz.name}
               text={biz.description ?? undefined}
-              accentColor={accentColor}
+              accentColor="#F2A900"
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* ── About ── */}
-      {biz.description && (
-        <div className="px-5 mt-5">
-          <div className="flex items-center gap-2 mb-2.5">
-            <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-            <h2 className="font-heading font-bold text-base">About</h2>
-          </div>
-          <p className="text-[13px] text-txt-secondary leading-relaxed">{biz.description}</p>
+      {/* ── Section 01 · Info ── */}
+      <section className="px-5 mt-10">
+        <div className="mb-4 flex items-baseline gap-3">
+          <EditorialNumber n={1} size="md" />
+          <SectionKicker tone="muted">The Essentials</SectionKicker>
         </div>
-      )}
+        <div className="rule-hairline mb-5" />
 
-      {/* ── Our Story (long-form narrative, owner-managed) ── */}
-      {biz.story && (
-        <div className="px-5 mt-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base" style={{ fontFamily: "var(--font-serif), 'DM Serif Display', serif" }}>
-              Our Story
-            </h2>
-          </div>
-          <div className="rounded-2xl bg-gradient-to-br from-gold/[0.03] via-card to-card border border-gold/15 p-5">
-            <p className="text-[13px] text-txt-primary leading-relaxed whitespace-pre-line">
-              {biz.story}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Info Card ── */}
-      <div className="px-5 mt-5">
-        <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden">
+        <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
           {/* Address */}
-          <div className="p-4 flex items-center gap-3.5 border-b border-border-subtle">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-              <Icon name="pin" size={18} style={{ color: accentColor }} />
+          <div className="p-4 flex items-center gap-3.5 border-b border-white/[0.05]">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
+              <Icon name="pin" size={18} className="text-gold" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{biz.address}</p>
-              {biz.district && <p className="text-[11px] text-txt-secondary mt-0.5">District {biz.district}</p>}
+              <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Address</p>
+              <p className="font-heading text-sm font-bold text-ivory truncate mt-0.5">{biz.address}</p>
+              {biz.district && <p className="text-[11px] text-ivory/70 mt-0.5">District {biz.district}</p>}
             </div>
           </div>
 
-          {/* Phone */}
           {biz.phone && (
-            <a href={`tel:${biz.phone}`} className="p-4 flex items-center gap-3.5 border-b border-border-subtle press">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <Icon name="phone" size={18} style={{ color: accentColor }} />
+            <a href={`tel:${biz.phone}`} className="p-4 flex items-center gap-3.5 border-b border-white/[0.05] press">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
+                <Icon name="phone" size={18} className="text-gold" />
               </div>
-              <p className="text-sm font-bold" style={{ color: accentColor }}>{biz.phone}</p>
+              <div>
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Phone</p>
+                <p className="font-heading text-sm font-bold text-gold mt-0.5">{biz.phone}</p>
+              </div>
             </a>
           )}
 
-          {/* Hours */}
           {todayHours && (
-            <div className="p-4 flex items-center gap-3.5 border-b border-border-subtle">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <Icon name="clock" size={18} style={{ color: accentColor }} />
+            <div className="p-4 flex items-center gap-3.5 border-b border-white/[0.05]">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
+                <Icon name="clock" size={18} className="text-gold" />
               </div>
               <div>
-                <p className="text-sm font-bold">
-                  <span className="text-emerald">Open</span>
-                  <span className="text-txt-secondary font-normal"> · {typeof todayHours === "string" ? todayHours : `${todayHours.open} — ${todayHours.close}`}</span>
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Today</p>
+                <p className="font-heading text-sm font-bold mt-0.5">
+                  <span className="text-gold">Open</span>
+                  <span className="text-ivory/70 font-normal"> · {typeof todayHours === "string" ? todayHours : `${todayHours.open} — ${todayHours.close}`}</span>
                 </p>
-                <p className="text-[11px] text-txt-secondary mt-0.5">Today&apos;s hours</p>
               </div>
             </div>
           )}
 
-          {/* Website */}
           {biz.website && (
             <a
               href={biz.website.startsWith("http") ? biz.website : `https://${biz.website}`}
@@ -564,267 +605,250 @@ export default async function BusinessDetailPage({
               rel="noopener noreferrer"
               className="p-4 flex items-center gap-3.5 press"
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${accentColor}15` }}>
-                <span className="text-lg"><Icon name="globe" size={20} /></span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
+                <Icon name="globe" size={18} className="text-gold" />
               </div>
-              <p className="text-sm font-bold truncate" style={{ color: accentColor }}>{biz.website}</p>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Website</p>
+                <p className="font-heading text-sm font-bold text-gold truncate mt-0.5">{biz.website}</p>
+              </div>
             </a>
           )}
-        </div>
-      </div>
+        </EditorialCard>
+      </section>
 
-      {/* ── Divider ── */}
-      <div className="px-5 mt-5 mb-4">
-        <div className="divider-subtle" />
-      </div>
-
-      {/* ── Services / Booking Section ── */}
+      {/* ── Section 02 · Services (bookable) ── */}
       {biz.accepts_bookings && services.length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-hc-purple" />
-            <h2 className="font-heading font-bold text-base">Services</h2>
-            <span className="ml-auto text-xs text-txt-secondary">{services.length} available</span>
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={2} size="md" />
+            <SectionKicker tone="muted">Services</SectionKicker>
+            <span className="ml-auto text-[10px] uppercase tracking-editorial-tight text-ivory/55">
+              {services.length} available
+            </span>
           </div>
+          <div className="rule-hairline mb-5" />
 
           <div className="space-y-2.5">
             {services.map((svc) => (
-              <div
-                key={svc.id}
-                className="rounded-2xl bg-card border border-border-subtle p-4 relative overflow-hidden"
-              >
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-2xl bg-hc-purple" />
-                <div className="flex items-center justify-between gap-3 pl-2">
+              <EditorialCard key={svc.id} variant="ink" border="subtle" className="p-4">
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold truncate">{svc.name}</p>
+                    <p className="font-display text-[18px] text-ivory leading-tight truncate">{svc.name}</p>
                     {svc.description && (
-                      <p className="text-[11px] text-txt-secondary mt-0.5 line-clamp-1">{svc.description}</p>
+                      <p className="text-[11px] text-ivory/70 mt-1 line-clamp-1">{svc.description}</p>
                     )}
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[10px] text-txt-secondary flex items-center gap-1">
-                        <Icon name="clock" size={16} /> {svc.duration} min
-                      </span>
-                    </div>
+                    <p className="mt-2 text-[10px] uppercase tracking-editorial-tight text-ivory/55 flex items-center gap-1.5">
+                      <Icon name="clock" size={12} className="text-gold" /> {svc.duration} min
+                    </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-base font-bold text-hc-purple">
+                    <p className="font-display text-[22px] text-gold leading-none">
                       ${(svc.price / 100).toFixed(2)}
                     </p>
                   </div>
                 </div>
-              </div>
+              </EditorialCard>
             ))}
           </div>
 
-          {/* Book Now CTA */}
-          <Link href={`/business/${biz.slug || biz.id}/book`} className="block mt-4">
-            <div className="rounded-2xl bg-gradient-to-r from-hc-purple to-hc-blue p-4 flex items-center justify-between press">
-              <div>
-                <p className="text-white font-bold text-base">Book Appointment</p>
-                <p className="text-white/70 text-xs font-medium">Select a service and time</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 10h10M12 6l4 4-4 4" />
-                </svg>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )}
-
-      {/* Booking CTA without services list */}
-      {biz.accepts_bookings && services.length === 0 && (
-        <div className="px-5 mb-6">
-          <Link href={`/business/${biz.slug || biz.id}/book`} className="block">
-            <div className="rounded-2xl bg-gradient-to-r from-hc-purple to-hc-blue p-4 flex items-center justify-between press">
-              <div>
-                <p className="text-white font-bold text-base">Book Appointment</p>
-                <p className="text-white/70 text-xs font-medium">Check availability and book</p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                <svg width="20" height="20" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 10h10M12 6l4 4-4 4" />
-                </svg>
-              </div>
-            </div>
-          </Link>
-        </div>
-      )}
-
-      {/* ── Meet the owner — links to their user profile ── */}
-      {owner && owner.handle && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-            <h2 className="font-heading font-bold text-base">Meet the owner</h2>
-          </div>
           <Link
-            href={`/user/${owner.handle}`}
-            className="block rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 press hover:bg-white/[0.06] transition-colors"
+            href={`/business/${biz.slug || biz.id}/book`}
+            className="block mt-4 rounded-2xl bg-gold text-midnight p-4 press"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-gradient-to-br from-royal to-hc-purple">
-                {owner.avatar_url ? (
-                  <img src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gold font-heading font-bold text-sm">
-                    {owner.display_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
-                  </div>
-                )}
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-heading font-bold text-base leading-none">Book Appointment</p>
+                <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
+                  Select a service and time
+                </p>
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <p className="text-[14px] font-heading font-bold truncate">{owner.display_name}</p>
-                  {owner.verification_status === "verified" && (
-                    <Icon name="verified" size={11} className="text-cyan" />
+              <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
+                  <path d="M5 10h10M12 6l4 4-4 4" />
+                </svg>
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {biz.accepts_bookings && services.length === 0 && (
+        <section className="px-5 mt-10">
+          <Link
+            href={`/business/${biz.slug || biz.id}/book`}
+            className="block rounded-2xl border border-gold/25 bg-transparent p-4 press hover:bg-gold/5 transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-heading font-bold text-base text-ivory leading-none">Book Appointment</p>
+                <p className="text-ivory/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
+                  Check availability and book
+                </p>
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
+                  <path d="M5 10h10M12 6l4 4-4 4" />
+                </svg>
+              </div>
+            </div>
+          </Link>
+        </section>
+      )}
+
+      {/* ── Section 03 · Meet the Owner ── */}
+      {owner && owner.handle && (
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={3} size="md" />
+            <SectionKicker tone="muted">Meet the Owner</SectionKicker>
+          </div>
+          <div className="rule-hairline mb-5" />
+
+          <Link href={`/user/${owner.handle}`} className="block press">
+            <EditorialCard variant="glass" border="gold" className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-gold/25 bg-ink">
+                  {owner.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gold font-display text-lg">
+                      {owner.display_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                    </div>
                   )}
                 </div>
-                {owner.handle && (
-                  <p className="text-[11px] text-white/40">@{owner.handle}</p>
-                )}
-                {owner.bio && (
-                  <p className="text-[12px] text-white/60 mt-1 line-clamp-2">{owner.bio}</p>
-                )}
-              </div>
-              <div className="shrink-0 text-[11px] font-bold text-white/70 flex items-center gap-1">
-                View profile
-                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <path d="M5 3l4 4-4 4" />
-                </svg>
-              </div>
-            </div>
-
-            {(ownerRecentPosts.length > 0 || ownerRecentEvents.length > 0) && (
-              <div className="mt-3 pt-3 border-t border-white/[0.04] grid grid-cols-3 gap-2">
-                {ownerRecentPosts.slice(0, 3).map((p) => (
-                  <div
-                    key={p.id}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-white/[0.04]"
-                  >
-                    {p.image_url ? (
-                      <img src={p.image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full p-1.5 flex items-center text-[9px] text-white/60 leading-snug">
-                        <span className="line-clamp-4">{p.body}</span>
-                      </div>
-                    )}
-                    {p.media_type === "video" && (
-                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
-                          <polygon points="6,4 20,12 6,20" />
-                        </svg>
-                      </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-display text-[20px] text-ivory leading-tight truncate">{owner.display_name}</p>
+                    {owner.verification_status === "verified" && (
+                      <Icon name="verified" size={12} className="text-gold" />
                     )}
                   </div>
-                ))}
-                {ownerRecentEvents.slice(0, 3 - ownerRecentPosts.slice(0, 3).length).map((e) => (
-                  <div
-                    key={e.id}
-                    className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-gold/15 to-midnight"
-                  >
-                    {e.image_url ? (
-                      <img src={e.image_url} alt={e.title} className="w-full h-full object-cover opacity-80" />
-                    ) : null}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                    <div className="absolute bottom-1 left-1 right-1">
-                      <p className="text-[8px] uppercase tracking-wider font-bold text-gold">Event</p>
-                      <p className="text-[10px] font-bold text-white line-clamp-2">{e.title}</p>
+                  {owner.handle && (
+                    <p className="text-[11px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5">@{owner.handle}</p>
+                  )}
+                  {owner.bio && (
+                    <p className="text-[12px] text-ivory/70 mt-1.5 line-clamp-2">{owner.bio}</p>
+                  )}
+                </div>
+                <div className="shrink-0 text-[10px] uppercase tracking-editorial-tight text-gold flex items-center gap-1">
+                  View
+                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <path d="M5 3l4 4-4 4" />
+                  </svg>
+                </div>
+              </div>
+
+              {(ownerRecentPosts.length > 0 || ownerRecentEvents.length > 0) && (
+                <div className="mt-4 pt-4 border-t border-gold/10 grid grid-cols-3 gap-2">
+                  {ownerRecentPosts.slice(0, 3).map((p) => (
+                    <div
+                      key={p.id}
+                      className="relative aspect-square rounded-lg overflow-hidden bg-ink border border-white/[0.06]"
+                    >
+                      {p.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full p-1.5 flex items-center text-[9px] text-ivory/70 leading-snug">
+                          <span className="line-clamp-4">{p.body}</span>
+                        </div>
+                      )}
+                      {p.media_type === "video" && (
+                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
+                            <polygon points="6,4 20,12 6,20" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {ownerRecentEvents.slice(0, 3 - ownerRecentPosts.slice(0, 3).length).map((e) => (
+                    <div
+                      key={e.id}
+                      className="relative aspect-square rounded-lg overflow-hidden bg-ink border border-gold/15"
+                    >
+                      {e.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={e.image_url} alt={e.title} className="w-full h-full object-cover opacity-80" />
+                      ) : null}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                      <div className="absolute bottom-1 left-1.5 right-1.5">
+                        <p className="text-[8px] uppercase tracking-editorial-tight font-bold text-gold">Event</p>
+                        <p className="text-[10px] font-bold text-ivory line-clamp-2 leading-tight">{e.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </EditorialCard>
+          </Link>
+        </section>
+      )}
+
+      {/* ── Section 04 · Deals / Coupons ── */}
+      {promotions && promotions.length > 0 && (
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={4} size="md" />
+            <SectionKicker tone="muted">{isRetail ? "Deals" : "Coupons"}</SectionKicker>
+          </div>
+          <div className="rule-hairline mb-5" />
+
+          <div className="space-y-2.5">
+            {promotions.map((promo) => (
+              <EditorialCard key={promo.id} variant="ink" border="gold" className="p-4">
+                <div className="flex items-start gap-3">
+                  <Icon name="tag" size={16} className="text-gold shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-display text-[18px] text-ivory leading-tight">{promo.title}</p>
+                    {promo.description && (
+                      <p className="text-[11px] text-ivory/70 mt-1 line-clamp-2">{promo.description}</p>
+                    )}
+                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                      {promo.promo_code && (
+                        <Tag tone="gold" size="xs">Code: {promo.promo_code}</Tag>
+                      )}
+                      {promo.discount_percent && (
+                        <Tag tone="gold" size="xs">{promo.discount_percent}% Off</Tag>
+                      )}
+                      {promo.discount_amount && (
+                        <Tag tone="gold" size="xs">
+                          ${(promo.discount_amount / 100).toFixed(2)} Off
+                        </Tag>
+                      )}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </Link>
-        </div>
-      )}
-
-      {/* ── Coupons / Promotions ── */}
-      {promotions && promotions.length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-emerald" />
-            <h2 className="font-heading font-bold text-base">
-              {isRetail ? "Deals" : "Coupons"}
-            </h2>
-          </div>
-          <div className="space-y-2">
-            {promotions.map((promo) => (
-              <div
-                key={promo.id}
-                className="rounded-2xl bg-emerald/5 border border-emerald/20 p-3.5 relative overflow-hidden"
-              >
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald rounded-l-2xl" />
-                <div className="pl-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-base"><Icon name="tag" size={16} /></span>
-                    <h3 className="text-[13px] font-bold text-emerald">{promo.title}</h3>
-                  </div>
-                  {promo.description && (
-                    <p className="text-[11px] text-txt-secondary mt-1 line-clamp-2">{promo.description}</p>
-                  )}
-                  <div className="flex items-center gap-3 mt-2">
-                    {promo.promo_code && (
-                      <span className="text-[10px] font-bold bg-emerald/10 text-emerald px-2 py-0.5 rounded-full border border-emerald/20">
-                        Code: {promo.promo_code}
-                      </span>
-                    )}
-                    {promo.discount_percent && (
-                      <span className="text-[10px] font-bold text-emerald">
-                        {promo.discount_percent}% OFF
-                      </span>
-                    )}
-                    {promo.discount_amount && (
-                      <span className="text-[10px] font-bold text-emerald">
-                        ${(promo.discount_amount / 100).toFixed(2)} OFF
-                      </span>
-                    )}
-                  </div>
                 </div>
-              </div>
+              </EditorialCard>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* ── Menu / Products Preview ── */}
+      {/* ── Section 05 · Menu / Products (rail) ── */}
       {menuItems && menuItems.length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-            <h2 className="font-heading font-bold text-base">
-              {isRetail ? "Products" : "Menu"}
-            </h2>
-            <Link
-              href={`/business/${biz.slug || biz.id}/order`}
-              className="ml-auto text-xs font-semibold press"
-              style={{ color: accentColor }}
-            >
-              {isRetail ? "All Products" : "Full Menu"} →
-            </Link>
-          </div>
-
-          {isRetail ? (
-            /* Retail: Product grid with images */
-            <div className="grid grid-cols-2 gap-3">
-              {menuItems.map((item) => (
-                <Link
-                  key={item.id}
-                  href={`/business/${biz.slug || biz.id}/order`}
-                  className="rounded-2xl bg-card border border-border-subtle overflow-hidden press hover:border-gold/20 transition-colors"
-                >
-                  {/* Product Image */}
-                  <div className="relative aspect-square bg-midnight/50">
+        <div className="mt-10">
+          <SnapCarousel
+            number={5}
+            kicker={isRetail ? "Products" : "Menu"}
+            seeAllHref={`/business/${biz.slug || biz.id}/order`}
+            seeAllLabel={isRetail ? "All products →" : "Full menu →"}
+          >
+            {menuItems.map((item) => (
+              <Link
+                key={item.id}
+                href={`/business/${biz.slug || biz.id}/order`}
+                className="snap-start shrink-0 w-[160px] press"
+              >
+                <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
+                  <div className="relative aspect-square bg-ink">
                     {item.image_url ? (
                       <Image src={item.image_url} alt={item.name} fill className="object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl opacity-20">
-                          {item.is_digital ? "phone" : "cart"}
-                        </span>
-                      </div>
+                      <div className={`w-full h-full ${artClass} pattern-dots`} />
                     )}
-                    {/* Video indicator */}
                     {(item.mux_playback_id || item.video_url) && (
                       <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
@@ -833,88 +857,73 @@ export default async function BusinessDetailPage({
                       </div>
                     )}
                     {item.is_digital && (
-                      <div className="absolute bottom-2 left-2 bg-blue-500/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded">
-                        Digital
+                      <div className="absolute bottom-2 left-2">
+                        <Tag tone="gold" size="xs">Digital</Tag>
                       </div>
                     )}
                   </div>
-                  <div className="p-2.5">
-                    <h3 className="text-[12px] font-bold truncate">{item.name}</h3>
-                    <span className="text-sm font-heading font-bold" style={{ color: accentColor }}>
-                      ${(item.price / 100).toFixed(2)}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            /* Restaurant: List layout */
-            <div className="space-y-2">
-              {menuItems.map((item) => (
-                <div key={item.id} className="rounded-2xl bg-card border border-border-subtle p-3.5 flex items-center gap-3 press hover:border-gold/20 transition-colors">
-                  {/* Thumbnail for items with images */}
-                  {item.image_url && (
-                    <div className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-midnight/50">
-                      <Image src={item.image_url} alt={item.name} fill className="object-cover" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[13px] font-bold truncate">{item.name}</h3>
+                  <div className="p-3">
+                    <p className="font-heading text-[12px] font-bold text-ivory truncate">{item.name}</p>
                     {item.category && (
-                      <p className="text-[9px] text-txt-secondary uppercase tracking-wider mt-0.5">{item.category}</p>
+                      <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5 truncate">
+                        {item.category}
+                      </p>
                     )}
+                    <p className="font-display text-[16px] text-gold leading-none mt-1.5">
+                      ${(item.price / 100).toFixed(2)}
+                    </p>
                   </div>
-                  <span className="font-heading font-bold shrink-0 ml-3" style={{ color: accentColor }}>
-                    ${(item.price / 100).toFixed(2)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+                </EditorialCard>
+              </Link>
+            ))}
+          </SnapCarousel>
 
-          {/* Order / Shop CTA */}
           {biz.accepts_orders && (
-            <Link href={`/business/${biz.slug || biz.id}/order`} className="block mt-4">
-              <div className="rounded-2xl bg-gradient-to-r from-gold to-gold-light p-4 flex items-center justify-between press">
-                <div>
-                  <p className="text-midnight font-bold text-base">
-                    {isRetail ? "Shop Now" : "Order Now"}
-                  </p>
-                  <p className="text-midnight/70 text-xs font-medium">
-                    {isRetail
-                      ? "Browse all products"
-                      : biz.delivery_enabled
-                        ? "Delivery & pickup available"
-                        : "Pickup available"}
-                  </p>
+            <div className="px-5 mt-4">
+              <Link
+                href={`/business/${biz.slug || biz.id}/order`}
+                className="block rounded-2xl bg-gold text-midnight p-4 press"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-heading font-bold text-base leading-none">
+                      {isRetail ? "Shop Now" : "Order Now"}
+                    </p>
+                    <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
+                      {isRetail
+                        ? "Browse all products"
+                        : biz.delivery_enabled
+                          ? "Delivery & pickup available"
+                          : "Pickup available"}
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
+                      <path d="M5 10h10M12 6l4 4-4 4" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
-                    <path d="M5 10h10M12 6l4 4-4 4" />
-                  </svg>
-                </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           )}
         </div>
       )}
 
-      {/* ── Featured Reviews (top 3 with body) ── */}
+      {/* ── Section 06 · Featured Reviews ── */}
       {typedFeatured.length > 0 && (
-        <div className="px-5 mb-6 mt-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">Featured Reviews</h2>
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={6} size="md" />
+            <SectionKicker tone="muted">Featured Reviews</SectionKicker>
           </div>
-          <div className="space-y-2.5">
+          <div className="rule-hairline mb-5" />
+
+          <div className="space-y-3">
             {typedFeatured.map((rev) => (
-              <div
-                key={rev.id}
-                className="rounded-2xl bg-card border border-border-subtle p-4"
-              >
-                <div className="flex items-center justify-between mb-2">
+              <EditorialCard key={rev.id} variant="ink" border="subtle" className="p-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0 overflow-hidden">
                       {rev.reviewer?.avatar_url ? (
                         <Image
                           src={rev.reviewer.avatar_url}
@@ -930,10 +939,10 @@ export default async function BusinessDetailPage({
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-bold leading-tight">
+                      <p className="font-heading text-sm font-bold text-ivory leading-tight">
                         {rev.reviewer?.display_name || "Anonymous"}
                       </p>
-                      <p className="text-[10px] text-txt-secondary">
+                      <p className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5">
                         {new Date(rev.created_at).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -947,34 +956,38 @@ export default async function BusinessDetailPage({
                       <Icon
                         key={star}
                         name="star"
-                        size={14}
-                        className={star <= rev.rating ? "text-gold" : "text-white/15"}
+                        size={13}
+                        className={star <= rev.rating ? "text-gold" : "text-ivory/15"}
                       />
                     ))}
                   </div>
                 </div>
                 {rev.body && (
-                  <p className="text-[13px] text-txt-secondary leading-relaxed">
-                    {rev.body}
+                  <p className="font-display text-[16px] text-ivory/85 leading-snug">
+                    &ldquo;{rev.body}&rdquo;
                   </p>
                 )}
-              </div>
+              </EditorialCard>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* ── All Reviews (interactive) ── */}
-      <ReviewSection businessId={biz.id} />
+      <div className="mt-10">
+        <ReviewSection businessId={biz.id} />
+      </div>
 
       {/* ── Hours ── */}
       {biz.hours && Object.keys(biz.hours).length > 0 && (
-        <div className="px-5 mb-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-cyan" />
-            <h2 className="font-heading font-bold text-base">Hours</h2>
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={7} size="md" />
+            <SectionKicker tone="muted">Hours</SectionKicker>
           </div>
-          <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden">
+          <div className="rule-hairline mb-5" />
+
+          <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
             {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => {
               const hours = biz.hours?.[day];
               if (!hours) return null;
@@ -983,25 +996,54 @@ export default async function BusinessDetailPage({
               return (
                 <div
                   key={day}
-                  className={`px-4 py-2.5 flex items-center justify-between text-sm border-b border-border-subtle last:border-0 ${
-                    isToday ? "bg-gold/[0.03]" : ""
+                  className={`px-4 py-3 flex items-center justify-between text-sm border-b border-white/[0.05] last:border-0 ${
+                    isToday ? "bg-gold/[0.05]" : ""
                   }`}
                 >
                   <div className="flex items-center gap-2">
                     {isToday && <div className="w-1.5 h-1.5 rounded-full bg-gold" />}
-                    <span className={isToday ? "font-bold text-gold" : "text-txt-secondary"}>
+                    <span className={
+                      isToday
+                        ? "font-heading font-bold text-gold uppercase tracking-editorial-tight text-[11px]"
+                        : "text-ivory/70 uppercase tracking-editorial-tight text-[11px]"
+                    }>
                       {dayFullNames[day]}
                     </span>
                   </div>
-                  <span className={isToday ? "font-bold" : "text-txt-secondary"}>
+                  <span className={
+                    isToday
+                      ? "font-heading font-bold text-ivory text-[12px]"
+                      : "text-ivory/70 text-[12px]"
+                  }>
                     {hoursStr}
                   </span>
                 </div>
               );
             })}
-          </div>
-        </div>
+          </EditorialCard>
+        </section>
       )}
-    </div>
+
+      {/* ── END divider ── */}
+      <IssueDivider label="END" />
+
+      {/* ── Related rail ── */}
+      <SnapCarousel
+        number={8}
+        kicker="Also in the Issue"
+        seeAllHref={biz.category === "restaurant" ? "/food" : "/business"}
+        seeAllLabel="All listings →"
+        className="pb-10"
+      >
+        <div className="snap-start shrink-0 w-[240px]">
+          <EditorialCard variant="ink" border="subtle" className="p-5 h-[140px] flex flex-col justify-between">
+            <SectionKicker tone="gold">Browse</SectionKicker>
+            <p className="font-display text-[18px] text-ivory leading-tight">
+              Discover more {categoryLabel.toLowerCase()} places in {cityName}.
+            </p>
+          </EditorialCard>
+        </div>
+      </SnapCarousel>
+    </article>
   );
 }

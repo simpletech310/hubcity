@@ -4,7 +4,7 @@ import { DISTRICT_NAMES } from "@/lib/districts";
 import CouncilDashboardClient from "./CouncilDashboardClient";
 
 export const metadata = {
-  title: "Council Dashboard | Knect",
+  title: "Council Dashboard | Culture",
   description: "Manage your district — posts, events, programs, issues, and messages.",
 };
 

@@ -186,7 +186,7 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wide mb-1">Customers</p>
-          <p className="text-2xl font-heading font-bold text-hc-purple">{stats.unique_customers}</p>
+          <p className="text-2xl font-heading font-bold text-gold">{stats.unique_customers}</p>
           <p className="text-[10px] text-txt-secondary mt-1">unique buyers</p>
         </Card>
       </div>

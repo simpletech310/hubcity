@@ -23,8 +23,8 @@ const AQI_CATEGORIES: Record<
   1: { category: "Good", color: "emerald" },
   2: { category: "Moderate", color: "gold" },
   3: { category: "Unhealthy for Sensitive", color: "coral" },
-  4: { category: "Unhealthy", color: "compton-red" },
-  5: { category: "Very Unhealthy", color: "compton-red" },
+  4: { category: "Unhealthy", color: "danger" },
+  5: { category: "Very Unhealthy", color: "danger" },
 };
 
 const MOCK_DATA: AQIResponse = {
@@ -62,7 +62,7 @@ export async function GET() {
     const aqiIndex = pollution.main.aqi as number;
     const mapping = AQI_CATEGORIES[aqiIndex] ?? {
       category: "Hazardous",
-      color: "compton-red",
+      color: "danger",
     };
 
     const data: AQIResponse = {

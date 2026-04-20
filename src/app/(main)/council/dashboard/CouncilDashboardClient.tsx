@@ -201,11 +201,11 @@ function EventsList({ district }: { district: number }) {
           <Link
             key={event.id}
             href={`/events/${event.id}`}
-            className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-hc-purple/20 transition-colors"
+            className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-hc-purple/10 flex flex-col items-center justify-center shrink-0">
-                <p className="text-[9px] text-hc-purple font-bold uppercase leading-none">
+              <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-gold/10 flex flex-col items-center justify-center shrink-0">
+                <p className="text-[9px] text-gold font-bold uppercase leading-none">
                   {date.toLocaleDateString("en-US", { month: "short" })}
                 </p>
                 <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
@@ -218,7 +218,7 @@ function EventsList({ district }: { district: number }) {
                   <p className="text-[11px] text-white/40 truncate mt-0.5">{event.location_name}</p>
                 )}
                 {event.category && (
-                  <span className="inline-block mt-1.5 text-[9px] font-semibold text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5">
+                  <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
                     {event.category}
                   </span>
                 )}
@@ -240,7 +240,7 @@ const PROGRAM_COLORS: Record<string, { text: string; bg: string }> = {
   sports: { text: "text-emerald", bg: "bg-emerald/10" },
   education: { text: "text-hc-blue", bg: "bg-hc-blue/10" },
   health: { text: "text-coral", bg: "bg-coral/10" },
-  senior: { text: "text-hc-purple", bg: "bg-hc-purple/10" },
+  senior: { text: "text-gold", bg: "bg-hc-purple/10" },
   arts: { text: "text-pink", bg: "bg-pink/10" },
 };
 

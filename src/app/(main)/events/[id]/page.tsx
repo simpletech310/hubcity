@@ -1,34 +1,22 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
-import Badge from "@/components/ui/Badge";
-import Button from "@/components/ui/Button";
 import SaveButton from "@/components/ui/SaveButton";
 import RSVPButton from "@/components/events/RSVPButton";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import {
+  HeroBlock,
+  EditorialNumber,
+  SectionKicker,
+  SnapCarousel,
+  EditorialCard,
+  Tag,
+  IssueDivider,
+} from "@/components/ui/editorial";
 import { createClient } from "@/lib/supabase/server";
 import { formatCents } from "@/lib/stripe";
 import { isTicketSalesOpen, getTicketSalesMessage } from "@/lib/tickets";
 import type { Event, EventTicketConfig, Venue } from "@/types/database";
-
-const categoryColors: Record<string, string> = {
-  city: "#F2A900",
-  sports: "#22C55E",
-  culture: "#FF006E",
-  community: "#8B5CF6",
-  school: "#3B82F6",
-  youth: "#06B6D4",
-};
-
-const categoryGradients: Record<string, string> = {
-  city: "from-gold/30 via-gold/10 to-transparent",
-  sports: "from-emerald/30 via-emerald/10 to-transparent",
-  culture: "from-pink/30 via-pink/10 to-transparent",
-  community: "from-hc-purple/30 via-hc-purple/10 to-transparent",
-  school: "from-hc-blue/30 via-hc-blue/10 to-transparent",
-  youth: "from-cyan/30 via-cyan/10 to-transparent",
-};
 
 const categoryIcons: Record<string, IconName> = {
   city: "landmark",
@@ -37,15 +25,6 @@ const categoryIcons: Record<string, IconName> = {
   community: "handshake",
   school: "book",
   youth: "sparkle",
-};
-
-const categoryBadgeVariant: Record<string, "purple" | "coral" | "cyan" | "gold" | "emerald" | "blue" | "pink"> = {
-  city: "gold",
-  sports: "emerald",
-  culture: "pink",
-  community: "purple",
-  school: "blue",
-  youth: "cyan",
 };
 
 function formatTime12h(time: string): string {
@@ -122,7 +101,6 @@ export default async function EventDetailPage({
 
   const salesOpen = ev.is_ticketed ? isTicketSalesOpen(ev) : false;
   const salesMessage = ev.is_ticketed ? getTicketSalesMessage(ev) : null;
-  const accentColor = categoryColors[ev.category] || "#F2A900";
   const startDate = new Date(ev.start_date);
   const dayName = startDate.toLocaleDateString("en-US", { weekday: "long" });
   const monthName = startDate.toLocaleDateString("en-US", { month: "long" });
@@ -136,242 +114,243 @@ export default async function EventDetailPage({
     : 0;
   const allSoldOut = ticketConfigs.length > 0 && ticketConfigs.every(c => c.available_count <= 0);
 
+  const categoryLabel = (ev.category || "event").toUpperCase();
+  const dateLine = `${monthName} ${dayNum}, ${year}`;
+  const timeLine = ev.start_time ? formatTime12h(ev.start_time) : "TBA";
+
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* ── Cinematic Hero ── */}
-      <div className="relative h-72 overflow-hidden">
-        {ev.image_url ? (
-          <Image src={ev.image_url} alt={ev.title} fill className="object-cover" />
-        ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${categoryGradients[ev.category] || "from-gold/20 to-deep"} pattern-dots`}>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Icon name={categoryIcons[ev.category] || "calendar"} size={72} className="opacity-30" />
-            </div>
+    <article className="animate-fade-in pb-safe bg-midnight">
+      {/* ── Cover ── */}
+      <div className="relative">
+        <HeroBlock image={ev.image_url ?? null} aspect="3/2" alt={ev.title}>
+          {/* Floating controls live above the hero chrome */}
+          <div className="absolute top-4 left-4 z-20">
+            <Link
+              href="/events"
+              className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center press"
+            >
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ivory">
+                <path d="M11 13L7 9l4-4" />
+              </svg>
+            </Link>
           </div>
-        )}
-
-        {/* Multi-layer gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/70 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-midnight/40 to-transparent" />
-
-        {/* Back button - floating glass */}
-        <div className="absolute top-4 left-4 z-10">
-          <Link
-            href="/events"
-            className="w-9 h-9 rounded-full glass flex items-center justify-center press"
-          >
-            <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
-              <path d="M11 13L7 9l4-4" />
-            </svg>
-          </Link>
-        </div>
-
-        {/* Save button - floating glass */}
-        <div className="absolute top-4 right-4 z-10">
-          <SaveButton itemType="event" itemId={ev.id} />
-        </div>
-
-        {/* Featured badge */}
-        {ev.is_featured && (
-          <div className="absolute top-4 left-16 z-10">
-            <Badge label="Featured" variant="gold" size="md" shine />
-          </div>
-        )}
-
-        {/* Hero bottom content */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 z-10">
-          {/* Category + Live badge */}
-          <div className="flex items-center gap-2 mb-2.5">
-            <Badge
-              label={ev.category}
-              variant={categoryBadgeVariant[ev.category] ?? "gold"}
-              size="md"
-            />
-            {isToday && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-compton-red/20 border border-compton-red/30">
-                <div className="w-1.5 h-1.5 rounded-full bg-compton-red pulse-glow" />
-                <span className="text-[10px] font-bold text-compton-red uppercase tracking-wide">Today</span>
-              </div>
-            )}
-            {ev.district && (
-              <Badge label={`District ${ev.district}`} variant="cyan" size="sm" />
-            )}
+          <div className="absolute top-4 right-4 z-20">
+            <SaveButton itemType="event" itemId={ev.id} />
           </div>
 
-          {/* Title */}
-          <h1 className="font-heading text-2xl font-bold leading-tight drop-shadow-lg">
-            {ev.title}
-          </h1>
-        </div>
-      </div>
-
-      {/* ── Quick Info Strip ── */}
-      <div className="px-5 -mt-1">
-        <div
-          className="rounded-2xl p-4 border border-border-subtle relative overflow-hidden"
-          style={{ background: `linear-gradient(135deg, ${accentColor}08, ${accentColor}03)` }}
-        >
-          {/* Accent top bar */}
-          <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
-
-          <div className="grid grid-cols-3 gap-3">
-            {/* Date */}
-            <div className="text-center">
-              <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <Icon name="calendar" size={18} style={{ color: accentColor }} />
-              </div>
-              <p className="text-[11px] font-bold" style={{ color: accentColor }}>
-                {monthName.slice(0, 3).toUpperCase()} {dayNum}
-              </p>
-              <p className="text-[10px] text-txt-secondary">{dayName}</p>
+          {/* Hero bottom — kicker, title, gold rule, meta */}
+          <div className="absolute inset-x-0 bottom-0 px-6 pb-7 z-10">
+            <div className="flex items-center gap-2 mb-3">
+              <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
+              {ev.is_featured && <Tag tone="gold" size="sm">Featured</Tag>}
+              {isToday && <Tag tone="coral" size="sm">Live Today</Tag>}
+              {ev.district && <Tag tone="default" size="sm">District {ev.district}</Tag>}
             </div>
 
-            {/* Time */}
-            <div className="text-center">
-              <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <Icon name="clock" size={18} style={{ color: accentColor }} />
-              </div>
-              <p className="text-[11px] font-bold" style={{ color: accentColor }}>
-                {ev.start_time ? formatTime12h(ev.start_time) : "TBA"}
-              </p>
-              <p className="text-[10px] text-txt-secondary">
-                {ev.end_time ? `Until ${formatTime12h(ev.end_time)}` : "Start time"}
-              </p>
-            </div>
+            <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[26ch]">
+              {ev.title}
+            </h1>
 
-            {/* Attendees */}
-            <div className="text-center">
-              <div className="w-10 h-10 rounded-xl mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-                <Icon name="users" size={18} style={{ color: accentColor }} />
-              </div>
-              <p className="text-[11px] font-bold" style={{ color: accentColor }}>
-                {ev.rsvp_count.toLocaleString()}
-              </p>
-              <p className="text-[10px] text-txt-secondary">Going</p>
-            </div>
-          </div>
-        </div>
-      </div>
+            <div className="mt-5 h-px w-16 bg-gold" />
 
-      {/* ── Location Card ── */}
-      {ev.location_name && (
-        <div className="px-5 mt-4">
-          <div className="rounded-2xl bg-card border border-border-subtle p-4 flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-compton-red/10 flex items-center justify-center shrink-0">
-              <Icon name="pin" size={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold truncate">{ev.location_name}</p>
-              {ev.address && (
-                <p className="text-xs text-txt-secondary truncate mt-0.5">{ev.address}</p>
-              )}
-              {venue && (
-                <p className="text-[10px] text-gold mt-1 font-semibold">{venue.name}</p>
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+              <span className="text-ivory">{dayName}, {monthName} {dayNum}</span>
+              <span className="text-ivory/40">·</span>
+              <span>{timeLine}</span>
+              {ev.location_name && (
+                <>
+                  <span className="text-ivory/40">·</span>
+                  <span className="truncate max-w-[18ch]">{ev.location_name}</span>
+                </>
               )}
             </div>
-            <div className="shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary">
-                  <path d="M5 2l5 5-5 5" />
-                </svg>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
+        </HeroBlock>
+      </div>
 
-      {/* ── About Section ── */}
+      {/* ── Byline Strip ── */}
+      <div className="px-5 mt-6 flex items-baseline gap-4">
+        <EditorialNumber n={1} size="sm" />
+        <SectionKicker tone="gold">Feature · {categoryLabel}</SectionKicker>
+        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
+        <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 whitespace-nowrap">
+          {dateLine}
+        </span>
+      </div>
+
+      {/* ── Body — Magazine Column ── */}
       {ev.description && (
-        <div className="px-5 mt-6">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-            <h2 className="font-heading font-bold text-base">About This Event</h2>
-          </div>
-          <p className="text-[13px] text-txt-secondary leading-relaxed">
+        <section className="px-5 mt-8 max-w-[68ch]">
+          <p className="font-display text-[22px] leading-snug text-ivory first-letter:font-display first-letter:text-[56px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
             {ev.description}
           </p>
-        </div>
+        </section>
       )}
 
-      {/* ── Divider ── */}
-      <div className="px-5 mt-6 mb-5">
-        <div className="divider-subtle" />
-      </div>
+      {/* Pull quote — a highlighted tagline from the event copy */}
+      {ev.description && ev.description.length > 180 && (
+        <aside className="px-5 mt-8 max-w-[68ch]">
+          <div className="border-l-2 border-gold pl-5 py-2">
+            <p className="font-display text-[24px] leading-snug text-ivory/90">
+              &ldquo;{ev.title}&rdquo;
+            </p>
+            <p className="mt-2 text-[10px] uppercase tracking-editorial text-gold">
+              {dayName}, {monthName} {dayNum} · {timeLine}
+            </p>
+          </div>
+        </aside>
+      )}
 
-      {/* ── Ticketed Events ── */}
+      {/* ── Section 01 · Details ── */}
+      <section className="px-5 mt-10">
+        <div className="mb-4 flex items-baseline gap-3">
+          <EditorialNumber n={1} size="md" />
+          <SectionKicker tone="muted">The Details</SectionKicker>
+        </div>
+        <div className="rule-hairline mb-5" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <EditorialCard variant="ink" border="gold" className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="calendar" size={18} className="text-gold" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Date</p>
+                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
+                  {monthName.slice(0, 3)} {dayNum}
+                </p>
+                <p className="text-[11px] text-ivory/70 mt-0.5">{dayName}</p>
+              </div>
+            </div>
+          </EditorialCard>
+
+          <EditorialCard variant="ink" border="gold" className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="clock" size={18} className="text-gold" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Time</p>
+                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
+                  {timeLine}
+                </p>
+                <p className="text-[11px] text-ivory/70 mt-0.5">
+                  {ev.end_time ? `Until ${formatTime12h(ev.end_time)}` : "Doors open"}
+                </p>
+              </div>
+            </div>
+          </EditorialCard>
+
+          <EditorialCard variant="ink" border="gold" className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="users" size={18} className="text-gold" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Attending</p>
+                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
+                  {ev.rsvp_count.toLocaleString()}
+                </p>
+                <p className="text-[11px] text-ivory/70 mt-0.5">Going</p>
+              </div>
+            </div>
+          </EditorialCard>
+        </div>
+
+        {/* Location — full-width editorial card */}
+        {ev.location_name && (
+          <EditorialCard variant="glass" border="subtle" className="mt-3 p-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                <Icon name="pin" size={20} className="text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Venue</p>
+                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5 truncate">
+                  {ev.location_name}
+                </p>
+                {ev.address && (
+                  <p className="text-[12px] text-ivory/70 truncate mt-0.5">{ev.address}</p>
+                )}
+                {venue && (
+                  <p className="text-[10px] uppercase tracking-editorial-tight text-gold mt-1">{venue.name}</p>
+                )}
+              </div>
+            </div>
+          </EditorialCard>
+        )}
+      </section>
+
+      {/* ── Section 02 · Tickets / Attend ── */}
       {ev.is_ticketed ? (
-        <div className="px-5 mb-8">
-          {/* Section header */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">Tickets</h2>
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={2} size="md" />
+            <SectionKicker tone="muted">Tickets</SectionKicker>
             {allSoldOut && (
-              <span className="ml-auto text-xs text-coral font-semibold">Sold Out</span>
+              <Tag tone="coral" size="sm" className="ml-auto">Sold Out</Tag>
             )}
           </div>
+          <div className="rule-hairline mb-5" />
 
-          {/* Ticket Section Cards */}
           {ticketConfigs.length > 0 && (
-            <div className="space-y-3 mb-5">
+            <div className="space-y-2.5 mb-5">
               {ticketConfigs.map((config) => {
                 const section = config.venue_section;
                 const isSoldOut = config.available_count <= 0;
-                const sectionColor = section?.color || accentColor;
                 return (
-                  <div
+                  <EditorialCard
                     key={config.id}
-                    className={`rounded-2xl bg-card border border-border-subtle p-4 relative overflow-hidden ${isSoldOut ? "opacity-50" : ""}`}
+                    variant="ink"
+                    border={isSoldOut ? "subtle" : "gold"}
+                    className={`p-4 ${isSoldOut ? "opacity-50" : ""}`}
                   >
-                    {/* Left accent */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: sectionColor }} />
-
-                    <div className="flex items-center justify-between gap-3 pl-3">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div
-                          className="w-3 h-3 rounded-full shrink-0"
-                          style={{ backgroundColor: sectionColor, boxShadow: `0 0 0 2px var(--color-card), 0 0 0 3px ${sectionColor}40` }}
-                        />
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold truncate">
-                            {section?.name ?? "General Admission"}
-                          </p>
-                          {section?.description && (
-                            <p className="text-[11px] text-txt-secondary truncate mt-0.5">{section.description}</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Section</p>
+                        <p className="font-display text-[20px] text-ivory leading-tight mt-0.5 truncate">
+                          {section?.name ?? "General Admission"}
+                        </p>
+                        {section?.description && (
+                          <p className="text-[11px] text-ivory/70 truncate mt-1">{section.description}</p>
+                        )}
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="font-display text-[22px] text-gold leading-none">
+                          {formatCents(config.price)}
+                        </p>
+                        <div className="mt-2">
+                          {isSoldOut ? (
+                            <Tag tone="coral" size="xs">Sold Out</Tag>
+                          ) : (
+                            <Tag tone="gold" size="xs">{config.available_count} left</Tag>
                           )}
                         </div>
                       </div>
-
-                      <div className="shrink-0 text-right">
-                        <p className="text-base font-bold" style={{ color: sectionColor }}>
-                          {formatCents(config.price)}
-                        </p>
-                        {isSoldOut ? (
-                          <span className="text-[10px] text-coral font-semibold">Sold Out</span>
-                        ) : (
-                          <span className="text-[10px] text-emerald font-semibold">
-                            {config.available_count} left
-                          </span>
-                        )}
-                      </div>
                     </div>
-                  </div>
+                  </EditorialCard>
                 );
               })}
             </div>
           )}
 
           {salesMessage && (
-            <p className="text-xs text-txt-secondary mb-4 text-center">{salesMessage}</p>
+            <p className="text-[11px] uppercase tracking-editorial-tight text-ivory/55 mb-4 text-center">
+              {salesMessage}
+            </p>
           )}
 
-          {/* CTA Button */}
           {salesOpen ? (
-            <Link href={`/events/${ev.id}/tickets`}>
-              <div className="rounded-2xl bg-gradient-to-r from-gold to-gold-light p-4 flex items-center justify-between press">
+            <Link
+              href={`/events/${ev.id}/tickets`}
+              className="block rounded-2xl bg-gold text-midnight p-4 press"
+            >
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-midnight font-bold text-base">Get Tickets</p>
+                  <p className="font-heading font-bold text-base leading-none">Get Tickets</p>
                   {lowestPrice > 0 && isFinite(lowestPrice) && (
-                    <p className="text-midnight/70 text-xs font-medium">
+                    <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
                       From {formatCents(lowestPrice)}
                     </p>
                   )}
@@ -384,36 +363,41 @@ export default async function EventDetailPage({
               </div>
             </Link>
           ) : (
-            <div className="rounded-2xl bg-card border border-border-subtle p-4 text-center">
-              <p className="text-txt-secondary text-sm font-medium">
+            <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
+              <p className="text-[12px] text-ivory/70">
                 {salesMessage ?? "Tickets Unavailable"}
               </p>
-            </div>
+            </EditorialCard>
           )}
-        </div>
+        </section>
       ) : (
-        /* ── Free / RSVP Events ── */
-        <div className="px-5 mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-1 h-5 rounded-full bg-emerald" />
-            <h2 className="font-heading font-bold text-base">Attend</h2>
-            <span className="ml-auto text-xs text-emerald font-bold px-2.5 py-0.5 rounded-full bg-emerald/10">FREE</span>
+        <section className="px-5 mt-10">
+          <div className="mb-4 flex items-baseline gap-3">
+            <EditorialNumber n={2} size="md" />
+            <SectionKicker tone="muted">Attend</SectionKicker>
+            <Tag tone="gold" size="sm" className="ml-auto">Free</Tag>
           </div>
+          <div className="rule-hairline mb-5" />
 
           {user ? (
-            <div className="rounded-2xl bg-card border border-border-subtle p-4">
+            <EditorialCard variant="glass" border="subtle" className="p-4">
               <RSVPButton
                 eventId={ev.id}
                 initialStatus={userRsvpStatus as "going" | "interested" | "not_going" | null}
                 rsvpCount={ev.rsvp_count}
               />
-            </div>
+            </EditorialCard>
           ) : (
-            <Link href="/login">
-              <div className="rounded-2xl bg-gradient-to-r from-gold to-gold-light p-4 flex items-center justify-between press">
+            <Link
+              href="/login"
+              className="block rounded-2xl bg-gold text-midnight p-4 press"
+            >
+              <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-midnight font-bold text-base">Sign In to RSVP</p>
-                  <p className="text-midnight/70 text-xs font-medium">Join the community</p>
+                  <p className="font-heading font-bold text-base leading-none">Sign In to RSVP</p>
+                  <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
+                    Join the community
+                  </p>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
                   <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
@@ -423,35 +407,62 @@ export default async function EventDetailPage({
               </div>
             </Link>
           )}
-        </div>
+        </section>
       )}
 
-      {/* ── Share / Calendar / Report Strip ── */}
-      <div className="px-5 mb-8">
-        <div className="flex items-center gap-3">
+      {/* ── Section 03 · Share / Calendar / Report ── */}
+      <section className="px-5 mt-10">
+        <div className="mb-4 flex items-baseline gap-3">
+          <EditorialNumber n={3} size="md" />
+          <SectionKicker tone="muted">Take it With You</SectionKicker>
+        </div>
+        <div className="rule-hairline mb-5" />
+
+        <div className="grid grid-cols-3 gap-2.5">
           <a
             href={`/api/events/${ev.id}/ical`}
             download="event.ics"
-            className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 flex items-center justify-center gap-2 press"
+            className="rounded-xl border border-gold/25 bg-transparent px-4 py-3 flex flex-col items-center gap-1.5 press hover:bg-gold/5 transition-colors"
           >
-            <Icon name="calendar" size={14} />
-            <span className="text-xs font-semibold text-txt-secondary">Add to Calendar</span>
+            <Icon name="calendar" size={16} className="text-gold" />
+            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Calendar</span>
           </a>
-          <button className="flex-1 rounded-xl bg-card border border-border-subtle py-3 flex items-center justify-center gap-2 press">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary">
+          <button className="rounded-xl border border-gold/25 bg-transparent px-4 py-3 flex flex-col items-center gap-1.5 press hover:bg-gold/5 transition-colors">
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
               <path d="M4 8v5a1 1 0 001 1h6a1 1 0 001-1V8M8 2v8M5 5l3-3 3 3" />
             </svg>
-            <span className="text-xs font-semibold text-txt-secondary">Share</span>
+            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Share</span>
           </button>
-          <button className="flex-1 rounded-xl bg-card border border-border-subtle py-3 flex items-center justify-center gap-2 press">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary">
+          <button className="rounded-xl border border-gold/25 bg-transparent px-4 py-3 flex flex-col items-center gap-1.5 press hover:bg-gold/5 transition-colors">
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
               <path d="M3 3h10v10H3z" />
               <path d="M8 6v4M8 12h0" />
             </svg>
-            <span className="text-xs font-semibold text-txt-secondary">Report</span>
+            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Report</span>
           </button>
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* ── END divider ── */}
+      <IssueDivider label="END" />
+
+      {/* ── Related rail (placeholder — empty rail still renders a proper editorial shell) ── */}
+      <SnapCarousel
+        number={4}
+        kicker="Also in the Issue"
+        seeAllHref="/events"
+        seeAllLabel="All events →"
+        className="pb-10"
+      >
+        <div className="snap-start shrink-0 w-[220px]">
+          <EditorialCard variant="ink" border="subtle" className="p-5 h-[140px] flex flex-col justify-between">
+            <SectionKicker tone="gold">Browse</SectionKicker>
+            <p className="font-display text-[20px] text-ivory leading-tight">
+              Explore more {categoryIcons[ev.category] ? ev.category : "events"} happening around the city.
+            </p>
+          </EditorialCard>
+        </div>
+      </SnapCarousel>
+    </article>
   );
 }

@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
-import EditorialHeader from "@/components/ui/EditorialHeader";
 import JobCard from "@/components/jobs/JobCard";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { JobListing } from "@/types/database";
@@ -26,7 +25,7 @@ const categoryCards: { label: string; iconName: IconName; value: string; color: 
   { label: "Education", iconName: "graduation", value: "school", color: "text-hc-blue", filter: "org_type" },
   { label: "Business", iconName: "store", value: "business", color: "text-coral", filter: "org_type" },
   { label: "Tech", iconName: "lightbulb", value: "tech", color: "text-cyan", filter: "search" },
-  { label: "Services", iconName: "wrench", value: "services", color: "text-hc-purple", filter: "search" },
+  { label: "Services", iconName: "wrench", value: "services", color: "text-gold", filter: "search" },
 ];
 
 export default function JobsPage() {
@@ -101,11 +100,26 @@ export default function JobsPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/80 to-midnight" />
 
-        <div className="relative z-10 px-5 pt-4 pb-5">
-          <EditorialHeader kicker="OPPORTUNITY AWAITS" title={`Jobs in ${activeCity?.name ?? "your city"}`} subtitle="Find your next opportunity on Knect." />
+        <div className="relative z-10 px-5 pt-6 pb-5">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+              VOL · 01 · ISSUE WORK
+            </span>
+            <span className="block w-1 h-1 rounded-full bg-gold/60" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+              {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+            </span>
+          </div>
+          <h1 className="masthead text-white text-[44px]">WORK.</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="block h-[2px] w-8 bg-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+              Opportunity, hustle, and the next chapter
+            </span>
+          </div>
 
           {/* Glass Search Bar */}
-          <div className="glass-card-elevated flex items-center gap-3 rounded-2xl px-4 py-3.5 focus-within:border-gold/30 transition-all mt-4">
+          <div className="glass-card-elevated flex items-center gap-3 rounded-2xl px-4 py-3.5 focus-within:border-gold/30 transition-all mt-5">
             <Icon name="search" size={18} className="text-txt-secondary shrink-0" />
             <input
               type="text"

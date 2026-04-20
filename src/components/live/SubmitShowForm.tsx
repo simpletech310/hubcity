@@ -147,7 +147,7 @@ export default function SubmitShowForm({ channels }: Props) {
       </div>
 
       {error && (
-        <p className="text-sm text-compton-red">{error}</p>
+        <p className="text-sm text-coral">{error}</p>
       )}
 
       <button

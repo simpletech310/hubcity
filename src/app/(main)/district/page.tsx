@@ -14,13 +14,13 @@ import DistrictFeed from "@/components/district/DistrictFeed";
 import DistrictMessageForm from "@/components/district/DistrictMessageForm";
 
 export const metadata = {
-  title: "My District | Knect",
+  title: "My District | Culture",
   description: "Your personalized district hub — council member, events, alerts, and community voice.",
 };
 
 const DISTRICT_COLORS: Record<number, { text: string; bg: string; border: string; accent: string }> = {
   1: { text: "text-hc-blue", bg: "bg-hc-blue", border: "border-hc-blue", accent: "#3B82F6" },
-  2: { text: "text-hc-purple", bg: "bg-hc-purple", border: "border-hc-purple", accent: "#8B5CF6" },
+  2: { text: "text-gold", bg: "bg-hc-purple", border: "border-gold", accent: "#8B5CF6" },
   3: { text: "text-emerald", bg: "bg-emerald", border: "border-emerald", accent: "#22C55E" },
   4: { text: "text-gold", bg: "bg-gold", border: "border-gold", accent: "#F2A900" },
 };
@@ -319,7 +319,7 @@ export default async function DistrictPage() {
   const quickLinks: { label: string; href: string; icon: IconName; color: string }[] = [
     { label: "Report Issue", href: "/city-hall/issues", icon: "megaphone", color: "text-coral" },
     { label: "City Data", href: "/city-data", icon: "chart", color: "text-cyan" },
-    { label: "Events", href: "/events", icon: "calendar", color: "text-hc-purple" },
+    { label: "Events", href: "/events", icon: "calendar", color: "text-gold" },
     { label: "Parks", href: "/parks", icon: "tree", color: "text-emerald" },
     { label: "Schools", href: "/schools", icon: "graduation", color: "text-gold" },
     { label: "Resources", href: "/resources", icon: "heart-pulse", color: "text-pink" },
@@ -505,7 +505,7 @@ export default async function DistrictPage() {
                           </span>
                         )}
                         {school.trustee_area && (
-                          <span className="text-[9px] text-hc-purple/60 bg-hc-purple/8 rounded-full px-1.5 py-0.5">
+                          <span className="text-[9px] text-gold/60 bg-hc-purple/8 rounded-full px-1.5 py-0.5">
                             Area {school.trustee_area}
                           </span>
                         )}
@@ -633,7 +633,7 @@ export default async function DistrictPage() {
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         action.impact_level === "high"
-                          ? "bg-hc-purple/10 border border-hc-purple/15"
+                          ? "bg-hc-purple/10 border border-gold/15"
                           : action.impact_level === "medium"
                           ? "bg-gold/10 border border-gold/15"
                           : "bg-cyan/10 border border-cyan/15"
@@ -643,7 +643,7 @@ export default async function DistrictPage() {
                           size={16}
                           className={
                             action.impact_level === "high"
-                              ? "text-hc-purple"
+                              ? "text-gold"
                               : action.impact_level === "medium"
                               ? "text-gold"
                               : "text-cyan"
@@ -664,7 +664,7 @@ export default async function DistrictPage() {
                           </span>
                           <span className={`text-[9px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
                             action.impact_level === "high"
-                              ? "text-hc-purple/70 bg-hc-purple/8"
+                              ? "text-gold/70 bg-hc-purple/8"
                               : action.impact_level === "medium"
                               ? "text-gold/70 bg-gold/8"
                               : "text-cyan/70 bg-cyan/8"
@@ -705,7 +705,7 @@ export default async function DistrictPage() {
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Events", count: eventsList.length, icon: "calendar" as IconName, color: "text-hc-purple", bg: "from-hc-purple/8 to-hc-purple/3", border: "border-hc-purple/15" },
+              { label: "Events", count: eventsList.length, icon: "calendar" as IconName, color: "text-gold", bg: "from-hc-purple/8 to-hc-purple/3", border: "border-gold/15" },
               { label: "Businesses", count: businessCount ?? 0, icon: "store" as IconName, color: "text-gold", bg: "from-gold/8 to-gold/3", border: "border-gold/15" },
               { label: "Schools", count: schoolsList.length, icon: "graduation" as IconName, color: "text-cyan", bg: "from-cyan/8 to-cyan/3", border: "border-cyan/15" },
               { label: "Parks", count: parksList.length, icon: "tree" as IconName, color: "text-emerald", bg: "from-emerald/8 to-emerald/3", border: "border-emerald/15" },
@@ -814,7 +814,7 @@ export default async function DistrictPage() {
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2.5">
                     <div className="w-7 h-7 rounded-lg bg-hc-purple/10 flex items-center justify-center">
-                      <Icon name="calendar" size={14} className="text-hc-purple" />
+                      <Icon name="calendar" size={14} className="text-gold" />
                     </div>
                     <p className="text-[12px] font-semibold text-white">Park Programs</p>
                   </div>
@@ -1007,11 +1007,11 @@ export default async function DistrictPage() {
                   <Link
                     key={event.id}
                     href={`/events/${event.id}`}
-                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-hc-purple/20 transition-colors"
+                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-hc-purple/10 flex flex-col items-center justify-center shrink-0">
-                        <p className="text-[9px] text-hc-purple font-bold uppercase leading-none">
+                      <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-gold/10 flex flex-col items-center justify-center shrink-0">
+                        <p className="text-[9px] text-gold font-bold uppercase leading-none">
                           {date.toLocaleDateString("en-US", { month: "short" })}
                         </p>
                         <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
@@ -1024,7 +1024,7 @@ export default async function DistrictPage() {
                           <p className="text-[11px] text-white/40 truncate mt-0.5">{event.location_name}</p>
                         )}
                         {event.category && (
-                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5">
+                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
                             {event.category}
                           </span>
                         )}

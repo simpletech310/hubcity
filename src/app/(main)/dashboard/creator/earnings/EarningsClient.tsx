@@ -160,7 +160,7 @@ export default function EarningsClient() {
             <p className="text-[9px] uppercase text-txt-secondary font-semibold">
               Pending
             </p>
-            <p className="font-heading font-bold text-base text-hc-purple mt-1">
+            <p className="font-heading font-bold text-base text-gold mt-1">
               {fmt(data.pending_payout)}
             </p>
           </Card>

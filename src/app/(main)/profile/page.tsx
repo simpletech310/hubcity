@@ -512,7 +512,7 @@ export default async function ProfilePage() {
                   <Card variant="glass" className="flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-purple rounded-l-xl" />
                     <div className="w-11 h-11 rounded-lg bg-hc-purple/10 flex items-center justify-center shrink-0">
-                      <Icon name="ticket" size={20} className="text-hc-purple" />
+                      <Icon name="ticket" size={20} className="text-gold" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-[12px] font-bold truncate">{event ? (event.title as string) : "Event"}</p>
@@ -543,7 +543,7 @@ export default async function ProfilePage() {
             profileTags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-hc-purple/10 border border-hc-purple/20 text-hc-purple text-[11px] font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-hc-purple/10 border border-gold/20 text-gold text-[11px] font-semibold"
               >
                 {tag}
               </span>
@@ -564,11 +564,11 @@ export default async function ProfilePage() {
       {/* -- Achievements / Badges -- */}
       <BadgesSection />
 
-      {/* -- Knect Digital ID Card -- */}
+      {/* -- Culture Digital ID Card -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">My Knect Card</h2>
+          <h2 className="font-heading font-bold text-base">My Culture Card</h2>
         </div>
         <CitizenIDCard
           avatarUrl={profile?.avatar_url}
@@ -715,16 +715,16 @@ export default async function ProfilePage() {
       {/* -- Emergency & Important Numbers -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-compton-red" />
+          <div className="w-1 h-5 rounded-full bg-coral" />
           <h2 className="font-heading font-bold text-base">Important Numbers</h2>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {emergencyContacts.map((contact) => (
             <a key={contact.label} href={`tel:${contact.number.replace(/[^0-9]/g, "")}`}>
-              <Card variant="glass" className="text-center hover:border-compton-red/20 transition-colors press relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-compton-red/40" />
+              <Card variant="glass" className="text-center hover:border-coral/20 transition-colors press relative overflow-hidden">
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-coral/40" />
                 <span className="block mb-1">
-                  <Icon name={contact.icon} size={20} className="text-compton-red mx-auto" />
+                  <Icon name={contact.icon} size={20} className="text-coral mx-auto" />
                 </span>
                 <p className="text-[10px] font-bold mb-0.5">{contact.label}</p>
                 <p className="text-[9px] text-txt-secondary">{contact.number}</p>
@@ -755,7 +755,7 @@ export default async function ProfilePage() {
           { label: "Language", icon: "globe" as IconName, comingSoon: true, detail: profile?.language || "English" },
           { label: "Privacy & Data", icon: "lock" as IconName, comingSoon: true },
           { label: "Help & Support", icon: "info" as IconName, comingSoon: true },
-          { label: "About Knect", icon: "info" as IconName, comingSoon: true },
+          { label: "About Culture", icon: "info" as IconName, comingSoon: true },
         ] as { label: string; icon: IconName; href?: string; count?: number; highlight?: boolean; comingSoon?: boolean; detail?: string }[]).map((item) => {
           const content = (
             <div className={`flex items-center justify-between py-3 px-1 rounded-xl transition-colors ${item.comingSoon ? "opacity-50 cursor-default" : "hover:bg-white/[0.03] press"}`}>
@@ -808,7 +808,7 @@ export default async function ProfilePage() {
           {user.email}
         </p>
         <p className="text-center text-[10px] text-txt-secondary/50 mt-1">
-          Knect v1.0.0 -- Made with love in Compton
+          Culture v1.0.0 -- Made with love in Compton
         </p>
       </div>
     </div>

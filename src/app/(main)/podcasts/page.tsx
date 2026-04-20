@@ -91,7 +91,7 @@ export default function PodcastsPage() {
               <Icon name="podcast" size={18} className="text-gold" />
             </div>
             <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">
-              Knect Media
+              Culture Media
             </p>
           </div>
           <h1 className="font-heading text-[26px] font-bold leading-tight mb-1.5">

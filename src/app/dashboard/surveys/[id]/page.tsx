@@ -153,7 +153,7 @@ export default function SurveyResultsPage({
       <div className="grid grid-cols-3 gap-3">
         <Card padding>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Responses</p>
-          <p className="text-2xl font-bold text-hc-purple mt-1">{response_count}</p>
+          <p className="text-2xl font-bold text-gold mt-1">{response_count}</p>
         </Card>
         <Card padding>
           <p className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Questions</p>
@@ -185,7 +185,7 @@ export default function SurveyResultsPage({
             return (
               <Card key={q.id} padding>
                 <div className="flex items-start gap-2 mb-3">
-                  <span className="text-[11px] font-bold text-hc-purple bg-hc-purple/10 rounded-md px-1.5 py-0.5 shrink-0">
+                  <span className="text-[11px] font-bold text-gold bg-hc-purple/10 rounded-md px-1.5 py-0.5 shrink-0">
                     Q{qIdx + 1}
                   </span>
                   <div>
@@ -280,7 +280,7 @@ function ChoiceChart({
                 style={{ width: `${barWidth}%` }}
               />
               <div className="absolute inset-0 flex items-center px-2">
-                <span className={`text-[10px] font-bold ${isTop ? "text-hc-purple" : "text-white/40"}`}>
+                <span className={`text-[10px] font-bold ${isTop ? "text-gold" : "text-white/40"}`}>
                   {pct}%
                 </span>
               </div>

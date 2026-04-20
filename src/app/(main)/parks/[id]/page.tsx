@@ -18,13 +18,13 @@ const AMENITY_DETAILS: Record<string, { icon: IconName; label: string; color: st
   walking: { icon: "tree", label: "Walking Trails", color: "text-emerald", desc: "Paved paths through the park" },
   dog_park: { icon: "alert", label: "Dog Park", color: "text-gold", desc: "Off-leash area for dogs" },
   gym: { icon: "trophy", label: "Fitness Center", color: "text-hc-blue", desc: "Indoor gymnasium and equipment" },
-  skatepark: { icon: "skateboard", label: "Skatepark", color: "text-hc-purple", desc: "Ramps and rails for skating" },
+  skatepark: { icon: "skateboard", label: "Skatepark", color: "text-gold", desc: "Ramps and rails for skating" },
   splash_pad: { icon: "swimming", label: "Splash Pad", color: "text-cyan", desc: "Water play area for kids" },
 };
 
 const DISTRICT_COLORS: Record<number, { text: string; bg: string; border: string }> = {
   1: { text: "text-hc-blue", bg: "bg-hc-blue/10", border: "border-hc-blue/20" },
-  2: { text: "text-hc-purple", bg: "bg-hc-purple/10", border: "border-hc-purple/20" },
+  2: { text: "text-gold", bg: "bg-hc-purple/10", border: "border-gold/20" },
   3: { text: "text-emerald", bg: "bg-emerald/10", border: "border-emerald/20" },
   4: { text: "text-gold", bg: "bg-gold/10", border: "border-gold/20" },
 };
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { data: park } = await query.single();
 
   return {
-    title: park ? `${park.name} | Parks | Knect` : "Park | Knect",
+    title: park ? `${park.name} | Parks | Culture` : "Park | Culture",
     description: park?.description || "Park details for Compton, CA",
   };
 }
@@ -321,7 +321,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                           </span>
                         )}
                         {program.age_range && (
-                          <span className="text-[10px] text-hc-purple bg-hc-purple/10 rounded-full px-2 py-0.5">
+                          <span className="text-[10px] text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
                             Ages {program.age_range}
                           </span>
                         )}
@@ -405,7 +405,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
               { text: "Picnic shelters can be reserved for groups and events", icon: "calendar" as IconName },
               ...(hasBBQ ? [{ text: "BBQ grills are first-come, first-served. Bring your own charcoal", icon: "bbq" as IconName }] : []),
               { text: "All programs at this park are free for Compton residents", icon: "star" as IconName },
-              { text: "Report maintenance issues through the Knect app", icon: "megaphone" as IconName },
+              { text: "Report maintenance issues through the Culture app", icon: "megaphone" as IconName },
               { text: "Dogs must be on leash at all times", icon: "alert" as IconName },
             ].map((tip) => (
               <div key={tip.text} className="flex items-start gap-2.5">

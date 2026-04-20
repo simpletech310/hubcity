@@ -143,7 +143,7 @@ export async function POST(request: Request) {
             .join("\n")}`
         : "";
 
-    const prompt = `You are an analyst for the City of Compton, CA civic engagement platform "Knect".
+    const prompt = `You are an analyst for the City of Compton, CA civic engagement platform "Culture".
 Analyze the following survey results and provide a comprehensive analysis.
 
 Survey: "${survey.title}"

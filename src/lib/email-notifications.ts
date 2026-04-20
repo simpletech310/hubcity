@@ -7,7 +7,7 @@ import { orderConfirmationEmail } from "@/lib/emails/orders/confirmation";
 import { bookingConfirmationEmail } from "@/lib/emails/booking/confirmation";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const BASE_URL = "https://knect.app";
+const BASE_URL = "https://hubcity.4everforward.net";
 
 /**
  * Welcome email when a user signs up
@@ -18,15 +18,15 @@ export async function sendWelcomeEmail(
 ): Promise<void> {
   try {
     const html = notificationEmailTemplate(
-      `Welcome to Knect, ${displayName}!`,
+      `Welcome to Culture, ${displayName}!`,
       "You're now part of your city's digital town hall. Explore local businesses, stay updated on city events, report issues in your neighborhood, and connect with your community.",
       `${BASE_URL}/feed`,
-      "Explore Knect"
+      "Explore Culture"
     );
 
     await sendEmail({
       to: email,
-      subject: `Welcome to Knect, ${displayName}!`,
+      subject: `Welcome to Culture, ${displayName}!`,
       html,
     });
   } catch (error) {
@@ -52,7 +52,7 @@ export async function sendBroadcastEmail(
 
     await sendEmail({
       to: email,
-      subject: `Knect: ${title}`,
+      subject: `Culture: ${title}`,
       html,
     });
   } catch (error) {
@@ -368,7 +368,7 @@ export async function sendBadgeEarnedEmail(
   try {
     const html = notificationEmailTemplate(
       `${badgeIcon} Badge Earned: ${badgeName}`,
-      `Congratulations! You've earned the "${badgeName}" badge on Knect. Keep engaging with your community to unlock more achievements!`,
+      `Congratulations! You've earned the "${badgeName}" badge on Culture. Keep engaging with your community to unlock more achievements!`,
       `${BASE_URL}/profile`,
       "View Your Badges"
     );

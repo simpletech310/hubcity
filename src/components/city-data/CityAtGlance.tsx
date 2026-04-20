@@ -33,7 +33,7 @@ const AQI_COLORS: Record<string, string> = {
   emerald: "text-emerald-400",
   gold: "text-yellow-400",
   coral: "text-orange-400",
-  "compton-red": "text-red-400",
+  danger: "text-red-400",
 };
 
 interface GlanceCard {

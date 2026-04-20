@@ -3,7 +3,7 @@ import CultureHero from "@/components/culture/CultureHero";
 import CultureCalendarClient from "./CultureCalendarClient";
 
 export const metadata = {
-  title: "Cultural Calendar | Compton Culture | Knect",
+  title: "Cultural Calendar | Compton Culture | Culture",
   description: "Upcoming cultural events in Compton.",
 };
 

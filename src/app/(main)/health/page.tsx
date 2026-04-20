@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import EditorialHeader from "@/components/ui/EditorialHeader";
 import EmergencyBanner from "@/components/health/EmergencyBanner";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -184,9 +183,9 @@ function HealthResourceCard({ resource }: { resource: HealthResource }) {
               </div>
             </div>
             {resource.is_emergency && (
-              <span className="inline-flex items-center gap-1 bg-compton-red/15 border border-compton-red/20 rounded-full px-2 py-0.5 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-                <span className="text-[9px] font-semibold text-compton-red uppercase">ER</span>
+              <span className="inline-flex items-center gap-1 bg-coral/15 border border-coral/20 rounded-full px-2 py-0.5 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+                <span className="text-[9px] font-semibold text-coral uppercase">ER</span>
               </span>
             )}
           </div>
@@ -323,19 +322,35 @@ export default function HealthPage() {
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ─── Hero ─── */}
+      {/* ─── Editorial Hero ─── */}
       <div className="relative h-64 overflow-hidden">
         <Image src="/images/generated/health-hero.png" alt="Health & Wellness" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-midnight/50 via-midnight/80 to-midnight" />
-        <div className="absolute inset-0 pattern-dots opacity-20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/85 to-ink" />
+        <div
+          className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+          }}
+        />
 
-        <div className="absolute inset-0 flex flex-col justify-end p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 bg-emerald/15 border border-emerald/25 rounded-full px-3 py-1 text-[10px] font-bold text-emerald badge-shine uppercase tracking-wide">
-              Health & Fitness
+        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-6">
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+              VOL · 01 · ISSUE HEALTH
+            </span>
+            <span className="block w-1 h-1 rounded-full bg-gold/60" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+              {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
             </span>
           </div>
-          <EditorialHeader kicker="WELLNESS & CARE" title="Health Resources" subtitle={`Healthcare, fitness, community events — everything to keep ${activeCity?.name ?? "your city"} healthy and thriving`} />
+          <h1 className="masthead text-white text-[44px]">HEALTH.</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="block h-[2px] w-8 bg-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+              Care, fitness & resources for {activeCity?.name ?? "your city"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -641,7 +656,7 @@ export default function HealthPage() {
 
       {/* ─── Mental Health CTA ─── */}
       <section className="px-5 mb-6">
-        <div className="relative overflow-hidden rounded-2xl border border-hc-purple/20 p-5" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02))" }}>
+        <div className="relative overflow-hidden rounded-2xl border border-gold/20 p-5" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02))" }}>
           <div className="absolute top-0 right-0 w-24 h-24 opacity-10">
             <svg viewBox="0 0 100 100" fill="none" stroke="#8B5CF6" strokeWidth="1">
               <circle cx="80" cy="20" r="40" />
@@ -701,7 +716,7 @@ export default function HealthPage() {
       {/* ─── Health Hotlines ─── */}
       <section className="px-5 mb-8">
         <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-compton-red" />
+          <div className="w-1 h-5 rounded-full bg-coral" />
           Health Hotlines
         </h2>
         <div className="space-y-2">

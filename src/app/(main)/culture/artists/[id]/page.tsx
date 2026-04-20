@@ -21,8 +21,8 @@ export async function generateMetadata({
 
   return {
     title: artist
-      ? `${artist.display_name} | Compton Artists | Knect`
-      : "Artist | Knect",
+      ? `${artist.display_name} | Compton Artists | Culture`
+      : "Artist | Culture",
   };
 }
 

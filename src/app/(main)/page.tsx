@@ -6,6 +6,7 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import AISearchButton from "@/components/home/AISearchButton";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
+import { Masthead } from "@/components/ui/editorial";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
@@ -270,30 +271,28 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 2. Greeting + Search -- */}
-      <section className="px-5 -mt-1 space-y-3">
-        <div>
-          <h1 className="font-display text-[26px] leading-tight">
-            {greeting}, <span className="text-gold">{displayName}</span>
-          </h1>
-          <p className="text-[13px] text-warm-gray mt-0.5">
-            What&apos;s happening in {cityName} today
-          </p>
-        </div>
+      {/* -- 2. Masthead + Search -- */}
+      <Masthead
+        volume="VOL · 01"
+        issue={`ISSUE ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase()}`}
+        headline={`${greeting.toUpperCase()}, ${displayName.toUpperCase()}.`}
+        strap={`What's moving in ${cityName} today`}
+      />
+      <section className="px-5 -mt-2">
         <AISearchButton />
       </section>
 
-      {/* -- 3. Discover Chips -- */}
+      {/* -- 3. Discover Chips — gold tag rail -- */}
       <section>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 px-5">
           {DISCOVER_CHIPS.map((chip) => (
             <Link key={chip.href} href={chip.href} className="press shrink-0">
-              <div className="bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] rounded-full px-3.5 py-2 flex items-center gap-2 shrink-0">
-                <Icon name={chip.icon} size={14} className="text-gold" />
-                <span className="text-[12px] font-medium text-white/80">
+              <span className="inline-flex items-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] hover:border-gold/30 rounded-full px-3.5 py-2 transition-colors">
+                <Icon name={chip.icon} size={13} className="text-gold" />
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-ivory/80">
                   {chip.label}
                 </span>
-              </div>
+              </span>
             </Link>
           ))}
         </div>
@@ -305,14 +304,14 @@ export default async function HomePage() {
           <div className="flex flex-col gap-2">
             {criticalAlerts.map((alert) => (
               <Link key={alert.id} href="/city-data" className="press">
-                <div className="bg-compton-red/10 border border-compton-red/25 rounded-xl p-3 flex items-center gap-2.5">
+                <div className="bg-coral/10 border border-coral/25 rounded-xl p-3 flex items-center gap-2.5">
                   <Icon
                     name="alert"
                     size={16}
-                    className="text-compton-red shrink-0"
+                    className="text-coral shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-compton-red">
+                    <p className="text-[12px] font-semibold text-coral">
                       {alert.title}
                     </p>
                     <p className="text-[11px] text-white/50 line-clamp-1">
@@ -720,7 +719,7 @@ export default async function HomePage() {
           href="/district"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gold/20 bg-gold/5 text-gold text-[13px] font-heading font-semibold press hover:bg-gold/10 transition-colors"
         >
-          Explore more on Knect
+          Explore more on Culture
           <Icon name="chevron-right" size={14} className="text-gold" />
         </Link>
       </section>

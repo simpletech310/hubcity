@@ -19,7 +19,7 @@ interface CityMeeting {
 }
 
 export const metadata = {
-  title: "City Meetings - Knect",
+  title: "City Meetings - Culture",
   description: "Compton city council meetings, agendas, and minutes.",
 };
 

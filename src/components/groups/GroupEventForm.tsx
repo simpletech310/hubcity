@@ -122,7 +122,7 @@ export default function GroupEventForm({ groupId, isOpen, onClose, onCreated }: 
               onClick={() => setVisibility("group")}
               className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
                 visibility === "group"
-                  ? "border-hc-purple/30 bg-hc-purple/10 text-hc-purple"
+                  ? "border-gold/30 bg-hc-purple/10 text-gold"
                   : "border-border-subtle bg-white/5 text-txt-secondary"
               }`}
             >

@@ -90,7 +90,7 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-hc-purple/40 via-hc-purple/20 to-transparent" />
 
       {/* Type label row */}
-      <div className="flex items-center gap-1.5 text-[10px] text-hc-purple font-semibold mb-2.5 tracking-wide">
+      <div className="flex items-center gap-1.5 text-[10px] text-gold font-semibold mb-2.5 tracking-wide">
         <span><Icon name="document" size={16} /></span>
         SURVEY
         {isClosed && (
@@ -233,7 +233,7 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
           )}
         </div>
         <button
-          className="text-[11px] text-txt-secondary hover:text-hc-purple transition-colors"
+          className="text-[11px] text-txt-secondary hover:text-gold transition-colors"
           onClick={(e) => {
             e.stopPropagation();
             if (navigator.share) {
@@ -310,7 +310,7 @@ function QuestionField({
                 <span
                   className={`
                     w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
-                    ${value === opt ? "border-hc-purple bg-hc-purple" : "border-border-subtle"}
+                    ${value === opt ? "border-gold bg-hc-purple" : "border-border-subtle"}
                   `}
                 >
                   {value === opt && (
@@ -353,7 +353,7 @@ function QuestionField({
                   <span
                     className={`
                       w-4 h-4 rounded flex items-center justify-center shrink-0 border-2 transition-all
-                      ${selected ? "border-hc-purple bg-hc-purple" : "border-border-subtle"}
+                      ${selected ? "border-gold bg-hc-purple" : "border-border-subtle"}
                     `}
                   >
                     {selected && (
@@ -403,7 +403,7 @@ function QuestionField({
                 flex-1 h-9 rounded-lg text-[11px] font-bold transition-all duration-150 press
                 ${
                   value === num
-                    ? "border border-hc-purple/40 bg-hc-purple/15 text-hc-purple scale-105"
+                    ? "border border-gold/40 bg-hc-purple/15 text-gold scale-105"
                     : "border border-border-subtle bg-deep/50 text-txt-secondary hover:border-white/20"
                 }
               `}

@@ -1,13 +1,13 @@
 {
-  "name": "Hub City App — Compton, CA",
-  "short_name": "Hub City",
-  "description": "Your all-in-one connection to Compton — events, businesses, resources & community.",
+  "name": "Culture — Your City, Curated",
+  "short_name": "Culture",
+  "description": "The editorial field guide to your city. Discover local businesses, events, creators, and the culture that moves your neighborhood.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0D0B1A",
-  "theme_color": "#D4A017",
+  "background_color": "#0A0A0C",
+  "theme_color": "#F2A900",
   "orientation": "portrait",
-  "categories": ["government", "lifestyle", "social"],
+  "categories": ["lifestyle", "social", "news", "entertainment"],
   "icons": [
     {
       "src": "/icons/icon-192.png",

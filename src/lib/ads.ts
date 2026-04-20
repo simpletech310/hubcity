@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Ad types & shared utilities for Knect ad system
+// Ad types & shared utilities for Culture ad system
 // ---------------------------------------------------------------------------
 
 export interface AdDecision {

@@ -52,7 +52,7 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-[13px] font-bold truncate">
-              {stream.creator?.display_name || "Knect"}
+              {stream.creator?.display_name || "Culture"}
             </p>
             <Badge label="LIVE" variant="coral" shine />
           </div>

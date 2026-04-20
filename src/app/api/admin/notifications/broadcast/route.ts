@@ -103,13 +103,13 @@ export async function POST(request: Request) {
           const emailHtml = notificationEmailTemplate(
             title,
             body,
-            "https://knect.app/notifications",
+            "https://hubcity.4everforward.net/notifications",
             "View Notifications"
           );
 
           const emailResult = await sendBulkEmail(
             recipientEmails,
-            `Knect: ${title}`,
+            `Culture: ${title}`,
             emailHtml
           );
 

@@ -63,14 +63,14 @@ export async function forwardIssuesToDepartments(): Promise<{
       title: issue.title,
       location: issue.location_text || "Not specified",
       count: issue.upvote_count ?? 0,
-      url: `https://knect.app/city-hall/issues/${issue.id}`,
+      url: `https://hubcity.4everforward.net/city-hall/issues/${issue.id}`,
     }));
 
     const html = issueDigestEmailTemplate(digestData);
 
     const sent = await sendEmail({
       to: deptEmail,
-      subject: `Knect Issue Report: ${deptIssues.length} new issue${deptIssues.length > 1 ? "s" : ""} for ${deptName}`,
+      subject: `Culture Issue Report: ${deptIssues.length} new issue${deptIssues.length > 1 ? "s" : ""} for ${deptName}`,
       html,
     });
 

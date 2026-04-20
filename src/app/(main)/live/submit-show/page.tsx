@@ -28,7 +28,7 @@ export default async function SubmitShowPage() {
 
         <h1 className="font-heading font-bold text-2xl mb-2">Pitch a Show</h1>
         <p className="text-sm text-txt-secondary mb-6">
-          Got an idea for a Knect TV show? Tell us about it. We&apos;ll review it and reach out if
+          Got an idea for a Culture TV show? Tell us about it. We&apos;ll review it and reach out if
           it&apos;s a fit.
         </p>
 

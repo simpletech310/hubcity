@@ -3,7 +3,7 @@
 import { sendEmail, notificationEmailTemplate } from "@/lib/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://knect.app";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://hubcity.4everforward.net";
 
 function formatCurrency(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {

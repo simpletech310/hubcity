@@ -4,7 +4,7 @@ import MuralCard from "@/components/culture/MuralCard";
 import Icon from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Murals | Compton Culture | Knect",
+  title: "Murals | Compton Culture | Culture",
   description: "Explore murals across Compton's neighborhoods.",
 };
 

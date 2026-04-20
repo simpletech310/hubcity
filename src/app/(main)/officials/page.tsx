@@ -5,7 +5,7 @@ import type { CivicOfficial } from "@/types/database";
 import OfficialsClient from "./officials-client";
 
 export const metadata = {
-  title: "Elected Officials | Knect",
+  title: "Elected Officials | Culture",
   description:
     "Track Compton's elected officials — City Council, Mayor, City Manager, CUSD Board of Trustees, and Superintendent. Voting records, accountability, and transparency.",
 };

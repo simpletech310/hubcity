@@ -1010,7 +1010,7 @@ export default async function SchoolDetailPage({
               {school.clubs.map((club) => (
                 <span
                   key={club}
-                  className="text-[11px] font-medium text-white/60 bg-hc-purple/[0.06] rounded-full px-3 py-1.5 border border-hc-purple/15"
+                  className="text-[11px] font-medium text-white/60 bg-hc-purple/[0.06] rounded-full px-3 py-1.5 border border-gold/15"
                 >
                   {club}
                 </span>
@@ -1162,12 +1162,12 @@ export default async function SchoolDetailPage({
 
         <div className="divider-subtle mb-6" />
 
-        {/* Knect TV Channel */}
+        {/* Culture TV Channel */}
         <section className="mb-6">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-heading font-bold text-base flex items-center gap-2">
               <div className="w-1 h-5 rounded-full bg-pink" />
-              Knect TV
+              Culture TV
             </h2>
             {channel && (
               <Link href={`/live/channel/${channel.id}`} className="text-[11px] text-gold font-semibold press">
@@ -1207,10 +1207,10 @@ export default async function SchoolDetailPage({
               {activeStreams.length > 0 && (
                 <div className="mt-3 space-y-2">
                   {activeStreams.map((stream) => (
-                    <div key={stream.id} className="bg-card rounded-xl border border-compton-red/20 p-3">
+                    <div key={stream.id} className="bg-card rounded-xl border border-coral/20 p-3">
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex items-center gap-1.5 bg-compton-red/15 border border-compton-red/20 rounded-full px-2.5 py-1 text-[10px] font-semibold text-compton-red uppercase tracking-wide">
-                          <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
+                        <span className="inline-flex items-center gap-1.5 bg-coral/15 border border-coral/20 rounded-full px-2.5 py-1 text-[10px] font-semibold text-coral uppercase tracking-wide">
+                          <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
                           Live
                         </span>
                         <div className="flex-1 min-w-0">
@@ -1238,7 +1238,7 @@ export default async function SchoolDetailPage({
                 </div>
                 <div className="flex-1">
                   <p className="text-[13px] font-medium text-white/40">Channel Coming Soon</p>
-                  <p className="text-[11px] text-white/25">Knect TV channel for this school is on the way</p>
+                  <p className="text-[11px] text-white/25">Culture TV channel for this school is on the way</p>
                 </div>
               </div>
             </div>

@@ -19,8 +19,8 @@ export async function generateMetadata({
 
   return {
     title: mural
-      ? `${mural.title}${mural.artist_name ? ` by ${mural.artist_name}` : ""} | Murals | Knect`
-      : "Mural | Knect",
+      ? `${mural.title}${mural.artist_name ? ` by ${mural.artist_name}` : ""} | Murals | Culture`
+      : "Mural | Culture",
   };
 }
 
@@ -193,7 +193,7 @@ export default async function MuralDetailPage({
                   href={`/map?lat=${mural.latitude}&lng=${mural.longitude}&zoom=17`}
                   className="text-sm text-gold font-medium hover:underline"
                 >
-                  View on Knect Map
+                  View on Culture Map
                 </Link>
               </div>
             )}

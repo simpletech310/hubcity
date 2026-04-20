@@ -65,7 +65,7 @@ export default function CitizenIDCard({
                 className="font-heading font-bold text-[11px] tracking-[0.25em] uppercase"
                 style={{ color: "#D4A017" }}
               >
-                Knect
+                Culture
               </h3>
               <div className="h-px w-16 bg-gradient-to-r from-gold/60 to-transparent mt-1" />
             </div>
@@ -116,7 +116,7 @@ export default function CitizenIDCard({
                 </p>
               )}
               {roleBadge && (
-                <span className="inline-block mt-1 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-hc-purple/15 text-hc-purple border border-hc-purple/20">
+                <span className="inline-block mt-1 text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-hc-purple/15 text-gold border border-gold/20">
                   {roleBadge}
                 </span>
               )}
@@ -180,7 +180,7 @@ export default function CitizenIDCard({
                 </div>
               ) : (
                 <span className="text-[10px] font-semibold text-gold/60">
-                  Knect Resident
+                  Culture Resident
                 </span>
               )}
             </div>

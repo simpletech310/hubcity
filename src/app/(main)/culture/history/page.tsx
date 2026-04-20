@@ -5,7 +5,7 @@ import { loadCityHistory } from "@/lib/city-history";
 import { getActiveCity } from "@/lib/city-context";
 
 export const metadata = {
-  title: "History | Knect Museum",
+  title: "History | Culture Museum",
   description:
     "An interactive timeline of your city's history — from its founding to the present day renaissance.",
 };

@@ -68,6 +68,15 @@ export default async function ArtDetailPage({
         </div>
       </div>
 
+      {/* Editorial byline strip */}
+      <div className="px-5 py-5 border-b border-white/[0.08] flex items-center justify-between">
+        <div className="flex items-baseline gap-3">
+          <span className="font-display text-gold text-[22px] leading-none tabular-nums">№ 01</span>
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/50">FEATURE · ART</span>
+        </div>
+        <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">{art.year}</span>
+      </div>
+
       {/* Art Info Panel */}
       <div className="relative z-10 -mt-8">
         <div className="bg-gradient-to-b from-midnight via-midnight to-deep rounded-t-3xl border-t border-gold/20 px-5 pt-6 pb-safe">
@@ -188,7 +197,7 @@ export default async function ArtDetailPage({
               Know the artist or have art to share?
             </p>
             <p className="text-[13px] font-medium">
-              Knect celebrates {art.location || "your city"}&apos;s creative
+              Culture celebrates {art.location || "your city"}&apos;s creative
               spirit. Submit your art or murals to be featured.
             </p>
           </div>

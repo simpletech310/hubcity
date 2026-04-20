@@ -141,7 +141,7 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
                             : chipTone === "cyan"
                               ? "border-cyan/40"
                               : chipTone === "purple"
-                                ? "border-hc-purple/40"
+                                ? "border-gold/40"
                                 : chipTone === "blue"
                                   ? "border-hc-blue/40"
                                   : chipTone === "pink"

@@ -1,6 +1,6 @@
 /**
 import Icon from "@/components/ui/Icon";
- * Knect Hashtag Parser
+ * Culture Hashtag Parser
  * Extracts hashtags from post text and determines if any trigger actions
  */
 

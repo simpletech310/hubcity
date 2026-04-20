@@ -82,7 +82,7 @@ export async function POST() {
 
     // Build the post
     let body = `☀️ Good morning, Compton! Happy ${dayName}, ${monthDay}.\n\n`;
-    body += `📊 Knect Pulse:\n`;
+    body += `📊 Culture Pulse:\n`;
     body += `• ${bizCount ?? 0} local businesses on the platform\n`;
 
     if ((newBizCount ?? 0) > 0) {
@@ -108,9 +108,9 @@ export async function POST() {
       body += `\n🔧 ${activeIssues} active city issues being tracked\n`;
     }
 
-    body += `\nHave a great day, Knect! 🏆`;
+    body += `\nHave a great day, Culture! 🏆`;
 
-    // Get or create the Knect bot profile
+    // Get or create the Culture bot profile
     // For now, use a system approach - find bot profile
     const { data: botProfile } = await adminClient
       .from("profiles")
@@ -123,7 +123,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error:
-            "Knect bot profile not found. Create a profile with handle 'knect' and is_bot=true",
+            "Culture bot profile not found. Create a profile with handle 'knect' and is_bot=true",
         },
         { status: 400 }
       );

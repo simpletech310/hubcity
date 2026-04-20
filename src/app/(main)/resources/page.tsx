@@ -377,26 +377,28 @@ export default function ResourcesPage() {
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ── Hero ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald/8 via-deep to-hc-blue/8 pattern-dots" />
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/50 to-transparent" />
-
-        <div className="relative z-10 px-5 pt-6 pb-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald/15 flex items-center justify-center">
-              <Icon name="handshake" size={18} className="text-emerald" />
-            </div>
-            <p className="text-[10px] text-emerald font-bold uppercase tracking-[0.2em]">Community Support</p>
+      {/* ── Editorial Masthead ── */}
+      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+        <div className="absolute inset-0 pattern-dots opacity-15" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+              VOL · 01 · ISSUE SUPPORT
+            </span>
+            <span className="block w-1 h-1 rounded-full bg-gold/60" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+              {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+            </span>
           </div>
-          <h1 className="font-heading text-[26px] font-bold leading-tight mb-1.5">
-            Resource Center
-          </h1>
-          <p className="font-display italic text-sm text-txt-secondary">
-            Grants, programs & services for {activeCity?.name ?? "local"} residents
-          </p>
+          <h1 className="masthead text-white text-[44px]">SUPPORT.</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="block h-[2px] w-8 bg-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+              Grants, programs & services for {activeCity?.name ?? "local"} residents
+            </span>
+          </div>
         </div>
-      </div>
+      </header>
 
       {/* ── Quick Stats ── */}
       <div className="px-5 -mt-1 mb-5">
@@ -502,11 +504,11 @@ export default function ResourcesPage() {
           {urgentResources.length > 0 && (
             <section className="px-5 mb-6">
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-compton-red" />
+                <div className="w-1 h-5 rounded-full bg-coral" />
                 <h2 className="font-heading font-bold text-base">Act Now</h2>
-                <div className="flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-compton-red/10 border border-compton-red/20">
-                  <div className="w-1.5 h-1.5 rounded-full bg-compton-red pulse-glow" />
-                  <span className="text-[9px] font-bold text-compton-red uppercase">{urgentResources.length} urgent</span>
+                <div className="flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
+                  <div className="w-1.5 h-1.5 rounded-full bg-coral pulse-glow" />
+                  <span className="text-[9px] font-bold text-coral uppercase">{urgentResources.length} urgent</span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -614,7 +616,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
     <Link href={`/resources/${r.id}`}>
       <div
         className={`rounded-2xl bg-card border overflow-hidden press hover:border-gold/20 transition-colors relative ${
-          urgent ? "border-compton-red/20" : "border-border-subtle"
+          urgent ? "border-coral/20" : "border-border-subtle"
         }`}
       >
         {/* Top accent line */}
@@ -708,7 +710,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
               {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
                 <span className={`inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5 ${
                   daysUntilDeadline <= 7
-                    ? "text-compton-red bg-compton-red/8 border border-compton-red/15"
+                    ? "text-coral bg-coral/8 border border-coral/15"
                     : "text-gold bg-gold/8 border border-gold/15"
                 }`}>
                   <Icon name="clock" size={9} />

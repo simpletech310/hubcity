@@ -53,7 +53,7 @@ export default function SignupPage() {
         </span>
       </div>
 
-      <h1 className="font-heading text-2xl font-bold mb-2">Join Knect</h1>
+      <h1 className="font-heading text-2xl font-bold mb-2">Join Culture</h1>
       <p className="text-txt-secondary text-sm mb-8">
         Connect with your Compton community
       </p>

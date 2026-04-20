@@ -20,7 +20,7 @@ interface CityAlert {
 }
 
 export const metadata = {
-  title: "City Data - Knect",
+  title: "City Data - Culture",
   description: "Compton at a glance: weather, air quality, alerts, and community data.",
 };
 
@@ -28,7 +28,7 @@ const EMERGENCY_CONTACTS = [
   { label: "Emergency", number: "911", icon: "shield" as IconName, color: "text-red-400", bg: "bg-red-500/10" },
   { label: "Compton Station", number: "(310) 605-6500", icon: "phone" as IconName, color: "text-cyan", bg: "bg-cyan/10" },
   { label: "City Services", number: "(310) 605-5500", icon: "landmark" as IconName, color: "text-gold", bg: "bg-gold/10" },
-  { label: "Code Enforcement", number: "(310) 605-5577", icon: "gavel" as IconName, color: "text-hc-purple", bg: "bg-hc-purple/10" },
+  { label: "Code Enforcement", number: "(310) 605-5577", icon: "gavel" as IconName, color: "text-gold", bg: "bg-hc-purple/10" },
 ];
 
 const QUICK_LINKS = [
@@ -115,8 +115,8 @@ export default async function CityDataPage() {
               <p className="text-[18px] font-heading font-bold text-cyan">{eventsCount ?? 0}</p>
               <p className="text-[9px] text-white/40 font-medium leading-tight">Events</p>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-hc-purple/8 to-hc-purple/3 border border-hc-purple/15 p-3 text-center">
-              <p className="text-[18px] font-heading font-bold text-hc-purple">4</p>
+            <div className="rounded-xl bg-gradient-to-br from-hc-purple/8 to-hc-purple/3 border border-gold/15 p-3 text-center">
+              <p className="text-[18px] font-heading font-bold text-gold">4</p>
               <p className="text-[9px] text-white/40 font-medium leading-tight">Districts</p>
             </div>
           </div>

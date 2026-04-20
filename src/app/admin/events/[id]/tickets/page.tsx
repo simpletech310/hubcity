@@ -381,7 +381,7 @@ function StatCard({
     gold: { text: "text-gold", border: "border-gold/15", from: "from-gold/[0.06]" },
     emerald: { text: "text-emerald", border: "border-emerald/15", from: "from-emerald/[0.06]" },
     cyan: { text: "text-cyan", border: "border-cyan/15", from: "from-cyan/[0.06]" },
-    purple: { text: "text-hc-purple", border: "border-hc-purple/15", from: "from-hc-purple/[0.06]" },
+    purple: { text: "text-gold", border: "border-gold/15", from: "from-hc-purple/[0.06]" },
   };
 
   const s = styles[color];

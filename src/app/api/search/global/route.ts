@@ -159,7 +159,7 @@ export async function POST(request: Request) {
                 {
                   role: "system",
                   content:
-                    "You are Knect AI, a helpful assistant for Compton, CA residents. Answer concisely (2-3 sentences max) based on the search results provided. If no results match, suggest where they might find what they need.",
+                    "You are Culture AI, a helpful assistant for Compton, CA residents. Answer concisely (2-3 sentences max) based on the search results provided. If no results match, suggest where they might find what they need.",
                 },
                 {
                   role: "user",

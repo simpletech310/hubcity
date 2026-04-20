@@ -138,7 +138,7 @@ export async function POST(request: Request) {
           service_name: service.name,
           idempotency_key: idempotencyKey,
         },
-        description: `Booking: ${service.name} at ${business?.name || "Knect Business"}`,
+        description: `Booking: ${service.name} at ${business?.name || "Culture Business"}`,
         automatic_payment_methods: { enabled: true },
         ...(stripeAccount?.charges_enabled && stripeAccount.stripe_account_id
           ? {

@@ -383,7 +383,7 @@ export default function PulseFeed({
                     className="w-8 h-8 rounded-full bg-hc-purple/10 flex items-center justify-center press hover:bg-hc-purple/20 transition-colors"
                     title="New Survey"
                   >
-                    <Icon name="document" size={14} className="text-hc-purple" />
+                    <Icon name="document" size={14} className="text-gold" />
                   </button>
                 </>
               )}

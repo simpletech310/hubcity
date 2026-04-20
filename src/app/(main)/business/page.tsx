@@ -161,7 +161,7 @@ const localDeals: LocalDeal[] = [
   },
   {
     id: "d4",
-    businessName: "Knect Fitness",
+    businessName: "Culture Fitness",
     businessSlug: "hub-city-fitness",
     category: "health",
     title: "No Sign-Up Fee",
@@ -197,7 +197,7 @@ const localDeals: LocalDeal[] = [
 
 const trendingBusinesses: TrendingBiz[] = [
   { name: "Compton Cuts", slug: "compton-cuts", category: "barber", tagline: "The freshest fades in the city", iconName: "scissors", stat: "340+", statLabel: "cuts/mo" },
-  { name: "Knect Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
+  { name: "Culture Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
   { name: "Glow Up Beauty", slug: "glow-up-beauty", category: "beauty", tagline: "Look good, feel good", iconName: "sparkle", stat: "4.9", statLabel: "rating" },
   { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", iconName: "wrench", stat: "18yrs", statLabel: "serving" },
 ];
@@ -341,28 +341,31 @@ export default function BusinessPage() {
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ── Cinematic Hero ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/12 via-deep to-hc-purple/8" />
-        <div className="absolute inset-0 pattern-dots opacity-30" />
-        <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-midnight to-transparent" />
-
-        <div className="relative z-10 px-5 pt-6 pb-5">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <Icon name="store" size={18} className="text-gold" />
-            </div>
-            <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">Shop Local</p>
+      {/* ── Editorial Masthead ── */}
+      <div className="relative overflow-hidden border-b border-white/[0.08] panel-editorial">
+        <div className="absolute inset-0 pattern-dots opacity-15" />
+        <div className="relative z-10 px-5 pt-6 pb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+              VOL · 01 · ISSUE COMMERCE
+            </span>
+            <span className="block w-1 h-1 rounded-full bg-gold/60" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+              {selectedCities.length === 1
+                ? cities.find((c) => c.slug === selectedCities[0])?.name?.toUpperCase() || "ALL"
+                : "EVERYWHERE"}
+            </span>
           </div>
 
-          <h1 className="font-display text-[28px] font-bold leading-tight mb-1">
-            Local <span className="text-gold-gradient">Businesses</span>
-          </h1>
-          <p className="text-sm text-txt-secondary mb-5">
-            {selectedCities.length === 1
-              ? `${cities.find((c) => c.slug === selectedCities[0])?.name || "Your city"} — filter by category or ownership.`
-              : "Every city, every category — filter by ownership and more."}
-          </p>
+          <h1 className="masthead text-white text-[44px]">COMMERCE.</h1>
+          <div className="mt-3 mb-5 flex items-center gap-3">
+            <span className="block h-[2px] w-8 bg-gold" />
+            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+              {selectedCities.length === 1
+                ? `Shops, services & makers in ${cities.find((c) => c.slug === selectedCities[0])?.name || "your city"}`
+                : "Every city, every category"}
+            </span>
+          </div>
 
           {/* Quick Action Pills */}
           <div className="flex gap-2">
@@ -434,11 +437,11 @@ export default function BusinessPage() {
       {(quickFilter === null || quickFilter === "deals") && (
         <section className="mb-6">
           <div className="px-5 flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-compton-red" />
+            <div className="w-1 h-5 rounded-full bg-coral" />
             <h2 className="font-heading font-bold text-base">Today&apos;s Deals</h2>
-            <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-compton-red/10 border border-compton-red/20">
-              <Icon name="flame" size={10} className="text-compton-red" />
-              <span className="text-[9px] font-bold text-compton-red">{localDeals.length} active</span>
+            <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
+              <Icon name="flame" size={10} className="text-coral" />
+              <span className="text-[9px] font-bold text-coral">{localDeals.length} active</span>
             </div>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
@@ -555,7 +558,7 @@ export default function BusinessPage() {
                 {localDeals.filter((d) => d.promoCode).map((deal) => (
                   <div
                     key={deal.id}
-                    className="rounded-xl bg-card border border-border-subtle p-3.5 relative overflow-hidden hover:border-hc-purple/20 transition-colors"
+                    className="rounded-xl bg-card border border-border-subtle p-3.5 relative overflow-hidden hover:border-gold/20 transition-colors"
                   >
                     <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl" style={{ background: categoryColors[deal.category] }} />
                     <div className="flex items-center gap-3">
@@ -567,8 +570,8 @@ export default function BusinessPage() {
                         <p className="text-[12px] font-bold truncate">{deal.title}</p>
                       </div>
                       <div className="shrink-0 text-right">
-                        <div className="px-2.5 py-1 rounded-lg bg-hc-purple/10 border border-hc-purple/20 border-dashed">
-                          <p className="text-[11px] font-bold text-hc-purple font-mono tracking-wider">{deal.promoCode}</p>
+                        <div className="px-2.5 py-1 rounded-lg bg-hc-purple/10 border border-gold/20 border-dashed">
+                          <p className="text-[11px] font-bold text-gold font-mono tracking-wider">{deal.promoCode}</p>
                         </div>
                         <p className="text-[8px] text-txt-secondary mt-0.5">Valid til {deal.validUntil}</p>
                       </div>
@@ -735,13 +738,13 @@ export default function BusinessPage() {
             </div>
           </section>
 
-          {/* ── Advertise with Knect CTA ── */}
+          {/* ── Advertise with Culture CTA ── */}
           <div className="px-5 mt-8 mb-3">
-            <div className="rounded-2xl bg-gradient-to-r from-hc-purple/10 via-gold/5 to-transparent border border-hc-purple/15 p-5 relative overflow-hidden">
+            <div className="rounded-2xl bg-gradient-to-r from-hc-purple/10 via-gold/5 to-transparent border border-gold/15 p-5 relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-hc-purple via-gold to-transparent" />
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-xl bg-hc-purple/15 flex items-center justify-center shrink-0">
-                  <Icon name="megaphone" size={22} className="text-hc-purple" />
+                  <Icon name="megaphone" size={22} className="text-gold" />
                 </div>
                 <div className="flex-1">
                   <p className="font-heading font-bold text-sm mb-0.5">Promote Your Business</p>
@@ -749,7 +752,7 @@ export default function BusinessPage() {
                 </div>
                 <div className="shrink-0">
                   <div className="w-8 h-8 rounded-lg bg-hc-purple/10 flex items-center justify-center">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-hc-purple">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
                       <path d="M5 2l5 5-5 5" />
                     </svg>
                   </div>
@@ -799,7 +802,7 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
       className="shrink-0 w-[200px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-compton-red/20 transition-colors relative">
+      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-coral/20 transition-colors relative">
         {/* Discount badge */}
         <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
 
@@ -808,8 +811,8 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
             <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${accentColor}15` }}>
               <Icon name={deal.iconName} size={18} style={{ color: accentColor }} />
             </div>
-            <div className="px-2 py-0.5 rounded-lg bg-compton-red/10 border border-compton-red/20">
-              <span className="text-[11px] font-bold text-compton-red">{deal.discount}</span>
+            <div className="px-2 py-0.5 rounded-lg bg-coral/10 border border-coral/20">
+              <span className="text-[11px] font-bold text-coral">{deal.discount}</span>
             </div>
           </div>
 
@@ -822,8 +825,8 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
           </div>
 
           {deal.promoCode && (
-            <div className="mt-2 px-2 py-1 rounded-md bg-hc-purple/8 border border-hc-purple/15 border-dashed text-center">
-              <span className="text-[10px] font-bold text-hc-purple font-mono">{deal.promoCode}</span>
+            <div className="mt-2 px-2 py-1 rounded-md bg-hc-purple/8 border border-gold/15 border-dashed text-center">
+              <span className="text-[10px] font-bold text-gold font-mono">{deal.promoCode}</span>
             </div>
           )}
         </div>

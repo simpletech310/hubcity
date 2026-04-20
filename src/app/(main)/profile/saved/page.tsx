@@ -194,7 +194,7 @@ export default async function SavedItemsPage() {
               href="/"
               className="text-sm text-gold font-semibold press hover:underline"
             >
-              Explore Knect →
+              Explore Culture →
             </Link>
           </div>
         )}

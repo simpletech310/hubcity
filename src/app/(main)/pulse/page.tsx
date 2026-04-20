@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import PulseFeed from "@/components/pulse/PulseFeed";
+import { Masthead } from "@/components/ui/editorial";
+import { getActiveCity } from "@/lib/city-context";
 import type { Post, ReactionEmoji, LiveStream, Poll, Survey, Reel } from "@/types/database";
 
 export default async function PulsePage() {
@@ -176,21 +178,31 @@ export default async function PulsePage() {
     }
   }
 
+  const city = await getActiveCity();
+
   return (
-    <PulseFeed
-      posts={posts}
-      userReactions={userReactions}
-      userId={userId}
-      userName={userName}
-      userRole={userRole}
-      liveStreams={liveStreams}
-      polls={polls}
-      surveys={surveys}
-      events={events}
-      promotions={promotions}
-      trafficAlertCount={trafficAlertCount ?? 0}
-      suggestedProfiles={suggestedProfiles}
-      reels={reels}
-    />
+    <div className="animate-fade-in">
+      <Masthead
+        volume="VOL · 01"
+        issue={`ISSUE ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase()}`}
+        headline="THE FEED"
+        strap={`Voices, photos, and dispatches from ${city?.name ?? "your city"}`}
+      />
+      <PulseFeed
+        posts={posts}
+        userReactions={userReactions}
+        userId={userId}
+        userName={userName}
+        userRole={userRole}
+        liveStreams={liveStreams}
+        polls={polls}
+        surveys={surveys}
+        events={events}
+        promotions={promotions}
+        trafficAlertCount={trafficAlertCount ?? 0}
+        suggestedProfiles={suggestedProfiles}
+        reels={reels}
+      />
+    </div>
   );
 }

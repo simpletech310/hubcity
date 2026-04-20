@@ -4,7 +4,7 @@ import MapExplorer from "@/components/map/MapExplorer";
 import type { MapPoint } from "@/types/map";
 
 export const metadata: Metadata = {
-  title: "Map — Knect",
+  title: "Map — Culture",
   description:
     "Find schools, health clinics, businesses, parks, and city resources across Compton on an interactive map.",
 };

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
-import KnectTV from "@/components/live/KnectTV";
+import CultureTV from "@/components/live/CultureTV";
 import { buildRelatedToLive } from "@/lib/live/relatedToLive";
 import type {
   Channel,
@@ -20,7 +20,7 @@ export default async function LivePage() {
   const supabase = await createClient();
 
   // Fetch channels (includes new `scope` + `is_live_simulated` columns).
-  // National channels (e.g. Knect TV Live) stay visible across every city;
+  // National channels (e.g. Culture TV Live) stay visible across every city;
   // local channels are filtered to the active city.
   const { data: rawChannels } = await supabase
     .from("channels")
@@ -74,7 +74,7 @@ export default async function LivePage() {
     .order("day_of_week", { ascending: true })
     .order("start_time", { ascending: true });
 
-  // Fetch the Knect TV Live simulated-broadcast schedule (next ~50 slots)
+  // Fetch the Culture TV Live simulated-broadcast schedule (next ~50 slots)
   const nowIso = new Date().toISOString();
   const { data: liveChannelRow } = await supabase
     .from("channels")
@@ -148,7 +148,7 @@ export default async function LivePage() {
   );
 
   return (
-    <KnectTV
+    <CultureTV
       channels={(rawChannels as Channel[]) || []}
       streams={(rawStreams as LiveStream[]) || []}
       featuredVideos={(rawFeatured as ChannelVideo[]) || []}

@@ -38,7 +38,7 @@ export function generateICalEvent(event: {
   const lines: string[] = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Knect//Events//EN",
+    "PRODID:-//Culture//Events//EN",
     "BEGIN:VEVENT",
     `DTSTART:${dtStart}`,
   ];

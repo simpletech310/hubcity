@@ -5,7 +5,7 @@ import ExhibitCard from "@/components/culture/ExhibitCard";
 import Icon from "@/components/ui/Icon";
 
 export const metadata = {
-  title: "Exhibits | The Compton Museum | Knect",
+  title: "Exhibits | The Compton Museum | Culture",
   description: "Curated exhibits exploring Compton's culture, history, and artistic heritage.",
 };
 

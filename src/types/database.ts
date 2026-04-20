@@ -327,7 +327,7 @@ export interface LiveStream {
 export type ChannelType =
   // Legacy "local" (Compton-specific) types
   | "school" | "city" | "organization" | "media" | "community" | "museum"
-  // National thematic types (Knect TV pivot)
+  // National thematic types (Culture TV pivot)
   | "food" | "home" | "art" | "fashion" | "wellness" | "comedy" | "talk"
   | "business" | "tech" | "education" | "civic" | "music" | "faith" | "sports";
 

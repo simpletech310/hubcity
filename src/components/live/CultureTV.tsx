@@ -142,7 +142,7 @@ function timeAgo(dateStr: string) {
 }
 
 // ── Props ──────────────────────────────────────────────────
-interface KnectTVProps {
+interface CultureTVProps {
   channels: Channel[];
   streams: LiveStream[];
   featuredVideos: ChannelVideo[];
@@ -159,7 +159,7 @@ interface KnectTVProps {
   relatedToLive?: RelatedToLiveData | null;
 }
 
-export default function KnectTV({
+export default function CultureTV({
   channels: allChannels,
   streams,
   featuredVideos: allFeaturedVideos,
@@ -174,11 +174,11 @@ export default function KnectTV({
   followedChannelIds: initialFollowed,
   purchasedVideoIds,
   relatedToLive = null,
-}: KnectTVProps) {
+}: CultureTVProps) {
   // ── Scope gating: hide local channels/videos unless address-verified ──
   const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
     if (!c) return false;
-    // Knect TV Live is always visible (even though scope=national, it's our flagship)
+    // Culture TV Live is always visible (even though scope=national, it's our flagship)
     if ((c as unknown as { slug?: string }).slug === "knect-tv-live") return true;
     if (c.scope === "national") return true;
     if (c.scope === "local") return isVerified;
@@ -409,7 +409,7 @@ export default function KnectTV({
           <h2 className="font-heading font-bold text-lg">{watchingStream.title}</h2>
           {watchingStream.creator && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-compton-red flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-coral flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
                 {watchingStream.creator.avatar_url ? (
                   <img src={watchingStream.creator.avatar_url} alt="" className="w-full h-full object-cover" />
                 ) : watchingStream.creator.display_name?.[0]?.toUpperCase() || "?"}
@@ -439,6 +439,25 @@ export default function KnectTV({
 
   return (
     <div className="animate-fade-in">
+      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+            VOL · 01 · ISSUE BROADCAST
+          </span>
+          <span className="block w-1 h-1 rounded-full bg-gold/60" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+            EVERYWHERE
+          </span>
+        </div>
+        <h1 className="masthead text-white text-[44px]">CULTURE TV.</h1>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="block h-[2px] w-8 bg-gold" />
+          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
+            Live + on-demand from local creators.
+          </span>
+        </div>
+      </header>
+
       {/* ══════════════════════════════════════════════════════
           HERO BANNER — Netflix-style cinematic header
           ══════════════════════════════════════════════════════ */}
@@ -459,9 +478,9 @@ export default function KnectTV({
 
         <div className="relative z-10 px-5 pt-6 pb-8">
           {/* Brand tag */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-compton-red/15 border border-compton-red/30 mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-compton-red animate-pulse" />
-            <span className="font-heading text-[10px] font-bold text-compton-red tracking-[0.1em]">HUB CITY TV</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30 mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
+            <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">HUB CITY TV</span>
           </div>
 
           {/* Live count indicator */}
@@ -506,7 +525,7 @@ export default function KnectTV({
           ) : (
             <>
               <h1 className="font-heading text-[36px] font-bold leading-[0.95] tracking-tight mb-3">
-                Knect <span className="text-gold">TV</span>
+                Culture <span className="text-gold">TV</span>
               </h1>
               <p className="font-display italic text-[16px] text-warm-gray leading-relaxed max-w-[300px] mb-2">
                 Compton&apos;s community television. Free. Local. Always on.
@@ -567,7 +586,7 @@ export default function KnectTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "home" && (
         <div className="animate-fade-in">
-          {/* ── Knect TV Live (simulated linear channel) ── */}
+          {/* ── Culture TV Live (simulated linear channel) ── */}
           <LiveSimulatedPlayer
             schedule={liveSchedule}
             walmartAd={walmartAd}
@@ -597,7 +616,7 @@ export default function KnectTV({
             </section>
           )}
 
-          {/* ── Trending on Knect TV ── */}
+          {/* ── Trending on Culture TV ── */}
           {trendingVideos.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
@@ -641,12 +660,12 @@ export default function KnectTV({
             </section>
           )}
 
-          {/* ── Knect Originals ── */}
+          {/* ── Culture Originals ── */}
           {originals.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
                 <h2 className="font-heading font-bold text-[18px]">
-                  <span className="text-gold">Knect</span> Originals
+                  <span className="text-gold">Culture</span> Originals
                 </h2>
                 <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
               </div>
@@ -850,7 +869,7 @@ export default function KnectTV({
           {/* ── Get Your Content On The Air CTA ── */}
           <section className="mb-8 px-5">
             <div className="relative overflow-hidden rounded-2xl border border-gold/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-compton-red/10" />
+              <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-coral/10" />
               <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-60" />
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold/5 blur-2xl" />
               <div className="relative z-10 p-5">
@@ -866,7 +885,7 @@ export default function KnectTV({
                   </div>
                 </div>
                 <p className="text-[13px] text-white/60 leading-relaxed mb-4">
-                  Got a podcast, cooking show, or community event? Knect TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
+                  Got a podcast, cooking show, or community event? Culture TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
                 </p>
                 <div className="flex gap-2">
                   <Link href="/profile/settings" className="flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-xl font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20">
@@ -907,7 +926,7 @@ export default function KnectTV({
                 { label: "Sports", icon: "trophy", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
                 { label: "Music", icon: "music", color: "#8B5CF6", gradient: "from-hc-purple/30 to-hc-purple/5" },
                 { label: "News", icon: "megaphone", color: "#06B6D4", gradient: "from-cyan/30 to-cyan/5" },
-                { label: "Culture", icon: "theater", color: "#EF4444", gradient: "from-compton-red/30 to-compton-red/5" },
+                { label: "Culture", icon: "theater", color: "#EF4444", gradient: "from-coral/30 to-coral/5" },
                 { label: "Podcasts", icon: "music", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
                 { label: "Education", icon: "book", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
               ].map((cat, i) => (
@@ -920,13 +939,13 @@ export default function KnectTV({
             </div>
           </section>
 
-          {/* ── Today on Knect TV ── */}
+          {/* ── Today on Culture TV ── */}
           {todayBlocks.length > 0 && (
             <section className="mb-8 px-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-gold" />
-                  Today on Knect TV
+                  Today on Culture TV
                 </h2>
                 <button onClick={() => setActiveTab("schedule")} className="text-[12px] text-gold font-semibold press">Full Schedule →</button>
               </div>
@@ -938,8 +957,8 @@ export default function KnectTV({
 
           {/* ── Creator Spotlight CTA ── */}
           <section className="mb-8 px-5">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-compton-red/10 via-midnight to-coral/10 border border-compton-red/15 p-5">
-              <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-compton-red/5 blur-2xl" />
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-coral/10 via-midnight to-coral/10 border border-coral/15 p-5">
+              <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-coral/5 blur-2xl" />
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-2">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-coral">
@@ -950,7 +969,7 @@ export default function KnectTV({
                   <h3 className="font-heading font-bold text-[15px]">Got a Podcast?</h3>
                 </div>
                 <p className="text-[12px] text-white/50 mb-3 leading-relaxed">
-                  Record it. Upload it. Compton listens. Knect TV hosts local podcasts, talk shows, and audio content from the community.
+                  Record it. Upload it. Compton listens. Culture TV hosts local podcasts, talk shows, and audio content from the community.
                 </p>
                 <Link href="/podcasts" className="inline-flex items-center gap-1.5 text-[12px] text-coral font-semibold press">
                   Explore Podcasts
@@ -960,9 +979,9 @@ export default function KnectTV({
             </div>
           </section>
 
-          {/* ── Why Knect TV ── */}
+          {/* ── Why Culture TV ── */}
           <section className="mb-8 px-5">
-            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Knect TV</span>?</h2>
+            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Culture TV</span>?</h2>
             <div className="space-y-3">
               {[
                 { emoji: "1", title: "100% Free", desc: "No subscriptions, no ads for viewers, no paywall. Just Compton.", color: "#22C55E" },
@@ -1067,7 +1086,7 @@ export default function KnectTV({
         <div className="animate-fade-in">
           <div className="px-5 mb-6">
             <h2 className="font-heading font-bold text-[22px] mb-1">
-              <span className="text-gold">Knect</span> Originals
+              <span className="text-gold">Culture</span> Originals
             </h2>
             <p className="font-display italic text-[14px] text-warm-gray">
               Premium content. Made in Compton. Streaming to the world.
@@ -1102,7 +1121,7 @@ export default function KnectTV({
                         </div>
                       </div>
                       <div className="absolute top-3 left-3">
-                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Knect Original</span>
+                        <span className="px-2.5 py-1 rounded-lg text-[9px] font-bold tracking-wider uppercase text-white" style={{ background: `${accent}CC` }}>Culture Original</span>
                       </div>
                       {video.duration && (
                         <div className="absolute bottom-3 right-3 bg-black/70 rounded px-1.5 py-0.5 text-[10px] font-mono text-white">
@@ -1134,7 +1153,7 @@ export default function KnectTV({
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="font-heading font-bold text-base">All Videos</h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">Latest from Knect TV</p>
+                <p className="text-[12px] text-warm-gray mt-0.5">Latest from Culture TV</p>
               </div>
               <div className="px-5 space-y-3">
                 {recentVideos.filter((v) => v.video_type !== "original").map((video) => (

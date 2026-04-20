@@ -61,7 +61,7 @@ export async function POST() {
     body += `\n🔧 ${activeCount} total active issue${activeCount !== 1 ? "s" : ""} being tracked\n`;
     body += `\nReport an issue with #pothole, #streetlight, #graffiti, and more! 🏙️`;
 
-    // Get the Knect bot profile
+    // Get the Culture bot profile
     const { data: botProfile } = await adminClient
       .from("profiles")
       .select("id")
@@ -73,7 +73,7 @@ export async function POST() {
       return NextResponse.json(
         {
           error:
-            "Knect bot profile not found. Create a profile with handle 'knect' and is_bot=true",
+            "Culture bot profile not found. Create a profile with handle 'knect' and is_bot=true",
         },
         { status: 400 }
       );
