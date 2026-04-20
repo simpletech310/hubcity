@@ -10,6 +10,7 @@ import EditorialHeader from "@/components/ui/EditorialHeader";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
 import CityOwnershipFilter, {
   DEFAULT_OWNERSHIP_OPTIONS,
@@ -213,6 +214,7 @@ const quickActions: { label: string; iconName: IconName; filter: string; color: 
 // ---------------------------------------------------------------------------
 
 export default function BusinessPage() {
+  const activeCity = useActiveCity();
   const [activeCategory, setActiveCategory] = useState("all");
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
@@ -251,6 +253,10 @@ export default function BusinessPage() {
         .order("is_featured", { ascending: false })
         .order("rating_avg", { ascending: false });
 
+      if (activeCity?.id) {
+        query = query.eq("city_id", activeCity.id);
+      }
+
       if (activeCategory !== "all") {
         query = query.eq("category", activeCategory);
       }
@@ -279,7 +285,7 @@ export default function BusinessPage() {
       setLoading(false);
     }
     fetchData();
-  }, [activeCategory]);
+  }, [activeCategory, activeCity?.id]);
 
   const filtered = useMemo(() => {
     let result = businesses;
@@ -443,12 +449,12 @@ export default function BusinessPage() {
         </section>
       )}
 
-      {/* ── Trending in Compton ── */}
+      {/* ── Trending ── */}
       {activeCategory === "all" && !search && !quickFilter && (
         <section className="mb-6">
           <div className="px-5 flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">Trending in Compton</h2>
+            <h2 className="font-heading font-bold text-base">Trending in {activeCity?.name ?? "your city"}</h2>
             <span className="text-[10px] text-txt-secondary ml-auto flex items-center gap-1"><Icon name="trending" size={10} /> This week</span>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
@@ -573,12 +579,12 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── New in Compton ── */}
+          {/* ── New ── */}
           {activeCategory === "all" && !search && !quickFilter && newBusinesses.length > 0 && (
             <section className="mb-6">
               <div className="px-5 flex items-center gap-2 mb-3">
                 <div className="w-1 h-5 rounded-full bg-coral" />
-                <h2 className="font-heading font-bold text-base">New in Compton</h2>
+                <h2 className="font-heading font-bold text-base">New in {activeCity?.name ?? "your city"}</h2>
                 <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
                   <span className="text-[9px] font-bold text-coral">Just opened</span>
                 </div>
@@ -665,7 +671,7 @@ export default function BusinessPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-emerald text-[10px]">•</span>
-                        <p className="text-[11px] text-txt-secondary">68¢ of every $1 stays in Compton</p>
+                        <p className="text-[11px] text-txt-secondary">68¢ of every $1 stays in {activeCity?.name ?? "your city"}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-emerald text-[10px]">•</span>
@@ -739,7 +745,7 @@ export default function BusinessPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-heading font-bold text-sm mb-0.5">Promote Your Business</p>
-                  <p className="text-[11px] text-txt-secondary">Run deals, get featured & reach all of Compton</p>
+                  <p className="text-[11px] text-txt-secondary">Run deals, get featured & reach all of {activeCity?.name ?? "your city"}</p>
                 </div>
                 <div className="shrink-0">
                   <div className="w-8 h-8 rounded-lg bg-hc-purple/10 flex items-center justify-center">
@@ -761,7 +767,7 @@ export default function BusinessPage() {
                   <Icon name="store" size={22} className="text-gold" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-heading font-bold text-sm mb-0.5">Own a Business in Compton?</p>
+                  <p className="font-heading font-bold text-sm mb-0.5">Own a Business in {activeCity?.name ?? "your city"}?</p>
                   <p className="text-[11px] text-txt-secondary">Get listed, earn city badges & connect with customers</p>
                 </div>
                 <div className="shrink-0">

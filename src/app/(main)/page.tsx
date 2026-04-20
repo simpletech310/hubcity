@@ -9,6 +9,7 @@ import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
+import { getActiveCity } from "@/lib/city-context";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
@@ -63,6 +64,21 @@ export default async function HomePage() {
   const supabase = await createClient();
   const nowIso = new Date().toISOString();
   const todayIso = new Date().toISOString().split("T")[0];
+  const activeCity = await getActiveCity();
+  const cityId = activeCity?.id ?? null;
+
+  // Helper that conditionally narrows a query to the active city. When no
+  // city has been resolved yet (very rare — only on cold-boot with zero
+  // live cities) we fall back to a global query so the homepage still has
+  // content rather than an empty shell.
+  const scopeToCity = <T,>(q: T): T => {
+    if (!cityId) return q;
+    // The Supabase QueryBuilder chains type-narrow nicely once you cast.
+    return ((q as unknown) as { eq: (k: string, v: string) => T }).eq(
+      "city_id",
+      cityId,
+    );
+  };
 
   const [
     {
@@ -78,69 +94,83 @@ export default async function HomePage() {
     { data: recentPodcasts },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase
-      .from("businesses")
-      .select("id, name, slug, category, image_urls, address, rating_avg")
-      .eq("is_featured", true)
-      .eq("is_published", true)
+    scopeToCity(
+      supabase
+        .from("businesses")
+        .select("id, name, slug, category, image_urls, address, rating_avg")
+        .eq("is_featured", true)
+        .eq("is_published", true),
+    )
       .order("rating_avg", { ascending: false })
       .limit(8),
-    supabase
-      .from("events")
-      .select(
-        "id, title, start_date, location_name, image_url",
-      )
-      .eq("is_published", true)
+    scopeToCity(
+      supabase
+        .from("events")
+        .select("id, title, start_date, location_name, image_url")
+        .eq("is_published", true),
+    )
       .gte("start_date", todayIso)
       .order("start_date", { ascending: true })
       .limit(6),
-    supabase
-      .from("live_streams")
-      .select("id, title, category, mux_playback_id, status, viewer_count")
-      .eq("status", "active")
-      .limit(3),
-    supabase
-      .from("posts")
-      .select(
-        "*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)",
-      )
-      .eq("is_published", true)
+    scopeToCity(
+      supabase
+        .from("live_streams")
+        .select("id, title, category, mux_playback_id, status, viewer_count")
+        .eq("status", "active"),
+    ).limit(3),
+    scopeToCity(
+      supabase
+        .from("posts")
+        .select(
+          "*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)",
+        )
+        .eq("is_published", true),
+    )
       .order("created_at", { ascending: false })
       .limit(8),
-    supabase
-      .from("city_alerts")
-      .select("id, title, body, severity")
-      .eq("is_active", true)
-      .eq("severity", "critical")
+    scopeToCity(
+      supabase
+        .from("city_alerts")
+        .select("id, title, body, severity")
+        .eq("is_active", true)
+        .eq("severity", "critical"),
+    )
       .order("created_at", { ascending: false })
       .limit(2),
-    supabase
-      .from("businesses")
-      .select(
-        "id, name, slug, image_urls, category, business_sub_type, rating_avg, is_open",
-      )
-      .eq("is_published", true)
-      .eq("business_type", "food")
+    scopeToCity(
+      supabase
+        .from("businesses")
+        .select(
+          "id, name, slug, image_urls, category, business_sub_type, rating_avg, is_open",
+        )
+        .eq("is_published", true)
+        .eq("business_type", "food"),
+    )
       .order("rating_avg", { ascending: false })
       .limit(8),
-    supabase
-      .from("live_streams")
-      .select("id, title, category, thumbnail_url, scheduled_at")
-      .eq("status", "idle")
+    scopeToCity(
+      supabase
+        .from("live_streams")
+        .select("id, title, category, thumbnail_url, scheduled_at")
+        .eq("status", "idle"),
+    )
       .gte("scheduled_at", nowIso)
       .order("scheduled_at", { ascending: true })
       .limit(4)
       .returns<UpcomingStream[]>(),
-    supabase
-      .from("podcasts")
-      .select("id, title, episode_number, thumbnail_url, duration")
-      .eq("is_published", true)
+    scopeToCity(
+      supabase
+        .from("podcasts")
+        .select("id, title, episode_number, thumbnail_url, duration")
+        .eq("is_published", true),
+    )
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(4)
       .returns<RecentPodcast[]>(),
   ]);
 
-  let displayName = "Compton";
+  const cityName = activeCity?.name ?? "your city";
+  let displayName = cityName;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
@@ -154,7 +184,7 @@ export default async function HomePage() {
 
   const pulsePosts: Post[] = (recentPosts ?? []) as Post[];
   const greeting = getGreeting();
-  const featuredArt = getFeaturedArt();
+  const featuredArt = cityId ? await getFeaturedArt(cityId) : null;
   const hasLive = Boolean(liveStreams && liveStreams.length > 0);
   const featuredBusinesses = businesses ?? [];
 
@@ -193,50 +223,52 @@ export default async function HomePage() {
   return (
     <div className="animate-fade-in space-y-6">
       {/* -- 1. Art Spotlight Hero -- */}
-      <section className="relative">
-        <Link href={`/art/${featuredArt.slug}`} className="block press">
-          <div className="relative w-full h-[65vh]">
-            <Image
-              src={featuredArt.imageUrl}
-              alt={featuredArt.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="100vw"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
-            <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
+      {featuredArt && (
+        <section className="relative">
+          <Link href={`/art/${featuredArt.slug}`} className="block press">
+            <div className="relative w-full h-[65vh]">
+              <Image
+                src={featuredArt.imageUrl}
+                alt={featuredArt.title}
+                fill
+                className="object-cover"
+                priority
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
+              <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
 
-            <div className="absolute top-4 left-5 z-10">
-              <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1.5 text-[10px] font-bold text-gold tracking-wider uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-                Art Spotlight
-              </span>
-            </div>
+              <div className="absolute top-4 left-5 z-10">
+                <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1.5 text-[10px] font-bold text-gold tracking-wider uppercase">
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+                  Art Spotlight
+                </span>
+              </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
-              <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
-                Featured Artist &middot; {featuredArt.year}
-              </p>
-              <h2 className="font-display text-[28px] leading-tight mb-1.5 drop-shadow-lg">
-                &ldquo;{featuredArt.title}&rdquo;
-              </h2>
-              <p className="text-[14px] text-gold font-heading font-semibold mb-1">
-                {featuredArt.artist}
-              </p>
-              <p className="text-[12px] text-white/40">
-                {featuredArt.medium} &middot; {featuredArt.location}
-              </p>
+              <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
+                <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
+                  Featured Artist &middot; {featuredArt.year}
+                </p>
+                <h2 className="font-display text-[28px] leading-tight mb-1.5 drop-shadow-lg">
+                  &ldquo;{featuredArt.title}&rdquo;
+                </h2>
+                <p className="text-[14px] text-gold font-heading font-semibold mb-1">
+                  {featuredArt.artist}
+                </p>
+                <p className="text-[12px] text-white/40">
+                  {featuredArt.medium} &middot; {featuredArt.location}
+                </p>
 
-              <div className="flex justify-center mt-6">
-                <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
-                  <Icon name="chevron-down" size={14} className="text-white" />
+                <div className="flex justify-center mt-6">
+                  <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
+                    <Icon name="chevron-down" size={14} className="text-white" />
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Link>
-      </section>
+          </Link>
+        </section>
+      )}
 
       {/* -- 2. Greeting + Search -- */}
       <section className="px-5 -mt-1 space-y-3">
@@ -245,7 +277,7 @@ export default async function HomePage() {
             {greeting}, <span className="text-gold">{displayName}</span>
           </h1>
           <p className="text-[13px] text-warm-gray mt-0.5">
-            What&apos;s happening in Compton today
+            What&apos;s happening in {cityName} today
           </p>
         </div>
         <AISearchButton />
@@ -308,7 +340,7 @@ export default async function HomePage() {
           <div className="px-5">
             <SectionHeader
               title="Upcoming Events"
-              subtitle="This week in Compton"
+              subtitle={`This week in ${cityName}`}
               linkText="See All"
               linkHref="/events"
               compact
@@ -382,7 +414,7 @@ export default async function HomePage() {
         <section className="space-y-3">
           <div className="px-5">
             <SectionHeader
-              title="Eat in Compton"
+              title={`Eat in ${cityName}`}
               subtitle="Top-rated local spots"
               linkText="See All"
               linkHref="/food"
@@ -621,7 +653,7 @@ export default async function HomePage() {
           <div className="px-5">
             <SectionHeader
               title="Local Favorites"
-              subtitle="Hand-picked spots in Compton"
+              subtitle={`Hand-picked spots in ${cityName}`}
               linkText="See All"
               linkHref="/business"
               compact

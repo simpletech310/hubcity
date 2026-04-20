@@ -87,8 +87,10 @@ export function notificationEmailTemplate(
   title: string,
   body: string,
   ctaUrl?: string,
-  ctaText?: string
+  ctaText?: string,
+  cityName?: string,
 ): string {
+  const footerCity = cityName?.trim() || "Your city";
   return `
 <!DOCTYPE html>
 <html>
@@ -116,7 +118,7 @@ export function notificationEmailTemplate(
 
     <!-- Footer -->
     <div style="text-align:center;">
-      <p style="margin:0;font-size:11px;color:#666666;">Knect — Compton's Digital Town Hall</p>
+      <p style="margin:0;font-size:11px;color:#666666;">Knect — ${footerCity}'s Digital Town Hall</p>
       <p style="margin:4px 0 0;font-size:11px;color:#444444;">You received this because you're a Knect member.</p>
     </div>
   </div>
@@ -125,8 +127,10 @@ export function notificationEmailTemplate(
 }
 
 export function issueDigestEmailTemplate(
-  issues: Array<{ type: string; title: string; location: string; count: number; url: string }>
+  issues: Array<{ type: string; title: string; location: string; count: number; url: string }>,
+  cityName?: string,
 ): string {
+  const footerCity = cityName?.trim() || "Your city";
   const issueRows = issues
     .map(
       (i) =>
@@ -164,7 +168,7 @@ export function issueDigestEmailTemplate(
       </table>
     </div>
     <div style="text-align:center;margin-top:24px;">
-      <p style="margin:0;font-size:11px;color:#666666;">Knect — Compton's Digital Town Hall</p>
+      <p style="margin:0;font-size:11px;color:#666666;">Knect — ${footerCity}'s Digital Town Hall</p>
     </div>
   </div>
 </body>

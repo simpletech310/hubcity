@@ -6,6 +6,7 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import StreamCard from "./StreamCard";
+import ChannelSubscribeButton from "./ChannelSubscribeButton";
 import type {
   Channel,
   ChannelVideo,
@@ -186,18 +187,21 @@ export default function ChannelPage({
           </div>
         </div>
 
-        {/* Follow button */}
+        {/* Follow + Subscribe buttons */}
         {userId && (
-          <button
-            onClick={handleFollow}
-            className={`mt-3 w-full py-2.5 rounded-xl text-sm font-bold press transition-all ${
-              following
-                ? "bg-gold/15 text-gold border border-gold/30"
-                : "bg-gradient-to-r from-gold to-gold-light text-midnight"
-            }`}
-          >
-            {following ? "Following" : "Follow"}
-          </button>
+          <div className="mt-3 flex flex-col gap-2">
+            <button
+              onClick={handleFollow}
+              className={`w-full py-2.5 rounded-xl text-sm font-bold press transition-all ${
+                following
+                  ? "bg-gold/15 text-gold border border-gold/30"
+                  : "bg-gradient-to-r from-gold to-gold-light text-midnight"
+              }`}
+            >
+              {following ? "Following" : "Follow"}
+            </button>
+            <ChannelSubscribeButton channel={channel} userId={userId} />
+          </div>
         )}
       </div>
 

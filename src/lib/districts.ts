@@ -1,10 +1,19 @@
 /**
- * Maps Compton ZIP codes to city council districts (1-4).
- * Compton's primary ZIP codes are 90220, 90221, 90222, and 90223.
- * This is a simplified mapping — a production app would use
- * precise geographic boundary polygons.
+ * District / trustee-area lookups.
+ *
+ * Historically this file was hardcoded to Compton. After the multi-city
+ * refactor, the canonical source for district boundaries is the per-city
+ * `cities.districts` jsonb column (see migration 049). The legacy in-memory
+ * Compton table below is kept as a fast path used as a fallback if no
+ * city-specific mapping is available.
+ *
+ * Prefer `isCityZip(zip, city)` and the new helpers in this module over the
+ * legacy `isComptonZip` (still exported for backwards compatibility).
  */
 
+import type { City } from "@/lib/cities";
+
+// ── Legacy Compton ZIP → district fallback ────────────────────────────────
 const ZIP_TO_DISTRICT: Record<string, number> = {
   "90220": 1,
   "90221": 2,
@@ -12,7 +21,6 @@ const ZIP_TO_DISTRICT: Record<string, number> = {
   "90223": 4,
 };
 
-// Extended ZIP codes that overlap with Compton
 const EXTENDED_ZIPS: Record<string, number> = {
   "90224": 1,
   "90059": 2,
@@ -20,11 +28,40 @@ const EXTENDED_ZIPS: Record<string, number> = {
   "90262": 4,
 };
 
-export function getDistrictFromZip(zip: string): number | null {
+/**
+ * Look up the district for a ZIP within a given city. Falls back to the
+ * legacy Compton table if the city has no district config (so existing
+ * Compton flows keep working).
+ */
+export function getDistrictFromZip(
+  zip: string,
+  city?: Pick<City, "districts"> | null
+): number | null {
   const trimmed = zip.trim();
+  const districts = city?.districts;
+  if (districts) {
+    for (const [key, def] of Object.entries(districts)) {
+      const num = Number(key);
+      if (!Number.isFinite(num)) continue;
+      const zips = (def?.zip_codes as string[] | undefined) ?? [];
+      if (zips.includes(trimmed)) return num;
+    }
+  }
   return ZIP_TO_DISTRICT[trimmed] ?? EXTENDED_ZIPS[trimmed] ?? null;
 }
 
+/**
+ * Generic city-aware ZIP membership check. Use this in onboarding flows.
+ */
+export function isCityZip(
+  zip: string,
+  city: Pick<City, "default_zip_codes"> | null
+): boolean {
+  if (!city) return false;
+  return city.default_zip_codes.includes(zip.trim());
+}
+
+/** @deprecated Use `isCityZip(zip, city)` with the active city. */
 export function isComptonZip(zip: string): boolean {
   return getDistrictFromZip(zip) !== null;
 }

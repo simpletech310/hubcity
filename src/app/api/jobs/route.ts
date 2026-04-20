@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getCityBySlug } from "@/lib/cities";
+import { getActiveCity } from "@/lib/city-context";
 
 export async function GET(request: Request) {
   try {
@@ -8,6 +10,17 @@ export async function GET(request: Request) {
     const type = searchParams.get("type");
     const search = searchParams.get("search");
     const orgType = searchParams.get("org_type");
+    const citySlug = searchParams.get("city");
+
+    // Resolve city: explicit slug param > active city from cookie/profile.
+    let cityId: string | null = null;
+    if (citySlug) {
+      const c = await getCityBySlug(citySlug);
+      if (c) cityId = c.id;
+    } else {
+      const active = await getActiveCity();
+      if (active) cityId = active.id;
+    }
 
     let query = supabase
       .from("job_listings")
@@ -16,6 +29,10 @@ export async function GET(request: Request) {
       )
       .eq("is_active", true)
       .order("created_at", { ascending: false });
+
+    if (cityId) {
+      query = query.eq("city_id", cityId);
+    }
 
     if (type && type !== "all") {
       query = query.eq("job_type", type);

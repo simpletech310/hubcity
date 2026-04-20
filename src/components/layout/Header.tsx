@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import SearchModal from "@/components/search/SearchModal";
+import CityPicker from "@/components/city/CityPicker";
 
 /* ── Page title mappings ── */
 const pageTitles: Record<string, string> = {
@@ -141,19 +142,21 @@ export default function Header() {
               <h1 className="font-heading font-bold text-lg tracking-tight">{title}</h1>
             </div>
           ) : (
-            <Link href="/" aria-label="Knect Home" className="flex items-center gap-2.5 press">
-              <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-light rounded-[10px] flex items-center justify-center font-heading font-extrabold text-[15px] text-midnight shadow-lg shadow-gold/20">
-                K
-              </div>
-              <div className="flex flex-col">
+            <div className="flex items-center gap-2.5">
+              <Link
+                href="/"
+                aria-label="Knect Home"
+                className="flex items-center gap-2.5 press"
+              >
+                <div className="w-9 h-9 bg-gradient-to-br from-gold to-gold-light rounded-[10px] flex items-center justify-center font-heading font-extrabold text-[15px] text-midnight shadow-lg shadow-gold/20">
+                  K
+                </div>
                 <span className="font-heading font-bold text-lg tracking-tight leading-none">
                   K<span className="text-gold">nect</span>
                 </span>
-                <span className="text-[9px] text-txt-secondary tracking-[0.15em] uppercase leading-none mt-0.5">
-                  Compton, CA
-                </span>
-              </div>
-            </Link>
+              </Link>
+              <CityPicker variant="header" />
+            </div>
           )}
 
           {/* Action Buttons */}

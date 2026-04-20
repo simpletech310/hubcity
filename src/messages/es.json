@@ -40,9 +40,9 @@
     "goodMorning": "Buenos d\u00edas",
     "goodAfternoon": "Buenas tardes",
     "goodEvening": "Buenas noches",
-    "whatsHappening": "Qu\u00e9 est\u00e1 pasando en Compton hoy",
+    "whatsHappening": "Qu\u00e9 est\u00e1 pasando en {cityName} hoy",
     "communityPulse": "Pulso comunitario",
-    "atAGlance": "Compton de un vistazo",
+    "atAGlance": "{cityName} de un vistazo",
     "activeListings": "Listados activos",
     "liveStreams": "Transmisiones en vivo",
     "broadcastingNow": "Transmitiendo ahora",
@@ -51,13 +51,13 @@
     "activePolls": "Encuestas activas",
     "haveYourSay": "Da tu opini\u00f3n",
     "featuredBusinesses": "Negocios destacados",
-    "supportLocal": "Apoya lo local en Compton",
+    "supportLocal": "Apoya lo local en {cityName}",
     "upcomingEvents": "Pr\u00f3ximos eventos",
     "dontMissOut": "No te lo pierdas",
     "whatsNew": "Novedades",
     "latestFromCity": "Lo \u00faltimo de tu ciudad",
     "communityBoard": "Tabl\u00f3n comunitario",
-    "builtInCompton": "Hecho en Compton",
+    "builtInCompton": "Hecho en {cityName}",
     "streamingToWorld": "Transmitiendo al mundo"
   },
   "cityData": {
@@ -77,12 +77,12 @@
     "viewAgenda": "Ver agenda"
   },
   "culture": {
-    "title": "Cultura de Compton",
+    "title": "Cultura de {cityName}",
     "murals": "Murales",
     "music": "Herencia musical",
     "artists": "Artistas locales",
     "calendar": "Calendario cultural",
-    "stories": "Historias de Compton",
+    "stories": "Historias de {cityName}",
     "featuredArtist": "Artista destacado",
     "walkingTour": "Recorrido a pie"
   },

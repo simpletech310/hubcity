@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getCityBySlug } from "@/lib/cities";
+import { getActiveCity } from "@/lib/city-context";
 
 export async function GET(request: Request) {
   try {
@@ -7,6 +9,17 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const subtype = searchParams.get("subtype"); // restaurant, food_truck, cart
+    const citySlug = searchParams.get("city");
+
+    // Resolve city: explicit slug param > active city from cookie/profile.
+    let cityId: string | null = null;
+    if (citySlug) {
+      const c = await getCityBySlug(citySlug);
+      if (c) cityId = c.id;
+    } else {
+      const active = await getActiveCity();
+      if (active) cityId = active.id;
+    }
 
     let query = supabase
       .from("businesses")
@@ -14,6 +27,10 @@ export async function GET(request: Request) {
       .eq("is_published", true)
       .order("is_featured", { ascending: false })
       .order("rating_avg", { ascending: false });
+
+    if (cityId) {
+      query = query.eq("city_id", cityId);
+    }
 
     if (subtype) {
       if (subtype === "food_truck") {

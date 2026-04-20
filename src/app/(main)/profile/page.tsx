@@ -202,6 +202,9 @@ export default async function ProfilePage() {
     userBusiness = biz;
   }
 
+  // Surface creator dashboard for users with the creator role.
+  const isCreator = profile?.is_creator === true || role === "content_creator";
+
   const dInfo = district ? districtInfo[district] : null;
   const posts = recentPosts ?? [];
   const tickets = ticketOrders ?? [];
@@ -302,6 +305,53 @@ export default async function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* -- Creator Studio (creators only) -- */}
+      {isCreator && (
+        <section className="px-5 mb-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-hc-purple" />
+            <h2 className="font-heading font-bold text-base">Creator Studio</h2>
+          </div>
+          <Link href="/dashboard/creator">
+            <Card variant="glass" hover className="relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gold" />
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                  <Icon name="dollar" size={22} className="text-gold" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading font-bold text-sm">Creator Dashboard</p>
+                  <p className="text-[10px] text-txt-secondary">
+                    Earnings, payouts, monetization settings
+                  </p>
+                </div>
+                <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+              </div>
+            </Card>
+          </Link>
+        </section>
+      )}
+
+      {/* -- My Subscriptions (anyone) -- */}
+      <section className="px-5 mb-5">
+        <Link href="/profile/subscriptions">
+          <Card variant="glass" hover className="relative overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
+                <Icon name="bell" size={18} className="text-emerald" />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-[13px]">My Subscriptions</p>
+                <p className="text-[10px] text-txt-secondary">
+                  Channels you support · billing
+                </p>
+              </div>
+              <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+            </div>
+          </Card>
+        </Link>
+      </section>
 
       {/* -- Business Dashboard -- */}
       {userBusiness && (

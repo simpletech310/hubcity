@@ -11,6 +11,7 @@ import AdZone from "@/components/ui/AdZone";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Event } from "@/types/database";
 
 const categories: { label: string; value: string; icon: IconName }[] = [
@@ -84,6 +85,7 @@ function isThisWeek(dateStr: string) {
 }
 
 export default function EventsPage() {
+  const activeCity = useActiveCity();
   const [activeCategory, setActiveCategory] = useState("all");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,6 +103,10 @@ export default function EventsPage() {
         .order("is_featured", { ascending: false })
         .order("start_date", { ascending: true });
 
+      if (activeCity?.id) {
+        query = query.eq("city_id", activeCity.id);
+      }
+
       if (activeCategory !== "all") {
         query = query.eq("category", activeCategory);
       }
@@ -110,7 +116,7 @@ export default function EventsPage() {
       setLoading(false);
     }
     fetchEvents();
-  }, [activeCategory]);
+  }, [activeCategory, activeCity?.id]);
 
   const featured = useMemo(() => events.filter((e) => e.is_featured), [events]);
   const todayEvents = useMemo(() => events.filter((e) => isToday(e.start_date)), [events]);
@@ -440,7 +446,7 @@ export default function EventsPage() {
                   Host Your Event on Knect
                 </h3>
                 <p className="font-display italic text-[13px] text-warm-gray leading-relaxed mb-4 max-w-[280px]">
-                  Reach every citizen in Compton. List your event for free.
+                  Reach every citizen in {activeCity?.name ?? "your city"}. List your event for free.
                 </p>
                 <Link
                   href="/dashboard"
@@ -495,7 +501,7 @@ function EventCardHot({ event }: { event: Event }) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-[11px] text-warm-gray">
               <Icon name="pin" size={12} />
-              <span className="truncate max-w-[140px]">{event.location_name ?? "Compton"}</span>
+              <span className="truncate max-w-[140px]">{event.location_name ?? ""}</span>
             </div>
             {(event.rsvp_count ?? 0) > 0 && (
               <div className="flex items-center gap-1">

@@ -97,7 +97,7 @@ const SUGGESTIONS = [
   "Restaurants near me",
   "Community events",
   "Youth programs",
-  "Compton schools",
+  "Local schools",
   "Local businesses",
 ];
 

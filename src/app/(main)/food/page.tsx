@@ -15,6 +15,7 @@ import type {
   FoodChallenge,
 } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import CityOwnershipFilter, {
   DEFAULT_OWNERSHIP_OPTIONS,
   type CityOption,
@@ -361,6 +362,7 @@ function PromoCard({ promo }: { promo: FoodPromotion }) {
 
 // ─── Main Page ─────────────────────────────────────
 export default function FoodPage() {
+  const activeCity = useActiveCity();
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [businesses, setBusinesses] = useState<Business[]>([]);
@@ -393,13 +395,14 @@ export default function FoodPage() {
       const params = new URLSearchParams();
       if (activeTab !== "all") params.set("subtype", activeTab);
       if (search) params.set("search", search);
+      if (activeCity?.slug) params.set("city", activeCity.slug);
       const res = await fetch(`/api/food/businesses?${params}`);
       const data = await res.json();
       setBusinesses(data.businesses ?? []);
       setLoading(false);
     }
     fetchBusinesses();
-  }, [activeTab, search]);
+  }, [activeTab, search, activeCity?.slug]);
 
   // Fetch supporting data
   useEffect(() => {
@@ -445,21 +448,21 @@ export default function FoodPage() {
     <div className="animate-fade-in pb-safe">
       {/* ─── Hero ─── */}
       <div className="relative h-64 overflow-hidden">
-        <Image src="/images/generated/food-hero.png" alt="Food & Dining in Compton" fill className="object-cover" priority />
+        <Image src="/images/generated/food-hero.png" alt={`Food & Dining in ${activeCity?.name ?? "your city"}`} fill className="object-cover" priority />
         <div className="absolute inset-0 bg-gradient-to-b from-midnight/50 via-midnight/80 to-midnight" />
         <div className="absolute inset-0 pattern-dots opacity-20" />
 
         <div className="absolute inset-0 flex flex-col justify-end p-5">
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1.5 bg-coral/15 border border-coral/25 rounded-full px-3 py-1 text-[10px] font-bold text-coral badge-shine uppercase tracking-wide">
-              Compton Eats
+              {activeCity?.name ?? "Local"} Eats
             </span>
           </div>
           <h1 className="font-display text-3xl font-bold leading-tight mb-1">
             Food & <span className="text-gold-gradient">Flavor</span>
           </h1>
           <p className="text-sm text-white/50">
-            Discover the best food in Compton — from brick & mortar to rolling kitchens
+            Discover the best food in {activeCity?.name ?? "your city"} — from brick & mortar to rolling kitchens
           </p>
         </div>
       </div>
@@ -607,7 +610,7 @@ export default function FoodPage() {
       {!search && featuredSpots.length > 0 && (
         <section className="mb-6">
           <div className="px-5 mb-3">
-            <EditorialHeader kicker="COMPTON EATS" title="Featured" subtitle="Community favorites you can't miss" />
+            <EditorialHeader kicker={`${(activeCity?.name ?? "LOCAL").toUpperCase()} EATS`} title="Featured" subtitle="Community favorites you can't miss" />
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
             {featuredSpots.map((biz) => (

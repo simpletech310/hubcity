@@ -1,14 +1,18 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 import Badge from "@/components/ui/Badge";
-import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import SaveButton from "@/components/ui/SaveButton";
 import { createClient } from "@/lib/supabase/server";
-import type { Business } from "@/types/database";
+import type { Business, BusinessReview } from "@/types/database";
+import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
 import ReviewSection from "./ReviewSection";
+import HeroGallery from "@/components/business/HeroGallery";
+import ShareQrButton from "@/components/business/ShareQrButton";
+import OpenNowBadge from "@/components/business/OpenNowBadge";
 
 const categoryColors: Record<string, string> = {
   barber: "#8B5CF6",
@@ -76,6 +80,133 @@ function formatBadgeLabel(badge: string): string {
   return badge.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+async function loadBusiness(idOrSlug: string): Promise<Business | null> {
+  const supabase = await createClient();
+  let { data: biz } = await supabase
+    .from("businesses")
+    .select("*")
+    .eq("slug", idOrSlug)
+    .single();
+  if (!biz) {
+    const { data } = await supabase
+      .from("businesses")
+      .select("*")
+      .eq("id", idOrSlug)
+      .single();
+    biz = data;
+  }
+  return (biz as Business | null) ?? null;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const biz = await loadBusiness(id);
+  if (!biz) {
+    return { title: "Business not found" };
+  }
+  const url = `${SITE_DOMAIN}/business/${biz.slug || biz.id}`;
+  const description =
+    biz.description?.slice(0, 200) ||
+    `${biz.name} on ${SITE_NAME} — ${biz.category} in ${biz.city?.name || "Compton"}.`;
+  const heroImage = biz.image_urls?.[0];
+
+  return {
+    title: `${biz.name} — ${SITE_NAME}`,
+    description,
+    openGraph: {
+      title: biz.name,
+      description,
+      url,
+      siteName: SITE_NAME,
+      type: "website",
+      images: heroImage ? [{ url: heroImage, width: 1200, height: 630, alt: biz.name }] : undefined,
+    },
+    twitter: {
+      card: heroImage ? "summary_large_image" : "summary",
+      title: biz.name,
+      description,
+      images: heroImage ? [heroImage] : undefined,
+    },
+    alternates: { canonical: url },
+  };
+}
+
+function buildLocalBusinessJsonLd(biz: Business, profileUrl: string): Record<string, unknown> {
+  const days: Record<string, string> = {
+    mon: "Monday",
+    tue: "Tuesday",
+    wed: "Wednesday",
+    thu: "Thursday",
+    fri: "Friday",
+    sat: "Saturday",
+    sun: "Sunday",
+  };
+  const openingHoursSpecification = biz.hours
+    ? Object.entries(biz.hours)
+        .map(([day, value]) => {
+          if (!value) return null;
+          const dayOfWeek = days[day];
+          if (!dayOfWeek) return null;
+          return {
+            "@type": "OpeningHoursSpecification",
+            dayOfWeek,
+            opens: value.open,
+            closes: value.close,
+          };
+        })
+        .filter(Boolean)
+    : undefined;
+
+  const obj: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": biz.category === "restaurant" ? "Restaurant" : "LocalBusiness",
+    name: biz.name,
+    url: profileUrl,
+    image: biz.image_urls?.length ? biz.image_urls : undefined,
+    address: biz.address
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: biz.address,
+          addressLocality: biz.city?.name || "Compton",
+          addressRegion: "CA",
+          addressCountry: "US",
+        }
+      : undefined,
+    telephone: biz.phone || undefined,
+    description: biz.description || undefined,
+    geo:
+      biz.latitude && biz.longitude
+        ? {
+            "@type": "GeoCoordinates",
+            latitude: biz.latitude,
+            longitude: biz.longitude,
+          }
+        : undefined,
+    openingHoursSpecification,
+    aggregateRating:
+      biz.rating_count > 0
+        ? {
+            "@type": "AggregateRating",
+            ratingValue: Number(biz.rating_avg).toFixed(1),
+            reviewCount: biz.rating_count,
+            bestRating: 5,
+            worstRating: 1,
+          }
+        : undefined,
+    priceRange: biz.min_order > 0 ? "$".repeat(Math.min(4, Math.ceil(biz.min_order / 2000))) : undefined,
+  };
+
+  // Strip undefined entries.
+  for (const k of Object.keys(obj)) {
+    if (obj[k] === undefined) delete obj[k];
+  }
+  return obj;
+}
+
 export default async function BusinessDetailPage({
   params,
 }: {
@@ -84,30 +215,15 @@ export default async function BusinessDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  // Try slug first, then id
-  let { data: business } = await supabase
-    .from("businesses")
-    .select("*")
-    .eq("slug", id)
-    .single();
+  const biz = await loadBusiness(id);
+  if (!biz) notFound();
 
-  if (!business) {
-    const { data } = await supabase
-      .from("businesses")
-      .select("*")
-      .eq("id", id)
-      .single();
-    business = data;
-  }
-
-  if (!business) notFound();
-
-  const biz = business as Business;
   const accentColor = categoryColors[biz.category] || "#F2A900";
   const artClass = categoryArt[biz.category] ?? "art-city";
   const variant = categoryBadgeVariant[biz.category] || "gold";
 
   const isRetail = biz.category === "retail";
+  const profileUrl = `${SITE_DOMAIN}/business/${biz.slug || biz.id}`;
 
   // Fetch menu items
   const { data: menuItems } = await supabase
@@ -141,7 +257,38 @@ export default async function BusinessDetailPage({
     services = (svcData ?? []) as typeof services;
   }
 
-  // Determine if currently open
+  // Featured reviews — top picks (manually flagged) or otherwise the
+  // top-rated reviews with a body. Limit 3.
+  let { data: featuredReviews } = await supabase
+    .from("business_reviews")
+    .select("*, reviewer:profiles!business_reviews_reviewer_id_fkey(display_name, avatar_url)")
+    .eq("business_id", biz.id)
+    .eq("is_published", true)
+    .eq("is_featured", true)
+    .order("rating", { ascending: false })
+    .order("created_at", { ascending: false })
+    .limit(3);
+  if (!featuredReviews || featuredReviews.length === 0) {
+    const { data: topReviews } = await supabase
+      .from("business_reviews")
+      .select("*, reviewer:profiles!business_reviews_reviewer_id_fkey(display_name, avatar_url)")
+      .eq("business_id", biz.id)
+      .eq("is_published", true)
+      .gte("rating", 4)
+      .not("body", "is", null)
+      .order("rating", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(3);
+    featuredReviews = topReviews ?? [];
+  }
+  const typedFeatured = (featuredReviews || []) as (BusinessReview & {
+    reviewer?: { display_name: string | null; avatar_url: string | null } | null;
+  })[];
+
+  const heroImages = biz.image_urls && biz.image_urls.length > 0 ? biz.image_urls : [];
+  const jsonLd = buildLocalBusinessJsonLd(biz, profileUrl);
+
+  // Determine "today" for hours table highlight.
   const now = new Date();
   const dayNames = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const today = dayNames[now.getDay()];
@@ -149,17 +296,23 @@ export default async function BusinessDetailPage({
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ── Cinematic Hero ── */}
-      <div className="relative h-64 overflow-hidden">
-        {biz.image_urls?.[0] ? (
-          <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
-        ) : (
-          <div className={`w-full h-full ${artClass} pattern-dots`} />
-        )}
+      {/* SEO JSON-LD */}
+      <script
+        type="application/ld+json"
+        // Schema.org JSON-LD payload — safe content, controlled by us.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-midnight/30 to-transparent" />
+      {/* ── Cinematic Hero Gallery ── */}
+      <div className="relative">
+        <HeroGallery
+          images={heroImages}
+          alt={biz.name}
+          fallback={<div className={`w-full h-full ${artClass} pattern-dots`} />}
+        />
+
+        {/* Gradient overlay (desktop hero is taller, mobile is 256px) */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-midnight via-midnight/60 to-transparent" />
 
         {/* Back button */}
         <div className="absolute top-4 left-4 z-10">
@@ -189,12 +342,7 @@ export default async function BusinessDetailPage({
           {/* Category + Status */}
           <div className="flex items-center gap-2 mb-2">
             <Badge label={biz.category} variant={variant} size="md" />
-            {todayHours && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald/15 border border-emerald/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
-                <span className="text-[10px] font-bold text-emerald">Open Now</span>
-              </div>
-            )}
+            <OpenNowBadge hours={biz.hours} />
             {biz.district && (
               <Badge label={`District ${biz.district}`} variant="cyan" size="sm" />
             )}
@@ -235,31 +383,48 @@ export default async function BusinessDetailPage({
         </div>
       )}
 
-      {/* ── Quick Actions Grid ── */}
-      <div className="px-5 mt-4">
-        <div className="grid grid-cols-4 gap-2">
-          {([
-            { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined },
-            { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined },
-            { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined },
-            { label: "Share", iconName: "share" as IconName, href: undefined },
-          ]).map((action) => {
-            const isExternal = action.href?.startsWith("http");
-            const Wrapper = action.href ? "a" : "button";
-            return (
-              <Wrapper
-                key={action.label}
-                {...(action.href ? {
-                  href: action.href,
-                  ...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {}),
-                } : {})}
-                className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 press hover:border-gold/20 transition-colors"
-              >
-                <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
-                <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
-              </Wrapper>
-            );
-          })}
+      {/* ── Sticky Action Bar (Call / Directions / Website / Share+QR) ── */}
+      <div className="sticky top-0 z-20 bg-midnight/85 backdrop-blur-md border-b border-border-subtle">
+        <div className="px-5 py-3">
+          <div className="grid grid-cols-4 gap-2">
+            {([
+              { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined, disabled: !biz.phone },
+              { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined, disabled: !biz.address },
+              { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined, disabled: !biz.website },
+            ]).map((action) => {
+              const isExternal = action.href?.startsWith("http");
+              if (!action.href) {
+                return (
+                  <button
+                    key={action.label}
+                    type="button"
+                    disabled
+                    className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 opacity-40 cursor-not-allowed"
+                  >
+                    <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
+                    <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
+                  </button>
+                );
+              }
+              return (
+                <a
+                  key={action.label}
+                  href={action.href}
+                  {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 press hover:border-gold/20 transition-colors"
+                >
+                  <Icon name={action.iconName} size={18} style={{ color: accentColor }} />
+                  <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">{action.label}</span>
+                </a>
+              );
+            })}
+            <ShareQrButton
+              url={profileUrl}
+              title={biz.name}
+              text={biz.description ?? undefined}
+              accentColor={accentColor}
+            />
+          </div>
         </div>
       </div>
 
@@ -271,6 +436,23 @@ export default async function BusinessDetailPage({
             <h2 className="font-heading font-bold text-base">About</h2>
           </div>
           <p className="text-[13px] text-txt-secondary leading-relaxed">{biz.description}</p>
+        </div>
+      )}
+
+      {/* ── Our Story (long-form narrative, owner-managed) ── */}
+      {biz.story && (
+        <div className="px-5 mt-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gold" />
+            <h2 className="font-heading font-bold text-base" style={{ fontFamily: "var(--font-serif), 'DM Serif Display', serif" }}>
+              Our Story
+            </h2>
+          </div>
+          <div className="rounded-2xl bg-gradient-to-br from-gold/[0.03] via-card to-card border border-gold/15 p-5">
+            <p className="text-[13px] text-txt-primary leading-relaxed whitespace-pre-line">
+              {biz.story}
+            </p>
+          </div>
         </div>
       )}
 
@@ -570,7 +752,72 @@ export default async function BusinessDetailPage({
         </div>
       )}
 
-      {/* ── Reviews ── */}
+      {/* ── Featured Reviews (top 3 with body) ── */}
+      {typedFeatured.length > 0 && (
+        <div className="px-5 mb-6 mt-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full bg-gold" />
+            <h2 className="font-heading font-bold text-base">Featured Reviews</h2>
+          </div>
+          <div className="space-y-2.5">
+            {typedFeatured.map((rev) => (
+              <div
+                key={rev.id}
+                className="rounded-2xl bg-card border border-border-subtle p-4"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-gold/10 flex items-center justify-center shrink-0 overflow-hidden">
+                      {rev.reviewer?.avatar_url ? (
+                        <Image
+                          src={rev.reviewer.avatar_url}
+                          alt={rev.reviewer.display_name || ""}
+                          width={36}
+                          height={36}
+                          className="w-9 h-9 object-cover"
+                        />
+                      ) : (
+                        <span className="text-gold text-xs font-bold">
+                          {(rev.reviewer?.display_name || "A")[0].toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold leading-tight">
+                        {rev.reviewer?.display_name || "Anonymous"}
+                      </p>
+                      <p className="text-[10px] text-txt-secondary">
+                        {new Date(rev.created_at).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Icon
+                        key={star}
+                        name="star"
+                        size={14}
+                        className={star <= rev.rating ? "text-gold" : "text-white/15"}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {rev.body && (
+                  <p className="text-[13px] text-txt-secondary leading-relaxed">
+                    {rev.body}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── All Reviews (interactive) ── */}
       <ReviewSection businessId={biz.id} />
 
       {/* ── Hours ── */}

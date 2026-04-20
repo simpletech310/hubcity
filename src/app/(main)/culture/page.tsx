@@ -1,4 +1,7 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveCity } from "@/lib/city-context";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import AdZone from "@/components/ui/AdZone";
@@ -12,14 +15,21 @@ import PersonCard from "@/components/culture/PersonCard";
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 
-export const metadata = {
-  title: "The Compton Museum | Knect",
-  description:
-    "Immerse yourself in Compton's rich culture — exhibits, gallery, notable people, music heritage, history, and community stories curated by the Compton Museum.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const city = await getActiveCity();
+  const name = city?.name ?? "Your City";
+  return {
+    title: `Culture | ${name} | Knect`,
+    description: `Immerse yourself in ${name}'s culture — exhibits, gallery, notable people, music heritage, history, and community stories.`,
+  };
+}
 
 export default async function CulturePage() {
+  const city = await getActiveCity();
+  if (!city) redirect("/choose-city");
+
   const supabase = await createClient();
+  const isCompton = city.slug === "compton";
 
   const [
     exhibitsRes,
@@ -35,6 +45,7 @@ export default async function CulturePage() {
       .from("museum_exhibits")
       .select("*")
       .eq("is_published", true)
+      .eq("city_id", city.id)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(3),
@@ -42,25 +53,44 @@ export default async function CulturePage() {
       .from("gallery_items")
       .select("*")
       .eq("is_published", true)
+      .eq("city_id", city.id)
       .order("created_at", { ascending: false })
       .limit(6),
     supabase
       .from("notable_people")
       .select("*")
       .eq("is_published", true)
+      .eq("city_id", city.id)
       .order("display_order", { ascending: true })
       .limit(4),
     supabase
       .from("events")
       .select("id, title, start_date, location_name")
       .eq("category", "culture")
+      .eq("city_id", city.id)
       .gte("start_date", new Date().toISOString())
       .order("start_date", { ascending: true })
       .limit(3),
-    supabase.from("museum_exhibits").select("id", { count: "exact", head: true }).eq("is_published", true),
-    supabase.from("gallery_items").select("id", { count: "exact", head: true }).eq("is_published", true),
-    supabase.from("notable_people").select("id", { count: "exact", head: true }).eq("is_published", true),
-    supabase.from("library_items").select("id", { count: "exact", head: true }).eq("is_published", true),
+    supabase
+      .from("museum_exhibits")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("city_id", city.id),
+    supabase
+      .from("gallery_items")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("city_id", city.id),
+    supabase
+      .from("notable_people")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("city_id", city.id),
+    supabase
+      .from("library_items")
+      .select("id", { count: "exact", head: true })
+      .eq("is_published", true)
+      .eq("city_id", city.id),
   ]);
 
   const exhibits = exhibitsRes.data ?? [];
@@ -77,71 +107,101 @@ export default async function CulturePage() {
 
   return (
     <div className="space-y-8 pb-20">
-      {/* Museum Hero */}
-      <MuseumHero />
+      {/* Museum Hero — Compton-specific museum branding only for flagship city */}
+      {isCompton ? (
+        <MuseumHero />
+      ) : (
+        <section className="px-5 pt-8 pb-2">
+          <EditorialHeader
+            kicker={`${city.name.toUpperCase()} · CULTURE`}
+            title="Culture"
+            subtitle={`Exhibits, artists, and stories shaping ${city.name}.`}
+          />
+        </section>
+      )}
 
-      {/* Museum Navigation — below hero */}
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
-        <div className="px-5">
-          <MuseumNav />
+      {/* Museum Navigation — below hero (Compton only) */}
+      {isCompton && (
+        <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+          <div className="px-5">
+            <MuseumNav />
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Wing Navigation Cards — title above */}
-      <section className="px-5">
-        <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          Museum Wings
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <MuseumWingCard
-            href="/culture/exhibits"
-            icon="palette"
-            title="Exhibits"
-            subtitle="Curated collections"
-            count={counts.exhibits}
-          />
-          <MuseumWingCard
-            href="/culture/gallery"
-            icon="frame"
-            title="Gallery"
-            subtitle="Art & artifacts"
-            count={counts.gallery}
-          />
-          <MuseumWingCard
-            href="/culture/people"
-            icon="person"
-            title="People"
-            subtitle="Notable figures"
-            count={counts.people}
-          />
-          <MuseumWingCard
-            href="/culture/history"
-            icon="scroll"
-            title="History"
-            subtitle="Compton timeline"
-          />
-          <MuseumWingCard
-            href="/culture/library"
-            icon="book"
-            title="Library"
-            subtitle="Books & reads"
-            count={counts.library}
-          />
-          <MuseumWingCard
-            href="/culture/events"
-            icon="calendar"
-            title="Events"
-            subtitle="Cultural calendar"
-          />
-          <MuseumWingCard
-            href="/culture/landmarks"
-            icon="map-pin"
-            title="Landmarks"
-            subtitle="Historic sites"
-          />
-        </div>
-      </section>
+      {/* Wing Navigation Cards — title above (Compton only, since links map to Compton museum wings) */}
+      {isCompton && (
+        <section className="px-5">
+          <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
+            <div className="w-1 h-5 rounded-full bg-gold" />
+            Museum Wings
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            <MuseumWingCard
+              href="/culture/exhibits"
+              icon="palette"
+              title="Exhibits"
+              subtitle="Curated collections"
+              count={counts.exhibits}
+            />
+            <MuseumWingCard
+              href="/culture/gallery"
+              icon="frame"
+              title="Gallery"
+              subtitle="Art & artifacts"
+              count={counts.gallery}
+            />
+            <MuseumWingCard
+              href="/culture/people"
+              icon="person"
+              title="People"
+              subtitle="Notable figures"
+              count={counts.people}
+            />
+            <MuseumWingCard
+              href="/culture/history"
+              icon="scroll"
+              title="History"
+              subtitle={`${city.name} timeline`}
+            />
+            <MuseumWingCard
+              href="/culture/library"
+              icon="book"
+              title="Library"
+              subtitle="Books & reads"
+              count={counts.library}
+            />
+            <MuseumWingCard
+              href="/culture/events"
+              icon="calendar"
+              title="Events"
+              subtitle="Cultural calendar"
+            />
+            <MuseumWingCard
+              href="/culture/landmarks"
+              icon="map-pin"
+              title="Landmarks"
+              subtitle="Historic sites"
+            />
+          </div>
+        </section>
+      )}
+
+      {/* Non-Compton: lighter "coming soon" grid that still surfaces any city-scoped culture content */}
+      {!isCompton && (
+        <section className="px-5">
+          <div className="rounded-2xl border border-dashed border-border-subtle bg-white/[0.02] p-5">
+            <h3 className="font-heading font-bold text-sm flex items-center gap-2 mb-1">
+              <Icon name="sparkle" size={16} className="text-gold" />
+              More culture for {city.name} coming soon
+            </h3>
+            <p className="text-[12px] text-txt-secondary leading-relaxed">
+              We&rsquo;re onboarding {city.name}&rsquo;s museums, galleries, and cultural organizations.
+              In the meantime, browse the exhibits and events below.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Featured Exhibit */}
       {exhibits.length > 0 && (
@@ -190,7 +250,10 @@ export default async function CulturePage() {
       {/* Notable People */}
       {people.length > 0 && (
         <section className="px-5">
-          <EditorialHeader kicker="COMPTON LEGENDS" title="Notable People" />
+          <EditorialHeader
+            kicker={`${city.name.toUpperCase()} LEGENDS`}
+            title="Notable People"
+          />
           <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2">
             {people.map((person) => (
               <div key={person.id} className="min-w-[160px] max-w-[170px] shrink-0">
@@ -201,30 +264,32 @@ export default async function CulturePage() {
         </section>
       )}
 
-      {/* History Teaser */}
-      <section className="px-5">
-        <Link
-          href="/culture/history"
-          className="block group relative overflow-hidden rounded-2xl border border-border-subtle p-6 card-glow transition-all duration-300 hover:border-gold/20"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/3" />
-          <div className="pattern-chevron absolute inset-0 opacity-5 pointer-events-none" />
-          <div className="relative z-10">
-            <span className="text-xs font-semibold text-gold uppercase tracking-wider">
-              Since 1867
-            </span>
-            <h3 className="font-display text-2xl text-white mt-2">
-              The Story of Compton
-            </h3>
-            <p className="text-txt-secondary mt-2 text-sm max-w-xs">
-              From a farming settlement to the cultural capital of the West Coast. Explore the full timeline.
-            </p>
-            <span className="inline-block mt-4 text-gold text-sm font-semibold group-hover:translate-x-1 transition-transform">
-              Explore History &rarr;
-            </span>
-          </div>
-        </Link>
-      </section>
+      {/* History Teaser — Compton only (hardcoded "Since 1867"/Compton copy) */}
+      {isCompton && (
+        <section className="px-5">
+          <Link
+            href="/culture/history"
+            className="block group relative overflow-hidden rounded-2xl border border-border-subtle p-6 card-glow transition-all duration-300 hover:border-gold/20"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/3" />
+            <div className="pattern-chevron absolute inset-0 opacity-5 pointer-events-none" />
+            <div className="relative z-10">
+              <span className="text-xs font-semibold text-gold uppercase tracking-wider">
+                Since 1867
+              </span>
+              <h3 className="font-display text-2xl text-white mt-2">
+                The Story of Compton
+              </h3>
+              <p className="text-txt-secondary mt-2 text-sm max-w-xs">
+                From a farming settlement to the cultural capital of the West Coast. Explore the full timeline.
+              </p>
+              <span className="inline-block mt-4 text-gold text-sm font-semibold group-hover:translate-x-1 transition-transform">
+                Explore History &rarr;
+              </span>
+            </div>
+          </Link>
+        </section>
+      )}
 
       {/* Upcoming Cultural Events */}
       {events.length > 0 && (
@@ -269,37 +334,39 @@ export default async function CulturePage() {
         </section>
       )}
 
-      {/* Museum Footer */}
-      <section className="px-5">
-        <div className="rounded-2xl bg-white/[0.02] border border-border-subtle p-5 text-center">
-          <span className="text-2xl"><Icon name="landmark" size={24} /></span>
-          <h3 className="font-display text-lg text-white mt-2">
-            Compton Art & History Museum
-          </h3>
-          <p className="text-xs text-txt-secondary mt-1">
-            306 W Compton Blvd. #104, Compton, CA 90220
-          </p>
-          <div className="flex items-center justify-center gap-3 mt-2">
-            <span className="text-[10px] text-gold/70 font-semibold">Tue-Sat 10am-3pm</span>
-            <span className="text-white/10">|</span>
-            <span className="text-[10px] text-txt-secondary">(310) 627-9022</span>
+      {/* Museum Footer — Compton Art & History Museum specifics only for Compton */}
+      {isCompton && (
+        <section className="px-5">
+          <div className="rounded-2xl bg-white/[0.02] border border-border-subtle p-5 text-center">
+            <span className="text-2xl"><Icon name="landmark" size={24} /></span>
+            <h3 className="font-display text-lg text-white mt-2">
+              Compton Art & History Museum
+            </h3>
+            <p className="text-xs text-txt-secondary mt-1">
+              306 W Compton Blvd. #104, Compton, CA 90220
+            </p>
+            <div className="flex items-center justify-center gap-3 mt-2">
+              <span className="text-[10px] text-gold/70 font-semibold">Tue-Sat 10am-3pm</span>
+              <span className="text-white/10">|</span>
+              <span className="text-[10px] text-txt-secondary">(310) 627-9022</span>
+            </div>
+            <p className="text-[11px] text-txt-secondary mt-3 max-w-xs mx-auto leading-relaxed">
+              A community-based, community-centered museum amplifying the culture of Compton and greater South Los Angeles.
+            </p>
+            <div className="flex items-center justify-center gap-3 mt-3">
+              <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              </a>
+              <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </a>
+              <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
+                <Icon name="globe" size={12} />
+              </a>
+            </div>
           </div>
-          <p className="text-[11px] text-txt-secondary mt-3 max-w-xs mx-auto leading-relaxed">
-            A community-based, community-centered museum amplifying the culture of Compton and greater South Los Angeles.
-          </p>
-          <div className="flex items-center justify-center gap-3 mt-3">
-            <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-            </a>
-            <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            </a>
-            <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-              <Icon name="globe" size={12} />
-            </a>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

@@ -152,6 +152,8 @@ export interface Business {
   chamber_paused_at: string | null;
   chamber_notes: string | null;
   city_id: string | null;
+  /** Optional long-form narrative shown in the Our Story block on the public profile. */
+  story: string | null;
   created_at: string;
   updated_at: string;
   city?: { id: string; slug: string; name: string } | null;
@@ -349,9 +351,44 @@ export interface Channel {
   is_verified: boolean;
   is_active: boolean;
   follower_count: number;
+  subscription_price_cents?: number | null;
+  subscription_currency?: string | null;
+  subscription_stripe_price_id?: string | null;
   created_at: string;
   updated_at: string;
   owner?: Profile;
+}
+
+export interface ChannelSubscription {
+  id: string;
+  user_id: string;
+  channel_id: string;
+  status:
+    | "active"
+    | "past_due"
+    | "canceled"
+    | "incomplete"
+    | "trialing"
+    | "unpaid"
+    | "paused";
+  stripe_subscription_id: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  amount_cents: number | null;
+  currency: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreatorStripeAccount {
+  id: string;
+  creator_id: string;
+  stripe_account_id: string;
+  onboarding_complete: boolean;
+  charges_enabled: boolean;
+  payouts_enabled: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export type VideoStatus2 = "processing" | "ready" | "errored";
@@ -395,6 +432,8 @@ export interface ChannelVideo {
   is_premium: boolean;
   price_cents: number | null;
   preview_seconds: number | null;
+  access_type?: "free" | "subscribers" | "ppv" | null;
+  ppv_stripe_price_id?: string | null;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -480,6 +519,8 @@ export interface MenuItem {
   price: number; // cents
   image_url: string | null;
   gallery_urls: string[];
+  /** Read-only normalized view: [image_url, ...gallery_urls]. */
+  image_urls?: string[];
   video_url: string | null;
   mux_playback_id: string | null;
   sku: string | null;
@@ -514,6 +555,8 @@ export interface Order {
   completed_at: string | null;
   coupon_id: string | null;
   discount_amount: number;
+  receipt_url: string | null;
+  receipt_sent_at: string | null;
   created_at: string;
   updated_at: string;
   business?: Business;
@@ -706,6 +749,7 @@ export interface Booking {
   notes: string | null;
   staff_id: string | null;
   staff_name: string | null;
+  receipt_sent_at: string | null;
   created_at: string;
   updated_at: string;
   business?: Business;
@@ -1251,6 +1295,7 @@ export interface BusinessReview {
   rating: number;
   body: string | null;
   is_published: boolean;
+  is_featured: boolean;
   created_at: string;
   updated_at: string;
   reviewer?: Profile;

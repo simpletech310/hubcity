@@ -86,7 +86,7 @@ export default function VerifyAddressPage() {
       <form onSubmit={handleVerify} className="w-full space-y-4">
         <Input
           label="Street Address"
-          placeholder="123 Compton Blvd"
+          placeholder="123 Main St"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           required

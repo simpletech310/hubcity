@@ -40,9 +40,9 @@
     "goodMorning": "Good morning",
     "goodAfternoon": "Good afternoon",
     "goodEvening": "Good evening",
-    "whatsHappening": "What's happening in Compton today",
+    "whatsHappening": "What's happening in {cityName} today",
     "communityPulse": "Community Pulse",
-    "atAGlance": "Compton at a glance",
+    "atAGlance": "{cityName} at a glance",
     "activeListings": "Active listings",
     "liveStreams": "Live streams",
     "broadcastingNow": "Broadcasting now",
@@ -51,13 +51,13 @@
     "activePolls": "Active polls",
     "haveYourSay": "Have your say",
     "featuredBusinesses": "Featured Businesses",
-    "supportLocal": "Support local Compton",
+    "supportLocal": "Support local {cityName}",
     "upcomingEvents": "Upcoming Events",
     "dontMissOut": "Don't miss out",
     "whatsNew": "What's New",
     "latestFromCity": "Latest from your city",
     "communityBoard": "Community Board",
-    "builtInCompton": "Built in Compton",
+    "builtInCompton": "Built in {cityName}",
     "streamingToWorld": "Streaming to the World"
   },
   "cityData": {
@@ -77,12 +77,12 @@
     "viewAgenda": "View Agenda"
   },
   "culture": {
-    "title": "Compton Culture",
+    "title": "{cityName} Culture",
     "murals": "Murals",
     "music": "Music Heritage",
     "artists": "Local Artists",
     "calendar": "Cultural Calendar",
-    "stories": "Compton Stories",
+    "stories": "{cityName} Stories",
     "featuredArtist": "Featured Artist",
     "walkingTour": "Walking Tour"
   },

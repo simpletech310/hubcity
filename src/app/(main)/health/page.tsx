@@ -8,6 +8,7 @@ import EmergencyBanner from "@/components/health/EmergencyBanner";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { HealthResource, HealthCategory } from "@/types/database";
 
 // ─── Config ────────────────────────────────────────
@@ -230,6 +231,7 @@ function HealthResourceCard({ resource }: { resource: HealthResource }) {
 
 // ─── Main Page ─────────────────────────────────────
 export default function HealthPage() {
+  const activeCity = useActiveCity();
   const [activeCategory, setActiveCategory] = useState<HealthCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Set<FilterTag>>(new Set());
@@ -248,6 +250,10 @@ export default function HealthPage() {
         .order("is_emergency", { ascending: false })
         .order("name", { ascending: true });
 
+      if (activeCity?.id) {
+        query = query.eq("city_id", activeCity.id);
+      }
+
       if (activeCategory !== "all") {
         query = query.eq("category", activeCategory);
       }
@@ -257,14 +263,14 @@ export default function HealthPage() {
       setLoading(false);
     }
     fetchResources();
-  }, [activeCategory]);
+  }, [activeCategory, activeCity?.id]);
 
   // Fetch health-related events from DB
   useEffect(() => {
     async function fetchHealthEvents() {
       const supabase = createClient();
       const today = new Date().toISOString().split("T")[0];
-      const { data } = await supabase
+      let query = supabase
         .from("events")
         .select("id, title, start_date, start_time, location_name, category")
         .eq("is_published", true)
@@ -272,10 +278,16 @@ export default function HealthPage() {
         .or("title.ilike.%health%,title.ilike.%wellness%,title.ilike.%clinic%,title.ilike.%vaccination%,title.ilike.%screening%,title.ilike.%medical%,title.ilike.%blood%,title.ilike.%run%,title.ilike.%fitness%,title.ilike.%walk%,title.ilike.%yoga%")
         .order("start_date")
         .limit(6);
+
+      if (activeCity?.id) {
+        query = query.eq("city_id", activeCity.id);
+      }
+
+      const { data } = await query;
       setDbEvents(data ?? []);
     }
     fetchHealthEvents();
-  }, []);
+  }, [activeCity?.id]);
 
   const filteredResources = useMemo(() => {
     let result = resources;
@@ -323,7 +335,7 @@ export default function HealthPage() {
               Health & Fitness
             </span>
           </div>
-          <EditorialHeader kicker="WELLNESS & CARE" title="Health Resources" subtitle="Healthcare, fitness, community events — everything to keep Compton healthy and thriving" />
+          <EditorialHeader kicker="WELLNESS & CARE" title="Health Resources" subtitle={`Healthcare, fitness, community events — everything to keep ${activeCity?.name ?? "your city"} healthy and thriving`} />
         </div>
       </div>
 
@@ -640,7 +652,7 @@ export default function HealthPage() {
             <span className="block mb-2"><Icon name="brain" size={24} /></span>
             <h3 className="font-heading font-bold text-lg mb-1">Mental Health Matters</h3>
             <p className="text-[12px] text-white/40 leading-relaxed mb-3">
-              It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all Compton residents.
+              It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all {activeCity?.name ?? "local"} residents.
             </p>
             <div className="flex gap-2">
               <a
@@ -686,7 +698,7 @@ export default function HealthPage() {
         </div>
       </section>
 
-      {/* ─── Compton Health Hotlines ─── */}
+      {/* ─── Health Hotlines ─── */}
       <section className="px-5 mb-8">
         <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-compton-red" />

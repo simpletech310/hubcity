@@ -8,6 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Resource } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -60,7 +61,7 @@ const quickPrompts: { text: string; icon: IconName }[] = [
   { text: "I need help paying rent", icon: "house" },
   { text: "Where can I get free food?", icon: "apple" },
   { text: "Job training programs near me", icon: "briefcase" },
-  { text: "Free health clinics in Compton", icon: "heart-pulse" },
+  { text: "Free health clinics near me", icon: "heart-pulse" },
   { text: "Youth after-school programs", icon: "baby" },
   { text: "Help starting a small business", icon: "store" },
 ];
@@ -70,6 +71,7 @@ const quickPrompts: { text: string; icon: IconName }[] = [
 // ---------------------------------------------------------------------------
 
 function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: string) => void }) {
+  const activeCity = useActiveCity();
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
@@ -106,11 +108,13 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
       // Also do a local search for matching resources
       const supabase = createClient();
       const words = searchQuery.toLowerCase().split(/\s+/);
-      const { data: resources } = await supabase
+      let resourcesQuery = supabase
         .from("resources")
         .select("*")
         .eq("is_published", true)
         .limit(50);
+      if (activeCity?.id) resourcesQuery = resourcesQuery.eq("city_id", activeCity.id);
+      const { data: resources } = await resourcesQuery;
 
       if (resources) {
         const scored = (resources as Resource[]).map((r) => {
@@ -320,6 +324,7 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
 // ---------------------------------------------------------------------------
 
 export default function ResourcesPage() {
+  const activeCity = useActiveCity();
   const [activeCategory, setActiveCategory] = useState("all");
   const [resources, setResources] = useState<Resource[]>([]);
   const [search, setSearch] = useState("");
@@ -335,6 +340,10 @@ export default function ResourcesPage() {
         .eq("is_published", true)
         .order("created_at", { ascending: false });
 
+      if (activeCity?.id) {
+        query = query.eq("city_id", activeCity.id);
+      }
+
       if (activeCategory !== "all") {
         query = query.eq("category", activeCategory);
       }
@@ -344,7 +353,7 @@ export default function ResourcesPage() {
       setLoading(false);
     }
     fetchResources();
-  }, [activeCategory]);
+  }, [activeCategory, activeCity?.id]);
 
   const filtered = useMemo(() => {
     if (!search) return resources;
@@ -384,7 +393,7 @@ export default function ResourcesPage() {
             Resource Center
           </h1>
           <p className="font-display italic text-sm text-txt-secondary">
-            Grants, programs & services for Compton residents
+            Grants, programs & services for {activeCity?.name ?? "local"} residents
           </p>
         </div>
       </div>

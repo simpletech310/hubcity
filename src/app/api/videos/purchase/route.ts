@@ -1,24 +1,24 @@
 import { NextResponse } from "next/server";
 
-// Pay-per-view purchase stub — wiring to Stripe Connect for creator payouts
-// is a follow-up (see plan: Section 8 / Stripe Connect for creator payouts).
-// This route exists so the paywall overlay in KnectTV has a well-defined endpoint
-// to call, and so the feature flag `NEXT_PUBLIC_FEATURE_PPV` can be flipped on
-// without rewriting the client.
-//
-// When implemented it should:
-//   1. Resolve the channel_video and its creator/channel owner.
-//   2. Look up the owner's creator_stripe_accounts row.
-//   3. Create a Stripe PaymentIntent with transfer_data.destination = creator account.
-//   4. Record to payment_intents (resource_type='video_purchase').
-//   5. On webhook success, insert into video_purchases.
-export async function POST() {
-  return NextResponse.json(
-    {
-      error: "not_implemented",
-      message:
-        "Pay-per-view purchasing is coming soon. This route is a stub until Stripe Connect is wired up.",
+// Legacy PPV stub — superseded by /api/ppv/purchase. Kept as a soft alias so
+// older clients (or feature-flagged paths) keep working without a redirect
+// dance. Forwards the body and returns the same shape ({ url }).
+export async function POST(request: Request) {
+  const body = await request.json().catch(() => ({}));
+
+  // Forward to the new endpoint using the same incoming cookies for auth.
+  const cookieHeader = request.headers.get("cookie") ?? "";
+
+  const url = new URL("/api/ppv/purchase", request.url);
+  const res = await fetch(url.toString(), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      cookie: cookieHeader,
     },
-    { status: 501 }
-  );
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  return NextResponse.json(data, { status: res.status });
 }

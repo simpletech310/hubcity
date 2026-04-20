@@ -15,19 +15,40 @@ export interface GeocodingResult {
   type: string; // poi, address, place, etc.
 }
 
+export type GeocodeBias = {
+  /** Map center lng/lat to bias proximity. */
+  centerLng: number;
+  centerLat: number;
+  /** Optional bbox: [swLng, swLat, neLng, neLat]. */
+  bbox?: [number, number, number, number];
+};
+
 /**
- * Forward geocode: search text → coordinates
- * Biased toward Compton, CA area
+ * Forward geocode: search text → coordinates.
+ *
+ * Pass `bias` (loaded from the active city's `cities.mapbox_center_lng/lat`
+ * and `mapbox_bounds` columns) to bias results toward that city. With no
+ * bias, the request is unrestricted.
  */
 export async function geocodeSearch(
   query: string,
-  limit = 5
+  limit = 5,
+  bias?: GeocodeBias
 ): Promise<GeocodingResult[]> {
   if (!MAPBOX_TOKEN || !query.trim()) return [];
 
   const encoded = encodeURIComponent(query.trim());
-  // Bias toward Compton area with proximity and bbox
-  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?access_token=${MAPBOX_TOKEN}&proximity=-118.2201,33.8958&bbox=-118.35,33.82,-118.10,33.97&limit=${limit}&types=poi,address,neighborhood,locality&language=en`;
+  const params = new URLSearchParams({
+    access_token: MAPBOX_TOKEN,
+    limit: String(limit),
+    types: "poi,address,neighborhood,locality",
+    language: "en",
+  });
+  if (bias) {
+    params.set("proximity", `${bias.centerLng},${bias.centerLat}`);
+    if (bias.bbox) params.set("bbox", bias.bbox.join(","));
+  }
+  const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?${params.toString()}`;
 
   try {
     const res = await fetch(url);

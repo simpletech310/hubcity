@@ -1,7 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { getArtBySlug, artSpotlight } from "@/lib/art-spotlight";
+import {
+  findArtBySlugAcrossCities,
+  getArtBySlug,
+  listAllArtSlugs,
+} from "@/lib/art-spotlight";
+import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
 
 export default async function ArtDetailPage({
@@ -10,7 +15,15 @@ export default async function ArtDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const art = getArtBySlug(slug);
+  const activeCity = await getActiveCity();
+
+  // Try active city first; fall back to scanning all live cities so QR codes
+  // / shared links keep working when the visitor's active city differs.
+  let art = activeCity ? await getArtBySlug(slug, activeCity.id) : null;
+  if (!art) {
+    const found = await findArtBySlugAcrossCities(slug);
+    art = found?.art ?? null;
+  }
 
   if (!art) notFound();
 
@@ -174,8 +187,8 @@ export default async function ArtDetailPage({
               Know the artist or have art to share?
             </p>
             <p className="text-[13px] font-medium">
-              Knect celebrates Compton&apos;s creative spirit. Submit your art
-              or murals to be featured.
+              Knect celebrates {art.location || "your city"}&apos;s creative
+              spirit. Submit your art or murals to be featured.
             </p>
           </div>
         </div>
@@ -184,7 +197,7 @@ export default async function ArtDetailPage({
   );
 }
 
-// Generate static params for known art pieces
-export function generateStaticParams() {
-  return artSpotlight.map((art) => ({ slug: art.slug }));
+// Generate static params for known art pieces across every live city.
+export async function generateStaticParams() {
+  return await listAllArtSlugs();
 }

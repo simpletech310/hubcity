@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { BusinessCategory } from "@/types/database";
 
 const BUSINESS_CATEGORIES: { value: BusinessCategory; label: string }[] = [
@@ -29,8 +30,6 @@ const DAYS = [
   "Sunday",
 ];
 
-const COMPTON_ZIPS = ["90220", "90221", "90222", "90223", "90224", "90059", "90061", "90262"];
-
 interface HoursEntry {
   open: string;
   close: string;
@@ -45,6 +44,33 @@ export default function BusinessSignupPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
+  const activeCity = useActiveCity();
+  const cityName = activeCity?.name ?? "your city";
+  const cityState = activeCity?.state ?? "CA";
+
+  // Load the active city's allowlisted ZIP codes from the DB so onboarding
+  // works in any launched city without code changes.
+  const [cityZips, setCityZips] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!activeCity?.id) {
+      setCityZips([]);
+      return;
+    }
+    (async () => {
+      const { data } = await supabase
+        .from("cities")
+        .select("default_zip_codes")
+        .eq("id", activeCity.id)
+        .maybeSingle();
+      if (!cancelled) {
+        setCityZips((data?.default_zip_codes as string[] | null) ?? []);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCity?.id, supabase]);
 
   // Step 1
   const [name, setName] = useState("");
@@ -75,8 +101,9 @@ export default function BusinessSignupPage() {
   function validateStep2() {
     if (!street.trim()) return "Street address is required";
     if (!zip.trim()) return "ZIP code is required";
-    if (!COMPTON_ZIPS.includes(zip.trim())) {
-      return "Business must be in Compton, CA. Valid ZIPs: 90220-90224";
+    if (cityZips.length > 0 && !cityZips.includes(zip.trim())) {
+      const sample = cityZips.slice(0, 5).join(", ");
+      return `Business must be in ${cityName}, ${cityState}. Valid ZIPs: ${sample}`;
     }
     return null;
   }
@@ -119,7 +146,7 @@ export default function BusinessSignupPage() {
     setError("");
     setLoading(true);
 
-    const address = `${street.trim()}, Compton, CA ${zip.trim()}`;
+    const address = `${street.trim()}, ${cityName}, ${cityState} ${zip.trim()}`;
 
     try {
       const res = await fetch("/api/business/onboard", {
@@ -175,7 +202,7 @@ export default function BusinessSignupPage() {
         Register Your Business
       </h1>
       <p className="text-txt-secondary text-sm text-center mb-6">
-        Join the Compton business community
+        Join the {cityName} business community
       </p>
 
       {/* Step Indicator */}
@@ -205,7 +232,7 @@ export default function BusinessSignupPage() {
         <div className="space-y-4">
           <Input
             label="Business Name"
-            placeholder="e.g. Compton Soul Kitchen"
+            placeholder={`e.g. ${cityName} Soul Kitchen`}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -248,21 +275,21 @@ export default function BusinessSignupPage() {
         <div className="space-y-4">
           <Input
             label="Street Address"
-            placeholder="123 S Compton Ave"
+            placeholder="123 Main St"
             value={street}
             onChange={(e) => setStreet(e.target.value)}
             required
           />
           <Input
             label="ZIP Code"
-            placeholder="90220"
+            placeholder={cityZips[0] ?? "ZIP"}
             value={zip}
             onChange={(e) => setZip(e.target.value)}
             maxLength={5}
             required
             error={
-              zip.length === 5 && !COMPTON_ZIPS.includes(zip)
-                ? "Must be a Compton ZIP code"
+              zip.length === 5 && cityZips.length > 0 && !cityZips.includes(zip)
+                ? `Must be a ${cityName} ZIP code`
                 : undefined
             }
           />
@@ -369,7 +396,7 @@ export default function BusinessSignupPage() {
             <div className="space-y-1.5 text-sm">
               <p>
                 <span className="text-txt-secondary">Address:</span>{" "}
-                {street}, Compton, CA {zip}
+                {street}, {cityName}, {cityState} {zip}
               </p>
               {phone && (
                 <p>

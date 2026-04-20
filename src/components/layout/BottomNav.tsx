@@ -6,6 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import type { AccessMode } from "@/lib/access";
+import { useActiveCity } from "@/hooks/useActiveCity";
 
 type ServiceItem = { href: string; label: string; iconName: IconName };
 
@@ -96,17 +97,23 @@ export default function BottomNav({
   const pathname = usePathname();
   const router = useRouter();
   const [servicesOpen, setServicesOpen] = useState(false);
+  const activeCity = useActiveCity();
 
   const showVerifiedOnly = accessMode === "verified";
   const serviceItems: ServiceItem[] = showVerifiedOnly
     ? [...BASE_SERVICES, ...VERIFIED_ONLY_SERVICES]
     : BASE_SERVICES;
 
-  // Service tabs route directly to each page now — every browse page
-  // shows content from every city and users filter down by city there.
+  // Prepend /c/{activeCity}/ so navigation always carries city context in
+  // the URL. The /c/[city]/[...section] route sets the cookie + redirects
+  // to the canonical root path, keeping URLs predictable while letting
+  // every page read the city from the cookie.
   // `hasActiveCity` is kept as a prop for backwards compatibility.
   void hasActiveCity;
-  const resolveServiceHref = (href: string) => href;
+  const resolveServiceHref = (href: string) => {
+    if (!activeCity) return href;
+    return `/c/${activeCity.slug}${href}`;
+  };
 
   // Close services sheet on route change
   useEffect(() => {
@@ -123,17 +130,23 @@ export default function BottomNav({
     return () => window.removeEventListener("keydown", onKey);
   }, [servicesOpen]);
 
+  // Strip the /c/{slug} prefix when matching active state so the bottom nav
+  // highlights correctly whether the URL is /events or /c/compton/events.
+  const normalizedPath = pathname.replace(/^\/c\/[^/]+/, "") || "/";
+
   const isActive = useCallback(
     (href: string) => {
-      if (href === "/") return pathname === "/";
-      return pathname.startsWith(href);
+      if (href === "/") return normalizedPath === "/";
+      return normalizedPath.startsWith(href);
     },
-    [pathname]
+    [normalizedPath]
   );
 
   // Check if any service route is active (to highlight Services tab)
   const serviceRoutes = serviceItems.map((s) => s.href);
-  const isServiceRouteActive = serviceRoutes.some((r) => pathname.startsWith(r));
+  const isServiceRouteActive = serviceRoutes.some((r) =>
+    normalizedPath.startsWith(r)
+  );
 
   const handleServiceNav = (href: string) => {
     setServicesOpen(false);
@@ -173,7 +186,7 @@ export default function BottomNav({
             {/* Grid */}
             <div className="grid grid-cols-3 gap-3">
               {serviceItems.map((item) => {
-                const active = pathname.startsWith(item.href);
+                const active = normalizedPath.startsWith(item.href);
                 return (
                   <button
                     key={item.href}

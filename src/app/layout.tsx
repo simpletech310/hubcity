@@ -23,9 +23,9 @@ const dmSerifDisplay = DM_Serif_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Knect — Compton, CA",
+  title: "Knect — Your City, Connected",
   description:
-    "Your all-in-one connection to Compton. Discover local businesses, events, resources, and community updates.",
+    "Your all-in-one connection to your city. Discover local businesses, events, resources, and community updates.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

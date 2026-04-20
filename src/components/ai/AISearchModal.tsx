@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Badge from "@/components/ui/Badge";
+import { useActiveCity } from "@/hooks/useActiveCity";
 
 interface AISearchModalProps {
   isOpen: boolean;
@@ -14,6 +15,8 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
   const [loading, setLoading] = useState(false);
   const [source, setSource] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeCity = useActiveCity();
+  const cityName = activeCity?.name ?? "your city";
 
   useEffect(() => {
     if (isOpen) {
@@ -68,8 +71,8 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
   };
 
   const quickQueries = [
-    "Best food near Rosecrans",
-    "Youth programs in Compton",
+    "Best food spots nearby",
+    `Youth programs in ${cityName}`,
     "Free health clinics",
     "Upcoming events this week",
     "Job training resources",
@@ -98,7 +101,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
             </div>
             <div>
               <h2 className="font-heading font-bold text-base">Knect AI</h2>
-              <p className="text-[10px] text-txt-secondary">Powered by AI · Compton data</p>
+              <p className="text-[10px] text-txt-secondary">Powered by AI · {cityName} data</p>
             </div>
           </div>
           <button
@@ -119,7 +122,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Ask anything about Compton..."
+              placeholder={`Ask anything about ${cityName}...`}
               className="w-full bg-white/[0.06] border border-border-subtle rounded-2xl pl-4 pr-12 py-4 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors"
             />
             <button
@@ -147,7 +150,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
             <div className="space-y-3 animate-pulse">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-2 h-2 rounded-full bg-gold animate-bounce" />
-                <span className="text-xs text-gold font-medium">Searching Compton data...</span>
+                <span className="text-xs text-gold font-medium">Searching {cityName} data...</span>
               </div>
               <div className="h-4 bg-white/5 rounded-lg w-full" />
               <div className="h-4 bg-white/5 rounded-lg w-4/5" />
@@ -211,7 +214,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
 
               <div className="mt-8 text-center">
                 <p className="text-[10px] text-txt-secondary/50 leading-relaxed">
-                  Knect AI searches local businesses, events, and resources in Compton.
+                  Knect AI searches local businesses, events, and resources in {cityName}.
                   <br />
                   Results are based on community data.
                 </p>

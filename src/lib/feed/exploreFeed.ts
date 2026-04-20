@@ -111,6 +111,9 @@ function dailySeed(): number {
 
 interface BuildOptions {
   limit?: number;
+  /** Restrict results to a single city. Applied to every table with a
+   *  `city_id` column. Creator profiles are scoped via `city_id` too. */
+  cityId?: string | null;
 }
 
 // Row shapes are loosely typed since we select specific columns.
@@ -192,9 +195,67 @@ function firstImage(urls: string[] | null | undefined): string | null {
 
 export async function buildExploreFeed(
   supabase: SupabaseClient,
-  { limit = 60 }: BuildOptions = {}
+  { limit = 60, cityId = null }: BuildOptions = {}
 ): Promise<ExploreItem[]> {
   const todayISO = new Date().toISOString().slice(0, 10);
+
+  // Build each query in stages so the conditional `.eq("city_id", ...)` step
+  // doesn't collide with Supabase's deeply-inferred builder types. Every
+  // table touched below has a `city_id` column (see migration 052).
+  let creatorsQ = supabase
+    .from("profiles")
+    .select("id, display_name, handle, avatar_url, role, bio")
+    .in("role", [
+      "city_ambassador",
+      "business_owner",
+      "content_creator",
+      "creator",
+      "resource_provider",
+      "chamber_admin",
+    ])
+    .not("handle", "is", null);
+  if (cityId) creatorsQ = creatorsQ.eq("city_id", cityId);
+
+  let postsQ = supabase
+    .from("posts")
+    .select(
+      "id, image_url, body, hashtags, created_at, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, bio)"
+    )
+    .not("image_url", "is", null)
+    .eq("is_published", true);
+  if (cityId) postsQ = postsQ.eq("city_id", cityId);
+
+  let eventsQ = supabase
+    .from("events")
+    .select("id, title, slug, image_url, category, start_date, location_name, is_featured")
+    .eq("is_published", true);
+  if (cityId) eventsQ = eventsQ.eq("city_id", cityId);
+
+  let businessesQ = supabase
+    .from("businesses")
+    .select("id, slug, name, image_urls, category, account_type, description")
+    .eq("is_published", true)
+    .or("is_featured.eq.true,account_type.eq.ads_only");
+  if (cityId) businessesQ = businessesQ.eq("city_id", cityId);
+
+  let exhibitsQ = supabase
+    .from("museum_exhibits")
+    .select("id, slug, title, subtitle, cover_image_url")
+    .eq("is_published", true);
+  if (cityId) exhibitsQ = exhibitsQ.eq("city_id", cityId);
+
+  let galleryQ = supabase
+    .from("gallery_items")
+    .select("id, slug, title, item_type, image_urls, artist_name")
+    .eq("is_published", true)
+    .in("item_type", ["artwork", "photo", "poster"]);
+  if (cityId) galleryQ = galleryQ.eq("city_id", cityId);
+
+  let muralsQ = supabase
+    .from("murals")
+    .select("id, title, artist_name, image_urls")
+    .eq("is_published", true);
+  if (cityId) muralsQ = muralsQ.eq("city_id", cityId);
 
   const [
     { data: creatorRows },
@@ -206,66 +267,26 @@ export async function buildExploreFeed(
     { data: galleryRows },
     { data: muralRows },
   ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id, display_name, handle, avatar_url, role, bio")
-      .in("role", [
-        "city_ambassador",
-        "business_owner",
-        "content_creator",
-        "creator",
-        "resource_provider",
-        "chamber_admin",
-      ])
-      .not("handle", "is", null)
-      .limit(30),
-    supabase
-      .from("posts")
-      .select(
-        "id, image_url, body, hashtags, created_at, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, bio)"
-      )
-      .not("image_url", "is", null)
-      .eq("is_published", true)
-      .order("created_at", { ascending: false })
-      .limit(20),
-    supabase
-      .from("events")
-      .select("id, title, slug, image_url, category, start_date, location_name, is_featured")
-      .eq("is_published", true)
+    creatorsQ.limit(30),
+    postsQ.order("created_at", { ascending: false }).limit(20),
+    eventsQ
       .gte("start_date", todayISO)
       .order("start_date", { ascending: true })
       .limit(15),
+    // `shows` has no city_id column — scope via channel relation at a later pass.
     supabase
       .from("shows")
       .select("id, slug, title, tagline, poster_url, channel:channels!shows_channel_id_fkey(id, name, slug)")
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
       .limit(10),
-    supabase
-      .from("businesses")
-      .select("id, slug, name, image_urls, category, account_type, description")
-      .eq("is_published", true)
-      .or("is_featured.eq.true,account_type.eq.ads_only")
-      .limit(15),
-    supabase
-      .from("museum_exhibits")
-      .select("id, slug, title, subtitle, cover_image_url")
-      .eq("is_published", true)
+    businessesQ.limit(15),
+    exhibitsQ
       .order("is_featured", { ascending: false })
       .order("display_order", { ascending: true })
       .limit(8),
-    supabase
-      .from("gallery_items")
-      .select("id, slug, title, item_type, image_urls, artist_name")
-      .eq("is_published", true)
-      .in("item_type", ["artwork", "photo", "poster"])
-      .order("display_order", { ascending: true })
-      .limit(12),
-    supabase
-      .from("murals")
-      .select("id, title, artist_name, image_urls")
-      .eq("is_published", true)
-      .limit(8),
+    galleryQ.order("display_order", { ascending: true }).limit(12),
+    muralsQ.limit(8),
   ]);
 
   const items: ExploreItem[] = [];

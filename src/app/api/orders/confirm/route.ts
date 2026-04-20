@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { getStrictRateLimiter, checkRateLimit } from "@/lib/ratelimit";
+import { sendOrderReceiptEmail } from "@/lib/email-notifications";
 
 export async function POST(request: Request) {
   try {
@@ -148,6 +149,11 @@ export async function POST(request: Request) {
             .then(() => {});
         }
       });
+
+    // Send customer receipt (fire-and-forget, idempotent via receipt_sent_at).
+    sendOrderReceiptEmail(order_id).catch((emailErr) => {
+      console.error("Order receipt email error (non-fatal):", emailErr);
+    });
 
     return NextResponse.json({ confirmed: true, order_id });
   } catch (error) {

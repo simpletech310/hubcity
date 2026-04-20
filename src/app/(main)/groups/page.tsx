@@ -10,6 +10,7 @@ import type { CommunityGroup } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { CATEGORY_COLORS } from "@/lib/constants";
+import { useActiveCity } from "@/hooks/useActiveCity";
 
 const CATEGORY_ICONS: Record<string, string> = {
   neighborhood: "house",
@@ -36,6 +37,7 @@ const CATEGORY_BADGE_VARIANT: Record<string, "gold" | "blue" | "coral" | "emeral
 };
 
 export default function GroupsPage() {
+  const activeCity = useActiveCity();
   const [groups, setGroups] = useState<CommunityGroup[]>([]);
   const [myGroups, setMyGroups] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -56,6 +58,7 @@ export default function GroupsPage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (category !== "all") params.set("category", category);
+      if (activeCity?.slug) params.set("city", activeCity.slug);
       const res = await fetch(`/api/groups?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -66,7 +69,7 @@ export default function GroupsPage() {
       setLoading(false);
     }
     load();
-  }, [category]);
+  }, [category, activeCity?.slug]);
 
   // Filter out private groups client-side
   const publicGroups = groups.filter((g) => g.is_public !== false);

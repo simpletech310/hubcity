@@ -6,6 +6,7 @@ import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
 import EditorialHeader from "@/components/ui/EditorialHeader";
 import JobCard from "@/components/jobs/JobCard";
+import { useActiveCity } from "@/hooks/useActiveCity";
 import type { JobListing } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
 
@@ -29,6 +30,7 @@ const categoryCards: { label: string; iconName: IconName; value: string; color: 
 ];
 
 export default function JobsPage() {
+  const activeCity = useActiveCity();
   const [activeType, setActiveType] = useState("all");
   const [activeCategory, setActiveCategory] = useState<{ value: string; filter: "org_type" | "search" } | null>(null);
   const [jobs, setJobs] = useState<JobListing[]>([]);
@@ -43,6 +45,7 @@ export default function JobsPage() {
       if (activeCategory?.filter === "org_type") {
         params.set("org_type", activeCategory.value);
       }
+      if (activeCity?.slug) params.set("city", activeCity.slug);
 
       const res = await fetch(`/api/jobs?${params.toString()}`);
       const data = await res.json();
@@ -66,7 +69,7 @@ export default function JobsPage() {
       setLoading(false);
     }
     fetchJobs();
-  }, [activeType, activeCategory]);
+  }, [activeType, activeCategory, activeCity?.slug]);
 
   const filtered = search
     ? jobs.filter((j) => {
@@ -91,7 +94,7 @@ export default function JobsPage() {
       <div className="relative min-h-[220px] flex flex-col justify-end mb-5">
         <Image
           src="/images/generated/jobs-hero.png"
-          alt="Job opportunities in Compton"
+          alt={`Job opportunities in ${activeCity?.name ?? "your city"}`}
           fill
           className="object-cover"
           priority
@@ -99,7 +102,7 @@ export default function JobsPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/80 to-midnight" />
 
         <div className="relative z-10 px-5 pt-4 pb-5">
-          <EditorialHeader kicker="OPPORTUNITY AWAITS" title="Jobs in Compton" subtitle="Find your next opportunity in the Knect." />
+          <EditorialHeader kicker="OPPORTUNITY AWAITS" title={`Jobs in ${activeCity?.name ?? "your city"}`} subtitle="Find your next opportunity on Knect." />
 
           {/* Glass Search Bar */}
           <div className="glass-card-elevated flex items-center gap-3 rounded-2xl px-4 py-3.5 focus-within:border-gold/30 transition-all mt-4">

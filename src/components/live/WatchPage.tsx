@@ -7,7 +7,16 @@ import dynamic from "next/dynamic";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import VideoAdOverlay from "@/components/ads/VideoAdOverlay";
+import PaywallOverlay from "@/components/live/PaywallOverlay";
 import type { ChannelVideo, ChannelType } from "@/types/database";
+
+interface PaywallData {
+  channel_id: string;
+  ppv_price_cents: number | null;
+  subscription_price_cents: number | null;
+  currency: string;
+  preview_seconds: number | null;
+}
 
 const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
@@ -69,18 +78,46 @@ interface WatchPageProps {
 export default function WatchPage({ video, moreVideos, userId }: WatchPageProps) {
   const router = useRouter();
   const [adComplete, setAdComplete] = useState(false);
+  const [accessChecked, setAccessChecked] = useState(false);
+  const [paywall, setPaywall] = useState<PaywallData | null>(null);
+  const [paywallReason, setPaywallReason] = useState<
+    "ppv_required" | "subscription_required" | "auth_required" | null
+  >(null);
   const viewCounted = useRef(false);
   const channel = video.channel;
 
+  // Hit the playback gate so the server can decide whether to show the
+  // player or the paywall. Today this returns the public Mux playback id
+  // when allowed; the gate is the policy enforcement layer.
+  useEffect(() => {
+    let cancelled = false;
+    fetch(`/api/videos/${video.id}/playback`)
+      .then(async (r) => {
+        if (cancelled) return;
+        if (r.status === 402) {
+          const data = await r.json();
+          setPaywall(data.paywall as PaywallData);
+          setPaywallReason(data.reason);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setAccessChecked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [video.id]);
+
   // Increment view count once when ad completes and video starts
   useEffect(() => {
-    if (adComplete && !viewCounted.current) {
+    if (adComplete && !paywall && !viewCounted.current) {
       viewCounted.current = true;
       fetch(`/api/channels/${video.channel?.id}/videos/${video.id}/view`, {
         method: "POST",
       }).catch(() => {});
     }
-  }, [adComplete, video.id, video.channel?.id]);
+  }, [adComplete, paywall, video.id, video.channel?.id]);
   const badge = channel
     ? TYPE_BADGE[channel.type as ChannelType] || TYPE_BADGE.community
     : null;
@@ -102,40 +139,57 @@ export default function WatchPage({ video, moreVideos, userId }: WatchPageProps)
         </div>
       </div>
 
-      {/* ── Player ──────────────────────────────────────── */}
+      {/* ── Player / Paywall ────────────────────────────── */}
       <div className="px-5 mb-4">
-        <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40 relative">
-          {/* Pre-roll ad overlay */}
-          {!adComplete && (
-            <VideoAdOverlay
-              contentId={video.id}
-              onAdComplete={() => setAdComplete(true)}
-              zone="video_preroll"
-            />
-          )}
+        {paywall && paywallReason ? (
+          <PaywallOverlay
+            videoId={video.id}
+            channelId={paywall.channel_id}
+            thumbnailUrl={
+              video.thumbnail_url ||
+              (video.mux_playback_id
+                ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=800&height=450&time=5`
+                : null)
+            }
+            ppvPriceCents={paywall.ppv_price_cents}
+            subscriptionPriceCents={paywall.subscription_price_cents}
+            currency={paywall.currency}
+            reason={paywallReason}
+          />
+        ) : (
+          <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40 relative">
+            {/* Pre-roll ad overlay */}
+            {!adComplete && accessChecked && (
+              <VideoAdOverlay
+                contentId={video.id}
+                onAdComplete={() => setAdComplete(true)}
+                zone="video_preroll"
+              />
+            )}
 
-          {video.mux_playback_id ? (
-            <MuxPlayer
-              playbackId={video.mux_playback_id}
-              streamType="on-demand"
-              autoPlay={adComplete ? true : false}
-              muted={false}
-              accentColor="#D4A017"
-              style={{ aspectRatio: "16/9", width: "100%" }}
-              metadata={{
-                video_title: video.title,
-                viewer_user_id: userId || "anon",
-              }}
-            />
-          ) : (
-            <div className="aspect-video bg-gradient-to-br from-midnight to-deep flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-12 h-12 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-sm text-txt-secondary">Processing video...</p>
+            {video.mux_playback_id ? (
+              <MuxPlayer
+                playbackId={video.mux_playback_id}
+                streamType="on-demand"
+                autoPlay={adComplete ? true : false}
+                muted={false}
+                accentColor="#D4A017"
+                style={{ aspectRatio: "16/9", width: "100%" }}
+                metadata={{
+                  video_title: video.title,
+                  viewer_user_id: userId || "anon",
+                }}
+              />
+            ) : (
+              <div className="aspect-video bg-gradient-to-br from-midnight to-deep flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-12 h-12 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-sm text-txt-secondary">Processing video...</p>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ── Video Info ──────────────────────────────────── */}

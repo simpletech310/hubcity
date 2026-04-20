@@ -3,6 +3,7 @@
 import useSWR from "swr";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import { useActiveCity } from "@/hooks/useActiveCity";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -47,6 +48,10 @@ function aqiBadgeStyle(color: string) {
 }
 
 export function WeatherWidget() {
+  const activeCity = useActiveCity();
+  const cityLabel = activeCity
+    ? `${activeCity.name}, ${activeCity.state}`
+    : "Your city";
   const { data: weather, isLoading: weatherLoading } = useSWR<WeatherData>(
     "/api/city-data/weather",
     fetcher,
@@ -133,7 +138,7 @@ export function WeatherWidget() {
 
         {/* Current Conditions Card */}
         <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-1">Compton, CA</p>
+          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-1">{cityLabel}</p>
           <p className="font-heading text-[14px] font-bold text-white leading-tight mb-1">
             {new Date().toLocaleDateString("en-US", { weekday: "long" })}
           </p>

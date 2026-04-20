@@ -3,9 +3,16 @@ import Stripe from "stripe";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateTicketCode } from "@/lib/tickets";
-import { bookingConfirmationEmail } from "@/lib/emails/booking/confirmation";
-import { orderConfirmationEmail } from "@/lib/emails/orders/confirmation";
-import { sendTransactionalEmail } from "@/lib/email";
+import {
+  sendOrderReceiptEmail,
+  sendBookingReceiptEmail,
+} from "@/lib/email-notifications";
+import { calculateCreatorPlatformFee } from "@/lib/creator-access";
+import {
+  notifyCreatorOfNewSubscriber,
+  notifyCreatorOfPpvPurchase,
+  notifySubscriberOfRenewal,
+} from "@/lib/creator-emails";
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -47,17 +54,266 @@ export async function POST(request: Request) {
     switch (event.type) {
       case "account.updated": {
         const account = event.data.object as Stripe.Account;
-        const { error } = await supabase
-          .from("stripe_accounts")
-          .update({
-            charges_enabled: account.charges_enabled ?? false,
-            payouts_enabled: account.payouts_enabled ?? false,
-            onboarding_complete: account.details_submitted ?? false,
-          })
-          .eq("stripe_account_id", account.id);
+        // Update both possible Connect-account tables; whichever row owns this
+        // stripe_account_id will get the new flags. Saves us from sniffing
+        // metadata to figure out persona.
+        const updates = {
+          charges_enabled: account.charges_enabled ?? false,
+          payouts_enabled: account.payouts_enabled ?? false,
+          onboarding_complete: account.details_submitted ?? false,
+        };
 
-        if (error) {
-          console.error("Failed to update stripe account:", error);
+        const [{ error: bizErr }, { error: creatorErr }] = await Promise.all([
+          supabase
+            .from("stripe_accounts")
+            .update(updates)
+            .eq("stripe_account_id", account.id),
+          supabase
+            .from("creator_stripe_accounts")
+            .update(updates)
+            .eq("stripe_account_id", account.id),
+        ]);
+
+        if (bizErr) console.error("Failed to update stripe_accounts:", bizErr);
+        if (creatorErr)
+          console.error("Failed to update creator_stripe_accounts:", creatorErr);
+        break;
+      }
+
+      // ── Creator monetization: subscriptions & PPV ──────────────────────
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const resourceType = session.metadata?.resource_type;
+
+        if (resourceType === "channel_subscription" && session.subscription) {
+          // First-time subscription. Subsequent renewals come through
+          // `customer.subscription.updated` + `invoice.paid`.
+          const channelId = session.metadata?.channel_id;
+          const buyerId = session.metadata?.buyer_id;
+          const creatorId = session.metadata?.creator_id;
+
+          if (channelId && buyerId) {
+            const subId =
+              typeof session.subscription === "string"
+                ? session.subscription
+                : session.subscription.id;
+            const customerId =
+              typeof session.customer === "string"
+                ? session.customer
+                : session.customer?.id ?? null;
+
+            // Pull the live subscription so we have the period end + price.
+            let amountCents: number | null = null;
+            let periodEnd: string | null = null;
+            let currency = "usd";
+            try {
+              const stripe = getStripe();
+              const sub = await stripe.subscriptions.retrieve(subId);
+              const item = sub.items.data[0];
+              amountCents = item?.price.unit_amount ?? null;
+              currency = item?.price.currency ?? "usd";
+              const subWithPeriod = sub as Stripe.Subscription & {
+                current_period_end?: number;
+              };
+              periodEnd = subWithPeriod.current_period_end
+                ? new Date(subWithPeriod.current_period_end * 1000).toISOString()
+                : null;
+            } catch (e) {
+              console.error("Sub retrieve failed (non-fatal):", e);
+            }
+
+            await supabase.from("channel_subscriptions").upsert(
+              {
+                user_id: buyerId,
+                channel_id: channelId,
+                status: "active",
+                stripe_subscription_id: subId,
+                stripe_customer_id: customerId,
+                current_period_end: periodEnd,
+                amount_cents: amountCents,
+                currency,
+              },
+              { onConflict: "user_id,channel_id" }
+            );
+
+            // Record creator earnings.
+            if (creatorId && amountCents) {
+              const fee = calculateCreatorPlatformFee(amountCents);
+              await supabase.from("creator_earnings").insert({
+                creator_id: creatorId,
+                source: "subscription",
+                amount_cents: amountCents - fee,
+                gross_cents: amountCents,
+                platform_fee_cents: fee,
+                description: "New channel subscription",
+                resource_type: "channel_subscription",
+                resource_id: channelId,
+                status: "pending",
+              });
+            }
+
+            // Notify creator + subscriber (fire-and-forget).
+            notifyCreatorOfNewSubscriber({
+              creatorId: creatorId ?? "",
+              channelId,
+              subscriberId: buyerId,
+              amountCents: amountCents ?? 0,
+            }).catch((e) =>
+              console.error("Creator new-sub email error (non-fatal):", e)
+            );
+            notifySubscriberOfRenewal({
+              subscriberId: buyerId,
+              channelId,
+              amountCents: amountCents ?? 0,
+              isFirst: true,
+            }).catch((e) =>
+              console.error("Subscriber confirmation email error (non-fatal):", e)
+            );
+
+            // In-app notification for the creator.
+            if (creatorId) {
+              await supabase.from("notifications").insert({
+                user_id: creatorId,
+                type: "creator_subscription",
+                title: "New subscriber!",
+                body: "Someone just subscribed to your channel.",
+                link_type: "channel",
+                link_id: channelId,
+              });
+            }
+          }
+        }
+
+        if (resourceType === "video_purchase" && session.payment_intent) {
+          const videoId = session.metadata?.video_id;
+          const buyerId = session.metadata?.buyer_id;
+          const creatorId = session.metadata?.creator_id;
+          const channelId = session.metadata?.channel_id;
+          const piId =
+            typeof session.payment_intent === "string"
+              ? session.payment_intent
+              : session.payment_intent.id;
+          const amountCents = session.amount_total ?? 0;
+
+          if (videoId && buyerId) {
+            await supabase
+              .from("video_purchases")
+              .upsert(
+                {
+                  user_id: buyerId,
+                  video_id: videoId,
+                  stripe_payment_intent_id: piId,
+                  amount_cents: amountCents,
+                },
+                { onConflict: "user_id,video_id" }
+              );
+
+            if (creatorId && amountCents) {
+              const fee = calculateCreatorPlatformFee(amountCents);
+              await supabase.from("creator_earnings").insert({
+                creator_id: creatorId,
+                source: "ppv",
+                amount_cents: amountCents - fee,
+                gross_cents: amountCents,
+                platform_fee_cents: fee,
+                description: "Pay-per-view purchase",
+                resource_type: "video_purchase",
+                resource_id: videoId,
+                stripe_payment_intent_id: piId,
+                status: "pending",
+              });
+
+              notifyCreatorOfPpvPurchase({
+                creatorId,
+                videoId,
+                buyerId,
+                amountCents,
+              }).catch((e) =>
+                console.error("Creator PPV email error (non-fatal):", e)
+              );
+
+              await supabase.from("notifications").insert({
+                user_id: creatorId,
+                type: "creator_ppv",
+                title: "Video purchased",
+                body: "Someone just bought one of your videos.",
+                link_type: "video",
+                link_id: videoId,
+              });
+            }
+          }
+
+          // Avoid unused-warning when channelId is metadata-only.
+          if (channelId) void channelId;
+        }
+        break;
+      }
+
+      case "customer.subscription.updated":
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        const subWithPeriod = sub as Stripe.Subscription & {
+          current_period_end?: number;
+        };
+        const periodEnd = subWithPeriod.current_period_end
+          ? new Date(subWithPeriod.current_period_end * 1000).toISOString()
+          : null;
+
+        await supabase
+          .from("channel_subscriptions")
+          .update({
+            status: sub.status,
+            current_period_end: periodEnd,
+            cancel_at_period_end: sub.cancel_at_period_end ?? false,
+          })
+          .eq("stripe_subscription_id", sub.id);
+        break;
+      }
+
+      case "invoice.paid": {
+        // Renewal payments — credit the creator their cut and notify the
+        // subscriber. First-payment is handled via checkout.session.completed.
+        const invoice = event.data.object as Stripe.Invoice & {
+          subscription?: string | Stripe.Subscription | null;
+        };
+        const subId =
+          typeof invoice.subscription === "string"
+            ? invoice.subscription
+            : invoice.subscription?.id ?? null;
+        if (!subId || invoice.billing_reason !== "subscription_cycle") break;
+
+        const { data: row } = await supabase
+          .from("channel_subscriptions")
+          .select("user_id, channel_id, channels:channels(owner_id)")
+          .eq("stripe_subscription_id", subId)
+          .maybeSingle();
+
+        const channelOwner = Array.isArray(row?.channels)
+          ? row?.channels[0]?.owner_id
+          : (row?.channels as unknown as { owner_id?: string } | null)?.owner_id;
+
+        if (row?.user_id && channelOwner && invoice.amount_paid) {
+          const fee = calculateCreatorPlatformFee(invoice.amount_paid);
+          await supabase.from("creator_earnings").insert({
+            creator_id: channelOwner,
+            source: "subscription",
+            amount_cents: invoice.amount_paid - fee,
+            gross_cents: invoice.amount_paid,
+            platform_fee_cents: fee,
+            description: "Subscription renewal",
+            resource_type: "channel_subscription",
+            resource_id: row.channel_id,
+            status: "pending",
+          });
+
+          notifySubscriberOfRenewal({
+            subscriberId: row.user_id,
+            channelId: row.channel_id,
+            amountCents: invoice.amount_paid,
+            isFirst: false,
+          }).catch((e) =>
+            console.error("Renewal email error (non-fatal):", e)
+          );
         }
         break;
       }
@@ -135,57 +391,10 @@ export async function POST(request: Request) {
                   console.error("Booking audit log insert error (non-fatal):", auditErr);
               });
 
-            // Send confirmation email (fire-and-forget, non-blocking).
-            (async () => {
-              try {
-                const { data: profile } = await supabase
-                  .from("profiles")
-                  .select("display_name")
-                  .eq("id", booking.customer_id)
-                  .single();
-                const { data: authUser } = await supabase.auth.admin.getUserById(
-                  booking.customer_id
-                );
-                const customerEmail = authUser?.user?.email ?? null;
-                const { data: biz } = await supabase
-                  .from("businesses")
-                  .select("name")
-                  .eq("id", booking.business_id)
-                  .single();
-                // Look up timezone from the service (best-effort name match).
-                let tz: string | undefined = undefined;
-                const { data: svc } = await supabase
-                  .from("services")
-                  .select("timezone")
-                  .eq("business_id", booking.business_id)
-                  .eq("name", booking.service_name)
-                  .maybeSingle();
-                if (svc?.timezone) tz = svc.timezone;
-
-                if (customerEmail) {
-                  const { subject, html, text } = bookingConfirmationEmail({
-                    customerName: profile?.display_name || "there",
-                    businessName: biz?.name || "your provider",
-                    serviceName: booking.service_name,
-                    date: booking.date,
-                    startTime: booking.start_time,
-                    endTime: booking.end_time,
-                    timezone: tz,
-                    staffName: booking.staff_name ?? null,
-                    priceCents: booking.price ?? null,
-                    bookingId: booking.id,
-                  });
-                  await sendTransactionalEmail({
-                    to: customerEmail,
-                    subject,
-                    html,
-                    text,
-                  });
-                }
-              } catch (emailErr) {
-                console.error("Booking confirmation email error (non-fatal):", emailErr);
-              }
-            })();
+            // Send confirmation email (fire-and-forget, idempotent).
+            sendBookingReceiptEmail(booking.id).catch((emailErr) => {
+              console.error("Booking confirmation email error (non-fatal):", emailErr);
+            });
 
             // Update business_customers tracking (fire-and-forget)
             try {
@@ -297,54 +506,10 @@ export async function POST(request: Request) {
                   console.error("Order audit log insert error (non-fatal):", auditErr);
               });
 
-            // Send confirmation email (fire-and-forget).
-            (async () => {
-              try {
-                const { data: profile } = await supabase
-                  .from("profiles")
-                  .select("display_name")
-                  .eq("id", order.customer_id)
-                  .single();
-                const { data: authUser } = await supabase.auth.admin.getUserById(
-                  order.customer_id
-                );
-                const customerEmail = authUser?.user?.email ?? null;
-                const { data: biz } = await supabase
-                  .from("businesses")
-                  .select("name")
-                  .eq("id", order.business_id)
-                  .single();
-                const { data: items } = await supabase
-                  .from("order_items")
-                  .select("name, quantity, price")
-                  .eq("order_id", order.id);
-
-                if (customerEmail) {
-                  const { subject, html, text } = orderConfirmationEmail({
-                    customerName: profile?.display_name || "there",
-                    businessName: biz?.name || "your vendor",
-                    orderNumber: order.order_number,
-                    orderId: order.id,
-                    totalCents: order.total,
-                    type: order.type === "delivery" ? "delivery" : "pickup",
-                    items: (items || []).map((it) => ({
-                      name: it.name,
-                      quantity: it.quantity,
-                      price: it.price,
-                    })),
-                    receiptUrl,
-                  });
-                  await sendTransactionalEmail({
-                    to: customerEmail,
-                    subject,
-                    html,
-                    text,
-                  });
-                }
-              } catch (emailErr) {
-                console.error("Order confirmation email error (non-fatal):", emailErr);
-              }
-            })();
+            // Send confirmation email (fire-and-forget, idempotent).
+            sendOrderReceiptEmail(order.id).catch((emailErr) => {
+              console.error("Order confirmation email error (non-fatal):", emailErr);
+            });
 
             // Award loyalty points (fire-and-forget)
             try {

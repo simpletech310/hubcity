@@ -1,4 +1,6 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getActiveCity } from "@/lib/city-context";
 import KnectTV from "@/components/live/KnectTV";
 import { buildRelatedToLive } from "@/lib/live/relatedToLive";
 import type {
@@ -12,13 +14,19 @@ import type {
 } from "@/types/database";
 
 export default async function LivePage() {
+  const city = await getActiveCity();
+  if (!city) redirect("/choose-city");
+
   const supabase = await createClient();
 
-  // Fetch channels (includes new `scope` + `is_live_simulated` columns)
+  // Fetch channels (includes new `scope` + `is_live_simulated` columns).
+  // National channels (e.g. Knect TV Live) stay visible across every city;
+  // local channels are filtered to the active city.
   const { data: rawChannels } = await supabase
     .from("channels")
     .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
     .eq("is_active", true)
+    .or(`scope.eq.national,city_id.eq.${city.id}`)
     .order("follower_count", { ascending: false });
 
   // Fetch active live streams (real live, not simulated)
@@ -28,6 +36,7 @@ export default async function LivePage() {
       "*, creator:profiles(id, display_name, avatar_url, role, verification_status), channel:channels(id, name, slug, avatar_url, type, scope)"
     )
     .neq("status", "disabled")
+    .eq("city_id", city.id)
     .order("status", { ascending: true })
     .order("scheduled_at", { ascending: true, nullsFirst: false });
 
