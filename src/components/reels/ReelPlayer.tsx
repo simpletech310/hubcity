@@ -177,7 +177,7 @@ export default function ReelPlayer({
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden">
       <video
         ref={videoRef}
-        src={reel.video_url}
+        src={reel.video_url.includes("#") ? reel.video_url : `${reel.video_url}#t=0.1`}
         poster={reel.poster_url ?? undefined}
         className="w-full h-full object-contain"
         playsInline

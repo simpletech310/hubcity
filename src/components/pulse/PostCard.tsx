@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
@@ -88,6 +88,38 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       vid.pause();
       setVideoPlaying(false);
     }
+  }, []);
+
+  /**
+   * Auto-play when the video scrolls into view; pause when it leaves.
+   * Starts muted so mobile browsers don't block autoplay. User can tap
+   * the speaker icon to unmute.
+   */
+  useEffect(() => {
+    const container = videoContainerRef.current;
+    const vid = videoRef.current;
+    if (!container || !vid) return;
+
+    // iOS Safari needs inline + muted for programmatic autoplay.
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            vid.muted = true;
+            setVideoMuted(true);
+            vid.play().then(() => setVideoPlaying(true)).catch(() => {});
+          } else {
+            if (!vid.paused) {
+              vid.pause();
+              setVideoPlaying(false);
+            }
+          }
+        }
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+    obs.observe(container);
+    return () => obs.disconnect();
   }, []);
 
   /** Calculate video dimensions to fit in card without object-fit */
@@ -351,7 +383,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         <div ref={videoContainerRef} className="overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
           <video
             ref={videoRef}
-            src={post.video_url}
+            src={post.video_url.includes("#") ? post.video_url : `${post.video_url}#t=0.1`}
+            poster={post.image_url ?? undefined}
             playsInline
             muted={videoMuted}
             preload="metadata"

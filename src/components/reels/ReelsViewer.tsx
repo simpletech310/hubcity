@@ -143,18 +143,32 @@ export default function ReelsViewer({
       </div>
 
       {/* Top header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-gradient-to-b from-black/60 via-black/20 to-transparent z-10">
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-20 pointer-events-none">
         <button
-          onClick={() => (onClose ? onClose() : router.back())}
-          className="w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white press hover:bg-black/60"
-          aria-label="Close"
+          onClick={() => {
+            if (onClose) {
+              onClose();
+              return;
+            }
+            // Prefer going back if there's history, otherwise route to the
+            // main feed so the user is never stuck inside the reels viewer.
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/pulse");
+            }
+          }}
+          className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white press hover:bg-black/80 pointer-events-auto shadow-lg"
+          aria-label="Close reels"
         >
-          <Icon name="back" size={16} />
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
         </button>
-        <h1 className="font-heading font-bold text-white text-base drop-shadow">
+        <h1 className="font-heading font-bold text-white text-base drop-shadow pointer-events-none">
           Reels
         </h1>
-        <div className="w-9 h-9" />
+        <div className="w-11 h-11" />
       </div>
 
       {/* Tap-to-unmute hint — shown when the browser blocks audio autoplay */}
