@@ -234,6 +234,66 @@ export default async function BusinessDetailPage({
     .order("sort_order")
     .limit(isRetail ? 8 : 6);
 
+  // Owner profile + a few recent posts/events — so visitors can jump to
+  // the person behind the storefront. Only runs when the business has an
+  // owner linked.
+  type OwnerSummary = {
+    id: string;
+    display_name: string;
+    handle: string | null;
+    avatar_url: string | null;
+    bio: string | null;
+    role: string | null;
+    verification_status: string | null;
+  };
+  type RecentPost = {
+    id: string;
+    body: string;
+    image_url: string | null;
+    media_type: string | null;
+    created_at: string;
+  };
+  type RecentEvent = {
+    id: string;
+    slug: string | null;
+    title: string;
+    image_url: string | null;
+    start_date: string;
+    location_name: string | null;
+  };
+  let owner: OwnerSummary | null = null;
+  let ownerRecentPosts: RecentPost[] = [];
+  let ownerRecentEvents: RecentEvent[] = [];
+  if (biz.owner_id) {
+    const { data: ownerRow } = await supabase
+      .from("profiles")
+      .select("id, display_name, handle, avatar_url, bio, role, verification_status")
+      .eq("id", biz.owner_id)
+      .maybeSingle();
+    owner = (ownerRow as OwnerSummary | null) ?? null;
+
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const [postsRes, eventsRes] = await Promise.all([
+      supabase
+        .from("posts")
+        .select("id, body, image_url, media_type, created_at")
+        .eq("author_id", biz.owner_id)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .limit(3),
+      supabase
+        .from("events")
+        .select("id, slug, title, image_url, start_date, location_name")
+        .eq("created_by", biz.owner_id)
+        .eq("is_published", true)
+        .gte("start_date", todayISO)
+        .order("start_date", { ascending: true })
+        .limit(2),
+    ]);
+    ownerRecentPosts = (postsRes.data ?? []) as RecentPost[];
+    ownerRecentEvents = (eventsRes.data ?? []) as RecentEvent[];
+  }
+
   // Fetch food promotions / coupons
   const { data: promotions } = await supabase
     .from("food_promotions")
@@ -588,6 +648,93 @@ export default async function BusinessDetailPage({
                 </svg>
               </div>
             </div>
+          </Link>
+        </div>
+      )}
+
+      {/* ── Meet the owner — links to their user profile ── */}
+      {owner && owner.handle && (
+        <div className="px-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
+            <h2 className="font-heading font-bold text-base">Meet the owner</h2>
+          </div>
+          <Link
+            href={`/user/${owner.handle}`}
+            className="block rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4 press hover:bg-white/[0.06] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-gradient-to-br from-royal to-hc-purple">
+                {owner.avatar_url ? (
+                  <img src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gold font-heading font-bold text-sm">
+                    {owner.display_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[14px] font-heading font-bold truncate">{owner.display_name}</p>
+                  {owner.verification_status === "verified" && (
+                    <Icon name="verified" size={11} className="text-cyan" />
+                  )}
+                </div>
+                {owner.handle && (
+                  <p className="text-[11px] text-white/40">@{owner.handle}</p>
+                )}
+                {owner.bio && (
+                  <p className="text-[12px] text-white/60 mt-1 line-clamp-2">{owner.bio}</p>
+                )}
+              </div>
+              <div className="shrink-0 text-[11px] font-bold text-white/70 flex items-center gap-1">
+                View profile
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <path d="M5 3l4 4-4 4" />
+                </svg>
+              </div>
+            </div>
+
+            {(ownerRecentPosts.length > 0 || ownerRecentEvents.length > 0) && (
+              <div className="mt-3 pt-3 border-t border-white/[0.04] grid grid-cols-3 gap-2">
+                {ownerRecentPosts.slice(0, 3).map((p) => (
+                  <div
+                    key={p.id}
+                    className="relative aspect-square rounded-lg overflow-hidden bg-white/[0.04]"
+                  >
+                    {p.image_url ? (
+                      <img src={p.image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full p-1.5 flex items-center text-[9px] text-white/60 leading-snug">
+                        <span className="line-clamp-4">{p.body}</span>
+                      </div>
+                    )}
+                    {p.media_type === "video" && (
+                      <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
+                          <polygon points="6,4 20,12 6,20" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {ownerRecentEvents.slice(0, 3 - ownerRecentPosts.slice(0, 3).length).map((e) => (
+                  <div
+                    key={e.id}
+                    className="relative aspect-square rounded-lg overflow-hidden bg-gradient-to-br from-gold/15 to-midnight"
+                  >
+                    {e.image_url ? (
+                      <img src={e.image_url} alt={e.title} className="w-full h-full object-cover opacity-80" />
+                    ) : null}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                    <div className="absolute bottom-1 left-1 right-1">
+                      <p className="text-[8px] uppercase tracking-wider font-bold text-gold">Event</p>
+                      <p className="text-[10px] font-bold text-white line-clamp-2">{e.title}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </Link>
         </div>
       )}
