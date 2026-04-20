@@ -131,15 +131,18 @@ export default function Header() {
         <div className="relative px-5 py-3 flex items-center justify-between">
           {/* Logo / Page Title */}
           {title ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <Link
                 href="/"
                 aria-label="Home"
-                className="w-8 h-8 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-[13px] text-midnight press"
+                className="w-8 h-8 bg-gradient-to-br from-gold to-gold-light rounded-lg flex items-center justify-center font-heading font-extrabold text-[13px] text-midnight press shrink-0"
               >
                 K
               </Link>
-              <h1 className="font-heading font-bold text-lg tracking-tight">{title}</h1>
+              <div className="flex flex-col min-w-0">
+                <h1 className="font-heading font-bold text-lg tracking-tight leading-tight truncate">{title}</h1>
+                <CityPicker variant="header" />
+              </div>
             </div>
           ) : (
             <div className="flex items-center gap-2.5">
