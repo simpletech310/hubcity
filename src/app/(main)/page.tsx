@@ -2,17 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 import SectionHeader from "@/components/layout/SectionHeader";
 import EditorialHeader from "@/components/ui/EditorialHeader";
-import AdZone from "@/components/ui/AdZone";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import AISearchButton from "@/components/home/AISearchButton";
-import WeatherBar from "@/components/home/WeatherBar";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
-import { getAccess } from "@/lib/access";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
@@ -28,55 +24,74 @@ function getGreeting(): string {
   return "Good evening";
 }
 
-type QuickAction = { label: string; href: string; icon: IconName };
+type DiscoverChip = { label: string; href: string; icon: IconName };
 
-// Quick actions visible to everyone (anonymous / unverified / verified).
-const BASE_QUICK_ACTIONS: QuickAction[] = [
-  { label: "Order Food", href: "/food", icon: "utensils" },
-  { label: "Find Jobs", href: "/jobs", icon: "briefcase" },
+const DISCOVER_CHIPS: DiscoverChip[] = [
   { label: "Events", href: "/events", icon: "calendar" },
-  { label: "Health", href: "/health", icon: "heart-pulse" },
-  { label: "Culture", href: "/culture", icon: "palette" },
-  { label: "Resources", href: "/resources", icon: "book" },
+  { label: "Food", href: "/food", icon: "utensils" },
+  { label: "Shows", href: "/live", icon: "live" },
+  { label: "Creators", href: "/pulse", icon: "sparkle" },
+  { label: "Businesses", href: "/business", icon: "store" },
 ];
 
-// Verified-only quick actions (city-specific overlays).
-const VERIFIED_QUICK_ACTIONS: QuickAction[] = [
-  { label: "Report Issue", href: "/city-hall/issues", icon: "alert" },
-  { label: "Parks", href: "/parks", icon: "tree" },
-  { label: "City Hall", href: "/city-hall", icon: "landmark" },
-];
+type UpcomingStream = {
+  id: string;
+  title: string;
+  category: string;
+  thumbnail_url: string | null;
+  scheduled_at: string | null;
+};
+
+type RecentPodcast = {
+  id: string;
+  title: string;
+  episode_number: number | null;
+  thumbnail_url: string | null;
+  duration: number | null;
+};
+
+type ShowItem = {
+  key: string;
+  kind: "stream" | "podcast";
+  title: string;
+  thumbnail: string | null;
+  kicker: string;
+  href: string;
+};
 
 export default async function HomePage() {
   const supabase = await createClient();
+  const nowIso = new Date().toISOString();
+  const todayIso = new Date().toISOString().split("T")[0];
 
   const [
-    { data: { user } },
+    {
+      data: { user },
+    },
     { data: businesses },
     { data: events },
     { data: liveStreams },
-    { data: pinnedPosts },
-    { data: officialPosts },
     { data: recentPosts },
-    { count: activePollsCount },
-    { data: cityAlerts },
-    { data: upcomingMeetings },
-    { data: trafficAlerts },
+    { data: criticalAlerts },
     { data: foodVendors },
-    { data: recentJobs },
+    { data: upcomingStreams },
+    { data: recentPodcasts },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("businesses")
-      .select("*")
+      .select("id, name, slug, category, image_urls, address, rating_avg")
       .eq("is_featured", true)
       .eq("is_published", true)
       .order("rating_avg", { ascending: false })
-      .limit(6),
+      .limit(8),
     supabase
       .from("events")
-      .select("*")
+      .select(
+        "id, title, start_date, location_name, image_url",
+      )
       .eq("is_published", true)
+      .gte("start_date", todayIso)
       .order("start_date", { ascending: true })
       .limit(6),
     supabase
@@ -86,114 +101,98 @@ export default async function HomePage() {
       .limit(3),
     supabase
       .from("posts")
-      .select("*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)")
-      .eq("is_published", true)
-      .eq("is_pinned", true)
-      .order("created_at", { ascending: false })
-      .limit(1),
-    supabase
-      .from("posts")
-      .select("*, author:profiles!posts_author_id_fkey(id, display_name, avatar_url, role, verification_status)")
-      .eq("is_published", true)
-      .eq("profiles.role", "city_official")
-      .order("created_at", { ascending: false })
-      .limit(1),
-    supabase
-      .from("posts")
-      .select("*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)")
+      .select(
+        "*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)",
+      )
       .eq("is_published", true)
       .order("created_at", { ascending: false })
-      .limit(5),
-    supabase
-      .from("polls")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "active")
-      .eq("is_published", true),
-    supabase
-      .from("city_alerts")
-      .select("id, title, body, alert_type, severity")
-      .eq("is_active", true)
-      .order("created_at", { ascending: false })
-      .limit(3),
-    supabase
-      .from("city_meetings")
-      .select("id, title, meeting_type, date, start_time, location")
-      .gte("date", new Date().toISOString().split("T")[0])
-      .order("date", { ascending: true })
-      .limit(3),
+      .limit(8),
     supabase
       .from("city_alerts")
       .select("id, title, body, severity")
       .eq("is_active", true)
-      .eq("alert_type", "traffic")
+      .eq("severity", "critical")
       .order("created_at", { ascending: false })
-      .limit(3),
+      .limit(2),
     supabase
       .from("businesses")
-      .select("id, name, slug, image_urls, category, business_sub_type, rating_avg, is_open")
+      .select(
+        "id, name, slug, image_urls, category, business_sub_type, rating_avg, is_open",
+      )
       .eq("is_published", true)
       .eq("business_type", "food")
       .order("rating_avg", { ascending: false })
-      .limit(6),
+      .limit(8),
     supabase
-      .from("jobs")
-      .select("id, title, company_name, location, salary_min, salary_max, salary_type, employment_type, created_at")
+      .from("live_streams")
+      .select("id, title, category, thumbnail_url, scheduled_at")
+      .eq("status", "idle")
+      .gte("scheduled_at", nowIso)
+      .order("scheduled_at", { ascending: true })
+      .limit(4)
+      .returns<UpcomingStream[]>(),
+    supabase
+      .from("podcasts")
+      .select("id, title, episode_number, thumbnail_url, duration")
       .eq("is_published", true)
-      .eq("status", "open")
-      .order("is_featured", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(3),
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(4)
+      .returns<RecentPodcast[]>(),
   ]);
 
-  // Get user profile for greeting + role
   let displayName = "Compton";
-  let userRole: string | null = null;
-  let dashboardStats: { orders?: number; issues?: number } | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("display_name, role")
+      .select("display_name")
       .eq("id", user.id)
       .single();
     if (profile?.display_name) {
       displayName = profile.display_name.split(" ")[0];
-    }
-    userRole = profile?.role ?? null;
-
-    // Fetch dashboard quick stats for business owners
-    if (userRole === "business_owner") {
-      const { data: biz } = await supabase
-        .from("businesses")
-        .select("id")
-        .eq("owner_id", user.id)
-        .single();
-      if (biz) {
-        const { count: pendingOrders } = await supabase
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .eq("business_id", biz.id)
-          .eq("status", "pending");
-        dashboardStats = { orders: pendingOrders ?? 0 };
-      }
     }
   }
 
   const pulsePosts: Post[] = (recentPosts ?? []) as Post[];
   const greeting = getGreeting();
   const featuredArt = getFeaturedArt();
+  const hasLive = Boolean(liveStreams && liveStreams.length > 0);
+  const featuredBusinesses = businesses ?? [];
 
-  const { mode: accessMode } = await getAccess();
-  const quickActions =
-    accessMode === "verified"
-      ? [...BASE_QUICK_ACTIONS, ...VERIFIED_QUICK_ACTIONS]
-      : BASE_QUICK_ACTIONS;
+  // Build "New Shows" mix: upcoming streams first, then recent podcasts
+  const streamItems: ShowItem[] = (upcomingStreams ?? []).map((s) => {
+    const dt = s.scheduled_at ? new Date(s.scheduled_at) : null;
+    const kicker = dt
+      ? `${dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })} · ${dt.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`
+      : "Upcoming";
+    return {
+      key: `stream-${s.id}`,
+      kind: "stream",
+      title: s.title,
+      thumbnail: s.thumbnail_url,
+      kicker,
+      href: `/live/${s.id}`,
+    };
+  });
+  const podcastItems: ShowItem[] = (recentPodcasts ?? []).map((p) => ({
+    key: `podcast-${p.id}`,
+    kind: "podcast",
+    title: p.title,
+    thumbnail: p.thumbnail_url,
+    kicker: p.episode_number ? `Episode ${p.episode_number}` : "New podcast",
+    href: `/podcasts/${p.id}`,
+  }));
+  const showItems: ShowItem[] = [...streamItems, ...podcastItems].slice(0, 6);
 
-  const featuredBusiness = businesses?.[0] ?? null;
-  const hasLive = liveStreams && liveStreams.length > 0;
+  // Creator posts: prefer media-first; fall back to mix if too few
+  const mediaPosts = pulsePosts
+    .filter((p) => p.image_url || p.video_url || p.mux_playback_id)
+    .slice(0, 4);
+  const displayPosts =
+    mediaPosts.length >= 2 ? mediaPosts : pulsePosts.slice(0, 4);
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* -- 1. Art Hero (65vh) -- */}
+      {/* -- 1. Art Spotlight Hero -- */}
       <section className="relative">
         <Link href={`/art/${featuredArt.slug}`} className="block press">
           <div className="relative w-full h-[65vh]">
@@ -208,7 +207,6 @@ export default async function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-b from-midnight/30 via-transparent to-midnight" />
             <div className="absolute inset-0 bg-gradient-to-t from-midnight/90 via-transparent to-transparent" />
 
-            {/* Art Spotlight badge */}
             <div className="absolute top-4 left-5 z-10">
               <span className="inline-flex items-center gap-1.5 bg-black/50 backdrop-blur-md border border-gold/30 rounded-full px-3 py-1.5 text-[10px] font-bold text-gold tracking-wider uppercase">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
@@ -216,7 +214,6 @@ export default async function HomePage() {
               </span>
             </div>
 
-            {/* Art info at bottom */}
             <div className="absolute bottom-0 left-0 right-0 p-5 pb-8 z-10">
               <p className="text-[11px] text-white/50 font-medium uppercase tracking-wider mb-1">
                 Featured Artist &middot; {featuredArt.year}
@@ -231,7 +228,6 @@ export default async function HomePage() {
                 {featuredArt.medium} &middot; {featuredArt.location}
               </p>
 
-              {/* Scroll indicator */}
               <div className="flex justify-center mt-6">
                 <div className="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center animate-bounce">
                   <Icon name="chevron-down" size={14} className="text-white" />
@@ -255,226 +251,121 @@ export default async function HomePage() {
         <AISearchButton />
       </section>
 
-      {/* -- 3. Dashboard Card (business owners) -- */}
-      {userRole === "business_owner" && dashboardStats && (
-        <section className="px-5">
-          <Link href="/dashboard" className="block press">
-            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
-                <Icon name="bolt" size={18} className="text-gold" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold">Go to Dashboard</p>
-                <p className="text-[11px] text-white/50">
-                  {dashboardStats.orders ? `${dashboardStats.orders} pending order${dashboardStats.orders > 1 ? "s" : ""}` : "All caught up"}
-                </p>
-              </div>
-              <Icon name="chevron-right" size={14} className="text-gold/50" />
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* -- 3b. Trustee Dashboard Card (school trustees) -- */}
-      {userRole === "school_trustee" && (
-        <section className="px-5">
-          <Link href="/trustee/dashboard" className="block press">
-            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
-                <Icon name="graduation" size={18} className="text-emerald-400" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold">Trustee Dashboard</p>
-                <p className="text-[11px] text-white/50">
-                  Manage your profile & accountability
-                </p>
-              </div>
-              <Icon name="chevron-right" size={14} className="text-emerald-400/50" />
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* -- 3c. City Official Dashboard Card -- */}
-      {userRole === "city_official" && (
-        <section className="px-5">
-          <Link href="/dashboard" className="block press">
-            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
-                <Icon name="landmark" size={18} className="text-gold" />
-              </div>
-              <div className="flex-1">
-                <p className="text-[13px] font-semibold">Official Dashboard</p>
-                <p className="text-[11px] text-white/50">
-                  Manage city resources & updates
-                </p>
-              </div>
-              <Icon name="chevron-right" size={14} className="text-gold/50" />
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* -- 4. Quick Actions Grid -- */}
-      <section className="px-5">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-5 px-5">
-          {quickActions.map((action) => (
-            <Link key={action.href} href={action.href} className="press shrink-0">
+      {/* -- 3. Discover Chips -- */}
+      <section>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 px-5">
+          {DISCOVER_CHIPS.map((chip) => (
+            <Link key={chip.href} href={chip.href} className="press shrink-0">
               <div className="bg-white/[0.06] backdrop-blur-sm border border-white/[0.08] rounded-full px-3.5 py-2 flex items-center gap-2 shrink-0">
-                <Icon name={action.icon} size={14} className="text-gold" />
-                <span className="text-[12px] font-medium text-white/80">{action.label}</span>
+                <Icon name={chip.icon} size={14} className="text-gold" />
+                <span className="text-[12px] font-medium text-white/80">
+                  {chip.label}
+                </span>
               </div>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* -- 5. Weather + AQI Bar -- */}
-      <section className="px-5">
-        <WeatherBar />
-      </section>
-
-      {/* -- 6. Active Polls Banner -- */}
-      {(activePollsCount ?? 0) > 0 && (
-        <section className="px-5">
-          <Link href="/pulse" className="block press">
-            <div className="glass-neon rounded-xl p-3.5 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gold/15 flex items-center justify-center shrink-0">
-                <Icon name="chart" size={18} className="text-gold" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-white">Your voice matters</p>
-                <p className="text-[11px] text-white/50">{activePollsCount} active poll{activePollsCount! > 1 ? "s" : ""} — tap to vote</p>
-              </div>
-              <Icon name="chevron-right" size={14} className="text-gold/50" />
-            </div>
-          </Link>
-        </section>
-      )}
-
-      {/* -- 7. Traffic Alert Banner -- */}
-      {trafficAlerts && trafficAlerts.length > 0 && (
-        <section className="px-5">
-          <Card variant="glass" padding={false}>
-            <div className="p-3 flex items-start gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center shrink-0">
-                <Icon name="transit" size={16} className="text-orange-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold text-orange-400 uppercase tracking-wider mb-0.5">
-                  Traffic Alert
-                </p>
-                {trafficAlerts.map((ta) => (
-                  <Link key={ta.id} href="/city-data" className="block press">
-                    <p className="text-[12px] text-white/70 leading-snug line-clamp-1 mb-0.5">
-                      {ta.title}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-              <Link href="/city-data" className="shrink-0">
-                <Icon name="chevron-right" size={14} className="text-white/20" />
-              </Link>
-            </div>
-          </Card>
-        </section>
-      )}
-
-      {/* -- 8. City Alerts -- */}
-      {cityAlerts && cityAlerts.length > 0 && (
+      {/* -- 4. Critical Alerts (safety floor) -- */}
+      {criticalAlerts && criticalAlerts.length > 0 && (
         <section className="px-5">
           <div className="flex flex-col gap-2">
-            {cityAlerts.map((alert) => {
-              const severityConfig: Record<string, { bg: string; border: string; iconName: "alert" | "warning" | "info"; textColor: string }> = {
-                critical: { bg: "bg-compton-red/10", border: "border-compton-red/25", iconName: "alert", textColor: "text-compton-red" },
-                warning: { bg: "bg-gold/10", border: "border-gold/25", iconName: "warning", textColor: "text-gold" },
-                info: { bg: "bg-cyan/10", border: "border-cyan/25", iconName: "info", textColor: "text-cyan" },
-              };
-              const config = severityConfig[alert.severity] || severityConfig.info;
-              return (
-                <Link key={alert.id} href="/city-data" className="press">
-                  <div className={`${config.bg} border ${config.border} rounded-xl p-3 flex items-center gap-2.5`}>
-                    <Icon name={config.iconName} size={16} className={`${config.textColor} shrink-0`} />
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-[12px] font-semibold ${config.textColor}`}>{alert.title}</p>
-                      <p className="text-[11px] text-white/50 line-clamp-1">{alert.body}</p>
-                    </div>
-                    <Icon name="chevron-right" size={12} className="text-white/20 shrink-0" />
+            {criticalAlerts.map((alert) => (
+              <Link key={alert.id} href="/city-data" className="press">
+                <div className="bg-compton-red/10 border border-compton-red/25 rounded-xl p-3 flex items-center gap-2.5">
+                  <Icon
+                    name="alert"
+                    size={16}
+                    className="text-compton-red shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-semibold text-compton-red">
+                      {alert.title}
+                    </p>
+                    <p className="text-[11px] text-white/50 line-clamp-1">
+                      {alert.body}
+                    </p>
                   </div>
-                </Link>
-              );
-            })}
+                  <Icon
+                    name="chevron-right"
+                    size={12}
+                    className="text-white/20 shrink-0"
+                  />
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       )}
 
-      {/* -- 9. Upcoming City Meetings -- */}
-      {upcomingMeetings && upcomingMeetings.length > 0 && (
-        <section className="px-5 space-y-2">
-          <SectionHeader title="City Meetings" linkText="View All" linkHref="/city-data/meetings" compact />
-          {upcomingMeetings.slice(0, 2).map((meeting) => (
-            <Link key={meeting.id} href="/city-data/meetings" className="block press">
-              <Card variant="glass" hover padding={false}>
-                <div className="p-3 flex items-center gap-3">
-                  <div className="flex flex-col items-center bg-cyan/10 rounded-lg px-2.5 py-1.5 min-w-[44px]">
-                    <span className="text-[14px] font-bold text-cyan leading-none">
-                      {new Date(meeting.date).getDate()}
-                    </span>
-                    <span className="text-[9px] font-semibold text-cyan/60 uppercase">
-                      {new Date(meeting.date).toLocaleDateString("en-US", { month: "short" })}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-[12px] font-bold truncate">{meeting.title}</h3>
-                    <p className="text-[10px] text-warm-gray truncate">
-                      {meeting.start_time} · {meeting.location || "City Hall"}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </section>
-      )}
+      {/* -- 5. Live Now -- */}
+      {hasLive && <LiveNowBanner streams={liveStreams!} />}
 
-      {/* -- 10. Live Now Banner -- */}
-      {hasLive && <LiveNowBanner streams={liveStreams} />}
-
-      {/* -- 11. Events Horizontal Carousel -- */}
+      {/* -- 6. Upcoming Events -- */}
       {events && events.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
-            <SectionHeader title="Upcoming Events" linkText="See All" linkHref="/events" compact />
+            <SectionHeader
+              title="Upcoming Events"
+              subtitle="This week in Compton"
+              linkText="See All"
+              linkHref="/events"
+              compact
+            />
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
-            {events.slice(0, 5).map((event) => (
-              <Link key={event.id} href={`/events/${event.id}`} className="shrink-0 w-[200px] press">
-                <div className="glass-card-elevated rounded-xl overflow-hidden">
-                  <div className="relative h-[120px] bg-royal">
-                    {event.cover_image_url ? (
-                      <Image src={event.cover_image_url} alt={event.title} fill className="object-cover" />
+            {events.map((event) => (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}`}
+                className="shrink-0 w-[240px] press"
+              >
+                <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                  <div className="relative h-[160px] bg-royal">
+                    {event.image_url ? (
+                      <Image
+                        src={event.image_url}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                        sizes="240px"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Icon name="calendar" size={28} className="text-white/20" />
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold/10 to-purple-900/10">
+                        <Icon
+                          name="calendar"
+                          size={32}
+                          className="text-white/20"
+                        />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                    <div className="absolute top-2 left-2">
-                      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2 py-1 text-center">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/5 to-transparent" />
+                    <div className="absolute top-2.5 left-2.5">
+                      <div className="bg-black/60 backdrop-blur-sm rounded-lg px-2.5 py-1.5 text-center border border-white/10">
                         <p className="text-[10px] font-bold text-gold uppercase leading-none">
-                          {new Date(event.start_date).toLocaleDateString("en-US", { month: "short" })}
+                          {new Date(event.start_date).toLocaleDateString(
+                            "en-US",
+                            { month: "short" },
+                          )}
                         </p>
-                        <p className="text-[16px] font-bold leading-none mt-0.5">
+                        <p className="text-[18px] font-bold leading-none mt-0.5">
                           {new Date(event.start_date).getDate()}
                         </p>
                       </div>
                     </div>
                   </div>
                   <div className="p-3">
-                    <h3 className="text-[13px] font-bold leading-snug line-clamp-2 mb-1">{event.title}</h3>
+                    <h3 className="text-[13px] font-bold leading-snug line-clamp-2 mb-1">
+                      {event.title}
+                    </h3>
                     {event.location_name && (
                       <p className="text-[11px] text-warm-gray truncate flex items-center gap-1">
-                        <Icon name="map-pin" size={10} className="text-warm-gray shrink-0" />
+                        <Icon
+                          name="map-pin"
+                          size={10}
+                          className="text-warm-gray shrink-0"
+                        />
                         {event.location_name}
                       </p>
                     )}
@@ -486,167 +377,312 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 12. Food Vendors Row -- */}
+      {/* -- 7. Eat in Compton -- */}
       {foodVendors && foodVendors.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
-            <SectionHeader title="Order Food" linkText="See All" linkHref="/food" compact />
+            <SectionHeader
+              title="Eat in Compton"
+              subtitle="Top-rated local spots"
+              linkText="See All"
+              linkHref="/food"
+              compact
+            />
           </div>
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
             {foodVendors.map((vendor) => (
-              <Link key={vendor.id} href={`/food/vendor/${vendor.id}`} className="shrink-0 w-[140px] press">
-                <div className="glass-card-elevated rounded-xl overflow-hidden">
-                  <div className="relative h-[100px] bg-royal">
+              <Link
+                key={vendor.id}
+                href={`/food/vendor/${vendor.id}`}
+                className="shrink-0 w-[180px] press"
+              >
+                <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                  <div className="relative h-[130px] bg-royal">
                     {vendor.image_urls?.[0] ? (
-                      <img src={vendor.image_urls[0]} alt={vendor.name} className="w-full h-full object-cover" />
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={vendor.image_urls[0]}
+                        alt={vendor.name}
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <Icon name="utensils" size={24} className="text-white/20" />
+                        <Icon
+                          name="utensils"
+                          size={28}
+                          className="text-white/20"
+                        />
+                      </div>
+                    )}
+                    {vendor.is_open && (
+                      <div className="absolute top-2 right-2">
+                        <span className="inline-flex items-center gap-1 bg-emerald/90 text-midnight rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                          <span className="w-1 h-1 rounded-full bg-midnight" />
+                          Open
+                        </span>
                       </div>
                     )}
                   </div>
                   <div className="p-2.5">
-                    <h3 className="text-[12px] font-bold truncate">{vendor.name}</h3>
-                    <div className="flex items-center gap-1 mt-0.5">
-                      <Icon name="star" size={10} className="text-gold" />
-                      <span className="text-[10px] text-warm-gray">{Number(vendor.rating_avg || 0).toFixed(1)}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* -- 13. Featured Business Card -- */}
-      {featuredBusiness && (
-        <section className="px-5">
-          <Link href={`/business/${featuredBusiness.slug}`} className="block press">
-            <Card variant="glass" hover padding={false}>
-              <div className="p-4 flex items-center gap-3.5">
-                <div className="w-[52px] h-[52px] rounded-xl overflow-hidden relative shrink-0 bg-royal">
-                  {featuredBusiness.image_urls?.[0] ? (
-                    <img
-                      src={featuredBusiness.image_urls[0]}
-                      alt={featuredBusiness.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Icon name="store" size={22} className="text-white/40" />
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-hc-blue uppercase tracking-wider mb-0.5">
-                    Featured Business
-                  </p>
-                  <h3 className="font-heading text-[14px] font-bold leading-snug truncate">
-                    {featuredBusiness.name}
-                  </h3>
-                  <div className="flex items-center gap-2 text-[11px] text-warm-gray">
-                    <span className="truncate">
-                      {featuredBusiness.category.charAt(0).toUpperCase() + featuredBusiness.category.slice(1)}
-                      {featuredBusiness.address ? ` · ${featuredBusiness.address.split(",")[0]}` : ""}
-                    </span>
-                    <span className="shrink-0 flex items-center gap-0.5 text-gold">
-                      <Icon name="star" size={11} className="text-gold" />
-                      {Number(featuredBusiness.rating_avg).toFixed(1)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Link>
-        </section>
-      )}
-
-      {/* -- 14. Jobs Teaser -- */}
-      {recentJobs && recentJobs.length > 0 && (
-        <section className="px-5 space-y-3">
-          <SectionHeader title="Now Hiring" linkText="All Jobs" linkHref="/jobs" compact />
-          <div className="space-y-2">
-            {recentJobs.map((job) => (
-              <Link key={job.id} href={`/jobs/${job.id}`} className="block press">
-                <Card variant="glass" hover padding={false}>
-                  <div className="p-3.5 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
-                      <Icon name="briefcase" size={18} className="text-gold" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-[13px] font-bold truncate">{job.title}</h3>
-                      <p className="text-[11px] text-warm-gray truncate">{job.company_name}</p>
-                    </div>
-                    {job.salary_min && (
-                      <span className="text-[11px] font-semibold text-emerald shrink-0">
-                        ${Math.round(job.salary_min / 1000)}k{job.salary_max ? `–${Math.round(job.salary_max / 1000)}k` : "+"}
-                      </span>
-                    )}
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* -- 15. Ad Zone -- */}
-      <div className="px-5">
-        <AdZone zone="feed_banner" />
-      </div>
-
-      {/* -- 16. Pulse Feed -- */}
-      {pulsePosts.length > 0 && (
-        <section className="px-5 space-y-3">
-          <EditorialHeader kicker="THE PULSE" title="What's New" subtitle="Latest from your city" />
-          <Card variant="glass" padding={false}>
-            <div className="flex flex-col divide-y divide-border-subtle overflow-hidden">
-              {pulsePosts.map((post) => {
-                const badge = post.author?.role ? ROLE_BADGE_MAP[post.author.role] : null;
-                return (
-                  <Link key={post.id} href="/pulse" className="press">
-                    <div className="flex items-start gap-3 px-4 py-3">
-                      {/* Avatar */}
-                      <div className="w-8 h-8 rounded-full overflow-hidden relative shrink-0 bg-deep">
-                        {post.author?.avatar_url ? (
-                          <Image
-                            src={post.author.avatar_url}
-                            alt={post.author.display_name ?? ""}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[11px] font-bold text-gold">
-                            {post.author?.display_name?.charAt(0) ?? "?"}
-                          </div>
-                        )}
+                    <h3 className="text-[12px] font-bold truncate">
+                      {vendor.name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1 gap-2">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Icon name="star" size={10} className="text-gold" />
+                        <span className="text-[10px] text-warm-gray">
+                          {Number(vendor.rating_avg || 0).toFixed(1)}
+                        </span>
                       </div>
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5 mb-0.5">
-                          <span className="text-[12px] font-semibold truncate">
-                            {post.author?.display_name ?? "Community"}
-                          </span>
-                          {badge && <Badge label={badge.label} variant={badge.variant} />}
-                          <span className="text-[11px] text-muted-gray ml-auto shrink-0">
-                            {timeAgo(post.created_at)}
+                      {vendor.business_sub_type && (
+                        <span className="text-[9px] text-white/40 uppercase tracking-wider truncate">
+                          {vendor.business_sub_type}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- 8. New Shows (upcoming streams + fresh podcasts) -- */}
+      {showItems.length > 0 && (
+        <section className="space-y-3">
+          <div className="px-5">
+            <SectionHeader
+              title="New Shows"
+              subtitle="Streams & podcasts coming up"
+              linkText="See All"
+              linkHref="/live"
+              compact
+            />
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {showItems.map((item) => (
+              <Link
+                key={item.key}
+                href={item.href}
+                className="shrink-0 w-[200px] press"
+              >
+                <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                  <div className="relative h-[260px] bg-royal">
+                    {item.thumbnail ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.thumbnail}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900/20 to-gold/10">
+                        <Icon
+                          name={item.kind === "stream" ? "live" : "podcast"}
+                          size={36}
+                          className="text-white/20"
+                        />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/15 to-transparent" />
+                    <div className="absolute top-2.5 left-2.5">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                          item.kind === "stream"
+                            ? "bg-coral/90 text-white"
+                            : "bg-cyan/90 text-midnight"
+                        }`}
+                      >
+                        <Icon
+                          name={item.kind === "stream" ? "live" : "podcast"}
+                          size={9}
+                        />
+                        {item.kind === "stream" ? "Live Soon" : "Podcast"}
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <p className="text-[9px] font-bold text-gold uppercase tracking-wider mb-1 truncate">
+                        {item.kicker}
+                      </p>
+                      <h3 className="text-[13px] font-bold leading-snug line-clamp-2">
+                        {item.title}
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- 9. From Creators (media-first pulse) -- */}
+      {displayPosts.length > 0 && (
+        <section className="space-y-3">
+          <div className="px-5">
+            <EditorialHeader
+              kicker="THE PULSE"
+              title="From Creators"
+              subtitle="Fresh posts from your community"
+            />
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {displayPosts.map((post) => {
+              const badge = post.author?.role
+                ? ROLE_BADGE_MAP[post.author.role]
+                : null;
+              const hasMedia = Boolean(
+                post.image_url || post.video_url || post.mux_playback_id,
+              );
+              const isVideo = Boolean(
+                post.video_url || post.mux_playback_id,
+              );
+              return (
+                <Link
+                  key={post.id}
+                  href="/pulse"
+                  className="shrink-0 w-[220px] press"
+                >
+                  <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                    <div className="relative h-[275px] bg-royal">
+                      {post.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.image_url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gold/5 to-coral/10 p-4">
+                          <p className="text-[13px] text-white/80 font-medium line-clamp-6 text-center leading-snug">
+                            {post.body}
+                          </p>
+                        </div>
+                      )}
+                      {post.image_url && (
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/15 to-transparent" />
+                      )}
+                      {isVideo && (
+                        <div className="absolute top-2.5 right-2.5">
+                          <span className="inline-flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                            <Icon name="video" size={9} />
+                            Video
                           </span>
                         </div>
-                        <p className="text-[12px] text-warm-gray leading-snug line-clamp-2">
-                          {post.body}
-                        </p>
+                      )}
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className="w-6 h-6 rounded-full overflow-hidden relative shrink-0 bg-deep">
+                            {post.author?.avatar_url ? (
+                              <Image
+                                src={post.author.avatar_url}
+                                alt={post.author.display_name ?? ""}
+                                fill
+                                className="object-cover"
+                                sizes="24px"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gold">
+                                {post.author?.display_name?.charAt(0) ?? "?"}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[11px] font-semibold truncate">
+                            {post.author?.display_name ?? "Community"}
+                          </span>
+                          {badge && (
+                            <Badge label={badge.label} variant={badge.variant} />
+                          )}
+                        </div>
+                        {hasMedia && post.body && (
+                          <p className="text-[11px] text-white/70 line-clamp-2 leading-snug">
+                            {post.body}
+                          </p>
+                        )}
+                        {!hasMedia && (
+                          <p className="text-[10px] text-white/40">
+                            {timeAgo(post.created_at)}
+                          </p>
+                        )}
                       </div>
                     </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </Card>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </section>
       )}
 
-      {/* -- 17. Bottom CTA -- */}
+      {/* -- 10. Local Favorites (Businesses) -- */}
+      {featuredBusinesses.length > 0 && (
+        <section className="space-y-3">
+          <div className="px-5">
+            <SectionHeader
+              title="Local Favorites"
+              subtitle="Hand-picked spots in Compton"
+              linkText="See All"
+              linkHref="/business"
+              compact
+            />
+          </div>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {featuredBusinesses.map((biz) => (
+              <Link
+                key={biz.id}
+                href={`/business/${biz.slug}`}
+                className="shrink-0 w-[200px] press"
+              >
+                <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                  <div className="relative h-[150px] bg-royal">
+                    {biz.image_urls?.[0] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={biz.image_urls[0]}
+                        alt={biz.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Icon
+                          name="store"
+                          size={28}
+                          className="text-white/20"
+                        />
+                      </div>
+                    )}
+                    <div className="absolute top-2.5 left-2.5">
+                      <span className="inline-flex items-center gap-1 bg-gold/90 text-midnight rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider">
+                        <Icon name="star" size={9} />
+                        Featured
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h3 className="text-[13px] font-bold leading-snug line-clamp-1">
+                      {biz.name}
+                    </h3>
+                    <div className="flex items-center justify-between mt-1 gap-2">
+                      <span className="text-[10px] text-warm-gray uppercase tracking-wider truncate">
+                        {biz.category}
+                      </span>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <Icon name="star" size={10} className="text-gold" />
+                        <span className="text-[10px] text-warm-gray">
+                          {Number(biz.rating_avg || 0).toFixed(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- 11. Footer CTA -- */}
       <section className="px-5 pb-6">
         <Link
           href="/district"
