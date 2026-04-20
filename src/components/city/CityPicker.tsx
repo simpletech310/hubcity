@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Icon from "@/components/ui/Icon";
 import { useActiveCity, useKnownCities } from "@/hooks/useActiveCity";
@@ -25,10 +26,13 @@ export default function CityPicker({
   const active = useActiveCity();
   const cities = useKnownCities();
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  useEffect(() => setMounted(true), []);
 
   // Close on Escape
   useEffect(() => {
@@ -117,8 +121,9 @@ export default function CityPicker({
         </svg>
       </button>
 
-      {/* Sheet */}
-      {open && (
+      {/* Sheet — portaled to document.body so the header's transform
+          doesn't create a containing block that pushes it off-screen. */}
+      {open && mounted && createPortal(
         <div className="fixed inset-0 z-[300] flex items-end sm:items-center sm:justify-center">
           {/* Backdrop */}
           <div
@@ -258,7 +263,8 @@ export default function CityPicker({
               resident-only sections in your home city.
             </p>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
