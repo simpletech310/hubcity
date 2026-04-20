@@ -1997,3 +1997,79 @@ export interface AccountabilityVector {
   applies_to: string[];
   sort_order: number;
 }
+
+// ── Profile gallery ──────────────────────────────────
+export interface ProfileGalleryImage {
+  id: string;
+  owner_id: string;
+  image_url: string;
+  caption: string | null;
+  event_id: string | null;
+  width: number | null;
+  height: number | null;
+  display_order: number;
+  created_at: string;
+  event?: { id: string; title: string; slug: string } | null;
+}
+
+// ── Explore feed ─────────────────────────────────────
+export type ExploreKind =
+  | "creator"
+  | "post"
+  | "event"
+  | "show"
+  | "business"
+  | "exhibit"
+  | "artwork"
+  | "mural";
+
+export type ExploreWhoFilter =
+  | "all"
+  | "city_ambassador"
+  | "business_owner"
+  | "content_creator"
+  | "resource_provider"
+  | "school"
+  | "chamber_admin"
+  | "admin";
+
+export type ExploreWhatFilter =
+  | "all"
+  | "creator"
+  | "post"
+  | "event"
+  | "show"
+  | "business"
+  | "culture";
+
+export type ExploreBadgeVariant =
+  | "gold"
+  | "emerald"
+  | "coral"
+  | "cyan"
+  | "pink"
+  | "purple"
+  | "blue";
+
+export interface ExploreItem {
+  id: string;
+  kind: ExploreKind;
+  href: string;
+  image_url: string | null;
+  title: string;
+  subtitle?: string;
+  accentColor?: string;
+  aspectHint?: "square" | "portrait" | "landscape";
+  chip?: { label: string; variant: ExploreBadgeVariant };
+  meta?: {
+    date?: string;
+    role?: string;
+    author?: {
+      name: string;
+      avatar_url: string | null;
+      handle: string;
+    };
+    isAd?: boolean;
+  };
+}
+

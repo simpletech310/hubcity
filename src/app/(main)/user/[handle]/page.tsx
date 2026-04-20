@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
@@ -8,7 +7,10 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { formatDistanceToNow } from "date-fns";
-import type { Post, Channel } from "@/types/database";
+import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
+import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
+import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
+import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage } from "@/types/database";
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params;
@@ -41,11 +43,21 @@ export default async function PublicProfilePage({
 
   if (!profile) return notFound();
 
-  // Fetch their posts, channel, and stats in parallel
+  // Current user (to decide if gallery uploader should show)
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
+  const isOwner = currentUser?.id === profile.id;
+
+  const todayISO = new Date().toISOString().slice(0, 10);
+
+  // Fetch posts, channel, stats, upcoming events, gallery in parallel
   const [
     { data: posts },
     { data: channels },
     { count: postCount },
+    { data: upcomingEvents },
+    { data: galleryRaw },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -64,11 +76,43 @@ export default async function PublicProfilePage({
       .select("*", { count: "exact", head: true })
       .eq("author_id", profile.id)
       .eq("is_published", true),
+    supabase
+      .from("events")
+      .select("*")
+      .eq("created_by", profile.id)
+      .eq("is_published", true)
+      .gte("start_date", todayISO)
+      .order("start_date", { ascending: true })
+      .limit(8),
+    supabase
+      .from("profile_gallery_images")
+      .select("*")
+      .eq("owner_id", profile.id)
+      .order("display_order", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(40),
   ]);
 
   const badge = profile.role ? ROLE_BADGE_MAP[profile.role] : null;
   const channel = channels?.[0] as Channel | undefined;
   const userPosts = (posts ?? []) as Post[];
+  const events = (upcomingEvents ?? []) as Event[];
+  const gallery = (galleryRaw ?? []) as ProfileGalleryImage[];
+
+  // Top 3 latest videos if channel exists
+  let channelVideos: ChannelVideo[] = [];
+  if (channel) {
+    const { data: videoRows } = await supabase
+      .from("channel_videos")
+      .select("*")
+      .eq("channel_id", channel.id)
+      .eq("is_published", true)
+      .eq("status", "ready")
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(3);
+    channelVideos = (videoRows ?? []) as ChannelVideo[];
+  }
 
   const roleColors: Record<string, string> = {
     city_official: "#F2A900",
@@ -248,38 +292,41 @@ export default async function PublicProfilePage({
           </Card>
         </div>
 
-        {/* Channel link */}
+        {/* Elevated channel strip */}
         {channel && (
-          <Link
-            href={`/live/channel/${channel.slug}`}
-            className="block mb-4"
-          >
-            <Card variant="glass" className="flex items-center gap-3 press hover:border-white/10 transition-colors">
-              <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0">
-                {channel.avatar_url ? (
-                  <img src={channel.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-white/[0.06] flex items-center justify-center">
-                    <Icon name="live" size={18} className="text-white/40" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold truncate">{channel.name}</p>
-                <p className="text-[11px] text-white/40">
-                  {channel.follower_count?.toLocaleString()} followers &middot; {channel.type}
-                </p>
-              </div>
-              <span
-                className="text-[11px] font-bold px-3 py-1.5 rounded-full shrink-0"
-                style={{ background: `${accentColor}18`, color: accentColor, border: `1px solid ${accentColor}25` }}
-              >
-                View Channel
-              </span>
-            </Card>
-          </Link>
+          <ProfileChannelStrip channel={channel} videos={channelVideos} />
         )}
       </div>
+
+      {/* --- Events by this creator --- */}
+      {events.length > 0 && (
+        <div className="mb-6">
+          <div className="px-5 mb-3 flex items-center justify-between">
+            <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider flex items-center gap-2">
+              <Icon name="calendar" size={16} style={{ color: accentColor }} /> Upcoming Events
+            </h2>
+            <span className="text-[10px] text-white/30 font-semibold tabular-nums">
+              {events.length}
+            </span>
+          </div>
+          <ProfileEventsRow events={events} accentColor={accentColor} />
+        </div>
+      )}
+
+      {/* --- Gallery --- */}
+      {(isOwner || gallery.length > 0) && (
+        <div className="px-5 mb-6">
+          <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider mb-3 flex items-center gap-2">
+            <Icon name="photo" size={16} style={{ color: accentColor }} /> Gallery
+          </h2>
+          <ProfileGalleryMasonry
+            images={gallery}
+            ownerName={profile.display_name}
+            isOwner={isOwner}
+            accentColor={accentColor}
+          />
+        </div>
+      )}
 
       {/* --- Posts Feed --- */}
       <div className="px-5">

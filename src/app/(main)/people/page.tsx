@@ -1,45 +1,30 @@
 import { createClient } from "@/lib/supabase/server";
-import PeopleClient from "./people-client";
+import { buildExploreFeed } from "@/lib/feed/exploreFeed";
+import ExploreMosaic from "@/components/explore/ExploreMosaic";
 
 export const metadata = {
-  title: "People | Knect",
-  description: "Community directory for Compton, CA",
-};
-
-/** Role priority for display ordering: officials first */
-const ROLE_PRIORITY: Record<string, number> = {
-  city_official: 0,
-  city_ambassador: 1,
-  admin: 2,
-  business_owner: 3,
-  content_creator: 4,
-  creator: 4,
-  resource_provider: 5,
-  chamber_admin: 6,
-  school: 7,
+  title: "Explore | Knect",
+  description: "Discover creators, events, shows, and culture in Compton, CA",
 };
 
 export default async function PeoplePage() {
   const supabase = await createClient();
-  const { data: profiles } = await supabase
-    .from("profiles")
-    .select(
-      "id, display_name, handle, avatar_url, role, verification_status, bio"
-    )
-    .order("created_at", { ascending: true })
-    .limit(100);
+  const items = await buildExploreFeed(supabase);
 
-  // Filter out citizens and officials (officials have their own /officials page)
-  const notable = (profiles ?? []).filter(
-    (p) => p.role !== "citizen" && p.role !== "city_official" && p.role !== "school_trustee"
+  return (
+    <div className="animate-fade-in pb-safe">
+      {/* Header */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-midnight" />
+        <div className="relative px-5 pt-6 pb-5">
+          <h1 className="font-heading text-2xl font-bold mb-1">Explore</h1>
+          <p className="text-sm text-txt-secondary">
+            Who&apos;s creating, what&apos;s happening.
+          </p>
+        </div>
+      </div>
+
+      <ExploreMosaic items={items} />
+    </div>
   );
-
-  // Sort by role priority
-  const sorted = notable.sort((a, b) => {
-    const pa = ROLE_PRIORITY[a.role] ?? 99;
-    const pb = ROLE_PRIORITY[b.role] ?? 99;
-    return pa - pb;
-  });
-
-  return <PeopleClient profiles={sorted} />;
 }
