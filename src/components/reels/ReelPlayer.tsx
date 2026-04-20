@@ -14,6 +14,13 @@ interface ReelPlayerProps {
   /** Global mute state shared across the viewer */
   muted: boolean;
   onToggleMute: () => void;
+  /** Called when the video ends naturally — viewer uses this to auto-advance */
+  onEnded?: () => void;
+  /**
+   * Called when the browser blocks unmuted autoplay so the viewer can force
+   * muted=true and show a "tap to unmute" prompt.
+   */
+  onAutoplayBlocked?: () => void;
 }
 
 function fmtCount(n: number | null | undefined) {
@@ -28,6 +35,8 @@ export default function ReelPlayer({
   active,
   muted,
   onToggleMute,
+  onEnded,
+  onAutoplayBlocked,
 }: ReelPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const viewSentRef = useRef(false);
@@ -44,10 +53,29 @@ export default function ReelPlayer({
     if (!video) return;
     if (active) {
       video.currentTime = 0;
-      const p = video.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => setPlaying(true)).catch(() => setPlaying(false));
-      }
+      video.muted = muted;
+      const attempt = async () => {
+        try {
+          await video.play();
+          setPlaying(true);
+        } catch {
+          // Browser blocked unmuted autoplay — retry muted so the reel
+          // still plays, and tell the viewer to surface an unmute hint.
+          if (!video.muted) {
+            video.muted = true;
+            onAutoplayBlocked?.();
+            try {
+              await video.play();
+              setPlaying(true);
+            } catch {
+              setPlaying(false);
+            }
+          } else {
+            setPlaying(false);
+          }
+        }
+      };
+      attempt();
       // fire view once per activation
       if (!viewSentRef.current) {
         viewSentRef.current = true;
@@ -57,9 +85,10 @@ export default function ReelPlayer({
       video.pause();
       setPlaying(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, reel.id]);
 
-  // Keep mute in sync
+  // Keep mute in sync with external state changes
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = muted;
   }, [muted]);
@@ -154,12 +183,12 @@ export default function ReelPlayer({
         src={reel.video_url}
         poster={reel.poster_url ?? undefined}
         className="w-full h-full object-contain"
-        loop
         playsInline
         muted={muted}
         preload="metadata"
         onClick={togglePlay}
         onDoubleClick={() => react("heart")}
+        onEnded={() => onEnded?.()}
       />
 
       {/* Double-tap heart burst */}

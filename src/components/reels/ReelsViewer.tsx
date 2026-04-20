@@ -23,7 +23,10 @@ export default function ReelsViewer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const [muted, setMuted] = useState(true);
+  // Default: try sound on. ReelPlayer flips this to true via
+  // onAutoplayBlocked if the browser refuses unmuted autoplay.
+  const [muted, setMuted] = useState(false);
+  const [showUnmuteHint, setShowUnmuteHint] = useState(false);
 
   // Scroll to initial index on mount
   useEffect(() => {
@@ -62,6 +65,34 @@ export default function ReelsViewer({
     []
   );
 
+  const advance = useCallback(() => {
+    const next = activeIndex + 1;
+    if (next >= reels.length) {
+      // Wrap to the first reel so playback continues indefinitely,
+      // matching Facebook / Instagram Reels behaviour.
+      const first = itemRefs.current[0];
+      if (first) first.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const el = itemRefs.current[next];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [activeIndex, reels.length]);
+
+  const handleAutoplayBlocked = useCallback(() => {
+    setMuted(true);
+    setShowUnmuteHint(true);
+  }, []);
+
+  const enableSound = useCallback(() => {
+    setMuted(false);
+    setShowUnmuteHint(false);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    setMuted((m) => !m);
+    setShowUnmuteHint(false);
+  }, []);
+
   if (reels.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center px-8 text-white/60">
@@ -91,7 +122,9 @@ export default function ReelsViewer({
               reel={reel}
               active={idx === activeIndex}
               muted={muted}
-              onToggleMute={() => setMuted((m) => !m)}
+              onToggleMute={toggleMute}
+              onEnded={idx === activeIndex ? advance : undefined}
+              onAutoplayBlocked={handleAutoplayBlocked}
             />
           </div>
         ))}
@@ -111,6 +144,20 @@ export default function ReelsViewer({
         </h1>
         <div className="w-9 h-9" />
       </div>
+
+      {/* Tap-to-unmute hint — shown when the browser blocks audio autoplay */}
+      {showUnmuteHint && (
+        <button
+          onClick={enableSound}
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-[12px] font-bold shadow-lg press animate-fade-in"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+            <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
+          </svg>
+          Tap for sound
+        </button>
+      )}
     </div>
   );
 }
