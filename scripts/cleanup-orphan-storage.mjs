@@ -37,6 +37,10 @@ async function referencedUrls() {
     ["events", ["image_url"]],
     ["profiles", ["avatar_url"]],
     ["city_art_features", ["image_url"]],
+    ["group_posts", ["image_url", "video_url"]],
+    ["community_groups", ["image_url", "avatar_url"]],
+    ["businesses", ["image_url"]],
+    ["menu_items", ["image_url"]],
   ]) {
     const sel = cols.join(",");
     const { data } = await supabase.from(table).select(sel);

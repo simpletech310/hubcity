@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
@@ -94,6 +94,30 @@ export default function GroupPostCard({
     if (!vid) return;
     if (vid.paused) { vid.play(); setVideoPlaying(true); }
     else { vid.pause(); setVideoPlaying(false); }
+  }, []);
+
+  // Auto-play when scrolled into view, pause when out of view — matches PostCard.
+  useEffect(() => {
+    const container = videoContainerRef.current;
+    const vid = videoRef.current;
+    if (!container || !vid) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+            vid.muted = true;
+            setVideoMuted(true);
+            vid.play().then(() => setVideoPlaying(true)).catch(() => {});
+          } else if (!vid.paused) {
+            vid.pause();
+            setVideoPlaying(false);
+          }
+        }
+      },
+      { threshold: [0, 0.5, 1] }
+    );
+    obs.observe(container);
+    return () => obs.disconnect();
   }, []);
 
   const handleShare = async () => {
@@ -208,7 +232,8 @@ export default function GroupPostCard({
         <div ref={videoContainerRef} className="mt-3 overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
           <video
             ref={videoRef}
-            src={post.video_url}
+            src={post.video_url.includes("#") ? post.video_url : `${post.video_url}#t=0.1`}
+            poster={post.image_url ?? undefined}
             playsInline
             muted={videoMuted}
             preload="metadata"
