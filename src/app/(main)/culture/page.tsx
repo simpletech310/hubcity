@@ -6,8 +6,6 @@ import EditorialHeader from "@/components/ui/EditorialHeader";
 import FeaturedCard from "@/components/ui/FeaturedCard";
 import AdZone from "@/components/ui/AdZone";
 import Card from "@/components/ui/Card";
-import MuseumHero from "@/components/culture/MuseumHero";
-import MuseumNav from "@/components/culture/MuseumNav";
 import MuseumWingCard from "@/components/culture/MuseumWingCard";
 import ExhibitCard from "@/components/culture/ExhibitCard";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
@@ -107,97 +105,135 @@ export default async function CulturePage() {
 
   return (
     <div className="space-y-8 pb-20">
-      {/* Museum Hero — Compton-specific museum branding only for flagship city */}
-      {isCompton ? (
-        <MuseumHero />
-      ) : (
-        <section className="px-5 pt-8 pb-2">
-          <EditorialHeader
-            kicker={`${city.name.toUpperCase()} · CULTURE`}
-            title="Culture"
-            subtitle={`Exhibits, artists, and stories shaping ${city.name}.`}
-          />
-        </section>
-      )}
+      {/* Generic city culture hero — same structure for every city */}
+      <section className="relative w-full overflow-hidden">
+        <div className="relative min-h-[220px] flex flex-col justify-end">
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1510] via-[#12100a] to-midnight" />
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.04] via-transparent to-transparent" />
+          <div className="absolute inset-0 pattern-dots opacity-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
 
-      {/* Museum Navigation — below hero (Compton only) */}
-      {isCompton && (
-        <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
-          <div className="px-5">
-            <MuseumNav />
+          <div className="relative z-10 px-6 pb-6 pt-10">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center">
+                <Icon name="landmark" size={14} className="text-gold" />
+              </div>
+              <span className="text-[11px] font-semibold text-gold uppercase tracking-widest">
+                {city.name}, {city.state} · Culture
+              </span>
+            </div>
+            <h1 className="font-display text-[32px] md:text-5xl leading-[1.1] text-white">
+              Culture in{" "}
+              <span className="text-gold-gradient">{city.name}</span>
+            </h1>
+            <p className="mt-3 text-sm text-txt-secondary max-w-xs leading-relaxed">
+              Exhibits, art, heritage, and the people shaping the story of {city.name}.
+            </p>
           </div>
         </div>
-      )}
+      </section>
 
-      {/* Wing Navigation Cards — title above (Compton only, since links map to Compton museum wings) */}
+      {/* Explore-by-section tiles — apply to any city */}
+      <section className="px-5">
+        <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
+          <div className="w-1 h-5 rounded-full bg-gold" />
+          Explore
+        </h2>
+        <div className="grid grid-cols-2 gap-3">
+          <MuseumWingCard
+            href="/culture/exhibits"
+            icon="palette"
+            title="Exhibits"
+            subtitle="Curated collections"
+            count={counts.exhibits}
+          />
+          <MuseumWingCard
+            href="/culture/gallery"
+            icon="frame"
+            title="Gallery"
+            subtitle="Art & artifacts"
+            count={counts.gallery}
+          />
+          <MuseumWingCard
+            href="/culture/people"
+            icon="person"
+            title="People"
+            subtitle="Notable figures"
+            count={counts.people}
+          />
+          <MuseumWingCard
+            href="/culture/history"
+            icon="scroll"
+            title="History"
+            subtitle={`${city.name} timeline`}
+          />
+          <MuseumWingCard
+            href="/culture/library"
+            icon="book"
+            title="Library"
+            subtitle="Books & reads"
+            count={counts.library}
+          />
+          <MuseumWingCard
+            href="/culture/events"
+            icon="calendar"
+            title="Events"
+            subtitle="Cultural calendar"
+          />
+          <MuseumWingCard
+            href="/culture/landmarks"
+            icon="map-pin"
+            title="Landmarks"
+            subtitle="Historic sites"
+          />
+        </div>
+      </section>
+
+      {/* Compton-only: feature the Compton Art & History Museum as a partner institution */}
       {isCompton && (
         <section className="px-5">
-          <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            Museum Wings
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            <MuseumWingCard
-              href="/culture/exhibits"
-              icon="palette"
-              title="Exhibits"
-              subtitle="Curated collections"
-              count={counts.exhibits}
-            />
-            <MuseumWingCard
-              href="/culture/gallery"
-              icon="frame"
-              title="Gallery"
-              subtitle="Art & artifacts"
-              count={counts.gallery}
-            />
-            <MuseumWingCard
-              href="/culture/people"
-              icon="person"
-              title="People"
-              subtitle="Notable figures"
-              count={counts.people}
-            />
-            <MuseumWingCard
-              href="/culture/history"
-              icon="scroll"
-              title="History"
-              subtitle={`${city.name} timeline`}
-            />
-            <MuseumWingCard
-              href="/culture/library"
-              icon="book"
-              title="Library"
-              subtitle="Books & reads"
-              count={counts.library}
-            />
-            <MuseumWingCard
-              href="/culture/events"
-              icon="calendar"
-              title="Events"
-              subtitle="Cultural calendar"
-            />
-            <MuseumWingCard
-              href="/culture/landmarks"
-              icon="map-pin"
-              title="Landmarks"
-              subtitle="Historic sites"
-            />
+          <EditorialHeader kicker="FEATURED INSTITUTION" title="Compton Art & History Museum" />
+          <div className="mt-3 rounded-2xl bg-white/[0.02] border border-border-subtle p-5">
+            <p className="text-[13px] text-txt-secondary leading-relaxed">
+              A groundbreaking space bringing together art, history, and community.
+              Amplifying the culture of Compton and greater South Los Angeles.
+            </p>
+            <div className="flex items-center gap-2 mt-3 text-[11px] text-txt-secondary">
+              <Icon name="map-pin" size={12} className="text-gold" />
+              <span>306 W Compton Blvd. #104, Compton, CA 90220</span>
+            </div>
+            <div className="flex items-center gap-3 mt-2 text-[11px] text-txt-secondary">
+              <Icon name="clock" size={12} className="text-gold" />
+              <span>Tue–Sat 10am–3pm</span>
+              <span className="text-white/15">·</span>
+              <span>(310) 627-9022</span>
+            </div>
+            <div className="flex items-center gap-3 mt-3">
+              <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-gold font-semibold press">
+                <Icon name="globe" size={12} /> Visit website
+              </a>
+              <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-txt-secondary hover:text-gold transition-colors press">
+                Instagram
+              </a>
+              <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-txt-secondary hover:text-gold transition-colors press">
+                Facebook
+              </a>
+            </div>
           </div>
         </section>
       )}
 
-      {/* Non-Compton: lighter "coming soon" grid that still surfaces any city-scoped culture content */}
-      {!isCompton && (
+      {/* Non-Compton empty-state hint when there's nothing city-scoped yet */}
+      {!isCompton && exhibits.length === 0 && galleryItems.length === 0 && people.length === 0 && events.length === 0 && (
         <section className="px-5">
           <div className="rounded-2xl border border-dashed border-border-subtle bg-white/[0.02] p-5">
             <h3 className="font-heading font-bold text-sm flex items-center gap-2 mb-1">
               <Icon name="sparkle" size={16} className="text-gold" />
-              More culture for {city.name} coming soon
+              {city.name} culture coming soon
             </h3>
             <p className="text-[12px] text-txt-secondary leading-relaxed">
               We&rsquo;re onboarding {city.name}&rsquo;s museums, galleries, and cultural organizations.
-              In the meantime, browse the exhibits and events below.
+              Check back soon, or switch cities from the header to explore another.
             </p>
           </div>
         </section>
@@ -334,39 +370,6 @@ export default async function CulturePage() {
         </section>
       )}
 
-      {/* Museum Footer — Compton Art & History Museum specifics only for Compton */}
-      {isCompton && (
-        <section className="px-5">
-          <div className="rounded-2xl bg-white/[0.02] border border-border-subtle p-5 text-center">
-            <span className="text-2xl"><Icon name="landmark" size={24} /></span>
-            <h3 className="font-display text-lg text-white mt-2">
-              Compton Art & History Museum
-            </h3>
-            <p className="text-xs text-txt-secondary mt-1">
-              306 W Compton Blvd. #104, Compton, CA 90220
-            </p>
-            <div className="flex items-center justify-center gap-3 mt-2">
-              <span className="text-[10px] text-gold/70 font-semibold">Tue-Sat 10am-3pm</span>
-              <span className="text-white/10">|</span>
-              <span className="text-[10px] text-txt-secondary">(310) 627-9022</span>
-            </div>
-            <p className="text-[11px] text-txt-secondary mt-3 max-w-xs mx-auto leading-relaxed">
-              A community-based, community-centered museum amplifying the culture of Compton and greater South Los Angeles.
-            </p>
-            <div className="flex items-center justify-center gap-3 mt-3">
-              <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-              </a>
-              <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              </a>
-              <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-txt-secondary hover:text-gold transition-colors">
-                <Icon name="globe" size={12} />
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 }
