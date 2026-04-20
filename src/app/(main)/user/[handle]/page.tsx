@@ -6,6 +6,8 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
+import ProfileBusinessStrip from "@/components/profile/ProfileBusinessStrip";
+import ProfileDealsRow from "@/components/profile/ProfileDealsRow";
 import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
 import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
 import UserPostsGrid from "@/components/profile/UserPostsGrid";
@@ -142,6 +144,133 @@ export default async function PublicProfilePage({
       .order("created_at", { ascending: false })
       .limit(3);
     channelVideos = (videoRows ?? []) as ChannelVideo[];
+  }
+
+  // Business strip + deals: fetched when this profile owns a business.
+  type BusinessSummary = {
+    id: string;
+    slug: string | null;
+    name: string;
+    category: string | null;
+    description: string | null;
+    image_urls: string[] | null;
+    rating_avg: number | null;
+    rating_count: number | null;
+    is_verified: boolean | null;
+    account_type: string | null;
+  };
+  type DealItem = {
+    id: string;
+    kind: "promotion" | "coupon" | "special";
+    title: string;
+    description: string | null;
+    discount_percent: number | null;
+    discount_amount_cents: number | null;
+    code: string | null;
+    valid_until: string | null;
+    business_slug: string | null;
+    business_id: string;
+  };
+  let ownedBusiness: BusinessSummary | null = null;
+  const deals: DealItem[] = [];
+  if (profile.role === "business_owner") {
+    const { data: bizRows } = await supabase
+      .from("businesses")
+      .select(
+        "id, slug, name, category, description, image_urls, rating_avg, rating_count, is_verified, account_type"
+      )
+      .eq("owner_id", profile.id)
+      .eq("is_published", true)
+      .order("is_featured", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(1);
+    ownedBusiness = (bizRows?.[0] as BusinessSummary | undefined) ?? null;
+
+    if (ownedBusiness) {
+      const bizId = ownedBusiness.id;
+      const bizSlug = ownedBusiness.slug;
+      const nowISO = new Date().toISOString();
+      const [promosRes, couponsRes, specialsRes] = await Promise.all([
+        supabase
+          .from("food_promotions")
+          .select("id, title, description, discount_percent, discount_amount, promo_code, valid_until")
+          .eq("business_id", bizId)
+          .eq("is_active", true)
+          .or(`valid_until.is.null,valid_until.gt.${nowISO}`)
+          .order("created_at", { ascending: false })
+          .limit(4),
+        supabase
+          .from("coupons")
+          .select("id, title, description, discount_type, discount_value, code, valid_until")
+          .eq("business_id", bizId)
+          .eq("is_active", true)
+          .or(`valid_until.is.null,valid_until.gt.${nowISO}`)
+          .order("created_at", { ascending: false })
+          .limit(4),
+        supabase
+          .from("food_specials")
+          .select("id, title, description, original_price, special_price, valid_until")
+          .eq("business_id", bizId)
+          .eq("is_active", true)
+          .or(`valid_until.is.null,valid_until.gt.${nowISO}`)
+          .order("created_at", { ascending: false })
+          .limit(4),
+      ]);
+      for (const p of (promosRes.data ?? []) as {
+        id: string; title: string; description: string | null;
+        discount_percent: number | null; discount_amount: number | null;
+        promo_code: string | null; valid_until: string | null;
+      }[]) {
+        deals.push({
+          id: p.id,
+          kind: "promotion",
+          title: p.title,
+          description: p.description,
+          discount_percent: p.discount_percent,
+          discount_amount_cents: p.discount_amount,
+          code: p.promo_code,
+          valid_until: p.valid_until,
+          business_slug: bizSlug,
+          business_id: bizId,
+        });
+      }
+      for (const c of (couponsRes.data ?? []) as {
+        id: string; title: string; description: string | null;
+        discount_type: string; discount_value: number;
+        code: string | null; valid_until: string | null;
+      }[]) {
+        deals.push({
+          id: c.id,
+          kind: "coupon",
+          title: c.title,
+          description: c.description,
+          discount_percent: c.discount_type === "percent" ? c.discount_value : null,
+          discount_amount_cents: c.discount_type === "fixed" ? c.discount_value : null,
+          code: c.code,
+          valid_until: c.valid_until,
+          business_slug: bizSlug,
+          business_id: bizId,
+        });
+      }
+      for (const s of (specialsRes.data ?? []) as {
+        id: string; title: string; description: string | null;
+        original_price: number; special_price: number; valid_until: string | null;
+      }[]) {
+        const savings = s.original_price - s.special_price;
+        deals.push({
+          id: s.id,
+          kind: "special",
+          title: s.title,
+          description: s.description,
+          discount_percent: null,
+          discount_amount_cents: savings > 0 ? savings : null,
+          code: null,
+          valid_until: s.valid_until,
+          business_slug: bizSlug,
+          business_id: bizId,
+        });
+      }
+    }
   }
 
   const roleColors: Record<string, string> = {
@@ -323,7 +452,25 @@ export default async function PublicProfilePage({
         {channel && (
           <ProfileChannelStrip channel={channel} videos={channelVideos} />
         )}
+
+        {/* Business strip — direct link to their business page */}
+        {ownedBusiness && <ProfileBusinessStrip business={ownedBusiness} />}
       </div>
+
+      {/* Deals / coupons the business owner has published */}
+      {deals.length > 0 && (
+        <div className="mb-6">
+          <div className="px-5 mb-3 flex items-center justify-between">
+            <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider flex items-center gap-2">
+              <Icon name="tag" size={16} className="text-emerald" /> Deals & Coupons
+            </h2>
+            <span className="text-[10px] text-white/30 font-semibold tabular-nums">
+              {deals.length}
+            </span>
+          </div>
+          <ProfileDealsRow deals={deals} />
+        </div>
+      )}
 
       {/* --- Events by this creator --- */}
       {events.length > 0 && (
