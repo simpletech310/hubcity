@@ -87,7 +87,6 @@ export async function POST(request: Request) {
         delivery_enabled: false,
         min_order: 0,
         is_mobile_vendor: is_mobile_vendor ?? false,
-        vendor_status: is_mobile_vendor ? "inactive" : "inactive",
       })
       .select("*")
       .single();

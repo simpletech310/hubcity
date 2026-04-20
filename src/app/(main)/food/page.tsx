@@ -19,6 +19,7 @@ import CityOwnershipFilter, {
   DEFAULT_OWNERSHIP_OPTIONS,
   type CityOption,
 } from "@/components/filters/CityOwnershipFilter";
+import FoodTruckTracker from "@/components/food/FoodTruckTracker";
 
 // ─── Category Config ───────────────────────────────
 const categories: { label: string; value: string; iconName: IconName; color: string }[] = [
@@ -145,7 +146,9 @@ function Stars({ rating }: { rating: number }) {
 // ─── Food Card Component ───────────────────────────
 function FoodCard({ business, featured = false }: { business: Business; featured?: boolean }) {
   const heroImage = business.image_urls?.[0];
-  const isLive = business.is_mobile_vendor && business.vendor_status === "active";
+  // Per-vehicle live state lives on vendor_vehicles now; the business
+  // card just flags mobile fleets generically.
+  const isLive = business.is_mobile_vendor === true;
   const open = isOpenNow(business.hours);
   const rating = Number(business.rating_avg || 0);
 
@@ -187,10 +190,10 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               <Stars rating={rating} />
               <span className="text-[10px] text-white/50">({business.rating_count})</span>
             </div>
-            {business.is_mobile_vendor && business.current_location_name && (
+            {business.is_mobile_vendor && (
               <p className="text-[10px] text-white/60 mt-1 truncate">
                 <svg width="8" height="8" viewBox="0 0 24 24" fill="#F2A900" className="inline mr-0.5 -mt-px"><circle cx="12" cy="12" r="8"/></svg>
-                {business.current_location_name}
+                Track live on the map
               </p>
             )}
           </div>
@@ -258,10 +261,10 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               {business.address && !business.is_mobile_vendor && (
                 <span className="text-[10px] text-white/25 truncate">{business.address.split(",")[0]}</span>
               )}
-              {business.is_mobile_vendor && business.current_location_name && (
+              {business.is_mobile_vendor && (
                 <span className="text-[10px] text-white/25 truncate inline-flex items-center gap-0.5">
                   <svg width="8" height="8" viewBox="0 0 24 24" fill="#F2A900" className="shrink-0"><circle cx="12" cy="12" r="8"/></svg>
-                  {business.current_location_name}
+                  Track on the map
                 </span>
               )}
               {business.accepts_orders && (
@@ -272,87 +275,6 @@ function FoodCard({ business, featured = false }: { business: Business; featured
               )}
             </div>
           </div>
-        </div>
-      </Card>
-    </Link>
-  );
-}
-
-// ─── Food Truck Tracker Card ───────────────────────
-function TruckTrackerCard({ vendor }: { vendor: { id: string; name: string; slug: string; current_location_name: string | null; vendor_status: string; location_updated_at: string | null; accepts_orders: boolean; vendor_route?: Array<{ name: string; time: string }> | null } }) {
-  const isActive = vendor.vendor_status === "active";
-  const isEnRoute = vendor.vendor_status === "en_route";
-
-  function timeAgo(dateStr: string | null): string {
-    if (!dateStr) return "";
-    const diffMin = Math.floor((Date.now() - new Date(dateStr).getTime()) / 60000);
-    if (diffMin < 1) return "just now";
-    if (diffMin < 60) return `${diffMin}m ago`;
-    return `${Math.floor(diffMin / 60)}h ago`;
-  }
-
-  return (
-    <Link href={`/food/vendor/${vendor.slug || vendor.id}`} className="block press">
-      <Card
-        variant="glass"
-        hover
-        padding={false}
-        className="overflow-hidden"
-        style={{ borderColor: isActive ? "rgba(34,197,94,0.2)" : isEnRoute ? "rgba(242,169,0,0.2)" : undefined }}
-      >
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-3 mb-3">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: isActive ? "rgba(34,197,94,0.1)" : isEnRoute ? "rgba(242,169,0,0.1)" : "rgba(255,255,255,0.04)" }}
-              >
-                <Icon name={isActive ? "truck" : isEnRoute ? "navigation" : "moon"} size={20} />
-              </div>
-              <div>
-                <h3 className="font-heading font-bold text-[13px]">{vendor.name}</h3>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <div
-                    className={`w-2 h-2 rounded-full ${isActive ? "bg-emerald animate-pulse" : isEnRoute ? "bg-gold animate-pulse" : "bg-white/20"}`}
-                  />
-                  <span className={`text-[10px] font-semibold ${isActive ? "text-emerald" : isEnRoute ? "text-gold" : "text-white/30"}`}>
-                    {isActive ? "Open Now" : isEnRoute ? "En Route" : "Offline"}
-                  </span>
-                  {vendor.location_updated_at && (
-                    <span className="text-[9px] text-white/20">· {timeAgo(vendor.location_updated_at)}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-            {vendor.accepts_orders && (
-              <span className="bg-gold text-midnight text-[10px] font-bold px-3 py-1.5 rounded-full">
-                Order
-              </span>
-            )}
-          </div>
-
-          {/* Current location */}
-          {vendor.current_location_name && (
-            <div className="flex items-center gap-2 bg-white/[0.03] rounded-xl p-2.5 mb-2 border border-white/[0.04]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isActive ? "#22C55E" : "#F2A900"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 11c0 3-4 6-4 6s-4-3-4-6a4 4 0 118 0z" />
-                <circle cx="8" cy="11" r="1" />
-              </svg>
-              <span className="text-[11px] text-white/60">{vendor.current_location_name}</span>
-            </div>
-          )}
-
-          {/* Route preview */}
-          {vendor.vendor_route && vendor.vendor_route.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-              <span className="text-[9px] text-white/25 shrink-0">Route:</span>
-              {vendor.vendor_route.slice(0, 4).map((stop, i) => (
-                <span key={i} className="text-[9px] text-white/40 shrink-0">
-                  {stop.name}{i < Math.min(vendor.vendor_route!.length - 1, 3) ? " → " : ""}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
       </Card>
     </Link>
@@ -459,14 +381,6 @@ export default function FoodPage() {
       });
   }, []);
   const [specials, setSpecials] = useState<FoodSpecial[]>([]);
-  const [vendors, setVendors] = useState<Array<{
-    id: string; name: string; slug: string;
-    current_location_name: string | null;
-    vendor_status: "active" | "en_route" | "inactive";
-    location_updated_at: string | null;
-    accepts_orders: boolean;
-    vendor_route?: Array<{ name: string; time: string }> | null;
-  }>>([]);
   const [promotions, setPromotions] = useState<FoodPromotion[]>([]);
   const [tours, setTours] = useState<FoodTour[]>([]);
   const [challenges, setChallenges] = useState<FoodChallenge[]>([]);
@@ -490,18 +404,16 @@ export default function FoodPage() {
   // Fetch supporting data
   useEffect(() => {
     async function fetchAll() {
-      const [specialsRes, vendorsRes, promosRes, toursRes, challengesRes] = await Promise.all([
+      const [specialsRes, promosRes, toursRes, challengesRes] = await Promise.all([
         fetch("/api/food/specials"),
-        fetch("/api/food/vendors"),
         fetch("/api/food/promotions"),
         fetch("/api/food/tours"),
         fetch("/api/food/challenges"),
       ]);
-      const [sd, vd, pd, td, cd] = await Promise.all([
-        specialsRes.json(), vendorsRes.json(), promosRes.json(), toursRes.json(), challengesRes.json(),
+      const [sd, pd, td, cd] = await Promise.all([
+        specialsRes.json(), promosRes.json(), toursRes.json(), challengesRes.json(),
       ]);
       setSpecials(sd.specials ?? []);
-      setVendors(vd.vendors ?? []);
       setPromotions(pd.promotions ?? []);
       setTours(td.tours ?? []);
       setChallenges(cd.challenges ?? []);
@@ -528,7 +440,6 @@ export default function FoodPage() {
   const lateNight = useMemo(() => filteredBusinesses.filter(b => isLateNight(b.hours)), [filteredBusinesses]);
   const alwaysOpen = useMemo(() => filteredBusinesses.filter(b => isAlwaysOpen(b.hours)), [filteredBusinesses]);
   const withPickup = useMemo(() => filteredBusinesses.filter(b => b.accepts_orders), [filteredBusinesses]);
-  const activeTrucks = useMemo(() => vendors.filter(v => v.vendor_status === "active" || v.vendor_status === "en_route"), [vendors]);
 
   return (
     <div className="animate-fade-in pb-safe">
@@ -543,12 +454,6 @@ export default function FoodPage() {
             <span className="inline-flex items-center gap-1.5 bg-coral/15 border border-coral/25 rounded-full px-3 py-1 text-[10px] font-bold text-coral badge-shine uppercase tracking-wide">
               Compton Eats
             </span>
-            {activeTrucks.length > 0 && (
-              <span className="inline-flex items-center gap-1 bg-emerald/15 border border-emerald/25 rounded-full px-2.5 py-1 text-[10px] font-semibold text-emerald">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
-                {activeTrucks.length} trucks live
-              </span>
-            )}
           </div>
           <h1 className="font-display text-3xl font-bold leading-tight mb-1">
             Food & <span className="text-gold-gradient">Flavor</span>
@@ -695,37 +600,8 @@ export default function FoodPage() {
         </section>
       )}
 
-      {/* ─── Food Truck Tracker ─── */}
-      {vendors.length > 0 && (
-        <section className="px-5 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h2 className="font-heading font-bold text-base flex items-center gap-2">
-                <Icon name="truck" size={18} /> Food Truck Tracker
-              </h2>
-              <p className="text-[11px] text-white/30">
-                {activeTrucks.length > 0 ? `${activeTrucks.length} trucks rolling right now` : "See where trucks are headed"}
-              </p>
-            </div>
-          </div>
-
-          {/* Map placeholder */}
-          <div className="relative h-32 rounded-2xl overflow-hidden mb-3 border border-emerald/20 bg-emerald/[0.03]">
-            <div className="absolute inset-0 pattern-grid opacity-30" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <Icon name="map-pin" size={30} className="mb-1" />
-              <p className="text-[11px] text-white/40 font-medium">Live Truck Map Coming Soon</p>
-              <p className="text-[9px] text-white/20">Real-time locations and routes</p>
-            </div>
-          </div>
-
-          <div className="space-y-2.5">
-            {vendors.map((vendor) => (
-              <TruckTrackerCard key={vendor.id} vendor={vendor} />
-            ))}
-          </div>
-        </section>
-      )}
+      {/* ─── Food Truck Tracker (live map + fleet cards) ─── */}
+      <FoodTruckTracker />
 
       {/* ─── Featured Spots (horizontal scroll) ─── */}
       {!search && featuredSpots.length > 0 && (

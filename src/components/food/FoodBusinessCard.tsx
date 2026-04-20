@@ -22,8 +22,9 @@ const categoryLabels: Record<string, string> = {
 export default function FoodBusinessCard({ business }: { business: Business }) {
   const artClass = categoryArt[business.category] ?? "art-food";
   const heroImage = business.image_urls?.[0];
-  const isLive =
-    business.is_mobile_vendor && business.vendor_status === "active";
+  // Per-vehicle live status now lives on vendor_vehicles; the
+  // business-level card just shows a generic "Fleet" chip for mobile.
+  const isLive = business.is_mobile_vendor === true;
 
   return (
     <Link href={`/business/${business.slug || business.id}`}>
@@ -76,9 +77,9 @@ export default function FoodBusinessCard({ business }: { business: Business }) {
                 }
                 variant={business.is_mobile_vendor ? "coral" : "purple"}
               />
-              {business.is_mobile_vendor && business.current_location_name && (
+              {business.is_mobile_vendor && (
                 <span className="text-[10px] text-txt-secondary truncate">
-                  <Icon name="pin" size={16} /> {business.current_location_name}
+                  <Icon name="truck" size={12} /> Track on the map
                 </span>
               )}
               {!business.is_mobile_vendor && business.address && (

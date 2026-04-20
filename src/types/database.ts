@@ -145,12 +145,7 @@ export interface Business {
   delivery_radius: number | null;
   min_order: number;
   is_mobile_vendor: boolean;
-  current_lat: number | null;
-  current_lng: number | null;
-  current_location_name: string | null;
-  location_updated_at: string | null;
-  vendor_route: VendorRouteStop[] | null;
-  vendor_status: VendorStatus;
+  // NOTE: per-vehicle fields moved to `vendor_vehicles` in migration 073.
   business_type: BusinessType | null;
   business_sub_type: BusinessSubType | null;
   chamber_status: ChamberStatus;
@@ -1093,6 +1088,35 @@ export interface VendorRouteStop {
   day_of_week: number;
   start_time: string;
   end_time: string;
+}
+
+export type VehicleType = "food_truck" | "cart";
+
+// ── Vendor Vehicle (per-truck / per-cart) — migration 073 ─────
+export interface VendorVehicle {
+  id: string;
+  business_id: string;
+  vehicle_type: VehicleType;
+  name: string;
+  image_url: string | null;
+  current_lat: number | null;
+  current_lng: number | null;
+  current_location_name: string | null;
+  vendor_status: VendorStatus;
+  vendor_route: VendorRouteStop[];
+  location_updated_at: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  business?: {
+    id: string;
+    name: string;
+    slug: string;
+    image_urls: string[] | null;
+    accepts_orders: boolean;
+    rating_avg: number | null;
+    rating_count: number | null;
+  };
 }
 
 export interface FoodSpecial {
