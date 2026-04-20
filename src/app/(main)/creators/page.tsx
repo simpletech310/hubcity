@@ -5,19 +5,30 @@ import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
 
+// Valid user_role enum values that count as a "creator" in Discover.
+// 'creator' was an alias in an earlier draft but it's NOT in the
+// Postgres enum — including it here makes the whole .in() query error
+// out with "invalid input value for enum user_role".
 const CREATOR_ROLES = [
   "content_creator",
-  "creator",
   "city_ambassador",
   "resource_provider",
   "chamber_admin",
 ] as const;
 
+type RoleKey = (typeof CREATOR_ROLES)[number];
+
 type BadgeVariant = "gold" | "emerald" | "coral" | "cyan" | "pink" | "purple" | "blue";
+
+const ROLE_LABEL: Record<RoleKey, string> = {
+  content_creator: "Creators",
+  city_ambassador: "Ambassadors",
+  resource_provider: "Community",
+  chamber_admin: "Chamber",
+};
 
 const ROLE_BADGE: Record<string, { label: string; variant: BadgeVariant }> = {
   content_creator: { label: "Creator", variant: "coral" },
-  creator: { label: "Creator", variant: "coral" },
   city_ambassador: { label: "Ambassador", variant: "purple" },
   resource_provider: { label: "Community", variant: "cyan" },
   chamber_admin: { label: "Chamber", variant: "gold" },
@@ -80,39 +91,72 @@ type CreatorVideo = {
   channel_id: string;
 };
 
-export default async function CreatorsPage() {
+function isRoleKey(v: string): v is RoleKey {
+  return (CREATOR_ROLES as readonly string[]).includes(v);
+}
+
+type SearchParams = { role?: string; city?: string };
+
+export default async function CreatorsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const supabase = await createClient();
   const activeCity = await getActiveCity();
 
-  // Global roster — NOT scoped to the active city. Discover is supposed
-  // to surface every creator type across every Knect city so users can
-  // find people they wouldn't otherwise bump into.
-  const { data: creatorRows } = await supabase
+  const sp = await searchParams;
+  const selectedRole: RoleKey | "all" =
+    sp.role && isRoleKey(sp.role) ? sp.role : "all";
+  const selectedCitySlug = sp.city && sp.city !== "all" ? sp.city : "all";
+
+  // Live cities for the filter bar — independent of the profile query.
+  const { data: cityRows } = await supabase
+    .from("cities")
+    .select("id, slug, name")
+    .eq("launch_status", "live")
+    .order("name", { ascending: true });
+  const liveCities = (cityRows ?? []) as { id: string; slug: string; name: string }[];
+  const selectedCity = selectedCitySlug === "all"
+    ? null
+    : liveCities.find((c) => c.slug === selectedCitySlug) ?? null;
+
+  // Discover defaults to the widest net: every creator-ish role across
+  // every city. Narrow with ?role= and ?city= when the user picks a
+  // filter pill.
+  let query = supabase
     .from("profiles")
     .select(
       "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, city:cities!profiles_city_id_fkey(slug, name)"
     )
     .in("role", CREATOR_ROLES as unknown as string[])
-    .not("handle", "is", null)
-    .order("display_name", { ascending: true });
+    .not("handle", "is", null);
+  if (selectedRole !== "all") query = query.eq("role", selectedRole);
+  if (selectedCity) query = query.eq("city_id", selectedCity.id);
+
+  const { data: creatorRows, error: creatorErr } = await query.order("display_name", { ascending: true });
+  if (creatorErr) console.warn("creators query error:", creatorErr.message);
 
   const creators = (creatorRows ?? []) as unknown as CreatorProfile[];
-  if (creators.length === 0) {
-    return (
-      <div className="animate-fade-in pb-safe px-5 pt-6">
-        <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
-        <p className="text-sm text-txt-secondary mb-8">
-          No creators on the platform yet.
-        </p>
-      </div>
-    );
+
+  // Filter pill URL helper. Preserves the other filter so you can stack
+  // role + city narrowing without the one clobbering the other.
+  function filterHref(nextRole: string, nextCity: string) {
+    const params = new URLSearchParams();
+    if (nextRole !== "all") params.set("role", nextRole);
+    if (nextCity !== "all") params.set("city", nextCity);
+    const qs = params.toString();
+    return qs ? `/creators?${qs}` : "/creators";
   }
 
   const creatorIds = creators.map((c) => c.id);
   const nowISO = new Date().toISOString();
 
-  // Parallel fetch of the supporting content for every creator on this page.
-  const [postsRes, reelsRes, channelsRes] = await Promise.all([
+  // Guard against .in() with an empty array (Supabase turns it into a
+  // Postgres `WHERE author_id IN ()` syntax error).
+  const [postsRes, reelsRes, channelsRes] = creatorIds.length === 0
+    ? [{ data: [] }, { data: [] }, { data: [] }]
+    : await Promise.all([
     supabase
       .from("posts")
       .select("id, image_url, video_url, media_type, body, author_id, created_at")
@@ -190,6 +234,108 @@ export default async function CreatorsPage() {
           </p>
         </div>
       </div>
+
+      {/* ── Filters ───────────────────────────────────────────────── */}
+      <div className="px-5 pt-2 pb-3 flex flex-col gap-3">
+        {/* Type */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-white/40 mb-1.5">Type</p>
+          <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 pb-1">
+              <Link
+                href={filterHref("all", selectedCitySlug)}
+                className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
+                  selectedRole === "all"
+                    ? "bg-gold text-midnight border-gold"
+                    : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
+                }`}
+              >
+                All
+              </Link>
+              {(CREATOR_ROLES as readonly RoleKey[]).map((r) => (
+                <Link
+                  key={r}
+                  href={filterHref(r, selectedCitySlug)}
+                  className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
+                    selectedRole === r
+                      ? "bg-gold text-midnight border-gold"
+                      : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {ROLE_LABEL[r]}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* City */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider font-semibold text-white/40 mb-1.5">City</p>
+          <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 pb-1">
+              <Link
+                href={filterHref(selectedRole, "all")}
+                className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
+                  selectedCitySlug === "all"
+                    ? "bg-gold text-midnight border-gold"
+                    : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
+                }`}
+              >
+                All cities
+              </Link>
+              {liveCities.map((c) => (
+                <Link
+                  key={c.slug}
+                  href={filterHref(selectedRole, c.slug)}
+                  className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
+                    selectedCitySlug === c.slug
+                      ? "bg-gold text-midnight border-gold"
+                      : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Results summary + clear — only when a filter is active */}
+        {(selectedRole !== "all" || selectedCitySlug !== "all") && (
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-white/40">
+              {creators.length} result{creators.length === 1 ? "" : "s"}
+            </span>
+            <Link
+              href="/creators"
+              className="text-[11px] font-semibold text-gold press"
+            >
+              Clear filters
+            </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Empty state — shown inline when a filter returned nothing, or
+          as a full-page state when the platform has no creators at all. */}
+      {creators.length === 0 && (
+        <div className="px-5 py-12 text-center">
+          <Icon name="sparkle" size={28} className="text-white/20 mx-auto mb-3" />
+          <p className="text-sm text-white/60 font-semibold mb-1">
+            No creators match this filter
+          </p>
+          <p className="text-[12px] text-white/40 mb-4">
+            Try a different type or city.
+          </p>
+          <Link
+            href="/creators"
+            className="inline-block px-4 py-2 rounded-full bg-gold text-midnight text-[12px] font-bold press"
+          >
+            See everyone
+          </Link>
+        </div>
+      )}
 
       <div className="px-5 flex flex-col gap-8 pt-2">
         {creators.map((creator) => {
