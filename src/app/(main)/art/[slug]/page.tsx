@@ -4,10 +4,11 @@ import Link from "next/link";
 import {
   findArtBySlugAcrossCities,
   getArtBySlug,
-  listAllArtSlugs,
 } from "@/lib/art-spotlight";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
+
+export const dynamic = "force-dynamic";
 
 export default async function ArtDetailPage({
   params,
@@ -197,7 +198,3 @@ export default async function ArtDetailPage({
   );
 }
 
-// Generate static params for known art pieces across every live city.
-export async function generateStaticParams() {
-  return await listAllArtSlugs();
-}
