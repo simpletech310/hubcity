@@ -11,6 +11,12 @@ interface LiveSimulatedPlayerProps {
   schedule: ScheduledBroadcast[];
   walmartAd: VideoAd | null;
   userId: string | null;
+  /**
+   * Fires whenever the on-air content video changes (mount, schedule
+   * advance, visibility re-sync). `null` during an ad slot so callers
+   * can pause their derived state.
+   */
+  onVideoChange?: (videoId: string | null) => void;
 }
 
 // Find the index of the broadcast currently on-air based on wall-clock time.
@@ -35,6 +41,7 @@ export default function LiveSimulatedPlayer({
   schedule,
   walmartAd,
   userId,
+  onVideoChange,
 }: LiveSimulatedPlayerProps) {
   const [phase, setPhase] = useState<"content" | "ad">("content");
   const [currentIndex, setCurrentIndex] = useState(() =>
@@ -74,6 +81,15 @@ export default function LiveSimulatedPlayer({
   // Pull video + show metadata off the current broadcast
   const currentVideo = currentBroadcast?.video;
   const currentShow = currentVideo?.show;
+
+  // Notify parent whenever the on-air video changes so things like
+  // the "Because you're watching" rail can refetch tied content.
+  // During an ad slot we pass null to freeze derived state.
+  useEffect(() => {
+    if (!onVideoChange) return;
+    onVideoChange(phase === "ad" ? null : currentVideo?.id ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentVideo?.id, phase]);
 
   const handleContentEnded = useCallback(() => {
     // Run the Walmart ad, then advance to next non-ad slot

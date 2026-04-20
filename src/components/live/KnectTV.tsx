@@ -195,6 +195,13 @@ export default function KnectTV({
   const timeBlocks = allTimeBlocks.filter((tb) => !tb.channel || visible(tb.channel));
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("home");
+  // What video LiveSimulatedPlayer is currently on-air with. Null while
+  // an ad is playing or before the player has reported in. The initial
+  // value comes from the server's `relatedToLive` computation so the
+  // rail never flickers on first paint.
+  const [activeLiveVideoId, setActiveLiveVideoId] = useState<string | null>(
+    relatedToLive?.videoId ?? null
+  );
   const [channelFilter, setChannelFilter] = useState<ChannelType | "all">("all");
   const [followedIds, setFollowedIds] = useState<Set<string>>(new Set(initialFollowed));
   const [createOpen, setCreateOpen] = useState(false);
@@ -561,10 +568,18 @@ export default function KnectTV({
       {activeTab === "home" && (
         <div className="animate-fade-in">
           {/* ── Knect TV Live (simulated linear channel) ── */}
-          <LiveSimulatedPlayer schedule={liveSchedule} walmartAd={walmartAd} userId={userId} />
+          <LiveSimulatedPlayer
+            schedule={liveSchedule}
+            walmartAd={walmartAd}
+            userId={userId}
+            onVideoChange={setActiveLiveVideoId}
+          />
 
           {/* ── Related to what's playing (events, resources, deals) ── */}
-          <RelatedToLive data={relatedToLive} />
+          <RelatedToLive
+            initialData={relatedToLive}
+            videoId={activeLiveVideoId}
+          />
 
           {/* ── Live Now (real live streams) ── */}
           {activeStreams.length > 0 && (

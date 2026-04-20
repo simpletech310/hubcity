@@ -32,6 +32,8 @@ export interface RelatedItem {
 }
 
 export interface RelatedToLiveData {
+  /** The channel_video id this rail was built for */
+  videoId: string;
   topic: RelatedTopic;
   label: string;
   accent: string;
@@ -223,23 +225,41 @@ function topicToBusinessCategories(t: RelatedTopic): string[] {
 // ── Builder ────────────────────────────────────────────────
 interface Row<T> { data: T | null }
 
+/** Pick the broadcast that is currently on-air (mirrors LiveSimulatedPlayer). */
+export function findCurrentBroadcast(
+  schedule: ScheduledBroadcast[],
+  now: number = Date.now()
+): ScheduledBroadcast | null {
+  if (!schedule.length) return null;
+  let idx = schedule.length - 1;
+  for (let i = 0; i < schedule.length; i++) {
+    const starts = new Date(schedule[i].starts_at).getTime();
+    const ends = new Date(schedule[i].ends_at).getTime();
+    if (now >= starts && now < ends) { idx = i; break; }
+    if (now < starts) { idx = Math.max(0, i - 1); break; }
+  }
+  return schedule[idx] ?? null;
+}
+
+/** Build the related rail for the schedule's currently-on-air video. */
 export async function buildRelatedToLive(
   supabase: SupabaseClient,
   schedule: ScheduledBroadcast[]
 ): Promise<RelatedToLiveData | null> {
-  if (!schedule.length) return null;
+  const current = findCurrentBroadcast(schedule);
+  if (!current?.video_id) return null;
+  return buildRelatedForVideo(supabase, current.video_id);
+}
 
-  // Find currently playing broadcast (mirror of LiveSimulatedPlayer logic)
-  const now = Date.now();
-  let currentIndex = schedule.length - 1;
-  for (let i = 0; i < schedule.length; i++) {
-    const starts = new Date(schedule[i].starts_at).getTime();
-    const ends = new Date(schedule[i].ends_at).getTime();
-    if (now >= starts && now < ends) { currentIndex = i; break; }
-    if (now < starts) { currentIndex = Math.max(0, i - 1); break; }
-  }
-  const current = schedule[currentIndex];
-  const videoId = current?.video_id;
+/**
+ * Build the related rail for a specific channel_video id. Used both by the
+ * server for the initial render and by `GET /api/live/related` whenever the
+ * live player advances to the next scheduled broadcast.
+ */
+export async function buildRelatedForVideo(
+  supabase: SupabaseClient,
+  videoId: string
+): Promise<RelatedToLiveData | null> {
   if (!videoId) return null;
 
   // Resolve the video's channel type → topic
@@ -377,6 +397,7 @@ export async function buildRelatedToLive(
 
   // Cap at 8 so the rail stays snappy; server already limits per-source.
   return {
+    videoId,
     topic,
     label: meta.label,
     accent: meta.accent,

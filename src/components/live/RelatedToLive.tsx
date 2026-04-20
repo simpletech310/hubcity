@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Icon, { type IconName } from "@/components/ui/Icon";
 import type { RelatedToLiveData, RelatedItem } from "@/lib/live/relatedToLive";
@@ -11,10 +14,49 @@ const KIND_ICON: Record<RelatedItem["kind"], IconName> = {
 };
 
 interface RelatedToLiveProps {
-  data: RelatedToLiveData | null;
+  /** Server-rendered rail for the video that was on-air at page load */
+  initialData: RelatedToLiveData | null;
+  /**
+   * The video that's currently on-air, reported by LiveSimulatedPlayer.
+   * When it changes we refetch the rail so it stays tied to what's playing.
+   * `null` means an ad slot / no active content — we keep the last
+   * rendered rail in place so it doesn't flash empty during commercials.
+   */
+  videoId: string | null;
 }
 
-export default function RelatedToLive({ data }: RelatedToLiveProps) {
+export default function RelatedToLive({ initialData, videoId }: RelatedToLiveProps) {
+  const [data, setData] = useState<RelatedToLiveData | null>(initialData);
+  const [isLoading, setIsLoading] = useState(false);
+  // Remember which id the current `data` was fetched for, so we don't
+  // re-fire for the same id (e.g. on re-render / remount).
+  const loadedForRef = useRef<string | null>(initialData?.videoId ?? null);
+
+  useEffect(() => {
+    if (!videoId) return; // ad slot → keep last rail
+    if (loadedForRef.current === videoId) return;
+
+    const controller = new AbortController();
+    setIsLoading(true);
+
+    fetch(`/api/live/related?video_id=${encodeURIComponent(videoId)}`, {
+      signal: controller.signal,
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+      .then((body: { data: RelatedToLiveData | null }) => {
+        loadedForRef.current = videoId;
+        setData(body.data);
+      })
+      .catch((err) => {
+        if (err?.name === "AbortError") return;
+        // Keep the previous rail rather than flashing empty on a transient
+        // network error — the next schedule change will retry.
+      })
+      .finally(() => setIsLoading(false));
+
+    return () => controller.abort();
+  }, [videoId]);
+
   if (!data || data.items.length === 0) return null;
 
   return (
@@ -23,12 +65,12 @@ export default function RelatedToLive({ data }: RelatedToLiveProps) {
       <div className="flex items-center justify-between px-5 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <span
-            className="inline-block w-1.5 h-4 rounded-full shrink-0"
+            className="inline-block w-1.5 h-4 rounded-full shrink-0 transition-colors"
             style={{ background: data.accent }}
           />
           <div className="min-w-0">
             <p
-              className="text-[10px] font-bold uppercase tracking-wider truncate"
+              className="text-[10px] font-bold uppercase tracking-wider truncate transition-colors"
               style={{ color: data.accent }}
             >
               Because you&apos;re watching
@@ -39,12 +81,16 @@ export default function RelatedToLive({ data }: RelatedToLiveProps) {
           </div>
         </div>
         <span className="text-[10px] text-white/40 font-semibold shrink-0 tabular-nums">
-          {data.items.length}
+          {isLoading ? "…" : data.items.length}
         </span>
       </div>
 
       {/* Horizontal rail */}
-      <div className="overflow-x-auto scrollbar-hide">
+      <div
+        className={`overflow-x-auto scrollbar-hide transition-opacity duration-200 ${
+          isLoading ? "opacity-60" : "opacity-100"
+        }`}
+      >
         <div className="flex gap-2.5 px-5 pb-1">
           {data.items.map((item) => {
             const icon = KIND_ICON[item.kind];
