@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import KnectTV from "@/components/live/KnectTV";
+import { buildRelatedToLive } from "@/lib/live/relatedToLive";
 import type {
   Channel,
   ChannelVideo,
@@ -131,6 +132,12 @@ export default async function LivePage() {
   const canStream =
     userRole === "admin" || userRole === "city_official" || userRole === "city_ambassador";
 
+  // Contextual strip: related platform content based on what's playing now
+  const relatedToLive = await buildRelatedToLive(
+    supabase,
+    (rawSchedule as unknown as ScheduledBroadcast[]) || []
+  );
+
   return (
     <KnectTV
       channels={(rawChannels as Channel[]) || []}
@@ -146,6 +153,7 @@ export default async function LivePage() {
       isVerified={isVerified}
       followedChannelIds={followedChannelIds}
       purchasedVideoIds={purchasedVideoIds}
+      relatedToLive={relatedToLive}
     />
   );
 }

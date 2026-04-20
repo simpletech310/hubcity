@@ -11,6 +11,8 @@ import StreamCard from "./StreamCard";
 import CreateStreamModal from "./CreateStreamModal";
 import PreRollAd from "./PreRollAd";
 import LiveSimulatedPlayer from "./LiveSimulatedPlayer";
+import RelatedToLive from "./RelatedToLive";
+import type { RelatedToLiveData } from "@/lib/live/relatedToLive";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import type {
@@ -139,19 +141,6 @@ function timeAgo(dateStr: string) {
   return `${weeks}w ago`;
 }
 
-function timeUntil(dateStr: string) {
-  const diff = new Date(dateStr).getTime() - Date.now();
-  if (diff < 0) return "Now";
-  const hours = Math.floor(diff / 3600000);
-  if (hours < 1) {
-    const mins = Math.floor(diff / 60000);
-    return `${mins}m`;
-  }
-  if (hours < 24) return `${hours}h`;
-  const days = Math.floor(hours / 24);
-  return `${days}d`;
-}
-
 // ── Props ──────────────────────────────────────────────────
 interface KnectTVProps {
   channels: Channel[];
@@ -167,6 +156,7 @@ interface KnectTVProps {
   isVerified: boolean;
   followedChannelIds: string[];
   purchasedVideoIds: string[];
+  relatedToLive?: RelatedToLiveData | null;
 }
 
 export default function KnectTV({
@@ -183,6 +173,7 @@ export default function KnectTV({
   isVerified,
   followedChannelIds: initialFollowed,
   purchasedVideoIds,
+  relatedToLive = null,
 }: KnectTVProps) {
   // ── Scope gating: hide local channels/videos unless address-verified ──
   const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
@@ -572,6 +563,9 @@ export default function KnectTV({
           {/* ── Knect TV Live (simulated linear channel) ── */}
           <LiveSimulatedPlayer schedule={liveSchedule} walmartAd={walmartAd} userId={userId} />
 
+          {/* ── Related to what's playing (events, resources, deals) ── */}
+          <RelatedToLive data={relatedToLive} />
+
           {/* ── Live Now (real live streams) ── */}
           {activeStreams.length > 0 && (
             <section className="mb-8">
@@ -838,30 +832,6 @@ export default function KnectTV({
             </section>
           )}
 
-          {/* ── Coming Up Next ── */}
-          {upcomingStreams.length > 0 && (
-            <section className="mb-8">
-              <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">Coming Up Next</h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">{upcomingStreams.length} scheduled streams</p>
-              </div>
-              <div className="px-5 space-y-3">
-                {upcomingStreams.map((stream) => (
-                  <div key={stream.id} className="relative">
-                    {stream.scheduled_at && (
-                      <div className="absolute -left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center z-10">
-                        <span className="text-[9px] font-bold text-gold">{timeUntil(stream.scheduled_at)}</span>
-                      </div>
-                    )}
-                    <div className="ml-8">
-                      <StreamCard stream={stream} onWatch={() => { if (stream.mux_playback_id) watchStream(stream); }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
           {/* ── Get Your Content On The Air CTA ── */}
           <section className="mb-8 px-5">
             <div className="relative overflow-hidden rounded-2xl border border-gold/20">
@@ -893,33 +863,6 @@ export default function KnectTV({
                   </button>
                 </div>
               </div>
-            </div>
-          </section>
-
-          {/* ── What's On Knect TV ── */}
-          <section className="mb-8 px-5">
-            <h2 className="font-heading font-bold text-[18px] mb-3 flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-              </svg>
-              Made For Compton
-            </h2>
-            <div className="grid grid-cols-2 gap-2.5">
-              {[
-                { label: "City Meetings", desc: "Council sessions live", icon: "landmark" as IconName, color: "#06B6D4", gradient: "from-cyan/15 to-cyan/5" },
-                { label: "Local Sports", desc: "Friday Night Lights", icon: "trophy" as IconName, color: "#3B82F6", gradient: "from-hc-blue/15 to-hc-blue/5" },
-                { label: "Original Shows", desc: "Compton-made content", icon: "film" as IconName, color: "#F2A900", gradient: "from-gold/15 to-gold/5" },
-                { label: "Community", desc: "Events & culture", icon: "users" as IconName, color: "#8B5CF6", gradient: "from-hc-purple/15 to-hc-purple/5" },
-              ].map((cat, i) => (
-                <div key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-white/[0.06] p-4 press group hover:border-white/[0.12] transition-all`}>
-                  <div className="absolute top-0 left-0 right-0 h-[2px] opacity-40" style={{ background: `linear-gradient(90deg, transparent, ${cat.color}, transparent)` }} />
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ background: `${cat.color}15` }}>
-                    <Icon name={cat.icon} size={18} style={{ color: cat.color }} />
-                  </div>
-                  <p className="font-heading text-[13px] font-bold text-white mb-0.5">{cat.label}</p>
-                  <p className="text-[11px] text-white/40">{cat.desc}</p>
-                </div>
-              ))}
             </div>
           </section>
 
