@@ -337,10 +337,11 @@ export default async function CreatorsPage({
         </div>
       )}
 
-      <div className="px-5 flex flex-col gap-8 pt-2">
-        {creators.map((creator) => {
+      {/* Editorial feed — each creator is a numbered feature spread. */}
+      <div className="flex flex-col">
+        {creators.map((creator, creatorIdx) => {
           const creatorPosts = (postsByCreator.get(creator.id) ?? []).slice(0, 6);
-          const creatorReels = (reelsByCreator.get(creator.id) ?? []).slice(0, 4);
+          const creatorReels = (reelsByCreator.get(creator.id) ?? []).slice(0, 5);
           const channel = channelByOwner.get(creator.id);
           const creatorVideos = channel
             ? (videosByChannel.get(channel.id) ?? []).slice(0, 4)
@@ -349,201 +350,346 @@ export default async function CreatorsPage({
           const initials = creator.display_name
             .split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
 
+          // Hero image: prefer the first reel poster (cinematic), then
+          // first image post, then null (renders a typographic hero).
+          const heroImage =
+            creatorReels.find((r) => r.poster_url)?.poster_url ??
+            creatorPosts.find((p) => p.image_url)?.image_url ??
+            null;
+
+          const roleBadge = creator.role ? ROLE_BADGE[creator.role] : null;
+          const indexLabel = String(creatorIdx + 1).padStart(2, "0");
+
+          // Numbered section index that only counts sections the creator
+          // actually has content for — so the numbering reads naturally
+          // regardless of whether they have reels / posts / show.
+          let sectionCounter = 0;
+          const sectionIdx = () => String(++sectionCounter).padStart(2, "0");
+
           return (
-            <section
+            <article
               key={creator.id}
-              className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden"
+              className="relative border-t border-white/[0.06] first:border-t-0"
             >
-              {/* Creator header */}
-              <div className="p-4 flex items-center gap-3">
+              {/* Index marker + kicker line */}
+              <div className="px-5 pt-8 pb-4 flex items-end justify-between">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-gold text-[34px] leading-none tabular-nums">
+                    №{indexLabel}
+                  </span>
+                  <span className="text-[10px] font-bold tracking-[0.28em] text-white/40 uppercase">
+                    {roleBadge?.label ?? "Creator"} · {creator.city?.name ?? "Everywhere"}
+                  </span>
+                </div>
+                <div className="text-[10px] font-bold tracking-[0.28em] text-white/25 uppercase tabular-nums">
+                  {indexLabel} / {String(creators.length).padStart(2, "0")}
+                </div>
+              </div>
+
+              {/* Hero block */}
+              <div className="relative aspect-[4/5] overflow-hidden bg-midnight">
+                {heroImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={heroImage}
+                    alt={creator.display_name}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/40 via-royal/20 to-black" />
+                )}
+
+                {/* Duotone sepia vignette that ties everything back to the
+                    black-canvas + gold palette. */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(255,255,255,0)_0%,rgba(0,0,0,0.6)_100%)]" />
+                <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/80 to-transparent" />
+                {/* Tiny film-grain — kept very subtle so it reads as
+                    "print quality" rather than noise. */}
+                <div
+                  className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
+                  style={{
+                    backgroundImage:
+                      "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+                  }}
+                />
+
+                {/* Avatar — pinned top-left like a clipped polaroid */}
                 <Link
                   href={`/user/${creator.handle}`}
-                  className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-white/15 bg-gradient-to-br from-royal to-hc-purple"
+                  aria-label={`${creator.display_name} profile`}
+                  className="absolute top-5 left-5 w-14 h-14 rounded-full overflow-hidden border-2 border-gold shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
                 >
                   {creator.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={creator.avatar_url} alt={creator.display_name} className="w-full h-full object-cover" />
+                    <img
+                      src={creator.avatar_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gold font-heading font-bold text-base">
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-royal to-hc-purple text-gold font-heading font-bold">
                       {initials}
                     </div>
                   )}
                 </Link>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <Link href={`/user/${creator.handle}`} className="font-heading font-bold text-[15px] truncate hover:underline">
-                      {creator.display_name}
-                    </Link>
+
+                {/* Corner tick marks — editorial crop marks */}
+                <svg width="22" height="22" className="absolute top-4 right-4 text-gold/70" fill="none" stroke="currentColor" strokeWidth="1.2">
+                  <path d="M2 8 V2 H8 M14 2 H20 V8 M20 14 V20 H14 M8 20 H2 V14" />
+                </svg>
+
+                {/* Profile tags, right rail */}
+                {creator.profile_tags && creator.profile_tags.length > 0 && (
+                  <div className="absolute top-20 right-5 flex flex-col items-end gap-1.5 max-w-[45%]">
+                    {creator.profile_tags.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[9px] font-semibold tracking-[0.12em] text-white/80 bg-black/40 backdrop-blur-sm border border-white/10 rounded-full px-2 py-0.5 uppercase"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Name + handle, anchored bottom */}
+                <div className="absolute bottom-6 left-5 right-5">
+                  <h2 className="font-display text-[44px] leading-[0.95] tracking-tight text-white drop-shadow-[0_6px_30px_rgba(0,0,0,0.7)]">
+                    {creator.display_name}
+                  </h2>
+                  <div className="mt-3 flex items-center gap-3">
+                    <span className="block h-[2px] w-10 bg-gold" />
+                    <span className="text-[12px] font-bold text-gold tracking-[0.08em]">
+                      @{creator.handle}
+                    </span>
                     {creator.verification_status === "verified" && (
-                      <Icon name="verified" size={11} className="text-cyan" />
-                    )}
-                    {(() => {
-                      const rb = creator.role ? ROLE_BADGE[creator.role] : null;
-                      return rb ? <Badge label={rb.label} variant={rb.variant} /> : null;
-                    })()}
-                    {creator.city && (
-                      <Badge label={creator.city.name} variant={CITY_BADGE_VARIANT} />
+                      <Icon name="verified" size={13} className="text-cyan" />
                     )}
                   </div>
-                  <p className="text-[11px] text-white/40">@{creator.handle}</p>
-                  {creator.bio && (
-                    <p className="text-[12px] text-white/60 mt-1 line-clamp-2">{creator.bio}</p>
-                  )}
-                  {creator.profile_tags && creator.profile_tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {creator.profile_tags.slice(0, 4).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] font-medium text-white/50 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
-                <Link
-                  href={`/user/${creator.handle}`}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gold text-midnight press hover:bg-gold-light transition-colors"
-                >
-                  Visit
-                </Link>
               </div>
 
-              {/* Reels rail — if this creator has reels */}
-              {creatorReels.length > 0 && (
-                <div className="pb-3">
-                  <div className="px-4 mb-2 flex items-center justify-between">
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-white/50">
-                      Reels
-                    </span>
-                    <Link href="/reels" className="text-[10px] text-gold font-semibold press">
-                      Watch
-                    </Link>
-                  </div>
-                  <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
-                    <div className="flex gap-2 pb-1">
-                      {creatorReels.map((r) => (
-                        <Link
-                          key={r.id}
-                          href="/reels"
-                          className="shrink-0 w-[104px] aspect-[9/16] rounded-xl overflow-hidden relative group press"
-                        >
-                          {r.poster_url ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={r.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
-                              <Icon name="video" size={22} className="text-white/30" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                          <div className="absolute bottom-1.5 left-1.5 right-1.5 flex items-center gap-1">
-                            <Icon name="video" size={10} className="text-white" />
-                            <span className="text-[10px] font-bold text-white">
-                              {r.like_count.toLocaleString()}
-                            </span>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+              {/* Pull-quote bio — cold open below the hero */}
+              {creator.bio && (
+                <div className="px-5 pt-6">
+                  <div className="flex gap-3">
+                    <div className="w-[2px] shrink-0 self-stretch bg-gold" />
+                    <p className="font-display italic text-[17px] leading-snug text-white/85">
+                      &ldquo;{creator.bio}&rdquo;
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Recent posts grid — 3 across, aspect-square */}
-              {creatorPosts.length > 0 && (
-                <div className="pb-3">
-                  <div className="px-4 mb-2 flex items-center justify-between">
-                    <span className="text-[10px] uppercase tracking-wider font-semibold text-white/50">
-                      Recent posts
-                    </span>
-                    <Link href={`/user/${creator.handle}`} className="text-[10px] text-gold font-semibold press">
-                      See all
-                    </Link>
-                  </div>
-                  <div className="grid grid-cols-3 gap-0.5 mx-4 rounded-lg overflow-hidden">
-                    {creatorPosts.map((p) => (
+              {/* Reels */}
+              {creatorReels.length > 0 && (() => {
+                const n = sectionIdx();
+                return (
+                  <section className="pt-8">
+                    <div className="px-5 mb-3 flex items-baseline justify-between">
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                          {n}
+                        </span>
+                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
+                          Reels
+                        </span>
+                      </div>
+                      <Link href="/reels" className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press">
+                        Watch →
+                      </Link>
+                    </div>
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <div className="flex gap-2 pl-5 pr-5 pb-1">
+                        {creatorReels.map((r, i) => (
+                          <Link
+                            key={r.id}
+                            href="/reels"
+                            className="shrink-0 w-[120px] aspect-[9/16] rounded-xl overflow-hidden relative group press"
+                            style={{ transform: i % 2 === 1 ? "translateY(6px)" : undefined }}
+                          >
+                            {r.poster_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={r.poster_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
+                                <Icon name="video" size={22} className="text-white/30" />
+                              </div>
+                            )}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
+                            <span className="absolute top-1.5 left-1.5 font-display text-[13px] leading-none text-gold drop-shadow tabular-nums">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <div className="absolute bottom-1.5 left-2 right-2 flex items-center gap-1">
+                              <Icon name="video" size={10} className="text-white" />
+                              <span className="text-[10px] font-bold text-white tracking-wide">
+                                {r.like_count.toLocaleString()}
+                              </span>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+              {/* Latest posts */}
+              {creatorPosts.length > 0 && (() => {
+                const n = sectionIdx();
+                const featured = creatorPosts[0];
+                const rest = creatorPosts.slice(1, 5);
+                return (
+                  <section className="pt-8">
+                    <div className="px-5 mb-3 flex items-baseline justify-between">
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                          {n}
+                        </span>
+                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
+                          Latest Work
+                        </span>
+                      </div>
+                      <Link href={`/user/${creator.handle}`} className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press">
+                        Full feed →
+                      </Link>
+                    </div>
+
+                    {/* Featured post + 2x2 supporting grid — asymmetric */}
+                    <div className="px-5 grid grid-cols-3 gap-1">
                       <Link
-                        key={p.id}
                         href={`/user/${creator.handle}`}
-                        className="relative aspect-square bg-white/[0.04] group overflow-hidden"
+                        className="col-span-2 row-span-2 relative aspect-square bg-white/[0.04] overflow-hidden group"
                       >
-                        {p.image_url ? (
+                        {featured.image_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
-                        ) : p.media_type === "video" ? (
+                          <img src={featured.image_url} alt="" className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500" />
+                        ) : featured.media_type === "video" ? (
                           <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
-                            <Icon name="video" size={18} className="text-white/30" />
+                            <Icon name="video" size={28} className="text-white/30" />
                           </div>
                         ) : (
-                          <div className="w-full h-full p-2 flex items-center">
-                            <p className="text-[9px] text-white/70 line-clamp-5 leading-snug">{p.body}</p>
+                          <div className="w-full h-full p-4 flex items-center bg-gradient-to-br from-royal/15 via-midnight to-midnight">
+                            <p className="font-display italic text-[16px] text-white/75 line-clamp-6 leading-snug">&ldquo;{featured.body}&rdquo;</p>
                           </div>
                         )}
-                        {p.media_type === "video" && (
-                          <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                        {featured.media_type === "video" && (
+                          <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-2 py-1">
                             <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="6,4 20,12 6,20" /></svg>
+                            <span className="text-[9px] font-bold text-white tracking-wide">VIDEO</span>
                           </div>
                         )}
                       </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Channel videos if this creator has a channel */}
-              {channel && creatorVideos.length > 0 && (
-                <div className="pt-1 pb-4 border-t border-white/[0.04]">
-                  <div className="px-4 mt-3 mb-2 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider font-semibold text-white/50">
-                        From their channel
-                      </span>
-                      <p className="text-[12px] font-bold text-white mt-0.5">{channel.name}</p>
-                    </div>
-                    <Link
-                      href={`/live/channel/${channel.slug || channel.id}`}
-                      className="text-[10px] text-gold font-semibold press"
-                    >
-                      Watch channel
-                    </Link>
-                  </div>
-                  <div className="-mx-4 px-4 overflow-x-auto scrollbar-hide">
-                    <div className="flex gap-2 pb-1">
-                      {creatorVideos.map((v) => {
-                        const thumb = v.thumbnail_url
-                          ?? (v.mux_playback_id ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=320&height=180&time=5` : null);
-                        return (
-                          <Link
-                            key={v.id}
-                            href={`/live/watch/${v.id}`}
-                            className="shrink-0 w-[180px] group press"
-                          >
-                            <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40">
-                              {thumb ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={thumb} alt={v.title} className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center">
-                                  <Icon name="film" size={18} className="text-white/30" />
-                                </div>
-                              )}
-                              {v.duration && (
-                                <span className="absolute bottom-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">
-                                  {Math.floor(v.duration / 60)}:{Math.floor(v.duration % 60).toString().padStart(2, "0")}
-                                </span>
-                              )}
+                      {rest.map((p) => (
+                        <Link
+                          key={p.id}
+                          href={`/user/${creator.handle}`}
+                          className="relative aspect-square bg-white/[0.04] overflow-hidden group"
+                        >
+                          {p.image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={p.image_url} alt="" className="w-full h-full object-cover group-hover:opacity-80 transition-opacity" />
+                          ) : p.media_type === "video" ? (
+                            <div className="w-full h-full bg-gradient-to-br from-black via-deep to-midnight flex items-center justify-center">
+                              <Icon name="video" size={16} className="text-white/30" />
                             </div>
-                            <p className="text-[11px] font-semibold text-white line-clamp-1 mt-1">{v.title}</p>
-                          </Link>
-                        );
-                      })}
+                          ) : (
+                            <div className="w-full h-full p-1.5 flex items-center">
+                              <p className="text-[9px] text-white/70 line-clamp-4 leading-snug">{p.body}</p>
+                            </div>
+                          )}
+                          {p.media_type === "video" && (
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
+                              <svg width="8" height="8" viewBox="0 0 24 24" fill="white"><polygon points="6,4 20,12 6,20" /></svg>
+                            </div>
+                          )}
+                        </Link>
+                      ))}
                     </div>
+                  </section>
+                );
+              })()}
+
+              {/* Channel / Show */}
+              {channel && creatorVideos.length > 0 && (() => {
+                const n = sectionIdx();
+                return (
+                  <section className="pt-8">
+                    <div className="px-5 mb-3 flex items-baseline justify-between">
+                      <div className="flex items-baseline gap-3">
+                        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                          {n}
+                        </span>
+                        <span className="text-[10px] font-bold tracking-[0.28em] text-white/50 uppercase">
+                          From the Channel
+                        </span>
+                      </div>
+                      <Link
+                        href={`/live/channel/${channel.slug || channel.id}`}
+                        className="text-[10px] font-bold tracking-[0.24em] text-gold uppercase press"
+                      >
+                        Tune in →
+                      </Link>
+                    </div>
+                    <p className="px-5 mb-3 font-display text-[18px] leading-tight text-white">
+                      {channel.name}
+                    </p>
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <div className="flex gap-3 pl-5 pr-5 pb-1">
+                        {creatorVideos.map((v) => {
+                          const thumb = v.thumbnail_url
+                            ?? (v.mux_playback_id ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=320&height=180&time=5` : null);
+                          return (
+                            <Link
+                              key={v.id}
+                              href={`/live/watch/${v.id}`}
+                              className="shrink-0 w-[190px] group press"
+                            >
+                              <div className="relative aspect-video rounded-lg overflow-hidden bg-black/40 border border-white/[0.05]">
+                                {thumb ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img src={thumb} alt={v.title} className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500" />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Icon name="film" size={18} className="text-white/30" />
+                                  </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                {v.duration && (
+                                  <span className="absolute bottom-1 right-1 bg-black/80 rounded px-1.5 py-0.5 text-[9px] font-mono text-white tracking-wider">
+                                    {Math.floor(v.duration / 60)}:{Math.floor(v.duration % 60).toString().padStart(2, "0")}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="font-heading font-semibold text-[12px] text-white line-clamp-1 mt-1.5">{v.title}</p>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </section>
+                );
+              })()}
+
+              {/* Visit CTA — full-width letter-spaced bar */}
+              <div className="px-5 pt-8 pb-10">
+                <Link
+                  href={`/user/${creator.handle}`}
+                  className="group relative block overflow-hidden rounded-2xl border border-gold/40 bg-gold/5 hover:bg-gold hover:border-gold transition-colors"
+                >
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <span className="font-display text-[16px] text-gold group-hover:text-midnight transition-colors">
+                      Visit {creator.display_name.split(" ")[0]}
+                    </span>
+                    <span className="text-[10px] font-bold tracking-[0.32em] text-gold group-hover:text-midnight uppercase transition-colors">
+                      Profile &nbsp;·&nbsp; →
+                    </span>
                   </div>
-                </div>
-              )}
-            </section>
+                  <div className="h-[1px] bg-gradient-to-r from-gold/10 via-gold/40 to-gold/10 group-hover:bg-midnight/60 transition-colors" />
+                </Link>
+              </div>
+            </article>
           );
         })}
       </div>
