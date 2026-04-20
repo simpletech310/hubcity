@@ -1,0 +1,105 @@
+{
+  "assetsRoot": "/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets",
+  "groups": [
+    {
+      "slug": "compton-run-club",
+      "name": "Compton Run Club",
+      "folder": "compton runclub group",
+      "citySlug": "compton",
+      "category": "sports",
+      "ownerHandle": "andrespicer",
+      "description": "Weekly runs around Compton. All paces welcome \u2014 we start together, finish together.",
+      "coverImage": "IMG_2995.jpg",
+      "textPosts": [
+        "Saturday 7am at MLK Park. See you there \ud83c\udfc3\u200d\u2642\ufe0f",
+        "Huge turnout this week. Proud of y\u2019all.",
+        "Shoes don\u2019t make the runner, showing up does."
+      ],
+      "events": [
+        { "title": "Saturday Community Run", "daysFromNow": 4, "description": "5K loop through MLK Park. Water + bananas after." },
+        { "title": "MLK 5K Tribute Run", "daysFromNow": 18, "description": "Honoring the legacy with a community 5K." },
+        { "title": "Compton Half Marathon Prep", "daysFromNow": 32, "description": "Long run + pace groups for the half." }
+      ]
+    },
+    {
+      "slug": "long-beach-run-club",
+      "name": "Long Beach Run Club",
+      "folder": "long beach run club group",
+      "citySlug": "long-beach",
+      "category": "sports",
+      "ownerHandle": "beflyla",
+      "description": "Beachside miles, sunrise sessions, and zero judgement. Run with us.",
+      "coverImage": "IMG_3024.jpg",
+      "textPosts": [
+        "Shoreline run tomorrow 6:30am. Coffee after at Rose Park.",
+        "New PRs all around last weekend. Keep going.",
+        "Reminder: it\u2019s not about pace, it\u2019s about presence."
+      ],
+      "events": [
+        { "title": "Shoreline Sunrise Run", "daysFromNow": 3, "description": "Easy 3-mile sunrise run along the boardwalk." },
+        { "title": "Long Beach 10K Meetup", "daysFromNow": 12, "description": "Group miles, pace groups welcome." },
+        { "title": "Full Moon Run + Social", "daysFromNow": 22, "description": "Night miles + light hang afterward." }
+      ]
+    },
+    {
+      "slug": "south-central-la-run-club",
+      "name": "South Central LA Run Club",
+      "folder": "south central runclub group",
+      "citySlug": "compton",
+      "category": "sports",
+      "ownerHandle": "kevonstage",
+      "description": "South Central miles. Repping the block one step at a time.",
+      "coverImage": "IMG_3012.jpg",
+      "textPosts": [
+        "Put the phone down, lace up. 7am meet at Exposition.",
+        "If you showed up today, you\u2019re already different.",
+        "Next week we add hills. Consider yourself warned."
+      ],
+      "events": [
+        { "title": "Sunday Exposition Loop", "daysFromNow": 5, "description": "4-mile loop through Expo Park." },
+        { "title": "South Central 5K", "daysFromNow": 14, "description": "Chip-timed 5K with post-run social." },
+        { "title": "Hill Repeats Session", "daysFromNow": 21, "description": "Baldwin Hills repeats. Bring water." }
+      ]
+    },
+    {
+      "slug": "be-safe-stay-dangerous",
+      "name": "Be Safe Stay Dangerous",
+      "folder": "be safe stay dangerous group",
+      "citySlug": "compton",
+      "category": "interest",
+      "ownerHandle": "lil_duval",
+      "description": "Mini bike racing, wheelie culture, and community rides. Safe riders. Loud bikes.",
+      "coverImage": "IMG_3076.jpg",
+      "textPosts": [
+        "Sunday meet at the lot. Full face or don\u2019t pull up.",
+        "Every rider comes home. Every. Single. Time.",
+        "New merch drop this weekend \ud83d\udd25"
+      ],
+      "events": [
+        { "title": "Mini Bike Meetup", "daysFromNow": 6, "description": "Open lot. Parts swap + test rides." },
+        { "title": "Community Ride-Out", "daysFromNow": 13, "description": "Escorted ride-out through Compton \u2014 safety first." },
+        { "title": "Pull-Up Competition", "daysFromNow": 27, "description": "Wheelie contest + food trucks." }
+      ]
+    },
+    {
+      "slug": "earn-your-leisure",
+      "name": "Earn Your Leisure",
+      "folder": "earn your leisure group",
+      "citySlug": "compton",
+      "category": "business",
+      "ownerHandle": "kevonstage",
+      "description": "Young professionals leveling up together. Money, moves, and the conversations your parents never had.",
+      "coverImage": "IMG_3041.jpg",
+      "textPosts": [
+        "Credit score > credit card. Always.",
+        "If your money doesn\u2019t have a job, it\u2019s robbing you.",
+        "Next workshop: Roth IRA for beginners. RSVP below."
+      ],
+      "events": [
+        { "title": "Intro to Investing Workshop", "daysFromNow": 7, "description": "Brokerage basics, index funds, and why fees matter." },
+        { "title": "Roth IRA for Beginners", "daysFromNow": 17, "description": "Step-by-step walkthrough with a CFP." },
+        { "title": "Real Estate 101", "daysFromNow": 28, "description": "House-hacking, rentals, and the LA market in 2026." }
+      ]
+    }
+  ]
+}
