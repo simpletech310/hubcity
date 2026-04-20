@@ -11,7 +11,7 @@ interface BusinessSummary {
   image_urls: string[] | null;
   rating_avg: number | null;
   rating_count: number | null;
-  is_verified: boolean | null;
+  is_verified?: boolean | null;
   account_type: string | null;
 }
 

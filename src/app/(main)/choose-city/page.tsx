@@ -25,6 +25,7 @@ const SECTION_HINT: Record<string, { icon: string; label: string }> = {
   "/jobs": { icon: "briefcase", label: "Jobs" },
   "/groups": { icon: "users", label: "Groups" },
   "/people": { icon: "sparkle", label: "Explore" },
+  "/creators": { icon: "film", label: "Discover" },
   "/resources": { icon: "book", label: "Resources" },
   "/live": { icon: "film", label: "Knect TV" },
 };

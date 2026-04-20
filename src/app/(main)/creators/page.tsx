@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const city = await getActiveCity();
   const name = city?.name ?? "Your City";
   return {
-    title: `Creators | ${name} | Knect`,
+    title: `Discover | ${name} | Knect`,
     description: `Watch, follow, and discover creators making things in ${name}.`,
   };
 }
@@ -80,7 +80,7 @@ export default async function CreatorsPage() {
   if (creators.length === 0) {
     return (
       <div className="animate-fade-in pb-safe px-5 pt-6">
-        <h1 className="font-heading text-2xl font-bold mb-1">Creators</h1>
+        <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
         <p className="text-sm text-txt-secondary mb-8">
           No creators in {city.name} yet.
         </p>
@@ -163,7 +163,7 @@ export default async function CreatorsPage() {
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/20 via-midnight to-midnight" />
         <div className="relative px-5 pt-6 pb-5">
-          <h1 className="font-heading text-2xl font-bold mb-1">Creators</h1>
+          <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
           <p className="text-sm text-txt-secondary">
             Cool things to watch from unique creators in {city.name}.
           </p>

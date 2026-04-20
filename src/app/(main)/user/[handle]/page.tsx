@@ -157,7 +157,7 @@ export default async function PublicProfilePage({
     image_urls: string[] | null;
     rating_avg: number | null;
     rating_count: number | null;
-    is_verified: boolean | null;
+    is_verified?: boolean | null;
     account_type: string | null;
   };
   type DealItem = {
@@ -187,7 +187,7 @@ export default async function PublicProfilePage({
     const { data: bizRows } = await supabase
       .from("businesses")
       .select(
-        "id, slug, name, category, description, image_urls, rating_avg, rating_count, is_verified, account_type"
+        "id, slug, name, category, description, image_urls, rating_avg, rating_count, account_type"
       )
       .eq("owner_id", profile.id)
       .eq("is_published", true)
