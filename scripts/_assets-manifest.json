@@ -1,0 +1,114 @@
+{
+  "assetsRoot": "/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets",
+  "defaultCitySlug": "compton",
+  "creators": [
+    {
+      "handle": "beflyla",
+      "folder": "beflyla post",
+      "displayName": "Beflyla",
+      "bio": "Style, soul, and Southern California energy.",
+      "eventFolder": null,
+      "textPosts": [
+        "New drops this week. Stay tuned \u2728",
+        "Love seeing the community show up. Compton stand up."
+      ],
+      "defaultCaption": ""
+    },
+    {
+      "handle": "espresso",
+      "folder": "espresso events post",
+      "displayName": "Espresso Events",
+      "bio": "Pop-ups, launches, and the events bringing the city together.",
+      "eventFolder": null,
+      "textPosts": [
+        "Doors open at 7. Come through.",
+        "Last night was one for the books. Thank you Compton \ud83d\udcab"
+      ],
+      "defaultCaption": ""
+    },
+    {
+      "handle": "kevonstage",
+      "folder": "kevonstage post",
+      "displayName": "Kevon Stage",
+      "bio": "Comedy, commentary, culture.",
+      "eventFolder": null,
+      "textPosts": [
+        "Y\u2019all already know what I\u2019m about to say",
+        "This is for the people in the back"
+      ],
+      "defaultCaption": ""
+    },
+    {
+      "handle": "lil_duval",
+      "folder": "lil duval post",
+      "displayName": "Lil Duval",
+      "bio": "Living my best life. Still.",
+      "eventFolder": null,
+      "textPosts": [
+        "Smile, you alive \ud83d\ude0c",
+        "Coming to a city near you"
+      ],
+      "defaultCaption": ""
+    },
+    {
+      "handle": "fene310",
+      "folder": "post fene310",
+      "displayName": "Fene 310",
+      "bio": "Fashion, culture, and West Coast stories.",
+      "eventFolder": "event",
+      "textPosts": [
+        "Grateful for the movement. More soon.",
+        "Compton made me. We keep building."
+      ],
+      "defaultCaption": "",
+      "events": [
+        { "title": "Fene 310 Pop-Up", "daysFromNow": 10 },
+        { "title": "West Coast Culture Night", "daysFromNow": 18 },
+        { "title": "Community Mixer", "daysFromNow": 25 },
+        { "title": "Style Summit", "daysFromNow": 33 },
+        { "title": "Artist Showcase", "daysFromNow": 40 }
+      ]
+    },
+    {
+      "handle": "scentofhustle",
+      "folder": "scent of hustle post",
+      "displayName": "Scent of Hustle",
+      "bio": "Fragrance, flow, and the grind that made it.",
+      "eventFolder": null,
+      "textPosts": [
+        "New scent drops this weekend.",
+        "The hustle doesn\u2019t sleep."
+      ],
+      "defaultCaption": ""
+    },
+    {
+      "handle": "andrespicer",
+      "folder": "post videos Andre spicer",
+      "displayName": "Andre Spicer",
+      "bio": "Community-first. District 3, Compton.",
+      "eventFolder": "events",
+      "textPosts": [
+        "Meeting neighbors where they are.",
+        "Every issue raised is an issue we take to City Hall."
+      ],
+      "defaultCaption": "",
+      "events": [
+        { "title": "District 3 Town Hall", "daysFromNow": 7 },
+        { "title": "Neighborhood Clean-Up", "daysFromNow": 14 },
+        { "title": "Youth Resource Fair", "daysFromNow": 21 }
+      ]
+    },
+    {
+      "handle": "wickdconfections",
+      "folder": "wickdconfections post",
+      "displayName": "Wickd Confections",
+      "bio": "Sweet stuff, wickedly good.",
+      "eventFolder": null,
+      "textPosts": [
+        "Today\u2019s drop is pure heat \ud83d\udd25",
+        "Taking custom orders for the weekend."
+      ],
+      "defaultCaption": ""
+    }
+  ]
+}
