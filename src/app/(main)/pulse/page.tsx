@@ -110,6 +110,7 @@ export default async function PulsePage() {
   let userId: string | null = null;
   let userName = "User";
   let userRole = "citizen";
+  let followedIds: string[] = [];
   const userReactions: Record<string, ReactionEmoji[]> = {};
 
   if (user) {
@@ -126,6 +127,13 @@ export default async function PulsePage() {
       userRole = profile.role;
     }
 
+    // Get accounts I follow — drives the "Following" toggle
+    const { data: follows } = await supabase
+      .from("user_follows")
+      .select("followed_id")
+      .eq("follower_id", user.id);
+    followedIds = (follows ?? []).map((f) => f.followed_id);
+
     // Get user's reactions
     if (posts.length > 0) {
       const postIds = posts.map((p) => p.id);
@@ -139,6 +147,43 @@ export default async function PulsePage() {
         for (const r of reactions) {
           if (!userReactions[r.post_id]) userReactions[r.post_id] = [];
           userReactions[r.post_id].push(r.emoji as ReactionEmoji);
+        }
+      }
+    }
+
+    // Get top 2 most recent top-level comments per post for inline preview.
+    // (Post-load filtering — post_recent_comments view ranks per post.)
+    if (posts.length > 0) {
+      const postIds = posts.map((p) => p.id);
+      const { data: previews } = await supabase
+        .from("post_recent_comments")
+        .select(
+          "id, post_id, body, created_at, parent_id, author_display_name, author_handle, author_verification_status, rank",
+        )
+        .in("post_id", postIds)
+        .lte("rank", 2);
+
+      if (previews) {
+        const byPost: Record<string, typeof previews> = {};
+        for (const row of previews) {
+          const list = byPost[row.post_id] || [];
+          list.push(row);
+          byPost[row.post_id] = list;
+        }
+        for (const p of posts) {
+          const rows = byPost[p.id] || [];
+          // Oldest-first so the inline preview reads top-down like Instagram.
+          p.preview_comments = rows
+            .sort((a, b) => a.rank - b.rank)
+            .reverse()
+            .map((r) => ({
+              id: r.id,
+              body: r.body,
+              created_at: r.created_at,
+              author_display_name: r.author_display_name,
+              author_handle: r.author_handle,
+              author_verification_status: r.author_verification_status,
+            }));
         }
       }
     }
@@ -202,6 +247,7 @@ export default async function PulsePage() {
         trafficAlertCount={trafficAlertCount ?? 0}
         suggestedProfiles={suggestedProfiles}
         reels={reels}
+        followedIds={followedIds}
       />
     </div>
   );

@@ -3,6 +3,19 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Image from "next/image";
 import type { Comment } from "@/types/database";
+import { createClient } from "@/lib/supabase/client";
+import GifPicker from "@/components/social/GifPicker";
+import EmojiPicker from "@/components/social/EmojiPicker";
+
+// Comments reuse the existing `body` column. A body of the form `gif:<url>`
+// is rendered as an embedded GIF instead of plain text. Keeps the backend
+// schema untouched.
+const GIF_TOKEN_RE = /^gif:(https?:\/\/\S+)$/;
+
+function parseGif(body: string): string | null {
+  const m = body.match(GIF_TOKEN_RE);
+  return m ? m[1] : null;
+}
 
 interface CommentsSheetProps {
   postId: string;
@@ -66,6 +79,8 @@ export default function CommentsSheet({
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<Comment | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +105,42 @@ export default function CommentsSheet({
     }
   }, [isOpen, fetchComments]);
 
+  // ── Realtime subscription ─────────────────────────────
+  // While the sheet is open for this post, listen for any comment insert or
+  // delete and refetch the list. Debounced 200ms so the echo of our own
+  // optimistic post coalesces with the server write.
+  useEffect(() => {
+    if (!isOpen) return;
+    const supabase = createClient();
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleRefetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        fetchComments();
+      }, 200);
+    };
+
+    const channel = supabase
+      .channel(`post-comments-${postId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "comments",
+          filter: `post_id=eq.${postId}`,
+        },
+        scheduleRefetch,
+      )
+      .subscribe();
+
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [isOpen, postId, fetchComments]);
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -101,10 +152,12 @@ export default function CommentsSheet({
     };
   }, [isOpen]);
 
-  const handleSubmit = async () => {
-    if (!userId || !body.trim() || submitting) return;
+  const handleSubmit = async (overrideBody?: string) => {
+    if (!userId || submitting) return;
+    const raw = overrideBody ?? body;
+    if (!raw.trim()) return;
 
-    const trimmed = body.trim();
+    const trimmed = raw.trim();
     setSubmitting(true);
 
     // Optimistic comment
@@ -194,6 +247,29 @@ export default function CommentsSheet({
   const handleReply = (comment: Comment) => {
     setReplyTo(comment);
     inputRef.current?.focus();
+  };
+
+  const handleGifPick = (url: string) => {
+    // Comments have no media column — store as a special token.
+    void handleSubmit(`gif:${url}`);
+  };
+
+  const handleEmojiPick = (emoji: string) => {
+    const el = inputRef.current;
+    if (!el) {
+      setBody((b) => b + emoji);
+      return;
+    }
+    const start = el.selectionStart ?? body.length;
+    const end = el.selectionEnd ?? body.length;
+    const next = body.slice(0, start) + emoji + body.slice(end);
+    setBody(next);
+    // Restore cursor after the inserted emoji
+    requestAnimationFrame(() => {
+      el.focus();
+      const pos = start + emoji.length;
+      el.setSelectionRange(pos, pos);
+    });
   };
 
   const handleClose = () => {
@@ -289,6 +365,44 @@ export default function CommentsSheet({
         <div className="px-5 py-3 border-t border-border-subtle shrink-0">
           {userId ? (
             <div className="flex items-end gap-2">
+              {/* GIF + Emoji buttons */}
+              <div className="flex items-center gap-1 pb-1 relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGifOpen(true);
+                    setEmojiOpen(false);
+                  }}
+                  disabled={submitting}
+                  aria-label="Add a GIF"
+                  className="shrink-0 h-8 px-2 rounded-lg text-[10px] font-heading font-bold tracking-[0.15em] uppercase text-gold border border-gold/30 hover:bg-gold/10 press transition-colors disabled:opacity-40"
+                >
+                  GIF
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmojiOpen((v) => !v);
+                    setGifOpen(false);
+                  }}
+                  disabled={submitting}
+                  aria-label="Add an emoji"
+                  className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-base hover:bg-gold/10 press transition-colors disabled:opacity-40"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold/80">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                    <line x1="9" y1="9" x2="9.01" y2="9" />
+                    <line x1="15" y1="9" x2="15.01" y2="9" />
+                  </svg>
+                </button>
+                <EmojiPicker
+                  open={emojiOpen}
+                  onClose={() => setEmojiOpen(false)}
+                  onPick={handleEmojiPick}
+                />
+              </div>
+
               <textarea
                 ref={inputRef}
                 value={body}
@@ -307,7 +421,7 @@ export default function CommentsSheet({
                 }}
               />
               <button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={!body.trim() || submitting}
                 className="shrink-0 w-9 h-9 rounded-full bg-gold flex items-center justify-center press transition-all disabled:opacity-40 disabled:cursor-default"
               >
@@ -338,6 +452,14 @@ export default function CommentsSheet({
           )}
         </div>
       </div>
+
+      {/* GIF picker — posts immediately on pick */}
+      <GifPicker
+        open={gifOpen}
+        onClose={() => setGifOpen(false)}
+        onPick={handleGifPick}
+        title={replyTo ? "Reply with a GIF" : "Comment with a GIF"}
+      />
     </div>
   );
 }
@@ -440,9 +562,27 @@ function CommentItem({
               {getTimeAgo(comment.created_at)}
             </span>
           </div>
-          <p className="text-sm text-white/90 mt-0.5 break-words whitespace-pre-wrap">
-            {comment.body}
-          </p>
+          {(() => {
+            const gifUrl = parseGif(comment.body);
+            if (gifUrl) {
+              return (
+                <div className="mt-1 inline-block rounded-xl overflow-hidden bg-white/5 border border-border-subtle max-w-[220px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={gifUrl}
+                    alt="GIF"
+                    loading="lazy"
+                    className="block w-full h-auto"
+                  />
+                </div>
+              );
+            }
+            return (
+              <p className="text-sm text-white/90 mt-0.5 break-words whitespace-pre-wrap">
+                {comment.body}
+              </p>
+            );
+          })()}
 
           {/* Actions row */}
           <div className="flex items-center gap-3 mt-1.5">

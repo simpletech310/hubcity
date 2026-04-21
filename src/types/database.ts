@@ -272,6 +272,16 @@ export interface Post {
   created_at: string;
   updated_at: string;
   author?: Profile;
+  /** Up to 2 most recent top-level comments, attached server-side for the
+   *  Instagram-style inline preview in Pulse. */
+  preview_comments?: Array<{
+    id: string;
+    body: string;
+    created_at: string;
+    author_display_name: string;
+    author_handle: string | null;
+    author_verification_status?: string | null;
+  }>;
 }
 
 export interface PostReaction {

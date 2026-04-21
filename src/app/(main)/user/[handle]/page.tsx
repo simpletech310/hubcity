@@ -20,6 +20,7 @@ import ProfileProductsRow from "@/components/profile/ProfileProductsRow";
 import ProfileEventsRow from "@/components/profile/ProfileEventsRow";
 import ProfileGalleryMasonry from "@/components/profile/ProfileGalleryMasonry";
 import UserPostsGrid from "@/components/profile/UserPostsGrid";
+import ProfileActionButtons from "@/components/profile/ProfileActionButtons";
 import ReelsRail from "@/components/reels/ReelsRail";
 import type { Post, Channel, ChannelVideo, Event, ProfileGalleryImage, Reel, ReactionEmoji } from "@/types/database";
 
@@ -74,6 +75,18 @@ export default async function PublicProfilePage({
     data: { user: currentUser },
   } = await supabase.auth.getUser();
   const isOwner = currentUser?.id === profile.id;
+
+  // Am I already following this profile? Drives the Follow/Following toggle.
+  let initialFollowing = false;
+  if (currentUser && !isOwner) {
+    const { data: rel } = await supabase
+      .from("user_follows")
+      .select("id")
+      .eq("follower_id", currentUser.id)
+      .eq("followed_id", profile.id)
+      .maybeSingle();
+    initialFollowing = !!rel;
+  }
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const nowISO = new Date().toISOString();
@@ -486,15 +499,13 @@ export default async function PublicProfilePage({
           </EditorialCard>
         </div>
 
-        {/* Action buttons — gold filled + gold-bordered ghost */}
-        <div className="mt-4 flex items-center gap-3">
-          <button className="flex-1 py-2.5 rounded-xl bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors">
-            Follow
-          </button>
-          <button className="flex-1 py-2.5 rounded-xl bg-transparent border border-gold/40 text-gold font-semibold text-sm press hover:bg-gold/10 transition-colors">
-            Message
-          </button>
-        </div>
+        {/* Action buttons — Follow / Message wired to /api/follows + /api/conversations */}
+        <ProfileActionButtons
+          targetUserId={profile.id}
+          isSignedIn={!!currentUser}
+          isOwner={isOwner}
+          initialFollowing={initialFollowing}
+        />
 
         {/* Social links */}
         {(socialLinks && Object.keys(socialLinks).length > 0 || profile.website_url) && (

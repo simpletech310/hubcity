@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import MediaLightbox from "@/components/pulse/MediaLightbox";
 import { REACTION_EMOJI_MAP, REACTION_COLORS, ROLE_BADGE_MAP } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
 import type { ReactionEmoji } from "@/types/database";
 
 interface DistrictPostAuthor {
@@ -42,6 +43,16 @@ interface DistrictPostCardProps {
   onPin: (postId: string, pin: boolean) => void;
   onReact: (postId: string, emoji: string) => void;
   onCommentOpen: (postId: string) => void;
+  /**
+   * Called when realtime detects reaction changes from another user so the
+   * parent can merge fresh denormalized counts into its posts state.
+   */
+  onReactionCountsChange?: (postId: string, counts: Record<string, number>) => void;
+  /**
+   * Called when realtime detects this user's own reactions changed on another
+   * device. Lets the parent re-sync the userReactions map.
+   */
+  onUserReactionsChange?: (postId: string, userReactions: string[]) => void;
 }
 
 const POST_TYPE_BADGE: Record<string, { label: string; className: string }> = {
@@ -65,6 +76,7 @@ function timeAgo(dateStr: string) {
 export default function DistrictPostCard({
   post, district, districtColor, userId, isCouncilMember, userReactions,
   onDelete, onPin, onReact, onCommentOpen,
+  onReactionCountsChange, onUserReactionsChange,
 }: DistrictPostCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [bodyExpanded, setBodyExpanded] = useState(false);
@@ -115,6 +127,67 @@ export default function DistrictPostCard({
       setTimeout(() => setShareToast(false), 2000);
     }
   };
+
+  // ── Realtime subscription ─────────────────────────────
+  // When any user's reaction changes on this district post, pull fresh
+  // denormalized counts from district_posts and the user's own reactions
+  // from district_post_reactions. Debounced 200ms so our own optimistic
+  // click's echo collapses with the live update.
+  const postId = post.id;
+  useEffect(() => {
+    const supabase = createClient();
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const refetch = async () => {
+      if (cancelled) return;
+      const { data: postRow } = await supabase
+        .from("district_posts")
+        .select("reaction_counts")
+        .eq("id", postId)
+        .single();
+      if (cancelled) return;
+      if (postRow?.reaction_counts) {
+        onReactionCountsChange?.(postId, postRow.reaction_counts as Record<string, number>);
+      }
+      if (userId) {
+        const { data: mine } = await supabase
+          .from("district_post_reactions")
+          .select("emoji")
+          .eq("district_post_id", postId)
+          .eq("user_id", userId);
+        if (cancelled) return;
+        if (mine) {
+          onUserReactionsChange?.(postId, mine.map((r) => r.emoji as string));
+        }
+      }
+    };
+
+    const scheduleRefetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(refetch, 200);
+    };
+
+    const channel = supabase
+      .channel(`district-post-reactions-${postId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "district_post_reactions",
+          filter: `district_post_id=eq.${postId}`,
+        },
+        scheduleRefetch,
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [postId, userId, onReactionCountsChange, onUserReactionsChange]);
 
   return (
     <div className={`glass-card-elevated rounded-2xl !p-0 overflow-hidden relative ${post.is_pinned ? "border-gold/15" : ""}`}>

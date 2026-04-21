@@ -12,12 +12,18 @@ interface ReelsViewerProps {
   initialIndex?: number;
   /** If true, shows a close button in the top-right */
   onClose?: () => void;
+  /** Current user id for enabling reactions/comments. Null = signed out. */
+  userId?: string | null;
+  /** Emoji reactions the signed-in user has already applied, keyed by reel id. */
+  userReactionsByReel?: Record<string, string[]>;
 }
 
 export default function ReelsViewer({
   reels,
   initialIndex = 0,
   onClose,
+  userId = null,
+  userReactionsByReel = {},
 }: ReelsViewerProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -137,6 +143,10 @@ export default function ReelsViewer({
               onToggleMute={toggleMute}
               onEnded={idx === activeIndex ? advance : undefined}
               onAutoplayBlocked={handleAutoplayBlocked}
+              userId={userId}
+              userReactions={(userReactionsByReel[reel.id] ?? []) as Array<
+                "heart" | "fire" | "clap" | "hundred" | "pray"
+              >}
             />
           </div>
         ))}

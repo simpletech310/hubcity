@@ -6,6 +6,7 @@ import Icon from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
 import type { Reel, ReactionEmoji } from "@/types/database";
 import { REACTION_EMOJI_MAP } from "@/lib/constants";
+import ReelEngagementBar from "./ReelEngagementBar";
 
 interface ReelPlayerProps {
   reel: Reel;
@@ -21,13 +22,10 @@ interface ReelPlayerProps {
    * muted=true and show a "tap to unmute" prompt.
    */
   onAutoplayBlocked?: () => void;
-}
-
-function fmtCount(n: number | null | undefined) {
-  const v = n ?? 0;
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return `${v}`;
+  /** Current user id (null = signed out). Enables reactions/comments. */
+  userId?: string | null;
+  /** Emoji reactions the signed-in user has already applied to this reel. */
+  userReactions?: ReactionEmoji[];
 }
 
 export default function ReelPlayer({
@@ -37,14 +35,13 @@ export default function ReelPlayer({
   onToggleMute,
   onEnded,
   onAutoplayBlocked,
+  userId = null,
+  userReactions = [],
 }: ReelPlayerProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const viewSentRef = useRef(false);
   const [playing, setPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(reel.like_count);
-  const [reactionCounts, setReactionCounts] = useState(reel.reaction_counts);
   const [showHeart, setShowHeart] = useState(false);
 
   // Play / pause based on active state
@@ -116,58 +113,20 @@ export default function ReelPlayer({
     }
   };
 
-  const react = async (emoji: ReactionEmoji) => {
-    // optimistic
-    setReactionCounts((curr) => {
-      const next = { ...curr };
-      next[emoji] = (next[emoji] ?? 0) + 1;
-      return next;
-    });
-    if (emoji === "heart") {
-      setLiked(true);
-      setLikeCount((c) => c + 1);
-      setShowHeart(true);
-      setTimeout(() => setShowHeart(false), 900);
-    }
+  // Double-tap heart burst — triggers a heart react on the unified endpoint
+  // so the overlay's ReelEngagementBar realtime subscription picks it up.
+  const doubleTapHeart = async () => {
+    if (!userId) return;
+    setShowHeart(true);
+    setTimeout(() => setShowHeart(false), 900);
     try {
-      const res = await fetch(`/api/reels/${reel.id}/react`, {
+      await fetch(`/api/reels/${reel.id}/reactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ emoji }),
+        body: JSON.stringify({ emoji: "heart" }),
       });
-      if (!res.ok) throw new Error();
-      const body = await res.json();
-      setReactionCounts(body.counts ?? {});
-      setLikeCount(body.like_count ?? 0);
-      setLiked(body.added && emoji === "heart");
     } catch {
-      // roll back on failure
-      setReactionCounts((curr) => {
-        const next = { ...curr };
-        next[emoji] = Math.max(0, (next[emoji] ?? 1) - 1);
-        return next;
-      });
-      if (emoji === "heart") {
-        setLiked(false);
-        setLikeCount((c) => Math.max(0, c - 1));
-      }
-    }
-  };
-
-  const handleShare = async () => {
-    const url = `${window.location.origin}/reels/${reel.id}`;
-    try {
-      if (typeof navigator !== "undefined" && navigator.share) {
-        await navigator.share({
-          title: reel.caption ?? "Reel",
-          text: reel.caption ?? undefined,
-          url,
-        });
-      } else {
-        await navigator.clipboard.writeText(url);
-      }
-    } catch {
-      // user cancelled — ignore
+      // silent — realtime would reconcile on next tick
     }
   };
 
@@ -184,7 +143,7 @@ export default function ReelPlayer({
         muted={muted}
         preload="metadata"
         onClick={togglePlay}
-        onDoubleClick={() => react("heart")}
+        onDoubleClick={doubleTapHeart}
         onEnded={() => onEnded?.()}
       />
 
@@ -255,68 +214,24 @@ export default function ReelPlayer({
         )}
       </div>
 
-      {/* Right: action column */}
-      <div className="absolute right-2 bottom-20 flex flex-col items-center gap-4">
-        <button
-          onClick={() => react("heart")}
-          className="flex flex-col items-center gap-1 press"
-          aria-label="Like"
-        >
-          <div
-            className={`w-11 h-11 rounded-full backdrop-blur-md flex items-center justify-center ${
-              liked ? "bg-coral/90" : "bg-black/40"
-            }`}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill={liked ? "white" : "none"}
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />
-            </svg>
-          </div>
-          <span className="text-[11px] font-bold text-white drop-shadow">
-            {fmtCount(likeCount)}
-          </span>
-        </button>
-
-        <button
-          onClick={() => react("fire")}
-          className="flex flex-col items-center gap-1 press"
-          aria-label="Fire reaction"
-        >
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center text-2xl">
-            {REACTION_EMOJI_MAP.fire}
-          </div>
-          <span className="text-[11px] font-bold text-white drop-shadow">
-            {fmtCount(reactionCounts.fire)}
-          </span>
-        </button>
-
-        <button
-          onClick={handleShare}
-          className="flex flex-col items-center gap-1 press"
-          aria-label="Share"
-        >
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
-            <Icon name="share" size={20} className="text-white" />
-          </div>
-          <span className="text-[11px] font-bold text-white drop-shadow">
-            Share
-          </span>
-        </button>
+      {/* Right: action column — emoji reactions + comments + share */}
+      <div className="absolute right-2 bottom-20 flex flex-col items-center gap-5">
+        <ReelEngagementBar
+          reelId={reel.id}
+          authorId={reel.author_id}
+          initialReactionCounts={reactionCounts}
+          initialCommentCount={reel.comment_count}
+          initialUserReactions={userReactions}
+          userId={userId}
+          variant="rail"
+        />
 
         <button
           onClick={onToggleMute}
           className="flex flex-col items-center gap-1 press"
           aria-label={muted ? "Unmute" : "Mute"}
         >
-          <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+          <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:border-gold/40 transition-colors">
             {muted ? (
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />

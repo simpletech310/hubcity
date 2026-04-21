@@ -251,6 +251,8 @@ interface PulseFeedProps {
   trafficAlertCount?: number;
   suggestedProfiles?: SuggestedProfile[];
   reels?: Reel[];
+  /** IDs of profiles the signed-in user follows. Drives Following mode. */
+  followedIds?: string[];
 }
 
 export default function PulseFeed({
@@ -267,14 +269,29 @@ export default function PulseFeed({
   trafficAlertCount = 0,
   suggestedProfiles = [],
   reels = [],
+  followedIds = [],
 }: PulseFeedProps) {
   const [activeFilter, setActiveFilter] = useState("all");
   const [composeOpen, setComposeOpen] = useState(false);
   const [pollOpen, setPollOpen] = useState(false);
   const [surveyOpen, setSurveyOpen] = useState(false);
+  // Mode toggle: discover (everything) vs following (only people I follow).
+  // Defaults to following when the user actually follows somebody — otherwise
+  // discover so a fresh account isn't staring at an empty feed.
+  const [mode, setMode] = useState<"discover" | "following">(
+    followedIds.length > 0 ? "following" : "discover",
+  );
+
+  const followedSet = useState(() => new Set(followedIds))[0];
+  // Keep the set in sync if the prop ever changes (e.g. after a refresh).
+  useEffect(() => {
+    followedSet.clear();
+    for (const id of followedIds) followedSet.add(id);
+  }, [followedIds, followedSet]);
 
   const isOfficial = userRole === "city_official" || userRole === "admin";
   const canPost = userId && userRole !== "citizen";
+  const inFollowing = mode === "following";
 
   // Trending hashtags
   const [trendingHashtags, setTrendingHashtags] = useState<{ hashtag: string; count: number }[]>([]);
@@ -293,12 +310,31 @@ export default function PulseFeed({
   const showSurveys = activeFilter === "all" || activeFilter === "surveys";
   const showPosts = activeFilter !== "polls" && activeFilter !== "surveys";
 
-  const filteredPosts =
+  // Apply role/category filter, then narrow to followed accounts when in
+  // Following mode.
+  const roleFiltered =
     activeFilter === "all" || activeFilter === "polls" || activeFilter === "surveys"
       ? posts
       : activeFilter === "jobs"
         ? posts.filter((p) => p.hashtags?.includes("jobs") || p.hashtags?.includes("hiring"))
         : posts.filter((p) => p.author?.role === activeFilter);
+
+  const filteredPosts = inFollowing
+    ? roleFiltered.filter((p) => p.author_id && followedSet.has(p.author_id))
+    : roleFiltered;
+
+  const visiblePolls = inFollowing
+    ? polls.filter((p) => p.author_id && followedSet.has(p.author_id))
+    : polls;
+  const visibleSurveys = inFollowing
+    ? surveys.filter((s) => s.author_id && followedSet.has(s.author_id))
+    : surveys;
+  const visibleReels = inFollowing
+    ? reels.filter((r) => r.author_id && followedSet.has(r.author_id))
+    : reels;
+  const visibleLiveStreams = inFollowing
+    ? liveStreams.filter((s) => s.creator_id && followedSet.has(s.creator_id))
+    : liveStreams;
 
   // Build unified feed
   type FeedItem =
@@ -314,12 +350,12 @@ export default function PulseFeed({
     }
   }
   if (showPolls) {
-    for (const poll of polls) {
+    for (const poll of visiblePolls) {
       feedItems.push({ type: "poll", data: poll, time: poll.created_at });
     }
   }
   if (showSurveys) {
-    for (const survey of surveys) {
+    for (const survey of visibleSurveys) {
       feedItems.push({ type: "survey", data: survey, time: survey.created_at });
     }
   }
@@ -330,11 +366,12 @@ export default function PulseFeed({
     return new Date(b.time).getTime() - new Date(a.time).getTime();
   });
 
-  // Determine insertion positions for inline cards
+  // Determine insertion positions for inline cards. Inline rails are
+  // discovery-flavored, so they're hidden in Following mode.
   const PROFILES_INSERT_AT = 3;
   const EVENTS_INSERT_AT = 7;
   const DEALS_INSERT_AT = 12;
-  const showInlineCards = activeFilter === "all";
+  const showInlineCards = activeFilter === "all" && !inFollowing;
 
   return (
     <div className="animate-fade-in pb-safe">
@@ -344,9 +381,49 @@ export default function PulseFeed({
       </div>
 
       {/* ─── Reels Rail ─── */}
-      {(reels.length > 0 || canPost) && (
+      {(visibleReels.length > 0 || (canPost && !inFollowing)) && (
         <div className="pt-4">
-          <ReelsRail reels={reels} canPost={!!canPost} />
+          <ReelsRail reels={visibleReels} canPost={!!canPost && !inFollowing} />
+        </div>
+      )}
+
+      {/* ─── Mode toggle: Discover / Following ─── */}
+      {userId && (
+        <div className="px-5 mt-4 mb-3 flex items-center gap-2">
+          <div className="inline-flex rounded-full panel-editorial p-0.5">
+            <button
+              onClick={() => setMode("discover")}
+              className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
+                mode === "discover"
+                  ? "bg-gold text-midnight"
+                  : "text-ivory/60 hover:text-white"
+              }`}
+              aria-pressed={mode === "discover"}
+            >
+              Discover
+            </button>
+            <button
+              onClick={() => setMode("following")}
+              className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
+                mode === "following"
+                  ? "bg-gold text-midnight"
+                  : "text-ivory/60 hover:text-white"
+              }`}
+              aria-pressed={mode === "following"}
+            >
+              Following
+              {followedIds.length > 0 && (
+                <span className={`ml-1.5 tabular-nums ${mode === "following" ? "opacity-80" : "opacity-60"}`}>
+                  · {followedIds.length}
+                </span>
+              )}
+            </button>
+          </div>
+          {inFollowing && followedIds.length === 0 && (
+            <span className="text-[10px] text-ivory/40 italic">
+              Follow creators on the Discover tab to fill this in.
+            </span>
+          )}
         </div>
       )}
 
@@ -431,7 +508,7 @@ export default function PulseFeed({
       )}
 
       {/* ─── Live Streams (always at top when active) ─── */}
-      {liveStreams.length > 0 && activeFilter === "all" && (
+      {visibleLiveStreams.length > 0 && activeFilter === "all" && (
         <section className="px-5 mb-4">
           <div className="mb-2">
             <h3 className="font-heading font-bold text-sm flex items-center gap-2">
@@ -440,7 +517,7 @@ export default function PulseFeed({
             </h3>
           </div>
           <div className="space-y-3">
-            {liveStreams.map((stream) => (
+            {visibleLiveStreams.map((stream) => (
               <PulseLiveCard key={stream.id} stream={stream} />
             ))}
           </div>

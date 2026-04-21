@@ -310,6 +310,17 @@ export default function DistrictFeed({
                 onCommentOpen={(postId) =>
                   setCommentSheet({ postId, count: post.comment_count })
                 }
+                onReactionCountsChange={(postId, counts) =>
+                  setPosts((prev) =>
+                    prev.map((p) => (p.id === postId ? { ...p, reaction_counts: counts } : p))
+                  )
+                }
+                onUserReactionsChange={(postId, emojis) =>
+                  setUserReactions((prev) => ({
+                    ...prev,
+                    [postId]: emojis as ReactionEmoji[],
+                  }))
+                }
               />
             ))
           )}

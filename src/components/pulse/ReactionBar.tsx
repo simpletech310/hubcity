@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactionEmoji, Post } from "@/types/database";
 import { REACTION_EMOJI_MAP, REACTION_COLORS } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
 import CommentsSheet from "./CommentsSheet";
 
 interface ReactionBarProps {
@@ -23,6 +24,71 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
   const [commentCount, setCommentCount] = useState(post.comment_count || 0);
   const [bookmarked, setBookmarked] = useState(false);
   const [shareToast, setShareToast] = useState(false);
+
+  // ── Realtime subscription ─────────────────────────────
+  // When anyone (including this user on another device) reacts to this post,
+  // refetch the reaction summary + this user's own reactions. Debounced 200ms
+  // so the echo of our own optimistic click collapses with the live update.
+  useEffect(() => {
+    const supabase = createClient();
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const refetch = async () => {
+      if (cancelled) return;
+      // Pull denormalized reaction_counts + comment_count from the posts row.
+      const { data: postRow } = await supabase
+        .from("posts")
+        .select("reaction_counts, comment_count")
+        .eq("id", post.id)
+        .single();
+      if (cancelled) return;
+      if (postRow) {
+        setCounts((postRow.reaction_counts || {}) as Partial<Record<ReactionEmoji, number>>);
+        if (typeof postRow.comment_count === "number") {
+          setCommentCount(postRow.comment_count);
+        }
+      }
+      // Re-pull this user's own reactions so a reaction added on another
+      // device toggles the active state here too.
+      if (userId) {
+        const { data: mine } = await supabase
+          .from("post_reactions")
+          .select("emoji")
+          .eq("post_id", post.id)
+          .eq("user_id", userId);
+        if (cancelled) return;
+        if (mine) {
+          setActiveReactions(new Set(mine.map((r) => r.emoji as ReactionEmoji)));
+        }
+      }
+    };
+
+    const scheduleRefetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(refetch, 200);
+    };
+
+    const channel = supabase
+      .channel(`post-reactions-${post.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "post_reactions",
+          filter: `post_id=eq.${post.id}`,
+        },
+        scheduleRefetch,
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [post.id, userId]);
 
   const toggleReaction = async (emoji: ReactionEmoji) => {
     if (!userId || loading) return;

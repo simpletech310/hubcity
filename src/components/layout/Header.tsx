@@ -17,6 +17,7 @@ const pageTitles: Record<string, string> = {
   "/resources": "Support",
   "/profile": "Profile",
   "/notifications": "Notifications",
+  "/messages": "Inbox",
   "/food": "Eat",
   "/city-hall": "City Hall",
   "/health": "Health",
@@ -43,6 +44,8 @@ export default function Header() {
   const [hidden, setHidden] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const lastScrollY = useRef(0);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -87,8 +90,10 @@ export default function Header() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      setSignedIn(!!user);
       if (!user) {
         setNotificationCount(0);
+        setUnreadMessages(0);
         return;
       }
       const { count } = await supabase
@@ -97,6 +102,26 @@ export default function Header() {
         .eq("user_id", user.id)
         .eq("is_read", false);
       setNotificationCount(count ?? 0);
+
+      // Count conversations with new messages since my last_read_at.
+      // Simple approximation: conversations where last_message_at > my last_read_at.
+      const { data: parts } = await supabase
+        .from("conversation_participants")
+        .select(
+          "conversation_id, last_read_at, conversation:conversations(last_message_at)",
+        )
+        .eq("user_id", user.id);
+      let unread = 0;
+      type PartRow = {
+        last_read_at: string | null;
+        conversation: { last_message_at: string | null } | null;
+      };
+      for (const p of (parts as unknown as PartRow[]) ?? []) {
+        const last = p.conversation?.last_message_at;
+        if (!last) continue;
+        if (!p.last_read_at || new Date(last) > new Date(p.last_read_at)) unread += 1;
+      }
+      setUnreadMessages(unread);
     }
     fetchUnreadCount();
   }, [pathname]);
@@ -178,6 +203,31 @@ export default function Header() {
                 <path d="M11.5 11.5l3.5 3.5" />
               </svg>
             </button>
+
+            {signedIn && (
+              <Link
+                href="/messages"
+                aria-label="Messages"
+                className="w-[38px] h-[38px] rounded-full bg-white/[0.04] border border-white/[0.08] text-ivory/70 flex items-center justify-center press relative hover:text-white hover:border-gold/30 transition-all"
+              >
+                <svg
+                  width="17"
+                  height="17"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M16 13a2 2 0 0 1-2 2H5l-3 3V3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v10z" />
+                </svg>
+                {unreadMessages > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] bg-gold rounded-full border-2 border-ink flex items-center justify-center text-[8px] font-bold text-midnight">
+                    {unreadMessages > 9 ? "9+" : unreadMessages}
+                  </span>
+                )}
+              </Link>
+            )}
 
             <Link
               href="/notifications"

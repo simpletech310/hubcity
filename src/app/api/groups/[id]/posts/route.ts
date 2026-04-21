@@ -21,6 +21,55 @@ export async function GET(
 
     if (error) throw error;
 
+    // Attach top-2 preview comments per post for Instagram-style inline row.
+    // Use a cheap batched fetch (not a view) — group post comments are less
+    // trafficked so ranking in SQL isn't necessary.
+    type PostRow = { id: string; [k: string]: unknown };
+    const postRows = (posts as PostRow[]) ?? [];
+    if (postRows.length > 0) {
+      const postIds = postRows.map((p) => p.id);
+      const { data: recentComments } = await supabase
+        .from("group_post_comments")
+        .select(
+          "id, group_post_id, body, created_at, author:profiles!group_post_comments_author_id_fkey(display_name, handle)",
+        )
+        .in("group_post_id", postIds)
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      const byPost: Record<string, Array<{
+        id: string;
+        body: string;
+        created_at: string;
+        author_display_name: string;
+        author_handle: string | null;
+      }>> = {};
+      for (const c of (recentComments as unknown as Array<{
+        id: string;
+        group_post_id: string;
+        body: string;
+        created_at: string;
+        author: { display_name: string; handle: string | null } | null;
+      }>) ?? []) {
+        const list = byPost[c.group_post_id] || [];
+        if (list.length < 2) {
+          list.push({
+            id: c.id,
+            body: c.body,
+            created_at: c.created_at,
+            author_display_name: c.author?.display_name ?? "Someone",
+            author_handle: c.author?.handle ?? null,
+          });
+          byPost[c.group_post_id] = list;
+        }
+      }
+      for (const p of postRows) {
+        (p as { preview_comments?: unknown }).preview_comments = (
+          byPost[p.id] || []
+        ).reverse();
+      }
+    }
+
     // Get current user's role + reactions
     let myRole: string | null = null;
     let userReactions: Record<string, string[]> = {};

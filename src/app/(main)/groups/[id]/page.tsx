@@ -361,6 +361,14 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 onPin={handlePinPost}
                 onReact={handleReact}
                 onCommentOpen={(postId) => setCommentsPostId(postId)}
+                onReactionCountsChange={(postId, counts) =>
+                  setPosts((prev) =>
+                    prev.map((p) => (p.id === postId ? { ...p, reaction_counts: counts } : p))
+                  )
+                }
+                onUserReactionsChange={(postId, emojis) =>
+                  setUserReactions((prev) => ({ ...prev, [postId]: emojis }))
+                }
               />
             ))}
           </div>

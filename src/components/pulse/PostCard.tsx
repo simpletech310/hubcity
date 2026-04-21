@@ -6,6 +6,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ReactionBar from "./ReactionBar";
+import CommentsPreview from "./CommentsPreview";
+import CommentsSheet from "./CommentsSheet";
 import MediaLightbox from "./MediaLightbox";
 import type { Post, ReactionEmoji } from "@/types/database";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
@@ -38,6 +40,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   const [isEditing, setIsEditing] = useState(false);
   const [editBody, setEditBody] = useState(post.body);
   const [saving, setSaving] = useState(false);
+  const [previewCommentsOpen, setPreviewCommentsOpen] = useState(false);
   const [deleted, setDeleted] = useState(false);
   const [currentBody, setCurrentBody] = useState(post.body);
   const [editedAt, setEditedAt] = useState(post.edited_at);
@@ -450,23 +453,35 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         </div>
       )}
 
-      {/* Reactions + Comment count */}
-      <div className="px-4 pb-3 pt-1 flex items-center gap-3">
-        <div className="flex-1">
-          <ReactionBar post={post} userReactions={userReactions} userId={userId} />
-        </div>
-        {post.comment_count > 0 && (
-          <Link
-            href={`/pulse/${post.id}`}
-            className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/40 transition-colors press"
-          >
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-              <path d="M1 6.5C1 3.5 3.5 1 7 1s6 2.5 6 5.5c0 3-2.5 5.5-6 5.5-.6 0-1.2-.1-1.7-.2L2 13l1.3-2.5C1.9 9.3 1 8 1 6.5z" />
-            </svg>
-            <span className="font-semibold">{post.comment_count}</span>
-          </Link>
-        )}
+      {/* Reactions */}
+      <div className="px-4 pb-1 pt-1">
+        <ReactionBar post={post} userReactions={userReactions} userId={userId} />
       </div>
+
+      {/* Inline comments preview — Instagram style */}
+      {(post.preview_comments?.length ?? 0) > 0 && (
+        <CommentsPreview
+          comments={post.preview_comments ?? []}
+          totalCount={post.comment_count || 0}
+          onOpen={() => setPreviewCommentsOpen(true)}
+        />
+      )}
+
+      {/* Separate sheet driver (ReactionBar owns its own sheet internally, but
+          the "View all N" link on the preview opens this mirror instance so
+          taps flow through without requiring a click through the emoji row). */}
+      {previewCommentsOpen && (
+        <CommentsSheet
+          postId={post.id}
+          isOpen={previewCommentsOpen}
+          onClose={() => setPreviewCommentsOpen(false)}
+          userId={userId}
+          commentCount={post.comment_count || 0}
+          onCountChange={() => {
+            /* ReactionBar owns the count; noop here. */
+          }}
+        />
+      )}
 
       {/* Image Lightbox */}
       {lightboxOpen && (

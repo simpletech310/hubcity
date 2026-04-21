@@ -5,7 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import MediaLightbox from "@/components/pulse/MediaLightbox";
+import CommentsPreview from "@/components/pulse/CommentsPreview";
 import { REACTION_EMOJI_MAP, REACTION_COLORS, ROLE_BADGE_MAP } from "@/lib/constants";
+import { createClient } from "@/lib/supabase/client";
 import type { ReactionEmoji } from "@/types/database";
 
 interface GroupPostAuthor {
@@ -27,6 +29,14 @@ interface GroupPostData {
   reaction_counts: Record<string, number>;
   created_at: string;
   author: GroupPostAuthor | null;
+  /** Optional: up to 2 top-level comments for the inline Instagram-style preview. */
+  preview_comments?: Array<{
+    id: string;
+    body: string;
+    created_at: string;
+    author_display_name: string;
+    author_handle: string | null;
+  }>;
 }
 
 interface GroupPostCardProps {
@@ -40,6 +50,17 @@ interface GroupPostCardProps {
   onPin: (postId: string, pin: boolean) => void;
   onReact: (postId: string, emoji: string) => void;
   onCommentOpen: (postId: string) => void;
+  /**
+   * Called when realtime detects reaction changes from another user so the
+   * parent can merge fresh denormalized counts into its posts state.
+   * Optional — callers that don't care can leave it off.
+   */
+  onReactionCountsChange?: (postId: string, counts: Record<string, number>) => void;
+  /**
+   * Called when realtime detects this user's own reactions changed on another
+   * device. Lets the parent re-sync the userReactions map.
+   */
+  onUserReactionsChange?: (postId: string, userReactions: string[]) => void;
 }
 
 function timeAgo(dateStr: string) {
@@ -57,6 +78,7 @@ function timeAgo(dateStr: string) {
 export default function GroupPostCard({
   post, groupId, userId, isMember, isAdminOrMod, userReactions,
   onDelete, onPin, onReact, onCommentOpen,
+  onReactionCountsChange, onUserReactionsChange,
 }: GroupPostCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const [bodyExpanded, setBodyExpanded] = useState(false);
@@ -95,6 +117,67 @@ export default function GroupPostCard({
     if (vid.paused) { vid.play(); setVideoPlaying(true); }
     else { vid.pause(); setVideoPlaying(false); }
   }, []);
+
+  // ── Realtime subscription ─────────────────────────────
+  // When any user's reaction changes on this group post, pull the fresh
+  // denormalized counts from group_posts and the user's own reactions from
+  // group_post_reactions. Debounced 200ms so our own optimistic click's echo
+  // collapses with the live update.
+  const postId = post.id;
+  useEffect(() => {
+    const supabase = createClient();
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    let cancelled = false;
+
+    const refetch = async () => {
+      if (cancelled) return;
+      const { data: postRow } = await supabase
+        .from("group_posts")
+        .select("reaction_counts")
+        .eq("id", postId)
+        .single();
+      if (cancelled) return;
+      if (postRow?.reaction_counts) {
+        onReactionCountsChange?.(postId, postRow.reaction_counts as Record<string, number>);
+      }
+      if (userId) {
+        const { data: mine } = await supabase
+          .from("group_post_reactions")
+          .select("emoji")
+          .eq("group_post_id", postId)
+          .eq("user_id", userId);
+        if (cancelled) return;
+        if (mine) {
+          onUserReactionsChange?.(postId, mine.map((r) => r.emoji as string));
+        }
+      }
+    };
+
+    const scheduleRefetch = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(refetch, 200);
+    };
+
+    const channel = supabase
+      .channel(`group-post-reactions-${postId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "group_post_reactions",
+          filter: `group_post_id=eq.${postId}`,
+        },
+        scheduleRefetch,
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      if (debounceTimer) clearTimeout(debounceTimer);
+      supabase.removeChannel(channel);
+    };
+  }, [postId, userId, onReactionCountsChange, onUserReactionsChange]);
 
   // Auto-play when scrolled into view, pause when out of view — matches PostCard.
   useEffect(() => {
@@ -341,6 +424,21 @@ export default function GroupPostCard({
           </div>
         </div>
       </div>
+
+      {/* Inline comments preview — Instagram style, same component as pulse */}
+      {(post.preview_comments?.length ?? 0) > 0 && (
+        <CommentsPreview
+          comments={(post.preview_comments ?? []).map((c) => ({
+            id: c.id,
+            body: c.body,
+            created_at: c.created_at,
+            author_display_name: c.author_display_name,
+            author_handle: c.author_handle,
+          }))}
+          totalCount={post.comment_count || 0}
+          onOpen={() => onCommentOpen(post.id)}
+        />
+      )}
 
       {/* Image Lightbox */}
       {lightboxOpen && (
