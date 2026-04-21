@@ -3,12 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Chip from "@/components/ui/Chip";
-import Badge from "@/components/ui/Badge";
-import EditorialHeader from "@/components/ui/EditorialHeader";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import Tag from "@/components/ui/editorial/Tag";
+import HeroBlock from "@/components/ui/editorial/HeroBlock";
 import { createClient } from "@/lib/supabase/client";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
@@ -19,51 +17,34 @@ import CityOwnershipFilter, {
 
 // ---------------------------------------------------------------------------
 // Category config
+//
+// NOTE: `color` here is only used by the (wrapped) CityOwnershipFilter chips
+// for internal chip tinting — the rainbow values are preserved so the filter
+// component's existing behavior is untouched. All business-page chrome uses
+// the editorial black + gold palette instead.
 // ---------------------------------------------------------------------------
 
-const categories: { label: string; value: string; iconName: IconName; color: string }[] = [
-  { label: "All", value: "all", iconName: "store", color: "#F2A900" },
-  { label: "Barber", value: "barber", iconName: "scissors", color: "#8B5CF6" },
-  { label: "Retail", value: "retail", iconName: "shopping", color: "#3B82F6" },
-  { label: "Services", value: "services", iconName: "wrench", color: "#06B6D4" },
-  { label: "Auto", value: "auto", iconName: "car", color: "#EF4444" },
-  { label: "Health", value: "health", iconName: "heart-pulse", color: "#22C55E" },
-  { label: "Beauty", value: "beauty", iconName: "sparkle", color: "#FF006E" },
-  { label: "Entertainment", value: "entertainment", iconName: "theater", color: "#F2A900" },
+const categories: { label: string; value: string; iconName: IconName }[] = [
+  { label: "All", value: "all", iconName: "store" },
+  { label: "Barber", value: "barber", iconName: "scissors" },
+  { label: "Retail", value: "retail", iconName: "shopping" },
+  { label: "Services", value: "services", iconName: "wrench" },
+  { label: "Auto", value: "auto", iconName: "car" },
+  { label: "Health", value: "health", iconName: "heart-pulse" },
+  { label: "Beauty", value: "beauty", iconName: "sparkle" },
+  { label: "Entertainment", value: "entertainment", iconName: "theater" },
 ];
 
-const categoryColors: Record<string, string> = {
-  barber: "#8B5CF6",
-  retail: "#3B82F6",
-  services: "#06B6D4",
-  auto: "#EF4444",
-  health: "#22C55E",
-  beauty: "#FF006E",
-  entertainment: "#F2A900",
-  restaurant: "#FF6B6B",
-  other: "#9E9A93",
-};
-
-const categoryBadgeVariant: Record<string, "purple" | "blue" | "cyan" | "coral" | "emerald" | "pink" | "gold"> = {
-  barber: "purple",
-  retail: "blue",
-  services: "cyan",
-  auto: "coral",
-  health: "emerald",
-  beauty: "pink",
-  entertainment: "gold",
-  other: "gold",
-};
-
-const categoryArt: Record<string, string> = {
-  barber: "art-classic",
-  retail: "art-city",
-  services: "art-aviation",
-  auto: "art-school3",
-  health: "art-school1",
-  beauty: "art-mural",
-  entertainment: "art-stream",
-  other: "art-city",
+const categoryIcons: Record<string, IconName> = {
+  barber: "scissors",
+  retail: "shopping",
+  services: "wrench",
+  auto: "car",
+  health: "heart-pulse",
+  beauty: "sparkle",
+  entertainment: "theater",
+  restaurant: "utensils",
+  other: "store",
 };
 
 const badgeIcons: Record<string, IconName> = {
@@ -79,21 +60,12 @@ const badgeIcons: Record<string, IconName> = {
   compton_original: "house",
 };
 
-const badgeVariants: Record<string, "gold" | "emerald" | "cyan" | "pink" | "purple" | "coral" | "blue"> = {
-  black_owned: "gold",
-  woman_owned: "pink",
-  veteran_owned: "emerald",
-  lgbtq_friendly: "purple",
-  family_owned: "cyan",
-  eco_friendly: "emerald",
-  city_certified: "gold",
-  local_favorite: "gold",
-  new_business: "coral",
-  compton_original: "gold",
-};
-
 function formatBadgeLabel(badge: string): string {
   return badge.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function isLocallyOwnedBadge(badge: string): boolean {
+  return badge === "locally_owned" || badge === "compton_original" || badge === "black_owned";
 }
 
 // ---------------------------------------------------------------------------
@@ -202,12 +174,44 @@ const trendingBusinesses: TrendingBiz[] = [
   { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", iconName: "wrench", stat: "18yrs", statLabel: "serving" },
 ];
 
-const quickActions: { label: string; iconName: IconName; filter: string; color: string }[] = [
-  { label: "Deals", iconName: "flame", filter: "deals", color: "#EF4444" },
-  { label: "New", iconName: "sparkle", filter: "new", color: "#8B5CF6" },
-  { label: "Top Rated", iconName: "star", filter: "top", color: "#F2A900" },
-  { label: "Black Owned", iconName: "verified", filter: "black_owned", color: "#22C55E" },
+const quickActions: { label: string; iconName: IconName; filter: string }[] = [
+  { label: "Deals", iconName: "flame", filter: "deals" },
+  { label: "New", iconName: "sparkle", filter: "new" },
+  { label: "Top Rated", iconName: "star", filter: "top" },
+  { label: "Black Owned", iconName: "verified", filter: "black_owned" },
 ];
+
+// ---------------------------------------------------------------------------
+// Small building block: numbered section header (matches health page pattern)
+// ---------------------------------------------------------------------------
+
+function SectionHead({
+  num,
+  kicker,
+  sub,
+  meta,
+}: {
+  num: string;
+  kicker: string;
+  sub?: string;
+  meta?: React.ReactNode;
+}) {
+  return (
+    <div className="mb-3">
+      <div className="flex items-baseline gap-3">
+        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+          № {num}
+        </span>
+        <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+          {kicker}
+        </span>
+        <span className="ml-auto rule-hairline flex-1 self-center" />
+        {meta && <span className="shrink-0">{meta}</span>}
+      </div>
+      {sub && <p className="text-[11px] text-ivory/40 mt-1">{sub}</p>}
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -220,8 +224,10 @@ export default function BusinessPage() {
   const [cities, setCities] = useState<CityOption[]>([]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedOwnership, setSelectedOwnership] = useState<string[]>([]);
-  const [specials, setSpecials] = useState<FoodSpecial[]>([]);
-  const [promotions, setPromotions] = useState<FoodPromotion[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_specials, setSpecials] = useState<FoodSpecial[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_promotions, setPromotions] = useState<FoodPromotion[]>([]);
   const [search, setSearch] = useState("");
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -264,7 +270,7 @@ export default function BusinessPage() {
       const { data } = await query;
       setBusinesses((data as Business[]) ?? []);
 
-      // Also fetch any active food_specials and food_promotions (some may be for non-restaurant businesses)
+      // Also fetch any active food_specials and food_promotions
       const [{ data: sData }, { data: pData }] = await Promise.all([
         supabase
           .from("food_specials")
@@ -290,19 +296,16 @@ export default function BusinessPage() {
   const filtered = useMemo(() => {
     let result = businesses;
 
-    // City filter (empty = all)
     if (selectedCities.length > 0) {
       result = result.filter((b) => b.city?.slug && selectedCities.includes(b.city.slug));
     }
 
-    // Ownership filter (empty = all; match ANY selected badge)
     if (selectedOwnership.length > 0) {
       result = result.filter((b) =>
         selectedOwnership.some((badge) => b.badges?.includes(badge))
       );
     }
 
-    // Quick filter
     if (quickFilter === "new") {
       result = result.filter((b) => b.badges?.includes("new_business"));
     } else if (quickFilter === "top") {
@@ -310,7 +313,6 @@ export default function BusinessPage() {
     } else if (quickFilter === "black_owned") {
       result = result.filter((b) => b.badges?.includes("black_owned"));
     }
-    // "deals" filter shows all businesses but highlights the deals section
 
     if (search) {
       const q = search.toLowerCase();
@@ -326,22 +328,20 @@ export default function BusinessPage() {
 
   const featured = filtered.filter((b) => b.is_featured);
   const regular = filtered.filter((b) => !b.is_featured);
+  const editorsPick = featured[0]; // one spotlight per load max
+  const otherFeatured = featured.slice(1);
   const newBusinesses = businesses.filter((b) => b.badges?.includes("new_business"));
   const totalCount = businesses.length;
 
-  // Unique badges across all loaded businesses
   const allBadges = useMemo(() => {
     const set = new Set<string>();
     businesses.forEach((b) => b.badges?.forEach((badge) => set.add(badge)));
     return Array.from(set).sort();
   }, [businesses]);
 
-  // Check if it's "today" for deals
-  const dayOfWeek = new Date().toLocaleDateString("en-US", { weekday: "long" });
-
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ── Editorial Masthead ── */}
+      {/* ── Editorial Masthead ─────────────────────────────────── */}
       <div className="relative overflow-hidden border-b border-white/[0.08] panel-editorial">
         <div className="absolute inset-0 pattern-dots opacity-15" />
         <div className="relative z-10 px-5 pt-6 pb-6">
@@ -367,160 +367,132 @@ export default function BusinessPage() {
             </span>
           </div>
 
-          {/* Quick Action Pills */}
-          <div className="flex gap-2">
-            {quickActions.map((action) => (
-              <button
-                key={action.filter}
-                onClick={() => setQuickFilter(quickFilter === action.filter ? null : action.filter)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all press"
-                style={{
-                  background: quickFilter === action.filter ? `${action.color}20` : "rgba(22,22,24,0.7)",
-                  borderColor: quickFilter === action.filter ? `${action.color}40` : "rgba(255,255,255,0.06)",
-                }}
-              >
-                <Icon name={action.iconName} size={14} style={{ color: quickFilter === action.filter ? action.color : undefined }} />
-                <span className="text-[11px] font-bold" style={{ color: quickFilter === action.filter ? action.color : undefined }}>
-                  {action.label}
-                </span>
-              </button>
-            ))}
+          {/* Quick Action Pills — editorial gold/ink, no per-category tints */}
+          <div className="flex gap-2 flex-wrap">
+            {quickActions.map((action) => {
+              const isActive = quickFilter === action.filter;
+              return (
+                <button
+                  key={action.filter}
+                  onClick={() => setQuickFilter(isActive ? null : action.filter)}
+                  className={`group flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all press ${
+                    isActive
+                      ? "bg-gold text-midnight border-gold"
+                      : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
+                  }`}
+                >
+                  <Icon
+                    name={action.iconName}
+                    size={14}
+                    className={isActive ? "text-midnight" : "text-gold/70 group-hover:text-gold"}
+                  />
+                  <span className="text-[10px] font-bold uppercase tracking-editorial-tight">
+                    {action.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      {/* ── Stats Strip ── */}
-      <div className="px-5 mb-5">
+      {/* ── Stats Strip ─────────────────────────────────────────── */}
+      <div className="px-5 mt-4 mb-5">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Businesses", value: totalCount || "50+", color: "#F2A900" },
-            { label: "Categories", value: categories.length - 1, color: "#8B5CF6" },
-            { label: "City Badges", value: allBadges.length || "10", color: "#22C55E" },
-            { label: "Deals", value: localDeals.length, color: "#EF4444" },
+            { label: "Businesses", value: totalCount || "50+" },
+            { label: "Categories", value: categories.length - 1 },
+            { label: "Badges", value: allBadges.length || "10" },
+            { label: "Deals", value: localDeals.length },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl bg-card border border-border-subtle p-2.5 text-center relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
-              <p className="font-heading font-bold text-base leading-none mb-0.5" style={{ color: stat.color }}>
+            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
+              <p className="font-display text-[20px] leading-none text-gold tabular-nums">
                 {stat.value}
               </p>
-              <p className="text-[8px] text-txt-secondary font-semibold uppercase tracking-wider">{stat.label}</p>
+              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
-      {/* ── City + Ownership Filter ── */}
-      <div className="mb-5">
-        <CityOwnershipFilter
-          cities={cities}
-          selectedCities={selectedCities}
-          onCityToggle={(slug) =>
-            setSelectedCities((prev) =>
-              prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
-            )
-          }
-          onClearCities={() => setSelectedCities([])}
-          ownership={DEFAULT_OWNERSHIP_OPTIONS}
-          selectedOwnership={selectedOwnership}
-          onOwnershipToggle={(badge) =>
-            setSelectedOwnership((prev) =>
-              prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
-            )
-          }
-        />
+      {/* ── City + Ownership Filter (wrapped in editorial panel) ── */}
+      <div className="px-5 mb-5">
+        <div className="rounded-2xl panel-editorial py-3 -mx-5 px-0">
+          <CityOwnershipFilter
+            cities={cities}
+            selectedCities={selectedCities}
+            onCityToggle={(slug) =>
+              setSelectedCities((prev) =>
+                prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+              )
+            }
+            onClearCities={() => setSelectedCities([])}
+            ownership={DEFAULT_OWNERSHIP_OPTIONS}
+            selectedOwnership={selectedOwnership}
+            onOwnershipToggle={(badge) =>
+              setSelectedOwnership((prev) =>
+                prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
+              )
+            }
+          />
+        </div>
       </div>
 
-      {/* ── Today's Deals & Specials ── */}
-      {(quickFilter === null || quickFilter === "deals") && (
-        <section className="mb-6">
-          <div className="px-5 flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-coral" />
-            <h2 className="font-heading font-bold text-base">Today&apos;s Deals</h2>
-            <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
-              <Icon name="flame" size={10} className="text-coral" />
-              <span className="text-[9px] font-bold text-coral">{localDeals.length} active</span>
-            </div>
-          </div>
-          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-            {localDeals.map((deal, i) => (
-              <DealCard key={deal.id} deal={deal} index={i} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── Trending ── */}
-      {activeCategory === "all" && !search && !quickFilter && (
-        <section className="mb-6">
-          <div className="px-5 flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">Trending in {activeCity?.name ?? "your city"}</h2>
-            <span className="text-[10px] text-txt-secondary ml-auto flex items-center gap-1"><Icon name="trending" size={10} /> This week</span>
-          </div>
-          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-            {trendingBusinesses.map((biz, i) => (
-              <Link
-                key={biz.slug}
-                href={`/business/${biz.slug}`}
-                className="shrink-0 w-[160px] animate-slide-in press"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="rounded-2xl bg-card border border-border-subtle p-3.5 hover:border-gold/20 transition-colors relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: categoryColors[biz.category] || "#F2A900" }} />
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-2.5" style={{ background: `${categoryColors[biz.category]}15` }}>
-                    <Icon name={biz.iconName} size={20} style={{ color: categoryColors[biz.category] }} />
-                  </div>
-                  <h3 className="font-heading font-bold text-[12px] mb-0.5 truncate">{biz.name}</h3>
-                  <p className="text-[10px] text-txt-secondary mb-2 line-clamp-1">{biz.tagline}</p>
-                  <div className="flex items-center gap-1">
-                    <span className="font-heading font-bold text-sm" style={{ color: categoryColors[biz.category] }}>{biz.stat}</span>
-                    <span className="text-[9px] text-txt-secondary">{biz.statLabel}</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* ── Search Bar ── */}
+      {/* ── Search Bar ──────────────────────────────────────────── */}
       <div className="px-5 mb-4">
-        <div className="flex items-center gap-3 bg-surface border border-border-subtle rounded-2xl px-4 py-3 focus-within:border-gold/30 transition-all">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary shrink-0">
-            <circle cx="8" cy="8" r="5" />
-            <path d="M12 12l4 4" />
-          </svg>
+        <div className="flex items-center gap-3 bg-card border border-border-subtle rounded-2xl px-4 py-3 focus-within:border-gold/40 transition-all">
+          <Icon name="search" size={18} className="text-white/30 shrink-0" />
           <input
             type="text"
             placeholder="Search businesses, badges, services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm text-white placeholder:text-txt-secondary/60 w-full outline-none"
+            className="bg-transparent text-sm text-white placeholder:text-white/25 w-full outline-none"
           />
           {search && (
-            <button onClick={() => setSearch("")} className="text-txt-secondary hover:text-white press">
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 4l8 8M12 4l-8 8" />
-              </svg>
+            <button onClick={() => setSearch("")} className="text-white/30 hover:text-white press">
+              <Icon name="close" size={16} />
             </button>
           )}
         </div>
       </div>
 
-      {/* ── Category Filters ── */}
+      {/* ── Category Filter Row (editorial gold/ink) ────────────── */}
       <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
-        {categories.map((cat) => (
-          <Chip
-            key={cat.value}
-            label={cat.label}
-            icon={<Icon name={cat.iconName} size={14} />}
-            active={activeCategory === cat.value}
-            onClick={() => { setActiveCategory(cat.value); setQuickFilter(null); }}
-          />
-        ))}
+        {categories.map((cat) => {
+          const isActive = activeCategory === cat.value;
+          return (
+            <button
+              key={cat.value}
+              onClick={() => {
+                setActiveCategory(cat.value);
+                setQuickFilter(null);
+              }}
+              className={`group flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-editorial-tight transition-all press border ${
+                isActive
+                  ? "bg-gold text-midnight border-gold"
+                  : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
+              }`}
+            >
+              <span
+                className={`w-5 h-5 rounded-md flex items-center justify-center ${
+                  isActive
+                    ? "bg-midnight/20"
+                    : "bg-ink border border-gold/15 group-hover:border-gold/40"
+                }`}
+              >
+                <Icon
+                  name={cat.iconName}
+                  size={12}
+                  className={isActive ? "text-midnight" : "text-gold"}
+                />
+              </span>
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
@@ -531,66 +503,194 @@ export default function BusinessPage() {
         </div>
       ) : (
         <>
-          {/* ── Featured Businesses (horizontal scroller) ── */}
-          {activeCategory === "all" && featured.length > 0 && !quickFilter && (
+          {/* ── № 01 · Editor's Pick (single featured spotlight) ── */}
+          {activeCategory === "all" && !search && !quickFilter && editorsPick && (
+            <section className="px-5 mb-6">
+              <SectionHead
+                num="01"
+                kicker="Editor's Pick"
+                sub="Spotlight from the local commerce desk"
+              />
+              <Link href={`/business/${editorsPick.slug}`} className="block press group">
+                <HeroBlock
+                  aspect="3/2"
+                  image={editorsPick.image_urls?.[0] ?? null}
+                  alt={editorsPick.name}
+                  className="rounded-2xl"
+                >
+                  <div className="absolute inset-x-0 bottom-0 p-5 z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag tone="gold" size="xs">Featured</Tag>
+                      <Tag tone="ghost" size="xs">{editorsPick.category}</Tag>
+                      {editorsPick.rating_avg > 0 && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gold tabular-nums">
+                          <Icon name="star" size={11} className="text-gold" />
+                          {Number(editorsPick.rating_avg).toFixed(1)}
+                        </span>
+                      )}
+                    </div>
+                    <h3 className="font-display text-[28px] leading-[1.05] text-white mb-1.5 line-clamp-2">
+                      {editorsPick.name}
+                    </h3>
+                    {editorsPick.description && (
+                      <p className="text-[12px] text-ivory/70 leading-relaxed line-clamp-2 max-w-md mb-3">
+                        {editorsPick.description}
+                      </p>
+                    )}
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold text-midnight text-[10px] font-bold uppercase tracking-editorial-tight group-hover:bg-gold-light transition-colors">
+                      {editorsPick.accepts_orders
+                        ? "Order Now"
+                        : editorsPick.accepts_bookings
+                        ? "Book"
+                        : "Visit"}
+                      <Icon name="arrow-right-thin" size={11} />
+                    </span>
+                  </div>
+                </HeroBlock>
+              </Link>
+            </section>
+          )}
+
+          {/* ── № 02 · Today's Deals ──────────────────────────────── */}
+          {(quickFilter === null || quickFilter === "deals") && (
             <section className="mb-6">
-              <div className="px-5 flex items-center gap-2 mb-3">
-                <EditorialHeader kicker="SHOP LOCAL" title="Featured" />
-                <span className="text-xs text-txt-secondary ml-auto">{featured.length} businesses</span>
+              <div className="px-5">
+                <SectionHead
+                  num="02"
+                  kicker="Today's Deals"
+                  sub="Promos & specials running now"
+                  meta={
+                    <Tag tone="gold" size="xs">
+                      {localDeals.length} active
+                    </Tag>
+                  }
+                />
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {featured.map((biz, i) => (
+                {localDeals.map((deal, i) => (
+                  <DealCard key={deal.id} deal={deal} index={i} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── № 03 · Trending ──────────────────────────────────── */}
+          {activeCategory === "all" && !search && !quickFilter && (
+            <section className="mb-6">
+              <div className="px-5">
+                <SectionHead
+                  num="03"
+                  kicker={`Trending in ${activeCity?.name ?? "Your City"}`}
+                  sub="Most talked about this week"
+                />
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+                {trendingBusinesses.map((biz, i) => (
+                  <Link
+                    key={biz.slug}
+                    href={`/business/${biz.slug}`}
+                    className="shrink-0 w-[170px] animate-slide-in press"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                  >
+                    <div className="rounded-2xl panel-editorial p-4 hover:border-gold/30 transition-colors h-full">
+                      <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center mb-3">
+                        <Icon name={biz.iconName} size={18} className="text-gold" />
+                      </div>
+                      <h3 className="font-display text-[15px] leading-tight text-white truncate mb-0.5">
+                        {biz.name}
+                      </h3>
+                      <p className="text-[10px] text-ivory/55 line-clamp-1 mb-2.5">{biz.tagline}</p>
+                      <div className="flex items-baseline gap-1">
+                        <span className="font-display text-gold text-[18px] leading-none tabular-nums">
+                          {biz.stat}
+                        </span>
+                        <span className="text-[9px] uppercase tracking-editorial-tight text-ivory/45 font-semibold">
+                          {biz.statLabel}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ── № 04 · Other Featured (horizontal scroller) ─────── */}
+          {activeCategory === "all" && otherFeatured.length > 0 && !quickFilter && (
+            <section className="mb-6">
+              <div className="px-5">
+                <SectionHead
+                  num="04"
+                  kicker="Featured Shops"
+                  sub="Hand-picked local standouts"
+                  meta={
+                    <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums">
+                      {otherFeatured.length} listed
+                    </span>
+                  }
+                />
+              </div>
+              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+                {otherFeatured.map((biz, i) => (
                   <FeaturedCard key={biz.id} biz={biz} index={i} />
                 ))}
               </div>
             </section>
           )}
 
-          {/* ── Promo Codes & Offers ── */}
+          {/* ── № 05 · Promo Codes ────────────────────────────────── */}
           {activeCategory === "all" && !search && !quickFilter && (
             <section className="mb-6 px-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-hc-purple" />
-                <h2 className="font-heading font-bold text-base">Promo Codes</h2>
-                <span className="text-[10px] text-txt-secondary ml-auto">Use at checkout</span>
-              </div>
-              <div className="space-y-2.5">
-                {localDeals.filter((d) => d.promoCode).map((deal) => (
-                  <div
-                    key={deal.id}
-                    className="rounded-xl bg-card border border-border-subtle p-3.5 relative overflow-hidden hover:border-gold/20 transition-colors"
-                  >
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 rounded-l-xl" style={{ background: categoryColors[deal.category] }} />
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${categoryColors[deal.category]}15` }}>
-                        <Icon name={deal.iconName} size={18} style={{ color: categoryColors[deal.category] }} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[11px] text-txt-secondary">{deal.businessName}</p>
-                        <p className="text-[12px] font-bold truncate">{deal.title}</p>
-                      </div>
-                      <div className="shrink-0 text-right">
-                        <div className="px-2.5 py-1 rounded-lg bg-hc-purple/10 border border-gold/20 border-dashed">
-                          <p className="text-[11px] font-bold text-gold font-mono tracking-wider">{deal.promoCode}</p>
+              <SectionHead num="05" kicker="Promo Codes" sub="Use at checkout" />
+              <div className="space-y-2.5 stagger">
+                {localDeals
+                  .filter((d) => d.promoCode)
+                  .map((deal) => (
+                    <div
+                      key={deal.id}
+                      className="rounded-2xl panel-editorial p-3.5 hover:border-gold/30 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center shrink-0">
+                          <Icon name={deal.iconName} size={16} className="text-gold" />
                         </div>
-                        <p className="text-[8px] text-txt-secondary mt-0.5">Valid til {deal.validUntil}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[10px] text-ivory/45 uppercase tracking-editorial-tight font-semibold truncate">
+                            {deal.businessName}
+                          </p>
+                          <p className="font-display text-[14px] leading-tight text-white truncate">
+                            {deal.title}
+                          </p>
+                        </div>
+                        <div className="shrink-0 text-right">
+                          <div className="px-2.5 py-1 rounded-lg bg-ink border border-gold/30 border-dashed">
+                            <p className="text-[11px] font-bold text-gold font-mono tracking-wider">
+                              {deal.promoCode}
+                            </p>
+                          </div>
+                          <p className="text-[8px] text-ivory/40 mt-0.5 uppercase tracking-editorial-tight">
+                            Valid til {deal.validUntil}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </section>
           )}
 
-          {/* ── New ── */}
+          {/* ── № 06 · New Businesses ────────────────────────────── */}
           {activeCategory === "all" && !search && !quickFilter && newBusinesses.length > 0 && (
             <section className="mb-6">
-              <div className="px-5 flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-coral" />
-                <h2 className="font-heading font-bold text-base">New in {activeCity?.name ?? "your city"}</h2>
-                <div className="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
-                  <span className="text-[9px] font-bold text-coral">Just opened</span>
-                </div>
+              <div className="px-5">
+                <SectionHead
+                  num="06"
+                  kicker={`New in ${activeCity?.name ?? "Your City"}`}
+                  sub="Recently opened"
+                  meta={
+                    <Tag tone="coral" size="xs">Just opened</Tag>
+                  }
+                />
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {newBusinesses.slice(0, 6).map((biz, i) => (
@@ -600,14 +700,10 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── City Badges Showcase ── */}
+          {/* ── № 07 · Shop by Values ────────────────────────────── */}
           {activeCategory === "all" && allBadges.length > 0 && !search && !quickFilter && (
             <section className="mb-6 px-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-emerald" />
-                <h2 className="font-heading font-bold text-base">Shop by Values</h2>
-                <span className="text-[10px] text-txt-secondary ml-auto">City-certified</span>
-              </div>
+              <SectionHead num="07" kicker="Shop by Values" sub="City-certified labels" />
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                 {allBadges.map((badge) => {
                   const count = businesses.filter((b) => b.badges?.includes(badge)).length;
@@ -615,12 +711,18 @@ export default function BusinessPage() {
                     <button
                       key={badge}
                       onClick={() => setSearch(badge.replace(/_/g, " "))}
-                      className="shrink-0 rounded-xl bg-card border border-border-subtle px-3 py-2.5 flex items-center gap-2 press hover:border-gold/20 transition-colors"
+                      className="shrink-0 rounded-xl panel-editorial px-3 py-2.5 flex items-center gap-2 press hover:border-gold/30 transition-colors"
                     >
-                      <Icon name={badgeIcons[badge] || "tag"} size={16} className="text-gold" />
+                      <div className="w-7 h-7 rounded-md border border-gold/20 bg-ink flex items-center justify-center shrink-0">
+                        <Icon name={badgeIcons[badge] || "tag"} size={14} className="text-gold" />
+                      </div>
                       <div className="text-left">
-                        <p className="text-[11px] font-bold leading-tight">{formatBadgeLabel(badge)}</p>
-                        <p className="text-[9px] text-txt-secondary">{count} business{count !== 1 ? "es" : ""}</p>
+                        <p className="text-[11px] font-bold text-white leading-tight">
+                          {formatBadgeLabel(badge)}
+                        </p>
+                        <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">
+                          {count} business{count !== 1 ? "es" : ""}
+                        </p>
                       </div>
                     </button>
                   );
@@ -629,93 +731,115 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── Browse by Category (grid) ── */}
+          {/* ── № 08 · Browse by Category ───────────────────────── */}
           {activeCategory === "all" && !search && !quickFilter && (
             <section className="mb-6 px-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-hc-blue" />
-                <h2 className="font-heading font-bold text-base">Browse by Category</h2>
-              </div>
+              <SectionHead num="08" kicker="Browse by Category" />
               <div className="grid grid-cols-2 gap-2.5">
-                {categories.filter((c) => c.value !== "all").map((cat) => {
-                  const count = businesses.filter((b) => b.category === cat.value).length;
-                  return (
-                    <button
-                      key={cat.value}
-                      onClick={() => { setActiveCategory(cat.value); setQuickFilter(null); }}
-                      className="rounded-xl bg-card border border-border-subtle p-3 flex items-center gap-3 press hover:border-gold/20 transition-colors text-left relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 left-0 bottom-0 w-0.5 rounded-l-xl" style={{ background: cat.color }} />
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${cat.color}15` }}>
-                        <Icon name={cat.iconName} size={18} style={{ color: cat.color }} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-[12px] font-bold truncate">{cat.label}</p>
-                        <p className="text-[10px] text-txt-secondary">{count} listed</p>
-                      </div>
-                    </button>
-                  );
-                })}
+                {categories
+                  .filter((c) => c.value !== "all")
+                  .map((cat) => {
+                    const count = businesses.filter((b) => b.category === cat.value).length;
+                    return (
+                      <button
+                        key={cat.value}
+                        onClick={() => {
+                          setActiveCategory(cat.value);
+                          setQuickFilter(null);
+                        }}
+                        className="group rounded-xl panel-editorial p-3 flex items-center gap-3 press hover:border-gold/30 transition-colors text-left"
+                      >
+                        <div className="w-10 h-10 rounded-lg border border-gold/15 bg-ink flex items-center justify-center shrink-0 group-hover:border-gold/40 transition-colors">
+                          <Icon name={cat.iconName} size={18} className="text-gold" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-display text-[14px] leading-tight text-white truncate">
+                            {cat.label}
+                          </p>
+                          <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-0.5">
+                            {count} listed
+                          </p>
+                        </div>
+                      </button>
+                    );
+                  })}
               </div>
             </section>
           )}
 
-          {/* ── Why Shop Local banner ── */}
+          {/* ── № 09 · Why Shop Local ─────────────────────────────── */}
           {activeCategory === "all" && !search && !quickFilter && (
             <section className="px-5 mb-6">
-              <div className="rounded-2xl bg-gradient-to-br from-emerald/8 via-card to-cyan/5 border border-emerald/15 p-4 relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald via-cyan to-transparent" />
+              <div className="rounded-2xl panel-editorial p-5">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
-                    <Icon name="heart-pulse" size={20} className="text-emerald" />
+                  <div className="w-11 h-11 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
+                    <Icon name="heart-pulse" size={20} className="text-gold" />
                   </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-sm mb-1">Why Shop Local?</h3>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">•</span>
-                        <p className="text-[11px] text-txt-secondary">68¢ of every $1 stays in {activeCity?.name ?? "your city"}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">•</span>
-                        <p className="text-[11px] text-txt-secondary">Creates 2x more local jobs than chains</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-emerald text-[10px]">•</span>
-                        <p className="text-[11px] text-txt-secondary">Builds a stronger, self-sufficient community</p>
-                      </div>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[10px] text-gold uppercase tracking-editorial font-bold mb-1">
+                      Essay · Why Shop Local
+                    </p>
+                    <h3 className="font-display text-[18px] leading-tight text-white mb-2">
+                      Every dollar is a vote for the block.
+                    </h3>
+                    <ul className="space-y-1.5">
+                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
+                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                        <span>68¢ of every $1 stays in {activeCity?.name ?? "your city"}</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
+                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                        <span>Creates 2× more local jobs than chains</span>
+                      </li>
+                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
+                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                        <span>Builds a stronger, self-sufficient community</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
             </section>
           )}
 
-          {/* ── Divider ── */}
           {activeCategory === "all" && !search && !quickFilter && (
             <div className="px-5 mb-5">
               <div className="divider-subtle" />
             </div>
           )}
 
-          {/* ── All Businesses List ── */}
+          {/* ── № 10 · The Full Directory ───────────────────────── */}
           <section className="px-5">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-1 h-5 rounded-full" style={{ background: categoryColors[activeCategory] || "#F2A900" }} />
-              <h2 className="font-heading font-bold text-base">
-                {activeCategory === "all"
-                  ? quickFilter === "top" ? "Top Rated" : quickFilter === "new" ? "New Businesses" : quickFilter === "black_owned" ? "Black Owned" : "All Businesses"
-                  : categories.find((c) => c.value === activeCategory)?.label}
-              </h2>
-              <span className="ml-auto text-xs text-txt-secondary">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
-            </div>
+            <SectionHead
+              num="10"
+              kicker={
+                activeCategory === "all"
+                  ? quickFilter === "top"
+                    ? "Top Rated"
+                    : quickFilter === "new"
+                    ? "New Businesses"
+                    : quickFilter === "black_owned"
+                    ? "Black Owned"
+                    : "The Directory"
+                  : categories.find((c) => c.value === activeCategory)?.label ?? "Directory"
+              }
+              sub="All listings, alphabetical by relevance"
+              meta={
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums">
+                  {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                </span>
+              }
+            />
 
             <div className="space-y-3 stagger">
-              {(activeCategory === "all" && !search && !quickFilter ? regular : filtered).map((biz) => (
-                <BusinessRow key={biz.id} biz={biz} />
-              ))}
+              {(activeCategory === "all" && !search && !quickFilter ? regular : filtered).map(
+                (biz) => (
+                  <BusinessRow key={biz.id} biz={biz} />
+                )
+              )}
 
-              {/* Featured also in "All" list when no filter */}
+              {/* Include the editors-pick and other featured back into "all" list
+                  when no filter is applied, so the directory remains complete. */}
               {activeCategory === "all" && !search && !quickFilter && featured.length > 0 && (
                 <>
                   {featured.map((biz) => (
@@ -726,60 +850,57 @@ export default function BusinessPage() {
 
               {filtered.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-                    <Icon name="search" size={28} className="text-txt-secondary" />
+                  <div className="w-16 h-16 rounded-2xl border border-gold/20 bg-ink mx-auto mb-4 flex items-center justify-center">
+                    <Icon name="search" size={28} className="text-gold/60" />
                   </div>
-                  <p className="text-sm font-bold mb-1">No businesses found</p>
-                  <p className="text-xs text-txt-secondary">
-                    Try a different search or category
-                  </p>
+                  <p className="font-display text-[17px] text-white mb-1">No businesses found</p>
+                  <p className="text-[11px] text-ivory/50">Try a different search or category</p>
                 </div>
               )}
             </div>
           </section>
 
-          {/* ── Advertise with Culture CTA ── */}
+          {/* ── Promote / Own a Business CTAs ─────────────────────── */}
           <div className="px-5 mt-8 mb-3">
-            <div className="rounded-2xl bg-gradient-to-r from-hc-purple/10 via-gold/5 to-transparent border border-gold/15 p-5 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-hc-purple via-gold to-transparent" />
+            <div className="rounded-2xl panel-editorial p-5 hover:border-gold/30 transition-colors">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-hc-purple/15 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
                   <Icon name="megaphone" size={22} className="text-gold" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-heading font-bold text-sm mb-0.5">Promote Your Business</p>
-                  <p className="text-[11px] text-txt-secondary">Run deals, get featured & reach all of {activeCity?.name ?? "your city"}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-[17px] leading-tight text-white">
+                    Promote Your Business
+                  </p>
+                  <p className="text-[11px] text-ivory/55 mt-0.5">
+                    Run deals, get featured & reach all of {activeCity?.name ?? "your city"}
+                  </p>
                 </div>
-                <div className="shrink-0">
-                  <div className="w-8 h-8 rounded-lg bg-hc-purple/10 flex items-center justify-center">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
-                      <path d="M5 2l5 5-5 5" />
-                    </svg>
-                  </div>
-                </div>
+                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
+                  Start
+                  <Icon name="arrow-right-thin" size={11} />
+                </span>
               </div>
             </div>
           </div>
 
-          {/* ── Own a Business CTA ── */}
           <div className="px-5 mb-4">
-            <div className="rounded-2xl bg-gradient-to-r from-gold/10 via-gold/5 to-transparent border border-gold/15 p-5 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-gold to-transparent" />
+            <div className="rounded-2xl panel-editorial p-5 hover:border-gold/30 transition-colors">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
                   <Icon name="store" size={22} className="text-gold" />
                 </div>
-                <div className="flex-1">
-                  <p className="font-heading font-bold text-sm mb-0.5">Own a Business in {activeCity?.name ?? "your city"}?</p>
-                  <p className="text-[11px] text-txt-secondary">Get listed, earn city badges & connect with customers</p>
+                <div className="flex-1 min-w-0">
+                  <p className="font-display text-[17px] leading-tight text-white">
+                    Own a Business in {activeCity?.name ?? "Your City"}?
+                  </p>
+                  <p className="text-[11px] text-ivory/55 mt-0.5">
+                    Get listed, earn city badges & connect with customers
+                  </p>
                 </div>
-                <div className="shrink-0">
-                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
-                      <path d="M5 2l5 5-5 5" />
-                    </svg>
-                  </div>
-                </div>
+                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
+                  Apply
+                  <Icon name="arrow-right-thin" size={11} />
+                </span>
               </div>
             </div>
           </div>
@@ -794,39 +915,42 @@ export default function BusinessPage() {
 // ---------------------------------------------------------------------------
 
 function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
-  const accentColor = categoryColors[deal.category] || "#F2A900";
-
   return (
     <Link
       href={`/business/${deal.businessSlug}`}
-      className="shrink-0 w-[200px] animate-slide-in press"
+      className="shrink-0 w-[220px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-coral/20 transition-colors relative">
-        {/* Discount badge */}
-        <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
-
-        <div className="p-3.5">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${accentColor}15` }}>
-              <Icon name={deal.iconName} size={18} style={{ color: accentColor }} />
+      <div className="rounded-2xl panel-editorial overflow-hidden hover:border-gold/30 transition-colors h-full">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center">
+              <Icon name={deal.iconName} size={18} className="text-gold" />
             </div>
-            <div className="px-2 py-0.5 rounded-lg bg-coral/10 border border-coral/20">
-              <span className="text-[11px] font-bold text-coral">{deal.discount}</span>
-            </div>
+            <Tag tone="coral" size="xs">{deal.discount}</Tag>
           </div>
 
-          <h3 className="font-heading font-bold text-[12px] mb-0.5 truncate">{deal.title}</h3>
-          <p className="text-[10px] text-txt-secondary mb-1.5 line-clamp-1">{deal.description}</p>
+          <h3 className="font-display text-[15px] leading-tight text-white mb-1 line-clamp-2">
+            {deal.title}
+          </h3>
+          <p className="text-[10px] text-ivory/55 mb-2 line-clamp-2 leading-relaxed">
+            {deal.description}
+          </p>
 
-          <div className="flex items-center justify-between">
-            <p className="text-[9px] text-txt-secondary truncate">{deal.businessName}</p>
-            <p className="text-[8px] text-txt-secondary">{deal.validUntil}</p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold truncate">
+              {deal.businessName}
+            </p>
+            <p className="text-[9px] text-ivory/45 font-semibold shrink-0 tabular-nums">
+              {deal.validUntil}
+            </p>
           </div>
 
           {deal.promoCode && (
-            <div className="mt-2 px-2 py-1 rounded-md bg-hc-purple/8 border border-gold/15 border-dashed text-center">
-              <span className="text-[10px] font-bold text-gold font-mono">{deal.promoCode}</span>
+            <div className="mt-3 px-2 py-1.5 rounded-md bg-ink border border-gold/30 border-dashed text-center">
+              <span className="text-[10px] font-bold text-gold font-mono tracking-wider">
+                {deal.promoCode}
+              </span>
             </div>
           )}
         </div>
@@ -840,70 +964,72 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
 // ---------------------------------------------------------------------------
 
 function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isNew?: boolean }) {
-  const accentColor = categoryColors[biz.category] || "#F2A900";
+  const iconName = categoryIcons[biz.category] ?? "store";
 
   return (
     <Link
       href={`/business/${biz.slug}`}
-      className="shrink-0 w-[220px] animate-slide-in"
+      className="shrink-0 w-[230px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-gold/20 transition-colors press">
-        {/* Image / Art */}
-        <div className="h-[130px] relative overflow-hidden">
+      <div className="rounded-2xl panel-editorial overflow-hidden hover:border-gold/30 transition-colors h-full">
+        {/* Image / Ink fallback */}
+        <div className="aspect-video relative overflow-hidden bg-ink border-b border-white/[0.06]">
           {biz.image_urls?.[0] ? (
-            <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
+            <>
+              <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+            </>
           ) : (
-            <div className={`w-full h-full ${categoryArt[biz.category] ?? "art-city"}`} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-
-          {/* Badge */}
-          <div className="absolute top-2.5 left-2.5">
-            <Badge label={isNew ? "New" : "Featured"} variant={isNew ? "coral" : "gold"} shine />
-          </div>
-
-          {/* Rating pill */}
-          {biz.rating_avg > 0 && (
-            <div className="absolute top-2.5 right-2.5 bg-midnight/70 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1">
-              <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
-              <span className="text-[10px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-xl border border-gold/20 bg-black/50 flex items-center justify-center">
+                <Icon name={iconName} size={24} className="text-gold" />
+              </div>
             </div>
           )}
 
-          {/* Category accent bottom line */}
-          <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
+          <div className="absolute top-2.5 left-2.5">
+            <Tag tone={isNew ? "coral" : "gold"} size="xs">
+              {isNew ? "New" : "Featured"}
+            </Tag>
+          </div>
+
+          {biz.rating_avg > 0 && (
+            <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1 border border-gold/20">
+              <Icon name="star" size={11} className="text-gold" />
+              <span className="text-[10px] font-bold text-gold tabular-nums">
+                {Number(biz.rating_avg).toFixed(1)}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Info */}
         <div className="p-3">
-          <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">{biz.name}</h3>
-          <p className="text-[10px] text-txt-secondary mb-2 line-clamp-1">{biz.description}</p>
+          <h3 className="font-display text-[15px] leading-tight text-white mb-0.5 truncate">
+            {biz.name}
+          </h3>
+          <p className="text-[10px] text-ivory/55 mb-2.5 line-clamp-1 leading-relaxed">
+            {biz.description}
+          </p>
 
-          {/* Badges + CTA */}
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1">
-              {biz.badges?.slice(0, 2).map((badge) => (
-                <span
+              <Tag tone="ghost" size="xs">{biz.category}</Tag>
+              {biz.badges?.slice(0, 1).map((badge) => (
+                <Tag
                   key={badge}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8px] font-semibold uppercase tracking-wide border"
-                  style={{
-                    background: `${accentColor}10`,
-                    borderColor: `${accentColor}20`,
-                    color: accentColor,
-                  }}
+                  tone={isLocallyOwnedBadge(badge) ? "gold" : "default"}
+                  size="xs"
                 >
-                  <Icon name={badgeIcons[badge] || "tag"} size={10} />
                   {formatBadgeLabel(badge)}
-                </span>
+                </Tag>
               ))}
             </div>
             {(biz.accepts_orders || biz.accepts_bookings) && (
-              <div className="shrink-0 px-2 py-0.5 rounded-lg bg-gold/10 border border-gold/20">
-                <span className="text-[9px] font-bold text-gold">
-                  {biz.accepts_orders ? "Order" : "Book"}
-                </span>
-              </div>
+              <Tag tone="gold" size="xs">
+                {biz.accepts_orders ? "Order" : "Book"}
+              </Tag>
             )}
           </div>
         </div>
@@ -917,10 +1043,9 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
 // ---------------------------------------------------------------------------
 
 function BusinessRow({ biz }: { biz: Business }) {
-  const accentColor = categoryColors[biz.category] || "#F2A900";
-  const variant = categoryBadgeVariant[biz.category] || "gold";
+  const iconName = categoryIcons[biz.category] ?? "store";
 
-  // Determine if open now
+  // Open-now logic (unchanged behavior)
   const dayShort = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
   const todayKey = dayShort[new Date().getDay()];
   const todayHours = biz.hours?.[todayKey];
@@ -928,7 +1053,6 @@ function BusinessRow({ biz }: { biz: Business }) {
   let hoursLabel = "";
   if (todayHours && typeof todayHours === "object" && "open" in todayHours && "close" in todayHours) {
     hoursLabel = `${todayHours.open} - ${todayHours.close}`;
-    // Simple check — parse hours
     const parseT = (t: string) => {
       const m = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
       if (!m) return -1;
@@ -943,98 +1067,128 @@ function BusinessRow({ biz }: { biz: Business }) {
     const openMin = parseT(todayHours.open);
     const closeMin = parseT(todayHours.close);
     if (openMin >= 0 && closeMin >= 0) {
-      isOpen = closeMin <= openMin ? (nowMin >= openMin || nowMin <= closeMin) : (nowMin >= openMin && nowMin <= closeMin);
+      isOpen = closeMin <= openMin
+        ? (nowMin >= openMin || nowMin <= closeMin)
+        : (nowMin >= openMin && nowMin <= closeMin);
     }
   }
 
   return (
-    <Link href={`/business/${biz.slug}`}>
-      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden hover:border-gold/20 transition-colors press relative">
-        {/* Top accent bar */}
-        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: accentColor }} />
-
-        <div className="flex gap-0">
-          {/* Thumbnail */}
-          <div className="w-[100px] h-[88px] shrink-0 overflow-hidden relative">
-            {biz.image_urls?.[0] ? (
-              <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
-            ) : (
-              <div className={`w-full h-full ${categoryArt[biz.category] ?? "art-city"} flex items-center justify-center`}>
-                <Icon name={categories.find((c) => c.value === biz.category)?.iconName || "store"} size={22} className="opacity-60" />
+    <Link
+      href={`/business/${biz.slug}`}
+      className="group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden"
+    >
+      <div className="flex items-stretch">
+        {/* Image / ink side panel with gold icon well */}
+        <div className="w-[96px] shrink-0 relative bg-ink border-r border-white/[0.06] flex items-center justify-center">
+          {biz.image_urls?.[0] ? (
+            <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <div className="w-11 h-11 rounded-xl border border-gold/20 bg-black/40 flex items-center justify-center">
+                <Icon name={iconName} size={20} className="text-gold" />
               </div>
-            )}
-            {biz.is_featured && (
-              <div className="absolute top-1.5 left-1.5">
-                <Badge label="Featured" variant="gold" shine />
+              <span className="text-[8px] font-bold uppercase tracking-editorial-tight text-gold/70">
+                {biz.category}
+              </span>
+            </div>
+          )}
+          {biz.is_featured && (
+            <div className="absolute top-2 left-2">
+              <Tag tone="gold" size="xs">Featured</Tag>
+            </div>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 p-3.5">
+          {/* Name + Rating */}
+          <div className="flex items-start justify-between gap-2 mb-0.5">
+            <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors truncate">
+              {biz.name}
+            </h3>
+            {biz.rating_avg > 0 && (
+              <div className="flex items-center gap-1 shrink-0">
+                <Icon name="star" size={12} className="text-gold" />
+                <span className="text-[11px] font-bold text-gold tabular-nums">
+                  {Number(biz.rating_avg).toFixed(1)}
+                </span>
               </div>
             )}
           </div>
 
-          {/* Details */}
-          <div className="flex-1 min-w-0 p-3">
-            {/* Name + Rating */}
-            <div className="flex items-start justify-between gap-2 mb-0.5">
-              <h3 className="font-heading font-bold text-[13px] truncate">{biz.name}</h3>
-              {biz.rating_avg > 0 && (
-                <div className="flex items-center gap-1 shrink-0">
-                  <Icon name="star" size={12} className="text-gold" />
-                  <span className="text-[11px] font-bold">{Number(biz.rating_avg).toFixed(1)}</span>
-                </div>
-              )}
-            </div>
+          {/* Category · City meta */}
+          <p className="text-[11px] text-ivory/55 mb-1.5 truncate">
+            <span className="uppercase tracking-editorial-tight font-semibold">{biz.category}</span>
+            {biz.city?.name && (
+              <>
+                <span className="mx-1.5 text-ivory/25">·</span>
+                <span>{biz.city.name}</span>
+              </>
+            )}
+          </p>
 
-            {/* Description */}
-            <p className="text-[11px] text-white/40 mb-1.5 line-clamp-1">{biz.description}</p>
+          {/* Description */}
+          {biz.description && (
+            <p className="text-[11px] text-ivory/50 mb-2 line-clamp-1 leading-relaxed">
+              {biz.description}
+            </p>
+          )}
 
-            {/* Open/Closed + Address */}
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              {hoursLabel && (
-                <span className={`inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5 ${
-                  isOpen
-                    ? "text-emerald bg-emerald/10 border border-emerald/20"
-                    : "text-white/25 bg-white/[0.03] border border-white/[0.06]"
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? "bg-emerald animate-pulse" : "bg-white/20"}`} />
-                  {isOpen ? "Open" : "Closed"}
-                </span>
-              )}
-              {biz.address && (
-                <span className="text-[9px] text-white/25 truncate inline-flex items-center gap-0.5">
-                  <Icon name="pin" size={9} /> {biz.address.split(",")[0]}
-                </span>
-              )}
-            </div>
-
-            {/* Bottom row: badges + Order/Book CTA */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge label={biz.category} variant={variant} />
-              {biz.account_type === "ads_only" && (
-                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold border bg-white/5 border-white/10 text-txt-secondary">
-                  <Icon name="globe" size={9} />
-                  Chain
-                </span>
-              )}
-              {biz.badges?.slice(0, 1).map((badge) => (
+          {/* Status + Address row */}
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {hoursLabel && (
+              <Tag tone={isOpen ? "emerald" : "coral"} size="xs">
                 <span
-                  key={badge}
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-semibold border bg-gold/5 border-gold/15 text-gold-light"
-                >
-                  <Icon name={badgeIcons[badge] || "tag"} size={9} />
-                  {formatBadgeLabel(badge)}
-                </span>
-              ))}
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isOpen ? "bg-emerald animate-pulse" : "bg-coral/60"
+                  }`}
+                />
+                {isOpen ? "Open" : "Closed"}
+              </Tag>
+            )}
+            {biz.address && (
+              <span className="text-[9px] text-ivory/45 truncate inline-flex items-center gap-1">
+                <Icon name="pin" size={10} className="text-gold/60" />
+                {biz.address.split(",")[0]}
+              </span>
+            )}
+          </div>
 
-              {/* CTA */}
-              {(biz.accepts_orders || biz.accepts_bookings) ? (
-                <span className="ml-auto shrink-0 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-gold/12 border border-gold/20 text-[10px] font-bold text-gold">
+          {/* Tag row + CTA */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            {biz.account_type === "ads_only" && (
+              <Tag tone="ghost" size="xs">
+                <Icon name="globe" size={9} />
+                Chain
+              </Tag>
+            )}
+            {biz.badges?.slice(0, 2).map((badge) => (
+              <Tag
+                key={badge}
+                tone={isLocallyOwnedBadge(badge) ? "gold" : "default"}
+                size="xs"
+              >
+                <Icon name={badgeIcons[badge] || "tag"} size={9} />
+                {formatBadgeLabel(badge)}
+              </Tag>
+            ))}
+
+            <span className="ml-auto shrink-0">
+              {biz.accepts_orders || biz.accepts_bookings ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
                   <Icon name={biz.accepts_orders ? "cart" : "calendar"} size={11} />
                   {biz.accepts_orders ? "Order" : "Book"}
-                  <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 1l4 4-4 4" /></svg>
+                  <Icon name="arrow-right-thin" size={11} />
                 </span>
               ) : (
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15 ml-auto shrink-0" strokeLinecap="round"><path d="M5 2l5 5-5 5" /></svg>
+                <Icon
+                  name="arrow-right-thin"
+                  size={14}
+                  className="text-gold/60 group-hover:text-gold transition-colors"
+                />
               )}
-            </div>
+            </span>
           </div>
         </div>
       </div>

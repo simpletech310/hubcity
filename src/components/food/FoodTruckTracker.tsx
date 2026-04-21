@@ -62,6 +62,7 @@ interface FoodTruckTrackerProps {
 
 export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrackerProps) {
   const [vehicles, setVehicles] = useState<VendorVehicle[]>(initialVehicles);
+  const [showFilters, setShowFilters] = useState(false);
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [userCoords, setUserCoords] = useState<[number, number] | null>(null);
@@ -237,44 +238,58 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
   return (
     <section className="mb-8">
       {/* Header */}
-      <div className="px-5 mb-3">
-        <div className="flex items-center justify-between mb-1">
+      <div className="px-5 mb-3 flex items-start justify-between">
+        <div>
           <h2 className="font-heading font-bold text-base flex items-center gap-2">
             <Icon name="truck" size={18} /> Food Truck Tracker
           </h2>
+          <p className="text-[11px] text-white/40 mt-0.5">
+            Real-time locations · updated as vendors move
+          </p>
+        </div>
+        <div className="flex flex-col items-end gap-2 shrink-0">
           <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
             {activeCount} rolling
           </span>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-editorial-tight text-ivory/50 hover:text-gold transition-colors press"
+          >
+            <Icon name="filter" size={10} />
+            {showFilters ? "Hide" : "Filter"}
+            {(statusFilter !== "all" || typeFilter !== "all") && !showFilters && (
+              <span className="w-1.5 h-1.5 rounded-full bg-gold ml-0.5" />
+            )}
+          </button>
         </div>
-        <p className="text-[11px] text-white/40">
-          Real-time locations · updated as vendors move
-        </p>
       </div>
 
-      {/* Filter chips */}
-      <div className="px-5 mb-3">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-1.5">
-          {TYPE_FILTERS.map((f) => (
-            <Chip
-              key={f.key}
-              label={f.label}
-              active={typeFilter === f.key}
-              onClick={() => setTypeFilter(f.key)}
-            />
-          ))}
+      {/* Filter chips (Collapsible) */}
+      {showFilters && (
+        <div className="px-5 mb-3 animate-fade-in">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 mb-1.5">
+            {TYPE_FILTERS.map((f) => (
+              <Chip
+                key={f.key}
+                label={f.label}
+                active={typeFilter === f.key}
+                onClick={() => setTypeFilter(f.key)}
+              />
+            ))}
+          </div>
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {STATUS_FILTERS.map((f) => (
+              <Chip
+                key={f.key}
+                label={f.label}
+                active={statusFilter === f.key}
+                onClick={() => setStatusFilter(f.key)}
+              />
+            ))}
+          </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {STATUS_FILTERS.map((f) => (
-            <Chip
-              key={f.key}
-              label={f.label}
-              active={statusFilter === f.key}
-              onClick={() => setStatusFilter(f.key)}
-            />
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Map + Near me */}
       <div className="px-5 mb-3">

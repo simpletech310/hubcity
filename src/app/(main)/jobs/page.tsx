@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
 import JobCard from "@/components/jobs/JobCard";
+import SnapCarousel from "@/components/ui/editorial/SnapCarousel";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { JobListing } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
@@ -21,10 +21,10 @@ const jobTypes: { label: string; value: string; iconName: IconName }[] = [
 
 const categoryCards: { label: string; iconName: IconName; value: string; color: string; filter: "org_type" | "search" }[] = [
   { label: "City Jobs", iconName: "landmark", value: "city", color: "text-gold", filter: "org_type" },
-  { label: "Healthcare", iconName: "heart-pulse", value: "healthcare", color: "text-emerald", filter: "search" },
-  { label: "Education", iconName: "graduation", value: "school", color: "text-hc-blue", filter: "org_type" },
-  { label: "Business", iconName: "store", value: "business", color: "text-coral", filter: "org_type" },
-  { label: "Tech", iconName: "lightbulb", value: "tech", color: "text-cyan", filter: "search" },
+  { label: "Healthcare", iconName: "heart-pulse", value: "healthcare", color: "text-gold", filter: "search" },
+  { label: "Education", iconName: "graduation", value: "school", color: "text-gold", filter: "org_type" },
+  { label: "Business", iconName: "store", value: "business", color: "text-gold", filter: "org_type" },
+  { label: "Tech", iconName: "lightbulb", value: "tech", color: "text-gold", filter: "search" },
   { label: "Services", iconName: "wrench", value: "services", color: "text-gold", filter: "search" },
 ];
 
@@ -89,7 +89,7 @@ export default function JobsPage() {
 
   return (
     <div className="animate-fade-in pb-20">
-      {/* ── Hero ── */}
+      {/* ── Hero / Masthead ── */}
       <div className="relative min-h-[220px] flex flex-col justify-end mb-5">
         <Image
           src="/images/generated/jobs-hero.png"
@@ -118,18 +118,22 @@ export default function JobsPage() {
             </span>
           </div>
 
-          {/* Glass Search Bar */}
-          <div className="glass-card-elevated flex items-center gap-3 rounded-2xl px-4 py-3.5 focus-within:border-gold/30 transition-all mt-5">
-            <Icon name="search" size={18} className="text-txt-secondary shrink-0" />
+          {/* Editorial Search Bar */}
+          <div className="panel-editorial rounded-2xl border-white/[0.08] flex items-center gap-3 px-4 py-3.5 mt-5 focus-within:border-gold/40 transition-colors">
+            <Icon name="search" size={18} className="text-gold shrink-0" />
             <input
               type="text"
               placeholder="Search jobs, companies..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-sm text-white placeholder:text-txt-secondary/60 w-full outline-none"
+              className="bg-transparent text-sm text-white placeholder:text-ivory/30 w-full outline-none"
             />
             {search && (
-              <button onClick={() => setSearch("")} className="text-txt-secondary hover:text-white press">
+              <button
+                onClick={() => setSearch("")}
+                className="text-ivory/40 hover:text-white press"
+                aria-label="Clear search"
+              >
                 <Icon name="close" size={16} />
               </button>
             )}
@@ -137,54 +141,50 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {/* ── Filter Chips ── */}
+      {/* ── Job-Type Filter Chips (editorial) ── */}
       <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
-        {jobTypes.map((type) => (
-          <Chip
-            key={type.value}
-            label={type.label}
-            iconName={type.iconName}
-            active={activeType === type.value}
-            onClick={() => setActiveType(type.value)}
-          />
-        ))}
+        {jobTypes.map((type) => {
+          const isActive = activeType === type.value;
+          return (
+            <button
+              key={type.value}
+              onClick={() => setActiveType(type.value)}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight whitespace-nowrap shrink-0 press transition-colors ${
+                isActive
+                  ? "bg-gold text-midnight border border-gold"
+                  : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
+              }`}
+            >
+              <Icon name={type.iconName} size={13} />
+              {type.label}
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-2xl" />
+            <div key={i} className="rounded-2xl panel-editorial h-24 opacity-40 animate-pulse" />
           ))}
         </div>
       ) : (
         <div className="px-5 space-y-8">
-          {/* ── Featured Jobs ── */}
-          {featuredJobs.length > 0 && (
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Icon name="sparkle" size={16} className="text-gold" />
-                <h2 className="font-heading font-bold text-sm">Featured Opportunities</h2>
-              </div>
-              <div className="space-y-3 stagger">
-                {featuredJobs.map((job) => (
-                  <JobCard key={job.id} job={job} featured />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* ── Job Categories (only when "All" and no search) ── */}
+          {/* ── Job Categories (only when no search) ── */}
           {!search && (
             <section>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Icon name="grid" size={16} className="text-txt-secondary" />
-                  <h2 className="font-heading font-bold text-sm">Browse by Category</h2>
-                </div>
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 01
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Browse by Category
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
                 {activeCategory && (
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className="text-[10px] text-gold font-semibold press"
+                    className="ml-2 text-[10px] font-bold tracking-editorial-tight uppercase text-gold press shrink-0"
                   >
                     Clear
                   </button>
@@ -193,20 +193,30 @@ export default function JobsPage() {
               <div className="grid grid-cols-3 gap-2">
                 {categoryCards.map((cat) => {
                   const isActive = activeCategory?.value === cat.value;
+                  const count = isActive ? filtered.length : null;
                   return (
                     <button
                       key={cat.value}
-                      className={`rounded-xl p-3 flex flex-col items-center gap-2 press transition-all ${
-                        isActive
-                          ? "bg-gold/10 border border-gold/30 glow-gold-sm"
-                          : "glass-surface hover:border-gold/20"
+                      onClick={() =>
+                        setActiveCategory(isActive ? null : { value: cat.value, filter: cat.filter })
+                      }
+                      className={`panel-editorial p-4 rounded-xl flex flex-col items-center gap-2 press transition-colors ${
+                        isActive ? "border-gold/40" : "hover:border-gold/25"
                       }`}
-                      onClick={() => setActiveCategory(isActive ? null : { value: cat.value, filter: cat.filter })}
                     >
-                      <Icon name={cat.iconName} size={22} className={isActive ? "text-gold" : cat.color} />
-                      <span className={`text-[10px] font-semibold ${
-                        isActive ? "text-gold" : "text-txt-secondary"
-                      }`}>{cat.label}</span>
+                      <div
+                        className={`w-10 h-10 rounded-lg border bg-ink flex items-center justify-center ${
+                          isActive ? "border-gold/40" : "border-gold/20"
+                        }`}
+                      >
+                        <Icon name={cat.iconName} size={18} className="text-gold" />
+                      </div>
+                      <span className="font-display text-[14px] leading-none text-white">
+                        {cat.label}
+                      </span>
+                      <span className="text-[10px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">
+                        {count !== null ? `${count} Open` : "Browse"}
+                      </span>
                     </button>
                   );
                 })}
@@ -214,27 +224,46 @@ export default function JobsPage() {
             </section>
           )}
 
+          {/* ── Featured Jobs ── */}
+          {featuredJobs.length > 0 && (
+            <section className="-mx-5">
+              <SnapCarousel
+                number={2}
+                kicker={`Featured · ${featuredJobs.length} Listing${featuredJobs.length !== 1 ? "s" : ""}`}
+              >
+                {featuredJobs.map((job) => (
+                  <JobCard key={job.id} job={job} featured />
+                ))}
+              </SnapCarousel>
+            </section>
+          )}
+
           {/* ── Job Listings ── */}
           <section>
-            {regularJobs.length > 0 && (
-              <div className="flex items-center gap-2 mb-4">
-                <Icon name="list" size={16} className="text-txt-secondary" />
-                <h2 className="font-heading font-bold text-sm">
-                  {activeType === "all" && !search ? "Recent Openings" : `${filtered.length} Job${filtered.length !== 1 ? "s" : ""} Found`}
-                </h2>
-              </div>
-            )}
-            <div className="space-y-3 stagger">
+            <div className="flex items-baseline gap-3 mb-3">
+              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                № {featuredJobs.length > 0 ? "03" : !search ? "02" : "01"}
+              </span>
+              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                {activeType === "all" && !search
+                  ? "All Listings"
+                  : `${filtered.length} Result${filtered.length !== 1 ? "s" : ""}`}
+              </span>
+              <span className="ml-auto rule-hairline flex-1 self-center" />
+            </div>
+            <div className="space-y-2.5 stagger">
               {regularJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
               {filtered.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-full glass-card-elevated flex items-center justify-center mx-auto mb-4">
-                    <Icon name="search" size={28} className="text-txt-secondary" />
+                <div className="rounded-2xl panel-editorial py-14 px-6 text-center">
+                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl border border-gold/20 bg-ink flex items-center justify-center">
+                    <Icon name="search" size={22} className="text-gold" />
                   </div>
-                  <p className="text-sm font-heading font-semibold mb-1">No jobs found</p>
-                  <p className="text-xs text-txt-secondary">
+                  <p className="font-display text-[18px] leading-tight text-white mb-1">
+                    No jobs found
+                  </p>
+                  <p className="text-[11px] text-ivory/50 uppercase tracking-editorial-tight font-semibold">
                     Try a different search or filter
                   </p>
                 </div>

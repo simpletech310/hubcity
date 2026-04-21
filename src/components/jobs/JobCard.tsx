@@ -1,17 +1,16 @@
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
+import Tag from "@/components/ui/editorial/Tag";
 import type { JobListing, JobType } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
 
-const jobTypeBadge: Record<JobType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple"; iconName: IconName }> = {
-  full_time: { label: "Full-Time", variant: "emerald", iconName: "building" },
-  part_time: { label: "Part-Time", variant: "cyan", iconName: "clock" },
-  contract: { label: "Contract", variant: "gold", iconName: "document" },
-  seasonal: { label: "Seasonal", variant: "coral", iconName: "palm" },
-  internship: { label: "Internship", variant: "purple", iconName: "graduation" },
-  volunteer: { label: "Volunteer", variant: "gold", iconName: "handshake" },
+const jobTypeMeta: Record<JobType, { label: string; iconName: IconName }> = {
+  full_time: { label: "Full-Time", iconName: "building" },
+  part_time: { label: "Part-Time", iconName: "clock" },
+  contract: { label: "Contract", iconName: "document" },
+  seasonal: { label: "Seasonal", iconName: "palm" },
+  internship: { label: "Internship", iconName: "graduation" },
+  volunteer: { label: "Volunteer", iconName: "handshake" },
 };
 
 const orgTypeIconMap: Record<string, IconName> = {
@@ -60,16 +59,12 @@ interface JobCardProps {
 }
 
 export default function JobCard({ job, featured = false }: JobCardProps) {
-  const badge = jobTypeBadge[job.job_type] ?? { label: job.job_type, variant: "gold" as const, iconName: "briefcase" as IconName };
+  const meta = jobTypeMeta[job.job_type] ?? { label: job.job_type, iconName: "briefcase" as IconName };
   const salary = job.job_type !== "volunteer" ? formatSalary(job) : null;
   const business = job.business as { id: string; name: string; slug: string; image_urls?: string[] } | null;
   const displayName = job.organization_name || business?.name || "Organization";
   const orgIconName = job.organization_type ? orgTypeIconMap[job.organization_type] ?? "briefcase" : "briefcase";
   const businessImage = business?.image_urls?.[0];
-
-  // Accent colors by org type
-  const orgAccentColors: Record<string, string> = { city: "#F2A900", school: "#3B82F6", business: "#EF4444" };
-  const accentColor = orgAccentColors[job.organization_type ?? ""] ?? "#8B5CF6";
 
   // Deadline urgency
   const daysUntilDeadline = job.application_deadline
@@ -78,51 +73,50 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
 
   if (featured) {
     return (
-      <Link href={`/jobs/${job.slug || job.id}`} className="block">
-        <div className="glass-neon rounded-2xl p-5 glass-inner-light hover:border-gold/30 transition-all duration-300 press">
-          <div className="flex items-start justify-between mb-3">
-            <div className="w-14 h-14 rounded-xl shrink-0 overflow-hidden relative bg-white/5 flex items-center justify-center">
-              {businessImage ? (
-                <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
-              ) : (
-                <Icon name={orgIconName} size={24} className="text-gold" />
-              )}
-            </div>
-            <Badge label="Featured" variant="gold" iconName="sparkle" shine />
-          </div>
-          <h3 className="font-display text-lg text-white mb-1">{job.title}</h3>
-          <p className="text-xs text-txt-secondary mb-3 flex items-center gap-1.5">
-            <Icon name={orgIconName} size={12} className="text-txt-secondary" />
-            {displayName}
-          </p>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Badge label={badge.label} variant={badge.variant} iconName={badge.iconName} />
-            {salary && (
-              <span className="text-sm text-gold font-bold flex items-center gap-1">
-                <Icon name="dollar" size={14} />
-                {salary}
-              </span>
+      <Link
+        href={`/jobs/${job.slug || job.id}`}
+        className="group block shrink-0 w-[280px] snap-start rounded-2xl panel-editorial p-4 press hover:border-gold/30 transition-colors"
+      >
+        <div className="flex items-start justify-between mb-3">
+          <div className="w-12 h-12 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0 overflow-hidden">
+            {businessImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
+            ) : (
+              <Icon name={orgIconName} size={20} className="text-gold" />
             )}
           </div>
-          {(job.location || daysUntilDeadline !== null) && (
-            <div className="flex items-center gap-3 mt-3 flex-wrap">
-              {job.location && (
-                <span className="text-[11px] text-txt-secondary flex items-center gap-1.5">
-                  <Icon name="pin" size={12} />
-                  {job.location}
-                </span>
-              )}
-              {daysUntilDeadline !== null && daysUntilDeadline > 0 && (
-                <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 inline-flex items-center gap-1 ${
-                  daysUntilDeadline <= 7
-                    ? "text-coral bg-coral/8 border border-coral/15"
-                    : "text-gold bg-gold/8 border border-gold/15"
-                }`}>
-                  <Icon name="clock" size={10} />
-                  {daysUntilDeadline <= 1 ? "Tomorrow!" : `${daysUntilDeadline}d left`}
-                </span>
-              )}
-            </div>
+          <Tag tone="gold" size="xs">
+            <Icon name="sparkle" size={9} />
+            Featured
+          </Tag>
+        </div>
+        <h3 className="font-display text-[17px] leading-tight text-white line-clamp-2 group-hover:text-gold transition-colors">
+          {job.title}
+        </h3>
+        <p className="text-[11px] text-ivory/55 mt-1 truncate">
+          {displayName}
+        </p>
+        {job.location && (
+          <p className="text-[10px] text-ivory/40 mt-0.5 truncate uppercase tracking-editorial-tight">
+            {job.location}
+          </p>
+        )}
+        <div className="flex items-center gap-1.5 flex-wrap mt-3">
+          <Tag tone="default" size="xs">
+            <Icon name={meta.iconName} size={9} />
+            {meta.label}
+          </Tag>
+          {salary && (
+            <Tag tone="gold" size="xs">
+              {salary}
+            </Tag>
+          )}
+          {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
+            <Tag tone={daysUntilDeadline <= 7 ? "coral" : "gold"} size="xs">
+              <Icon name="clock" size={9} />
+              {daysUntilDeadline <= 1 ? "1d" : `${daysUntilDeadline}d`}
+            </Tag>
           )}
         </div>
       </Link>
@@ -130,71 +124,68 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
   }
 
   return (
-    <Link href={`/jobs/${job.slug || job.id}`}>
-      <Card variant="glass" hover>
-        <div className="flex gap-3 relative">
-          {/* Left accent bar */}
-          <div className="absolute left-0 top-0 bottom-0 w-[3px] -ml-4 rounded-full" style={{ background: accentColor }} />
+    <Link
+      href={`/jobs/${job.slug || job.id}`}
+      className="group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden"
+    >
+      <div className="p-3.5 flex items-start gap-3">
+        {/* Gold icon well */}
+        <div className="w-12 h-12 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0 overflow-hidden">
+          {businessImage ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
+          ) : (
+            <Icon name={orgIconName} size={20} className="text-gold" />
+          )}
+        </div>
 
-          <div className="w-12 h-12 rounded-xl shrink-0 overflow-hidden relative bg-white/5 flex items-center justify-center">
-            {businessImage ? (
-              <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
-            ) : (
-              <Icon name={orgIconName} size={20} className="text-txt-secondary" />
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display text-[17px] leading-tight text-white line-clamp-1 group-hover:text-gold transition-colors">
+            {job.title}
+          </h3>
+          <p className="text-[11px] text-ivory/55 mt-0.5 truncate">
+            {displayName}
+            {job.location && (
+              <>
+                <span className="mx-1.5 text-ivory/25">·</span>
+                {job.location}
+              </>
             )}
-          </div>
+          </p>
 
-          <div className="flex-1 min-w-0">
-            <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">
-              {job.title}
-            </h3>
-            <p className="text-[11px] text-txt-secondary mb-1.5 truncate flex items-center gap-1">
-              <Icon name={orgIconName} size={10} className="shrink-0" />
-              {displayName}
-            </p>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge label={badge.label} variant={badge.variant} iconName={badge.iconName} />
-              {salary && (
-                <span className="text-[10px] text-gold font-semibold flex items-center gap-0.5">
-                  <Icon name="dollar" size={10} />
-                  {salary}
-                </span>
-              )}
-              {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
-                <span className={`text-[9px] font-semibold rounded-full px-1.5 py-0.5 inline-flex items-center gap-0.5 ${
-                  daysUntilDeadline <= 7
-                    ? "text-coral bg-coral/8 border border-coral/15"
-                    : "text-gold bg-gold/8 border border-gold/15"
-                }`}>
-                  <Icon name="clock" size={8} />
-                  {daysUntilDeadline}d
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-3 mt-1.5">
-              {job.location && (
-                <span className="text-[10px] text-txt-secondary truncate flex items-center gap-0.5">
-                  <Icon name="pin" size={10} className="shrink-0" />
-                  {job.location}
-                </span>
-              )}
-              <span className="text-[10px] text-txt-secondary flex items-center gap-0.5">
-                <Icon name="clock" size={10} className="shrink-0" />
-                {timeAgo(job.created_at)}
-              </span>
-            </div>
-          </div>
-
-          {/* Apply arrow */}
-          <div className="shrink-0 flex items-center">
-            <div className="w-7 h-7 rounded-lg bg-white/[0.03] flex items-center justify-center">
-              <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-white/20">
-                <path d="M4 1l5 5-5 5" />
-              </svg>
-            </div>
+          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+            <Tag tone="default" size="xs">
+              <Icon name={meta.iconName} size={9} />
+              {meta.label}
+            </Tag>
+            {salary && (
+              <Tag tone="gold" size="xs">
+                {salary}
+              </Tag>
+            )}
+            {job.job_type === "volunteer" && (
+              <Tag tone="emerald" size="xs">Open</Tag>
+            )}
+            {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
+              <Tag tone={daysUntilDeadline <= 7 ? "coral" : "gold"} size="xs">
+                <Icon name="clock" size={9} />
+                {daysUntilDeadline}d
+              </Tag>
+            )}
+            <span className="text-[9px] text-ivory/35 uppercase tracking-editorial-tight font-semibold ml-auto">
+              {timeAgo(job.created_at)}
+            </span>
           </div>
         </div>
-      </Card>
+
+        {/* Apply CTA */}
+        <div className="shrink-0 self-center flex flex-col items-end gap-0.5">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-editorial-tight text-gold group-hover:text-gold transition-colors">
+            Apply
+            <Icon name="arrow-right-thin" size={11} />
+          </span>
+        </div>
+      </div>
     </Link>
   );
 }

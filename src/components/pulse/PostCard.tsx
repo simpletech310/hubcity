@@ -67,7 +67,12 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
     author?.role === "city_ambassador" ||
     author?.role === "admin";
 
-  const timeAgo = getTimeAgo(post.created_at);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const timeAgo = mounted ? getTimeAgo(post.created_at) : "";
   const isAuthor = userId === post.author_id;
   const isWithinEditWindow = Date.now() - new Date(post.created_at).getTime() < 15 * 60 * 1000;
   const canEdit = isAuthor && isWithinEditWindow;

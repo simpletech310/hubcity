@@ -54,7 +54,7 @@ begin
   end loop;
 
   insert into public.channels (
-    owner_id, name, slug, description, avatar_url, is_active, scope, city_id
+    owner_id, name, slug, description, avatar_url, is_active, scope, type, city_id
   ) values (
     new.id,
     coalesce(new.display_name, 'Channel'),

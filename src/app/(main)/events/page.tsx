@@ -3,13 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Chip from "@/components/ui/Chip";
-import Badge from "@/components/ui/Badge";
-import EditorialHeader from "@/components/ui/EditorialHeader";
 import AdZone from "@/components/ui/AdZone";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import Tag from "@/components/ui/editorial/Tag";
 import { createClient } from "@/lib/supabase/client";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Event } from "@/types/database";
@@ -35,28 +32,6 @@ const categoryImages: Record<string, string> = {
   school: "/images/community-event.png",
   business: "/images/community-event.png",
   networking: "/images/community-event.png",
-};
-
-const categoryBadgeVariant: Record<string, "purple" | "coral" | "cyan" | "gold" | "emerald" | "blue" | "pink"> = {
-  city: "cyan",
-  sports: "emerald",
-  culture: "pink",
-  community: "purple",
-  school: "blue",
-  youth: "gold",
-  business: "gold",
-  networking: "purple",
-};
-
-const categoryColors: Record<string, string> = {
-  city: "#06B6D4",
-  sports: "#22C55E",
-  culture: "#FF6B6B",
-  community: "#8B5CF6",
-  school: "#3B82F6",
-  youth: "#F2A900",
-  business: "#F2A900",
-  networking: "#8B5CF6",
 };
 
 function formatEventDate(dateStr: string) {
@@ -158,10 +133,10 @@ export default function EventsPage() {
       </header>
 
       {/* ══════════════════════════════════════════════════════
-          HERO BANNER — Cinematic event spotlight
+          HERO BANNER — Cinematic event spotlight (editorial)
           ══════════════════════════════════════════════════════ */}
       {heroEvent && (
-        <div className="relative -mt-[72px] pt-[72px] mb-6">
+        <div className="relative mb-8">
           {/* Background Image */}
           <div className="absolute inset-0 overflow-hidden">
             {heroEvent.image_url ? (
@@ -182,20 +157,22 @@ export default function EventsPage() {
               />
             )}
             {/* Gradient overlays for readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/70 to-midnight/30" />
-            <div className="absolute inset-0 bg-gradient-to-r from-midnight/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/75 to-midnight/30" />
+            <div className="absolute inset-0 bg-gradient-to-r from-midnight/60 to-transparent" />
+            {/* Subtle grain for editorial feel */}
+            <div
+              className="absolute inset-0 opacity-[0.06] mix-blend-overlay pointer-events-none"
+              style={{
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+              }}
+            />
           </div>
 
-          {/* Decorative ambient glow */}
-          <div
-            className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full opacity-30 blur-3xl"
-            style={{ background: categoryColors[heroEvent.category] ?? "#F2A900" }}
-          />
-
-          <div className="relative z-10 px-5 pt-8 pb-8">
-            {/* Live tag if today */}
+          <div className="relative z-10 px-5 pt-8 pb-8 min-h-[360px] flex flex-col justify-end">
+            {/* Live tag if today — coral IS the status color */}
             {isToday(heroEvent.start_date) && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/20 border border-coral/40 mb-4">
+              <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/20 border border-coral/40 mb-4">
                 <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
                 <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">
                   HAPPENING TODAY
@@ -203,34 +180,35 @@ export default function EventsPage() {
               </div>
             )}
 
-            {/* Category + date */}
-            <div className="flex items-center gap-2 mb-3">
-              <Badge
-                label={heroEvent.category}
-                variant={categoryBadgeVariant[heroEvent.category] ?? "purple"}
-                size="md"
-              />
-              <span className="text-[12px] text-warm-gray">
+            {/* Category + date — gold only, no per-category tint */}
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <Tag tone="gold" size="sm">
+                {heroEvent.category}
+              </Tag>
+              <span className="text-[11px] font-bold uppercase tracking-editorial text-ivory/70">
                 {formatEventDate(heroEvent.start_date).full}
               </span>
             </div>
 
-            {/* Title */}
-            <h1 className="font-heading text-[32px] font-bold leading-[0.95] tracking-tight mb-3 max-w-[340px] drop-shadow-lg">
+            {/* Title — editorial display */}
+            <h1 className="font-display text-[36px] leading-[0.95] tracking-tight mb-3 text-white max-w-[340px] drop-shadow-lg">
               {heroEvent.title}
             </h1>
 
+            {/* Thin gold rule under the title */}
+            <span className="block h-[2px] w-10 bg-gold mb-4" />
+
             {/* Location + RSVP */}
-            <div className="flex items-center gap-4 text-[13px] text-warm-gray mb-6">
+            <div className="flex items-center gap-4 text-[12px] text-ivory/70 mb-6 flex-wrap">
               {heroEvent.location_name && (
                 <span className="flex items-center gap-1.5">
-                  <Icon name="pin" size={16} />
+                  <Icon name="pin" size={14} className="text-gold" />
                   {heroEvent.location_name}
                 </span>
               )}
               {(heroEvent.rsvp_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald" />
+                <span className="flex items-center gap-1.5 text-gold tabular-nums font-semibold">
+                  <Icon name="users" size={14} />
                   {heroEvent.rsvp_count?.toLocaleString()} going
                 </span>
               )}
@@ -240,11 +218,12 @@ export default function EventsPage() {
             <div className="flex gap-3">
               <Link
                 href={`/events/${heroEvent.id}`}
-                className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                className="inline-flex items-center gap-2 bg-gold text-midnight px-5 py-3 rounded-xl uppercase tracking-editorial-tight text-[11px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
               >
                 Get Tickets
+                <Icon name="arrow-right-thin" size={12} />
               </Link>
-              <button className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
+              <button className="inline-flex items-center gap-2 border border-gold/40 text-white px-5 py-3 rounded-xl uppercase tracking-editorial-tight text-[11px] font-bold press hover:bg-gold/10 transition-colors">
                 Share
               </button>
             </div>
@@ -257,7 +236,7 @@ export default function EventsPage() {
                     key={i}
                     onClick={() => setHeroIndex(i)}
                     className={`h-[3px] rounded-full transition-all duration-300 ${
-                      i === heroIndex % featured.length ? "w-8 bg-gold" : "w-3 bg-white/20"
+                      i === heroIndex % featured.length ? "w-8 bg-gold" : "w-3 bg-white/15"
                     }`}
                   />
                 ))}
@@ -268,144 +247,130 @@ export default function EventsPage() {
       )}
 
       {/* ══════════════════════════════════════════════════════
-          QUICK STATS BAR
+          QUICK STATS BAR — Editorial
           ══════════════════════════════════════════════════════ */}
-      <div className="flex gap-2.5 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
-        <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <Icon name="calendar" size={18} />
-          <div>
-            <p className="text-[15px] font-bold font-heading leading-none">{events.length}</p>
-            <p className="text-[10px] text-warm-gray">Events</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <Icon name="flame" size={18} />
-          <div>
-            <p className="text-[15px] font-bold font-heading leading-none">{todayEvents.length}</p>
-            <p className="text-[10px] text-warm-gray">Today</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <Icon name="users" size={18} />
-          <div>
-            <p className="text-[15px] font-bold font-heading leading-none">{totalRSVP.toLocaleString()}</p>
-            <p className="text-[10px] text-warm-gray">Attending</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 bg-royal rounded-2xl px-4 py-2.5 border border-border-subtle shrink-0">
-          <Icon name="star" size={18} />
-          <div>
-            <p className="text-[15px] font-bold font-heading leading-none">{featured.length}</p>
-            <p className="text-[10px] text-warm-gray">Featured</p>
-          </div>
+      <div className="px-5 mb-6">
+        <div className="grid grid-cols-4 gap-2">
+          {[
+            { label: "Events", value: events.length.toString() },
+            { label: "Today", value: todayEvents.length.toString() },
+            { label: "Going", value: totalRSVP.toLocaleString() },
+            { label: "Featured", value: featured.length.toString() },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
+              <p className="font-display text-[20px] leading-none text-gold tabular-nums">{stat.value}</p>
+              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* ══════════════════════════════════════════════════════
-          CATEGORY FILTERS
+          CATEGORY FILTERS — Plain editorial chips
           ══════════════════════════════════════════════════════ */}
       <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
-        {categories.map((cat) => (
-          <Chip
-            key={cat.value}
-            icon={<Icon name={cat.icon} size={14} />}
-            label={cat.label}
-            active={activeCategory === cat.value}
-            onClick={() => setActiveCategory(cat.value)}
-          />
-        ))}
+        {categories.map((cat) => {
+          const isActive = activeCategory === cat.value;
+          return (
+            <button
+              key={cat.value}
+              onClick={() => setActiveCategory(cat.value)}
+              className={`inline-flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
+                isActive
+                  ? "bg-gold text-midnight border border-gold"
+                  : "panel-editorial text-ivory/70 border border-white/[0.08] hover:border-gold/30 hover:text-white"
+              }`}
+            >
+              <Icon name={cat.icon} size={13} />
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-28" />
+            <div key={i} className="skeleton h-28 rounded-2xl" />
           ))}
         </div>
       ) : (
         <>
           {/* ══════════════════════════════════════════════════
-              HAPPENING TODAY
+              № 01 — HAPPENING TODAY
               ══════════════════════════════════════════════════ */}
           {todayEvents.length > 0 && (
             <section className="mb-8">
-              <div className="flex items-center gap-2 px-5 mb-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
-                <h2 className="font-heading font-bold text-[18px]">Happening Today</h2>
-                <Badge label={`${todayEvents.length} LIVE`} variant="coral" shine />
+              <div className="px-5 mb-3">
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                    № 01
+                  </span>
+                  <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                    Happening Today
+                  </span>
+                  <Tag tone="coral" size="xs">
+                    <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
+                    {todayEvents.length} live
+                  </Tag>
+                  <span className="ml-auto rule-hairline flex-1 self-center" />
+                </div>
+                <p className="text-[11px] text-ivory/40 mt-1">Live events going on right now</p>
               </div>
-              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+              <div className="space-y-2.5 stagger px-5">
                 {todayEvents.map((event) => (
-                  <EventCardHot key={event.id} event={event} />
+                  <EventListRow key={event.id} event={event} live />
                 ))}
               </div>
             </section>
           )}
 
           {/* ══════════════════════════════════════════════════
-              THIS WEEK — Horizontal card scroller
+              № 02 — THIS WEEK
               ══════════════════════════════════════════════════ */}
           {thisWeekEvents.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">This Week</h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">Don&apos;t miss out</p>
+                <div className="flex items-baseline gap-3">
+                  <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                    № {todayEvents.length > 0 ? "02" : "01"}
+                  </span>
+                  <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                    This Week
+                  </span>
+                  <span className="ml-auto rule-hairline flex-1 self-center" />
+                  <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums whitespace-nowrap">
+                    {thisWeekEvents.length}
+                  </span>
+                </div>
+                <p className="text-[11px] text-ivory/40 mt-1">Don&apos;t miss out</p>
               </div>
-              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+              <div className="space-y-2.5 stagger px-5">
                 {thisWeekEvents.map((event) => (
-                  <EventCardLarge key={event.id} event={event} />
+                  <EventListRow key={event.id} event={event} />
                 ))}
               </div>
             </section>
           )}
 
           {/* ══════════════════════════════════════════════════
-              FEATURED EVENTS — Big visual cards
+              FEATURED EVENTS — Editorial feature cards
               ══════════════════════════════════════════════════ */}
           {featured.length > 0 && activeCategory === "all" && (
             <section className="px-5 mb-8">
-              <div className="mb-3">
-                <EditorialHeader kicker="WHAT'S HAPPENING" title="Can't Miss" />
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № {todayEvents.length > 0 && thisWeekEvents.length > 0 ? "03" : todayEvents.length > 0 || thisWeekEvents.length > 0 ? "02" : "01"}
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Can&apos;t Miss
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
               </div>
               <div className="space-y-3">
                 {featured.slice(0, 3).map((event) => (
                   <EventCardFeatured key={event.id} event={event} />
                 ))}
-              </div>
-            </section>
-          )}
-
-          {/* ══════════════════════════════════════════════════
-              BROWSE BY CATEGORY — Visual grid
-              ══════════════════════════════════════════════════ */}
-          {activeCategory === "all" && (
-            <section className="px-5 mb-8">
-              <div className="mb-3">
-                <h2 className="font-heading font-bold text-[18px]">Browse Events</h2>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {categories.slice(1).map((cat) => {
-                  const catEvents = events.filter((e) => e.category === cat.value);
-                  const color = categoryColors[cat.value] ?? "#F2A900";
-                  return (
-                    <button
-                      key={cat.value}
-                      onClick={() => setActiveCategory(cat.value)}
-                      className="relative overflow-hidden rounded-2xl border border-border-subtle p-4 text-left press group"
-                      style={{
-                        background: `linear-gradient(135deg, ${color}15 0%, var(--color-royal) 100%)`,
-                      }}
-                    >
-                      <div
-                        className="absolute top-0 left-0 right-0 h-[2px] opacity-50"
-                        style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
-                      />
-                      <span className="block mb-1.5"><Icon name={cat.icon} size={28} /></span>
-                      <span className="font-heading text-[14px] font-bold block">{cat.label}</span>
-                      <span className="text-[11px] text-warm-gray">{catEvents.length} events</span>
-                    </button>
-                  );
-                })}
               </div>
             </section>
           )}
@@ -416,28 +381,69 @@ export default function EventsPage() {
           </div>
 
           {/* ══════════════════════════════════════════════════
-              ALL UPCOMING — Timeline-style list
+              BROWSE BY CATEGORY — Editorial grid
+              ══════════════════════════════════════════════════ */}
+          {activeCategory === "all" && (
+            <section className="px-5 mb-8">
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 04
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Browse by Category
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
+              </div>
+              <div className="grid grid-cols-2 gap-2.5">
+                {categories.slice(1).map((cat) => {
+                  const catEvents = events.filter((e) => e.category === cat.value);
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => setActiveCategory(cat.value)}
+                      className="rounded-xl panel-editorial p-3.5 text-left press hover:border-gold/30 transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center mb-2.5 group-hover:border-gold/40 transition-colors">
+                        <Icon name={cat.icon} size={18} className="text-gold" />
+                      </div>
+                      <p className="font-display text-[15px] leading-tight text-white">{cat.label}</p>
+                      <p className="text-[10px] font-semibold uppercase tracking-editorial-tight text-gold/70 mt-1 tabular-nums">
+                        {catEvents.length} {catEvents.length === 1 ? "event" : "events"}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ══════════════════════════════════════════════════
+              № 05 — ALL UPCOMING / FILTERED LIST
               ══════════════════════════════════════════════════ */}
           <section className="px-5 mb-8">
-            <div className="mb-3">
-              <h2 className="font-heading font-bold text-[18px]">
-                {activeCategory === "all" ? "All Events" : `${categories.find(c => c.value === activeCategory)?.label} Events`}
-              </h2>
-              <p className="text-[12px] text-warm-gray mt-0.5">
-                {events.length} event{events.length !== 1 ? "s" : ""} coming up
-              </p>
+            <div className="flex items-baseline gap-3 mb-3">
+              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                № 05
+              </span>
+              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
+              </span>
+              <span className="ml-auto rule-hairline flex-1 self-center" />
+              <span className="text-[10px] font-bold tracking-editorial uppercase text-ivory/50 tabular-nums whitespace-nowrap">
+                {events.length}
+              </span>
             </div>
-            <div className="space-y-3 stagger">
+            <div className="space-y-2.5 stagger">
               {(activeCategory !== "all" ? events : upcomingEvents.length > 0 ? upcomingEvents : events).map((event) => (
-                <EventCardRow key={event.id} event={event} />
+                <EventListRow key={event.id} event={event} />
               ))}
               {events.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-20 h-20 rounded-3xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                    <Icon name="calendar" size={40} />
+                  <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-gold/15 flex items-center justify-center mx-auto mb-4">
+                    <Icon name="calendar" size={28} className="text-gold" />
                   </div>
-                  <p className="font-heading font-bold text-[16px] mb-1">No events found</p>
-                  <p className="text-[13px] text-warm-gray max-w-[240px] mx-auto">
+                  <p className="font-display text-[17px] text-white mb-1">No events found</p>
+                  <p className="text-[12px] text-ivory/55 max-w-[240px] mx-auto">
                     Try a different category or check back soon for new events
                   </p>
                 </div>
@@ -446,33 +452,36 @@ export default function EventsPage() {
           </section>
 
           {/* ══════════════════════════════════════════════════
-              BOTTOM CTA
+              BOTTOM CTA — Host your event
               ══════════════════════════════════════════════════ */}
           <section className="px-5 mb-8">
-            <div className="relative rounded-2xl overflow-hidden p-5 border border-gold/10">
-              <div className="absolute inset-0" style={{
-                background: `
-                  linear-gradient(135deg, var(--color-royal) 0%, var(--color-deep) 100%),
-                  radial-gradient(ellipse at 20% 80%, rgba(242,169,0,0.15) 0%, transparent 50%),
-                  radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.08) 0%, transparent 40%)
-                `,
-              }} />
-              <div className="pattern-dots absolute inset-0 opacity-15" />
+            <div className="relative overflow-hidden rounded-2xl panel-editorial border-gold/25 p-5">
+              <div
+                className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+                }}
+              />
               <div className="relative">
-                <p className="text-gold text-[10px] font-bold tracking-[0.2em] uppercase mb-1">
+                <div className="w-10 h-10 rounded-xl border border-gold/25 bg-ink flex items-center justify-center mb-3">
+                  <Icon name="calendar" size={20} className="text-gold" />
+                </div>
+                <p className="text-[10px] font-bold tracking-editorial uppercase text-gold mb-1">
                   Got something planned?
                 </p>
-                <h3 className="font-heading font-bold text-[18px] mb-1.5">
-                  Host Your Event on Culture
+                <h3 className="font-display text-[22px] leading-tight text-white mb-1.5">
+                  Host Your Event
                 </h3>
-                <p className="font-display italic text-[13px] text-warm-gray leading-relaxed mb-4 max-w-[280px]">
+                <p className="text-[12px] text-ivory/55 leading-relaxed mb-4 max-w-[280px]">
                   Reach every citizen in {activeCity?.name ?? "your city"}. List your event for free.
                 </p>
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-1.5 bg-gold text-midnight px-5 py-2.5 rounded-xl text-[13px] font-bold press hover:bg-gold-light transition-colors"
+                  className="inline-flex items-center gap-2 bg-gold text-midnight rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press hover:bg-gold-light transition-colors"
                 >
                   List an Event
+                  <Icon name="arrow-right-thin" size={12} />
                 </Link>
               </div>
             </div>
@@ -484,223 +493,160 @@ export default function EventsPage() {
 }
 
 // ═══════════════════════════════════════════════════════════
-// SUB-COMPONENTS
+// SUB-COMPONENTS — All editorial, no per-category color
 // ═══════════════════════════════════════════════════════════
 
-/** Hot event card — for "Happening Today" */
-function EventCardHot({ event }: { event: Event }) {
+/** Editorial list row — the dominant card style for event lists */
+function EventListRow({ event, live = false }: { event: Event; live?: boolean }) {
   const date = formatEventDate(event.start_date);
-  const color = categoryColors[event.category] ?? "#F2A900";
 
   return (
-    <Link href={`/events/${event.id}`} className="shrink-0 w-[280px] press group">
-      <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-        {/* Image */}
-        <div className="h-[160px] relative">
-          {event.image_url ? (
-            <Image src={event.image_url} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-          ) : (
-            <Image src={categoryImages[event.category] ?? "/images/community-event.png"} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
-
-          {/* Live pulse */}
-          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-coral/80 backdrop-blur-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-            <span className="text-[10px] font-bold text-white tracking-wider">TODAY</span>
+    <Link
+      href={`/events/${event.id}`}
+      className="block press group"
+    >
+      <div className="rounded-2xl panel-editorial p-3.5 transition-colors hover:border-gold/30 relative overflow-hidden">
+        {live && (
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-coral" />
+        )}
+        <div className="flex items-center gap-3">
+          {/* Editorial date block */}
+          <div className="w-12 h-14 rounded-xl border border-gold/20 bg-ink flex flex-col items-center justify-center shrink-0">
+            <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">
+              {date.month}
+            </p>
+            <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">
+              {date.day}
+            </p>
           </div>
 
-          {/* Time badge */}
-          <div className="absolute top-3 right-3 bg-midnight/70 backdrop-blur-sm rounded-lg px-2.5 py-1">
-            <p className="text-[11px] font-bold" style={{ color }}>{date.time}</p>
-          </div>
-        </div>
-
-        <div className="p-3.5 bg-card">
-          <h3 className="font-heading font-bold text-[14px] mb-1.5 line-clamp-1">{event.title}</h3>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-[11px] text-warm-gray">
-              <Icon name="pin" size={12} />
-              <span className="truncate max-w-[140px]">{event.location_name ?? ""}</span>
+          {/* Middle — title + meta */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
+              {event.title}
+            </h3>
+            <div className="flex items-center gap-1.5 text-[11px] text-ivory/55 mt-0.5 truncate">
+              <Icon name="clock" size={11} className="text-gold/70" />
+              <span>{date.time}</span>
+              {event.location_name && (
+                <>
+                  <span className="w-0.5 h-0.5 rounded-full bg-ivory/40" />
+                  <span className="truncate">{event.location_name}</span>
+                </>
+              )}
             </div>
-            {(event.rsvp_count ?? 0) > 0 && (
-              <div className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-                <span className="text-[10px] text-emerald font-medium">{event.rsvp_count} going</span>
-              </div>
-            )}
+            {/* Tags row */}
+            <div className="flex items-center gap-1.5 flex-wrap mt-2">
+              <Tag tone="gold" size="xs">
+                {event.category}
+              </Tag>
+              {live && (
+                <Tag tone="coral" size="xs">
+                  <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
+                  Live
+                </Tag>
+              )}
+              {event.is_featured && (
+                <Tag tone="gold" size="xs">
+                  <Icon name="star" size={8} />
+                  Featured
+                </Tag>
+              )}
+              {(event.rsvp_count ?? 0) > 0 && (
+                <span className="inline-flex items-center gap-1 text-[10px] text-gold font-semibold tabular-nums">
+                  <Icon name="users" size={10} />
+                  {event.rsvp_count}
+                </span>
+              )}
+            </div>
           </div>
+
+          {/* Right — gold chevron */}
+          <Icon
+            name="arrow-right-thin"
+            size={14}
+            className="text-gold/60 group-hover:text-gold transition-colors shrink-0"
+          />
         </div>
       </div>
     </Link>
   );
 }
 
-/** Large card — for "This Week" horizontal scroller */
-function EventCardLarge({ event }: { event: Event }) {
-  const date = formatEventDate(event.start_date);
-  const color = categoryColors[event.category] ?? "#F2A900";
-
-  return (
-    <Link href={`/events/${event.id}`} className="shrink-0 w-[220px] press group">
-      <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
-        <div className="h-[130px] relative">
-          {event.image_url ? (
-            <Image src={event.image_url} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-          ) : (
-            <Image src={categoryImages[event.category] ?? "/images/community-event.png"} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
-
-          {/* Date badge */}
-          <div className="absolute top-2.5 left-2.5 bg-midnight/70 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center min-w-[44px]">
-            <p className="text-[9px] font-bold uppercase leading-none" style={{ color }}>{date.month}</p>
-            <p className="text-[16px] font-bold leading-none mt-0.5">{date.day}</p>
-          </div>
-
-          {event.is_featured && (
-            <div className="absolute top-2.5 right-2.5">
-              <Badge label="Hot" variant="coral" />
-            </div>
-          )}
-        </div>
-        <div className="p-3 bg-card">
-          <h3 className="font-heading font-bold text-[13px] mb-1 line-clamp-2">{event.title}</h3>
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-warm-gray truncate">{event.location_name ?? date.weekday}</span>
-            <span className="text-[10px] font-medium" style={{ color }}>{date.time}</span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/** Featured card — large visual card for "Can't Miss" */
+/** Featured card — big visual card for "Can't Miss" */
 function EventCardFeatured({ event }: { event: Event }) {
   const date = formatEventDate(event.start_date);
-  const color = categoryColors[event.category] ?? "#F2A900";
 
   return (
     <Link href={`/events/${event.id}`} className="block press group">
-      <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
+      <div className="relative rounded-2xl overflow-hidden panel-editorial hover:border-gold/30 transition-colors">
         <div className="h-[200px] relative">
           {event.image_url ? (
             <Image src={event.image_url} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
           ) : (
             <Image src={categoryImages[event.category] ?? "/images/community-event.png"} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-midnight/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-midnight/50 to-transparent" />
 
-          {/* Featured badge */}
+          {/* Featured tag */}
           <div className="absolute top-3 left-3">
-            <Badge label="Featured" variant="gold" size="md" shine />
+            <Tag tone="gold" size="sm">
+              <Icon name="star" size={9} />
+              Featured
+            </Tag>
           </div>
 
-          {/* Date badge */}
-          <div className="absolute top-3 right-3 bg-midnight/70 backdrop-blur-sm rounded-xl px-3 py-1.5 text-center min-w-[48px]">
-            <p className="text-[10px] font-bold uppercase leading-none" style={{ color }}>{date.month}</p>
-            <p className="text-[18px] font-bold leading-none mt-0.5">{date.day}</p>
+          {/* Editorial date block */}
+          <div className="absolute top-3 right-3 w-12 h-14 rounded-xl border border-gold/30 bg-ink/80 backdrop-blur-sm flex flex-col items-center justify-center">
+            <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">
+              {date.month}
+            </p>
+            <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">
+              {date.day}
+            </p>
           </div>
 
           {/* Bottom info overlay */}
           <div className="absolute bottom-0 inset-x-0 p-4">
-            <h3 className="font-heading font-bold text-[18px] mb-2 drop-shadow-lg leading-tight">
+            <h3 className="font-display text-[22px] leading-tight text-white mb-2 drop-shadow-lg">
               {event.title}
             </h3>
-            <div className="flex items-center gap-3 text-[12px] text-warm-gray">
+            <span className="block h-[2px] w-8 bg-gold mb-2" />
+            <div className="flex items-center gap-3 text-[11px] text-ivory/70">
               {event.location_name && (
-                <span className="flex items-center gap-1"><Icon name="pin" size={12} /> {event.location_name}</span>
-              )}
-              <span className="flex items-center gap-1"><Icon name="clock" size={12} /> {date.time}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-3.5 bg-card flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Badge label={event.category} variant={categoryBadgeVariant[event.category] ?? "purple"} />
-            {event.district && <Badge label={`District ${event.district}`} variant="cyan" />}
-          </div>
-          <div className="flex items-center gap-3">
-            {(event.rsvp_count ?? 0) > 0 && (
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald" />
-                <span className="text-[11px] text-emerald font-medium">{event.rsvp_count?.toLocaleString()} going</span>
-              </div>
-            )}
-            <span
-              className="px-3 py-1.5 rounded-xl text-[11px] font-bold press"
-              style={{ background: `${color}20`, color }}
-            >
-              Get Tickets →
-            </span>
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
-/** Row card — for the main events list */
-function EventCardRow({ event }: { event: Event }) {
-  const date = formatEventDate(event.start_date);
-  const color = categoryColors[event.category] ?? "#F2A900";
-
-  return (
-    <Link href={`/events/${event.id}`}>
-      <Card hover>
-        <div className="flex gap-3.5">
-          {/* Date column — vibrant */}
-          <div className="w-[52px] flex flex-col items-center justify-center shrink-0 rounded-xl py-2.5" style={{ background: `${color}12` }}>
-            <span className="text-[10px] font-bold uppercase leading-none" style={{ color }}>
-              {date.month}
-            </span>
-            <span className="text-[22px] font-bold leading-none mt-0.5" style={{ color }}>
-              {date.day}
-            </span>
-            <span className="text-[9px] text-warm-gray mt-0.5">{date.weekday}</span>
-          </div>
-
-          {/* Event info */}
-          <div className="flex-1 min-w-0 py-0.5">
-            <h3 className="font-heading font-bold text-[14px] mb-1 line-clamp-1">
-              {event.title}
-            </h3>
-            <div className="flex items-center gap-3 text-[11px] text-warm-gray mb-2">
-              <span className="flex items-center gap-1"><Icon name="clock" size={11} /> {date.time}</span>
-              {event.location_name && (
-                <span className="flex items-center gap-1 truncate"><Icon name="pin" size={11} /> {event.location_name}</span>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge
-                label={event.category}
-                variant={categoryBadgeVariant[event.category] ?? "purple"}
-              />
-              {(event.rsvp_count ?? 0) > 0 && (
-                <span className="text-[10px] text-emerald font-medium flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-                  {event.rsvp_count} going
+                <span className="flex items-center gap-1">
+                  <Icon name="pin" size={11} className="text-gold" />
+                  {event.location_name}
                 </span>
               )}
-              {event.is_featured && (
-                <span className="text-[9px] text-gold font-bold flex items-center gap-0.5"><Icon name="star" size={9} /> Featured</span>
-              )}
+              <span className="flex items-center gap-1">
+                <Icon name="clock" size={11} className="text-gold" />
+                {date.time}
+              </span>
             </div>
           </div>
+        </div>
 
-          {/* Thumbnail */}
-          <div className="w-[56px] h-[56px] rounded-xl shrink-0 overflow-hidden relative self-center">
-            {event.image_url ? (
-              <Image src={event.image_url} alt={event.title} fill className="object-cover" />
-            ) : (
-              <Image src={categoryImages[event.category] ?? "/images/community-event.png"} alt={event.title} fill className="object-cover" />
+        <div className="p-3.5 flex items-center justify-between gap-2 bg-ink/40">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Tag tone="gold" size="xs">{event.category}</Tag>
+            {event.district && (
+              <Tag tone="default" size="xs">District {event.district}</Tag>
+            )}
+            {(event.rsvp_count ?? 0) > 0 && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-gold font-semibold tabular-nums">
+                <Icon name="users" size={10} />
+                {event.rsvp_count?.toLocaleString()} going
+              </span>
             )}
           </div>
+          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors shrink-0">
+            Tickets
+            <Icon name="arrow-right-thin" size={11} />
+          </span>
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }
