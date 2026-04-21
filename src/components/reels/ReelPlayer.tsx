@@ -219,7 +219,7 @@ export default function ReelPlayer({
         <ReelEngagementBar
           reelId={reel.id}
           authorId={reel.author_id}
-          initialReactionCounts={reactionCounts}
+          initialReactionCounts={reel.reaction_counts || {}}
           initialCommentCount={reel.comment_count}
           initialUserReactions={userReactions}
           userId={userId}
