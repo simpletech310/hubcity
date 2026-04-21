@@ -484,6 +484,7 @@ function Sheet({
             <div className="absolute bottom-[72px] left-4 right-4 rounded-2xl overflow-hidden z-10">
               {gifOpen && (
                 <GifPicker
+                  open={true}
                   onClose={() => setGifOpen(false)}
                   onPick={handleGif}
                 />
