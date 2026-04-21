@@ -491,6 +491,7 @@ function Sheet({
               )}
               {emojiOpen && !gifOpen && (
                 <EmojiPicker
+                  open={true}
                   onPick={(e) => {
                     handleEmoji(e);
                     setEmojiOpen(false);
