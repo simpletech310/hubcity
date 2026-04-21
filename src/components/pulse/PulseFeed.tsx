@@ -333,7 +333,7 @@ export default function PulseFeed({
     ? reels.filter((r) => r.author_id && followedSet.has(r.author_id))
     : reels;
   const visibleLiveStreams = inFollowing
-    ? liveStreams.filter((s) => s.creator_id && followedSet.has(s.creator_id))
+    ? liveStreams.filter((s) => s.created_by && followedSet.has(s.created_by))
     : liveStreams;
 
   // Build unified feed
