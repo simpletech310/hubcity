@@ -358,14 +358,14 @@ export default function HealthPage() {
       <div className="px-5 -mt-3 mb-5 relative z-10">
         <div className="grid grid-cols-4 gap-2">
           {[
-            { label: "Resources", value: resources.length.toString(), color: "#3B82F6" },
-            { label: "Free", value: freeCount.toString(), color: "#22C55E" },
-            { label: "Events", value: (upcomingHealthEvents.length + dbEvents.length).toString(), color: "#8B5CF6" },
-            { label: "Emergency", value: emergencyCount.toString(), color: "#EF4444" },
+            { label: "Resources", value: resources.length.toString() },
+            { label: "Free", value: freeCount.toString() },
+            { label: "Events", value: (upcomingHealthEvents.length + dbEvents.length).toString() },
+            { label: "Emergency", value: emergencyCount.toString() },
           ].map((stat) => (
-            <div key={stat.label} className="bg-card border border-border-subtle rounded-xl p-2.5 text-center">
-              <p className="text-base font-bold font-heading" style={{ color: stat.color }}>{stat.value}</p>
-              <p className="text-[9px] text-white/30 uppercase tracking-wider mt-0.5">{stat.label}</p>
+            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
+              <p className="font-display text-[20px] leading-none text-gold tabular-nums">{stat.value}</p>
+              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -379,11 +379,13 @@ export default function HealthPage() {
         {(() => {
           const tip = wellnessTips[new Date().getDay() % wellnessTips.length];
           return (
-            <div className="rounded-2xl p-4 flex items-center gap-3 border" style={{ background: `${tip.color}08`, borderColor: `${tip.color}15` }}>
-              <Icon name={tip.icon} size={24} />
-              <div className="flex-1">
-                <p className="text-[10px] text-white/30 uppercase tracking-wider font-semibold mb-0.5">Daily Wellness Tip</p>
-                <p className="text-[12px] text-white/60 leading-relaxed">{tip.tip}</p>
+            <div className="rounded-2xl panel-editorial p-4 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0">
+                <Icon name={tip.icon} size={18} className="text-gold" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] text-gold uppercase tracking-editorial font-bold mb-0.5">Daily Wellness Tip</p>
+                <p className="text-[12px] text-ivory/70 leading-relaxed">{tip.tip}</p>
               </div>
             </div>
           );
@@ -393,40 +395,41 @@ export default function HealthPage() {
       {/* ─── Community Fitness & Activities ─── */}
       <section className="mb-6">
         <div className="px-5 mb-3">
-          <h2 className="font-heading font-bold text-base flex items-center gap-2">
-            <div className="w-1 h-5 rounded-full bg-emerald" />
-            Community Fitness
-          </h2>
-          <p className="text-[11px] text-white/30">Free weekly activities for everyone</p>
+          <div className="flex items-baseline gap-3">
+            <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+              № 01
+            </span>
+            <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+              Community Fitness
+            </span>
+            <span className="ml-auto rule-hairline flex-1 self-center" />
+          </div>
+          <p className="text-[11px] text-ivory/40 mt-1">Free weekly activities for everyone</p>
         </div>
         <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
           {wellnessActivities.map((activity) => (
             <div
               key={activity.name}
-              className="shrink-0 w-[240px] rounded-2xl border overflow-hidden press"
-              style={{ borderColor: `${activity.color}20` }}
+              className="shrink-0 w-[240px] rounded-2xl panel-editorial overflow-hidden press hover:border-gold/30 transition-colors"
             >
-              <div
-                className="p-4 h-full"
-                style={{ background: `linear-gradient(135deg, ${activity.color}08, ${activity.color}03)` }}
-              >
+              <div className="p-4 h-full">
                 <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${activity.color}15` }}>
-                    <Icon name={activity.icon} size={20} />
+                  <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0">
+                    <Icon name={activity.icon} size={18} className="text-gold" />
                   </div>
-                  <div>
-                    <h3 className="font-heading font-bold text-[13px]">{activity.name}</h3>
-                    <p className="text-[10px] font-semibold" style={{ color: activity.color }}>{activity.tagline}</p>
+                  <div className="min-w-0">
+                    <h3 className="font-display text-[16px] leading-tight text-white truncate">{activity.name}</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-editorial-tight text-gold/80 truncate">{activity.tagline}</p>
                   </div>
                 </div>
-                <p className="text-[11px] text-white/40 leading-relaxed mb-3 line-clamp-2">{activity.description}</p>
-                <div className="flex items-center gap-3 text-[10px] text-white/30">
+                <p className="text-[11px] text-ivory/55 leading-relaxed mb-3 line-clamp-2">{activity.description}</p>
+                <div className="flex items-center gap-3 text-[10px] text-ivory/50">
                   <span className="flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="5" cy="5" r="4"/><path d="M5 3v2l1.5 1"/></svg>
+                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold"><circle cx="5" cy="5" r="4"/><path d="M5 3v2l1.5 1"/></svg>
                     {activity.schedule}
                   </span>
                 </div>
-                <p className="text-[10px] text-white/25 mt-1">{activity.location}</p>
+                <p className="text-[10px] text-ivory/40 mt-1">{activity.location}</p>
               </div>
             </div>
           ))}
@@ -435,15 +438,19 @@ export default function HealthPage() {
 
       {/* ─── Upcoming Health Events ─── */}
       <section className="px-5 mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h2 className="font-heading font-bold text-base flex items-center gap-2">
-              <div className="w-1 h-5 rounded-full bg-coral" />
-              Health Events
-            </h2>
-            <p className="text-[11px] text-white/30">Blood drives, fairs, runs & more</p>
+        <div className="flex items-start justify-between mb-3 gap-3">
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-3">
+              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                № 02
+              </span>
+              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                Health Events
+              </span>
+            </div>
+            <p className="text-[11px] text-ivory/40 mt-1">Blood drives, fairs, runs &amp; more</p>
           </div>
-          <Link href="/events" className="text-[11px] text-gold font-semibold press">All Events</Link>
+          <Link href="/events" className="shrink-0 text-[10px] font-bold tracking-editorial-tight uppercase text-gold press">All Events →</Link>
         </div>
 
         <div className="space-y-2.5 stagger">
@@ -452,24 +459,23 @@ export default function HealthPage() {
             return (
               <div
                 key={event.id}
-                className="bg-card rounded-2xl border overflow-hidden transition-all hover:border-white/10"
-                style={{ borderColor: `${event.color}15`, borderLeftWidth: 3, borderLeftColor: event.color }}
+                className="rounded-2xl panel-editorial overflow-hidden transition-colors hover:border-gold/25"
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
-                    {/* Date block */}
-                    <div className="w-12 h-14 rounded-xl border border-border-subtle flex flex-col items-center justify-center shrink-0 bg-midnight/50">
-                      <p className="text-[9px] font-bold uppercase leading-none" style={{ color: event.color }}>{month}</p>
-                      <p className="text-lg font-bold leading-none mt-0.5">{day}</p>
+                    {/* Editorial date block */}
+                    <div className="w-12 h-14 rounded-xl border border-gold/20 flex flex-col items-center justify-center shrink-0 bg-ink">
+                      <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">{month}</p>
+                      <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">{day}</p>
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Icon name={event.icon} size={16} />
-                        <h3 className="font-heading font-bold text-[13px] truncate">{event.title}</h3>
+                        <Icon name={event.icon} size={14} className="text-gold" />
+                        <h3 className="font-display text-[16px] leading-tight text-white truncate">{event.title}</h3>
                       </div>
-                      <p className="text-[11px] text-white/40 line-clamp-2 mb-2">{event.description}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-white/30">
+                      <p className="text-[11px] text-ivory/55 line-clamp-2 mb-2">{event.description}</p>
+                      <div className="flex items-center gap-3 text-[10px] text-ivory/40">
                         <span>{event.time}</span>
                         <span>{event.location}</span>
                       </div>
@@ -485,15 +491,15 @@ export default function HealthPage() {
             const { month, day } = formatEventDate(event.start_date);
             return (
               <Link key={event.id} href={`/events/${event.id}`} className="block press">
-                <div className="bg-card rounded-2xl border border-border-subtle p-4 hover:border-white/10 transition-all">
+                <div className="rounded-2xl panel-editorial p-4 hover:border-gold/30 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-14 rounded-xl border border-border-subtle flex flex-col items-center justify-center shrink-0 bg-midnight/50">
-                      <p className="text-[9px] text-gold font-bold uppercase leading-none">{month}</p>
-                      <p className="text-lg font-bold leading-none mt-0.5">{day}</p>
+                    <div className="w-12 h-14 rounded-xl border border-gold/20 flex flex-col items-center justify-center shrink-0 bg-ink">
+                      <p className="text-[9px] text-gold font-bold uppercase tracking-editorial-tight leading-none">{month}</p>
+                      <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">{day}</p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-heading font-bold text-[13px] truncate">{event.title}</p>
-                      {event.location_name && <p className="text-[11px] text-white/30 truncate">{event.location_name}</p>}
+                      <p className="font-display text-[16px] leading-tight text-white truncate">{event.title}</p>
+                      {event.location_name && <p className="text-[11px] text-ivory/45 truncate mt-0.5">{event.location_name}</p>}
                     </div>
                   </div>
                 </div>
@@ -505,27 +511,33 @@ export default function HealthPage() {
 
       {/* ─── Outdoor Fitness Spots ─── */}
       <section className="px-5 mb-6">
-        <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          Outdoor Fitness Spots
-        </h2>
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+            № 03
+          </span>
+          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+            Outdoor Fitness Spots
+          </span>
+          <span className="ml-auto rule-hairline flex-1 self-center" />
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {fitnessSpots.map((spot) => (
             <div
               key={spot.name}
-              className="rounded-xl p-3.5 border press"
-              style={{ background: `${spot.color}06`, borderColor: `${spot.color}15` }}
+              className="rounded-xl panel-editorial p-3.5 press hover:border-gold/30 transition-colors"
             >
               <div className="flex items-center gap-2 mb-2">
-                <Icon name={spot.icon} size={20} />
-                <div>
-                  <p className="font-heading font-bold text-[12px]">{spot.name}</p>
-                  <p className="text-[9px] text-white/30">{spot.type}</p>
+                <div className="w-9 h-9 rounded-lg border border-gold/20 bg-ink flex items-center justify-center">
+                  <Icon name={spot.icon} size={16} className="text-gold" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-display text-[14px] leading-tight text-white truncate">{spot.name}</p>
+                  <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">{spot.type}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1">
                 {spot.features.map((f) => (
-                  <span key={f} className="text-[9px] bg-white/[0.04] text-white/40 rounded-full px-2 py-0.5 border border-white/[0.06]">{f}</span>
+                  <span key={f} className="text-[9px] font-semibold uppercase tracking-editorial-tight bg-white/[0.03] text-ivory/55 rounded-full px-2 py-0.5 border border-white/[0.06]">{f}</span>
                 ))}
               </div>
             </div>
@@ -537,10 +549,15 @@ export default function HealthPage() {
 
       {/* ─── Search ─── */}
       <div className="px-5 mb-4">
-        <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-hc-blue" />
-          Find Healthcare
-        </h2>
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+            № 04
+          </span>
+          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+            Find Healthcare
+          </span>
+          <span className="ml-auto rule-hairline flex-1 self-center" />
+        </div>
         <div className="relative">
           <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25" strokeLinecap="round">
             <circle cx="8" cy="8" r="6" />
@@ -656,32 +673,35 @@ export default function HealthPage() {
 
       {/* ─── Mental Health CTA ─── */}
       <section className="px-5 mb-6">
-        <div className="relative overflow-hidden rounded-2xl border border-gold/20 p-5" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02))" }}>
-          <div className="absolute top-0 right-0 w-24 h-24 opacity-10">
-            <svg viewBox="0 0 100 100" fill="none" stroke="#8B5CF6" strokeWidth="1">
-              <circle cx="80" cy="20" r="40" />
-              <circle cx="80" cy="20" r="25" />
-            </svg>
-          </div>
+        <div className="relative overflow-hidden rounded-2xl panel-editorial border-gold/25 p-5">
+          <div
+            className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none"
+            style={{
+              backgroundImage:
+                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
+            }}
+          />
           <div className="relative">
-            <span className="block mb-2"><Icon name="brain" size={24} /></span>
-            <h3 className="font-heading font-bold text-lg mb-1">Mental Health Matters</h3>
-            <p className="text-[12px] text-white/40 leading-relaxed mb-3">
+            <div className="w-10 h-10 rounded-xl border border-gold/25 bg-ink flex items-center justify-center mb-3">
+              <Icon name="brain" size={20} className="text-gold" />
+            </div>
+            <h3 className="font-display text-[22px] leading-tight text-white mb-1">Mental Health Matters</h3>
+            <p className="text-[12px] text-ivory/55 leading-relaxed mb-4 max-w-md">
               It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all {activeCity?.name ?? "local"} residents.
             </p>
             <div className="flex gap-2">
               <a
                 href="tel:988"
-                className="inline-flex items-center gap-2 bg-hc-purple text-white rounded-full px-4 py-2.5 text-[12px] font-bold press"
+                className="inline-flex items-center gap-2 bg-gold text-midnight rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press"
               >
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07" />
                 </svg>
                 Call 988
               </a>
               <button
                 onClick={() => { setActiveCategory("mental_health"); }}
-                className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2.5 text-[12px] font-medium press border border-white/10"
+                className="inline-flex items-center gap-2 bg-transparent text-white rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press border border-gold/30 hover:bg-gold/10 transition-colors"
               >
                 Find Help
               </button>
@@ -692,22 +712,29 @@ export default function HealthPage() {
 
       {/* ─── Know Your Numbers ─── */}
       <section className="px-5 mb-6">
-        <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-cyan" />
-          Know Your Numbers
-        </h2>
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+            № 05
+          </span>
+          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+            Know Your Numbers
+          </span>
+          <span className="ml-auto rule-hairline flex-1 self-center" />
+        </div>
         <div className="grid grid-cols-2 gap-2.5">
           {[
-            { label: "Blood Pressure", target: "< 120/80", icon: "heart-pulse" as IconName, color: "#EF4444" },
-            { label: "Blood Sugar", target: "< 100 mg/dL", icon: "pulse" as IconName, color: "#D97706" },
-            { label: "BMI", target: "18.5 - 24.9", icon: "chart" as IconName, color: "#3B82F6" },
-            { label: "Cholesterol", target: "< 200 mg/dL", icon: "stethoscope" as IconName, color: "#8B5CF6" },
+            { label: "Blood Pressure", target: "< 120/80", icon: "heart-pulse" as IconName },
+            { label: "Blood Sugar", target: "< 100 mg/dL", icon: "pulse" as IconName },
+            { label: "BMI", target: "18.5 - 24.9", icon: "chart" as IconName },
+            { label: "Cholesterol", target: "< 200 mg/dL", icon: "stethoscope" as IconName },
           ].map((item) => (
-            <div key={item.label} className="bg-card rounded-xl border border-border-subtle p-3 text-center">
-              <span className="block mb-1"><Icon name={item.icon} size={20} /></span>
-              <p className="text-[11px] font-semibold text-white/60">{item.label}</p>
-              <p className="text-[12px] font-bold mt-0.5" style={{ color: item.color }}>{item.target}</p>
-              <p className="text-[9px] text-white/20 mt-0.5">Healthy Range</p>
+            <div key={item.label} className="rounded-xl panel-editorial p-3 text-center">
+              <div className="mx-auto w-9 h-9 rounded-lg border border-gold/20 bg-ink flex items-center justify-center mb-2">
+                <Icon name={item.icon} size={16} className="text-gold" />
+              </div>
+              <p className="text-[10px] font-semibold uppercase tracking-editorial-tight text-ivory/55">{item.label}</p>
+              <p className="font-display text-[16px] leading-tight text-gold mt-1 tabular-nums">{item.target}</p>
+              <p className="text-[9px] text-ivory/35 mt-1 uppercase tracking-editorial-tight">Healthy Range</p>
             </div>
           ))}
         </div>
@@ -715,32 +742,37 @@ export default function HealthPage() {
 
       {/* ─── Health Hotlines ─── */}
       <section className="px-5 mb-8">
-        <h2 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full bg-coral" />
-          Health Hotlines
-        </h2>
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+            № 06
+          </span>
+          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+            Health Hotlines
+          </span>
+          <span className="ml-auto rule-hairline flex-1 self-center" />
+        </div>
         <div className="space-y-2">
           {[
-            { name: "Suicide & Crisis Lifeline", number: "988", color: "#EF4444" },
-            { name: "Poison Control", number: "1-800-222-1222", color: "#D97706" },
-            { name: "SAMHSA Helpline", number: "1-800-662-4357", color: "#22C55E" },
-            { name: "Domestic Violence", number: "1-800-799-7233", color: "#8B5CF6" },
+            { name: "Suicide & Crisis Lifeline", number: "988" },
+            { name: "Poison Control", number: "1-800-222-1222" },
+            { name: "SAMHSA Helpline", number: "1-800-662-4357" },
+            { name: "Domestic Violence", number: "1-800-799-7233" },
           ].map((line) => (
             <a
               key={line.name}
               href={`tel:${line.number.replace(/-/g, "")}`}
-              className="flex items-center gap-3 bg-card rounded-xl border border-border-subtle p-3 press hover:border-white/10 transition-all"
+              className="flex items-center gap-3 rounded-xl panel-editorial p-3 press hover:border-gold/30 transition-colors"
             >
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: `${line.color}15` }}>
-                <svg width="14" height="14" fill="none" stroke={line.color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-8 h-8 rounded-full border border-coral/25 bg-coral/10 flex items-center justify-center shrink-0">
+                <svg width="14" height="14" fill="none" stroke="currentColor" className="text-coral" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="text-[12px] font-semibold">{line.name}</p>
-                <p className="text-[11px] font-bold" style={{ color: line.color }}>{line.number}</p>
+                <p className="font-display text-[14px] leading-tight text-white">{line.name}</p>
+                <p className="text-[11px] font-bold text-gold tabular-nums">{line.number}</p>
               </div>
-              <span className="text-[10px] text-white/20">24/7</span>
+              <span className="text-[10px] font-bold uppercase tracking-editorial-tight text-ivory/35">24/7</span>
             </a>
           ))}
         </div>

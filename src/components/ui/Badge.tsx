@@ -18,14 +18,17 @@ interface BadgeProps {
   shine?: boolean;
 }
 
+// Editorial palette: every variant now resolves to black-ink panel + gold or
+// status accent. 'purple' and 'blue' are kept for back-compat but remap to
+// the neutral ink-and-gold treatment so no call site shows legacy hc-purple.
 const variantStyles: Record<BadgeVariant, string> = {
-  gold: "bg-gold/15 text-gold-light border-gold/20",
-  emerald: "bg-emerald/15 text-emerald border-emerald/20",
-  coral: "bg-coral/15 text-coral border-coral/20",
-  cyan: "bg-cyan/15 text-cyan border-cyan/20",
-  pink: "bg-pink/15 text-pink border-pink/20",
-  purple: "bg-hc-purple/15 text-gold border-gold/20",
-  blue: "bg-hc-blue/15 text-hc-blue border-hc-blue/20",
+  gold: "bg-gold/10 text-gold border-gold/25",
+  emerald: "bg-emerald/10 text-emerald border-emerald/25",
+  coral: "bg-coral/10 text-coral border-coral/25",
+  cyan: "bg-cyan/10 text-cyan border-cyan/25",
+  pink: "bg-gold/10 text-gold border-gold/25",
+  purple: "bg-white/[0.04] text-ivory/80 border-white/10",
+  blue: "bg-white/[0.04] text-ivory/80 border-white/10",
 };
 
 export default function Badge({

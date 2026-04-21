@@ -1,17 +1,16 @@
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import type { HealthResource } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import Tag from "@/components/ui/editorial/Tag";
 
-const categoryEmojis: Record<string, string> = {
-  clinic: "heart-pulse",
-  hospital: "building",
-  mental_health: "lightbulb",
-  dental: "heart-pulse",
+const categoryIcons: Record<string, IconName> = {
+  clinic: "stethoscope",
+  hospital: "first-aid",
+  mental_health: "brain",
+  dental: "tooth",
   vision: "eye",
-  pharmacy: "heart-pulse",
+  pharmacy: "pill",
   emergency: "alert",
   substance_abuse: "shield",
   prenatal: "baby",
@@ -39,80 +38,90 @@ interface HealthResourceCardProps {
   resource: HealthResource;
 }
 
+/**
+ * Editorial listing card — ink panel, hairline gold border, DM Serif name,
+ * compact meta tags. The whole card is the link; only the category icon on
+ * the left breaks the grid to add a subtle gold ghost border.
+ */
 export default function HealthResourceCard({ resource }: HealthResourceCardProps) {
+  const iconName = categoryIcons[resource.category] ?? "heart-pulse";
+
   return (
-    <Link href={`/health/${resource.slug}`}>
-      <Card hover>
-        {/* Top row: icon, name, emergency indicator */}
-        <div className="flex items-start justify-between mb-2.5">
-          <div className="flex items-start gap-3 flex-1 min-w-0 mr-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center shrink-0 border border-border-subtle">
-              <Icon name={(categoryEmojis[resource.category] ?? "heart-pulse") as IconName} size={20} />
-            </div>
-            <div className="min-w-0">
-              <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">
+    <Link
+      href={`/health/${resource.slug}`}
+      className="group block relative rounded-2xl panel-editorial hover:border-gold/30 transition-colors press"
+    >
+      <div className="p-4">
+        {/* Top row: icon + name + emergency dot */}
+        <div className="flex items-start gap-3">
+          <div className="w-12 h-12 rounded-xl border border-gold/15 bg-ink flex items-center justify-center shrink-0">
+            <Icon name={iconName} size={20} className="text-gold" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
                 {resource.name}
               </h3>
-              {resource.organization && (
-                <p className="text-[11px] text-txt-secondary font-medium">
-                  {resource.organization}
-                </p>
+              {resource.is_emergency && (
+                <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-editorial-tight text-coral bg-coral/10 border border-coral/30 rounded-full px-2 py-0.5">
+                  <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
+                  911
+                </span>
               )}
             </div>
+            {resource.organization && (
+              <p className="text-[11px] text-ivory/55 font-medium mt-0.5 line-clamp-1">
+                {resource.organization}
+              </p>
+            )}
           </div>
-          {resource.is_emergency && (
-            <div className="flex items-center gap-1.5 bg-red-500/15 border border-red-500/20 rounded-full px-2.5 py-0.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[9px] font-semibold text-red-400 uppercase tracking-wide">
-                Emergency
-              </span>
-            </div>
+        </div>
+
+        {/* Meta chip row */}
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          <Tag tone="gold" size="xs">
+            {categoryLabels[resource.category] ?? resource.category}
+          </Tag>
+          {resource.is_free && (
+            <Tag tone="emerald" size="xs">Free</Tag>
+          )}
+          {resource.accepts_medi_cal && (
+            <Tag tone="cyan" size="xs">Medi-Cal</Tag>
+          )}
+          {resource.accepts_uninsured && (
+            <Tag tone="default" size="xs">Uninsured OK</Tag>
           )}
         </div>
 
         {/* Address */}
         {resource.address && (
-          <p className="text-[11px] text-txt-secondary mb-2.5 line-clamp-1">
-            <Icon name="pin" size={16} /> {resource.address}
-          </p>
+          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-ivory/55">
+            <Icon name="pin" size={12} className="text-gold/60 shrink-0" />
+            <span className="line-clamp-1">{resource.address}</span>
+          </div>
         )}
 
-        {/* Badges */}
-        <div className="flex items-center justify-between">
-          <div className="flex flex-wrap gap-1.5">
-            <Badge
-              label={categoryLabels[resource.category] ?? resource.category}
-              variant="purple"
-            />
-            {resource.is_free && <Badge label="Free" variant="emerald" />}
-            {resource.accepts_medi_cal && (
-              <Badge label="Medi-Cal" variant="cyan" />
-            )}
-            {resource.accepts_uninsured && (
-              <Badge label="Uninsured OK" variant="gold" />
-            )}
-          </div>
-          <svg
-            width="16"
-            height="16"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="text-txt-secondary shrink-0 ml-2"
-            strokeLinecap="round"
-          >
-            <path d="M6 4l4 4-4 4" />
-          </svg>
-        </div>
-
-        {/* Phone */}
+        {/* Divider + phone */}
         {resource.phone && (
-          <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-border-subtle">
-            <span className="text-xs"><Icon name="phone" size={14} /></span>
-            <p className="text-[11px] text-gold font-semibold">{resource.phone}</p>
-          </div>
+          <>
+            <div className="mt-3 rule-hairline" />
+            <div className="mt-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Icon name="phone" size={13} className="text-gold" />
+                <span className="text-[12px] text-gold font-semibold tabular-nums">
+                  {resource.phone}
+                </span>
+              </div>
+              <Icon
+                name="arrow-right-thin"
+                size={14}
+                className="text-gold/70 group-hover:text-gold transition-colors"
+              />
+            </div>
+          </>
         )}
-      </Card>
+      </div>
     </Link>
   );
 }

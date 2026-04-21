@@ -7,6 +7,7 @@ import Chip from "@/components/ui/Chip";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import Tag from "@/components/ui/editorial/Tag";
 import { createClient } from "@/lib/supabase/client";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { Resource } from "@/types/database";
@@ -470,12 +471,17 @@ export default function ResourcesPage() {
         </div>
       ) : (
         <>
-          {/* ── Browse by Category (grid, home view only) ── */}
+          {/* ── Browse by Need (grid, home view only) ── */}
           {activeCategory === "all" && !search && (
             <section className="px-5 mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-hc-blue" />
-                <h2 className="font-heading font-bold text-base">Browse by Need</h2>
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 01
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Browse by Need
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
               </div>
               <div className="grid grid-cols-3 gap-2">
                 {categories.filter((c) => c.value !== "all").map((cat) => {
@@ -485,14 +491,17 @@ export default function ResourcesPage() {
                     <button
                       key={cat.value}
                       onClick={() => setActiveCategory(cat.value)}
-                      className="rounded-xl glass-card border border-border-subtle glass-inner-light p-3 flex flex-col items-center gap-1.5 press hover:border-gold/20 transition-colors relative overflow-hidden"
+                      className="group rounded-xl panel-editorial p-3 flex flex-col items-center gap-2 press hover:border-gold/30 transition-colors relative"
                     >
-                      <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: cat.color }} />
-                      <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: `${cat.color}15` }}>
-                        <Icon name={cat.icon} size={20} className="text-white/70" />
+                      <div className="w-10 h-10 rounded-lg border border-gold/15 bg-ink flex items-center justify-center group-hover:border-gold/40 transition-colors">
+                        <Icon name={cat.icon} size={18} className="text-gold" />
                       </div>
-                      <p className="text-[10px] font-bold">{cat.label}</p>
-                      <p className="text-[9px] text-txt-secondary">{count}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-editorial-tight text-ivory/90">
+                        {cat.label}
+                      </p>
+                      <p className="text-[9px] text-gold/70 font-semibold tabular-nums">
+                        {count}
+                      </p>
                     </button>
                   );
                 })}
@@ -503,13 +512,18 @@ export default function ResourcesPage() {
           {/* ── Urgent / Deadline Resources ── */}
           {urgentResources.length > 0 && (
             <section className="px-5 mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-coral" />
-                <h2 className="font-heading font-bold text-base">Act Now</h2>
-                <div className="flex items-center gap-1.5 ml-2 px-2 py-0.5 rounded-full bg-coral/10 border border-coral/20">
-                  <div className="w-1.5 h-1.5 rounded-full bg-coral pulse-glow" />
-                  <span className="text-[9px] font-bold text-coral uppercase">{urgentResources.length} urgent</span>
-                </div>
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 02
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Act Now
+                </span>
+                <Tag tone="coral" size="xs">
+                  <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
+                  {urgentResources.length} urgent
+                </Tag>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
               </div>
               <div className="space-y-3">
                 {urgentResources.map((r) => (
@@ -522,12 +536,17 @@ export default function ResourcesPage() {
           {/* ── Open Resources ── */}
           {openResources.length > 0 && (
             <section className="px-5 mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-emerald" />
-                <h2 className="font-heading font-bold text-base">
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 03
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
                   {activeCategory === "all" ? "Available Now" : categories.find((c) => c.value === activeCategory)?.label}
-                </h2>
-                <span className="ml-auto text-xs text-txt-secondary">{openResources.length} open</span>
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums whitespace-nowrap">
+                  {openResources.length} open
+                </span>
               </div>
               <div className="space-y-3 stagger">
                 {openResources.map((r) => (
@@ -540,10 +559,17 @@ export default function ResourcesPage() {
           {/* ── Other Resources ── */}
           {otherResources.length > 0 && (
             <section className="px-5 mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-1 h-5 rounded-full bg-cyan" />
-                <h2 className="font-heading font-bold text-base">Coming Soon & More</h2>
-                <span className="ml-auto text-xs text-txt-secondary">{otherResources.length}</span>
+              <div className="flex items-baseline gap-3 mb-3">
+                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  № 04
+                </span>
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  Coming Soon &amp; More
+                </span>
+                <span className="ml-auto rule-hairline flex-1 self-center" />
+                <span className="text-[10px] font-bold tracking-editorial uppercase text-ivory/50 tabular-nums whitespace-nowrap">
+                  {otherResources.length}
+                </span>
               </div>
               <div className="space-y-3 stagger">
                 {otherResources.map((r) => (
@@ -575,16 +601,21 @@ export default function ResourcesPage() {
 
           {/* ── Need Help CTA ── */}
           <div className="px-5 mt-4 mb-4">
-            <div className="rounded-2xl bg-gradient-to-r from-emerald/10 via-emerald/5 to-transparent border border-emerald/15 p-5 relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-emerald to-transparent" />
+            <div className="rounded-2xl panel-editorial p-5 relative overflow-hidden">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
-                  <Icon name="phone" size={24} className="text-emerald" />
+                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
+                  <Icon name="phone" size={22} className="text-gold" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-heading font-bold text-sm mb-0.5">Need Immediate Help?</p>
-                  <p className="text-[11px] text-txt-secondary">Call 211 for free community referrals 24/7</p>
+                  <p className="font-display text-[17px] leading-tight text-white">Need immediate help?</p>
+                  <p className="text-[11px] text-ivory/60 mt-0.5">Call 211 for free community referrals, 24/7.</p>
                 </div>
+                <a
+                  href="tel:211"
+                  className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press"
+                >
+                  Call 211
+                </a>
               </div>
             </div>
           </div>
@@ -599,9 +630,14 @@ export default function ResourcesPage() {
 // ---------------------------------------------------------------------------
 
 function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: boolean }) {
-  const accentColor = categoryColors[r.category] || "#F2A900";
   const status = statusConfig[r.status] ?? { variant: "cyan" as const, label: r.status };
-  const variant = categoryBadgeVariant[r.category] || "gold";
+  const statusToneMap: Record<string, "emerald" | "coral" | "cyan" | "gold" | "default"> = {
+    emerald: "emerald",
+    coral: "coral",
+    cyan: "cyan",
+    gold: "gold",
+  };
+  const statusTone = statusToneMap[status.variant] ?? "default";
 
   const daysUntilDeadline = r.deadline
     ? Math.ceil((new Date(r.deadline).getTime() - Date.now()) / 86400000)
@@ -611,125 +647,131 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
   const spotsTotal = r.max_spots ?? 0;
   const spotsPct = spotsTotal > 0 ? Math.min((spotsUsed / spotsTotal) * 100, 100) : 0;
   const spotsLeft = spotsTotal > 0 ? spotsTotal - spotsUsed : 0;
+  const iconName = (categoryIcons[r.category] as IconName) ?? "document";
 
   return (
-    <Link href={`/resources/${r.id}`}>
-      <div
-        className={`rounded-2xl bg-card border overflow-hidden press hover:border-gold/20 transition-colors relative ${
-          urgent ? "border-coral/20" : "border-border-subtle"
-        }`}
-      >
-        {/* Top accent line */}
-        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: urgent ? "#EF4444" : accentColor }} />
+    <Link
+      href={`/resources/${r.id}`}
+      className={`group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden relative ${
+        urgent ? "border-coral/25" : ""
+      }`}
+    >
+      {/* Urgent gets a thin coral rail; everything else gets a gold hairline */}
+      {urgent && (
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-coral" />
+      )}
 
-        <div className="flex gap-0">
-          {/* Image / Icon Panel */}
-          <div className="w-[90px] shrink-0 relative overflow-hidden" style={{ background: `${accentColor}08` }}>
-            {r.image_url ? (
-              <img src={r.image_url} alt={r.name} className="w-full h-full object-cover min-h-[130px]" />
-            ) : (
-              <div className="w-full h-full min-h-[130px] flex flex-col items-center justify-center gap-2">
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ background: `${accentColor}18` }}
-                >
-                  <Icon name={categoryIcons[r.category] || "document"} size={22} style={{ color: accentColor }} />
-                </div>
-                <span className="text-[8px] font-bold uppercase tracking-wider" style={{ color: accentColor }}>
-                  {r.category}
-                </span>
+      <div className="flex items-stretch">
+        {/* Ink side panel with gold icon — no more rainbow category color */}
+        <div className="w-[92px] shrink-0 relative bg-ink border-r border-white/[0.06] flex items-center justify-center">
+          {r.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={r.image_url} alt={r.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="flex flex-col items-center gap-2 py-2">
+              <div className="w-12 h-12 rounded-xl border border-gold/20 bg-black/40 flex items-center justify-center">
+                <Icon name={iconName} size={22} className="text-gold" />
               </div>
-            )}
-            {/* Status overlay */}
-            <div className="absolute top-2 left-2">
-              <Badge label={status.label} variant={status.variant} />
-            </div>
-          </div>
-
-          {/* Content Panel */}
-          <div className="flex-1 min-w-0 p-3.5">
-            {/* Name + Org */}
-            <h3 className="font-heading font-bold text-[13px] leading-tight mb-0.5 line-clamp-1">{r.name}</h3>
-            {r.organization && (
-              <p className="text-[10px] text-txt-secondary font-medium truncate mb-1.5">{r.organization}</p>
-            )}
-
-            {/* Description */}
-            <p className="text-[11px] text-white/40 leading-relaxed mb-2 line-clamp-2">
-              {r.description}
-            </p>
-
-            {/* Tags row */}
-            <div className="flex items-center gap-1.5 flex-wrap mb-2">
-              <Badge label={r.category} variant={variant} />
-              {r.is_free && <Badge label="Free" variant="emerald" />}
-              {r.eligibility && (
-                <span className="text-[9px] text-white/30 bg-white/[0.04] border border-white/[0.06] rounded-full px-2 py-0.5 truncate max-w-[120px]">
-                  {r.eligibility}
-                </span>
-              )}
-            </div>
-
-            {/* Spots progress bar */}
-            {spotsTotal > 0 && (
-              <div className="mb-2">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[9px] text-white/30 font-medium">
-                    {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left` : "Full"}
-                  </span>
-                  <span className="text-[9px] font-bold" style={{ color: spotsPct >= 90 ? "#EF4444" : spotsPct >= 70 ? "#F2A900" : "#22C55E" }}>
-                    {spotsUsed}/{spotsTotal}
-                  </span>
-                </div>
-                <div className="h-1.5 rounded-full bg-white/[0.06] overflow-hidden">
-                  <div
-                    className="h-full rounded-full transition-all duration-500"
-                    style={{
-                      width: `${spotsPct}%`,
-                      background: spotsPct >= 90 ? "#EF4444" : spotsPct >= 70 ? "#F2A900" : "#22C55E",
-                    }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Contact chips + Apply CTA */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {r.phone && (
-                <span className="inline-flex items-center gap-1 text-[9px] text-white/30 bg-white/[0.03] border border-white/[0.06] rounded-full px-2 py-0.5">
-                  <Icon name="phone" size={9} /> {r.phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 14)}
-                </span>
-              )}
-              {r.website && (
-                <span className="inline-flex items-center gap-1 text-[9px] text-cyan/60 bg-cyan/[0.04] border border-cyan/[0.08] rounded-full px-2 py-0.5 truncate max-w-[100px]">
-                  <Icon name="globe" size={9} /> Website
-                </span>
-              )}
-
-              {/* Deadline urgency */}
-              {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
-                <span className={`inline-flex items-center gap-1 text-[9px] font-semibold rounded-full px-2 py-0.5 ${
-                  daysUntilDeadline <= 7
-                    ? "text-coral bg-coral/8 border border-coral/15"
-                    : "text-gold bg-gold/8 border border-gold/15"
-                }`}>
-                  <Icon name="clock" size={9} />
-                  {daysUntilDeadline <= 1 ? "Tomorrow!" : `${daysUntilDeadline}d left`}
-                </span>
-              )}
-
-              {/* Apply CTA or arrow */}
-              <span className="ml-auto shrink-0">
-                {r.accepts_applications && r.status === "open" ? (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold" style={{ background: `${accentColor}15`, color: accentColor }}>
-                    Apply
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 1l4 4-4 4" /></svg>
-                  </span>
-                ) : (
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15" strokeLinecap="round"><path d="M5 2l5 5-5 5" /></svg>
-                )}
+              <span className="text-[8px] font-bold uppercase tracking-editorial-tight text-gold/70">
+                {r.category}
               </span>
             </div>
+          )}
+          {/* Status pill top-left */}
+          <div className="absolute top-2 left-2">
+            <Tag tone={statusTone} size="xs">{status.label}</Tag>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 min-w-0 p-3.5">
+          <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
+            {r.name}
+          </h3>
+          {r.organization && (
+            <p className="text-[11px] text-ivory/55 font-medium truncate mt-0.5">
+              {r.organization}
+            </p>
+          )}
+
+          {r.description && (
+            <p className="text-[11px] text-ivory/50 leading-relaxed mt-1.5 line-clamp-2">
+              {r.description}
+            </p>
+          )}
+
+          {/* Tag row */}
+          <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+            <Tag tone="gold" size="xs">{r.category}</Tag>
+            {r.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
+            {r.eligibility && (
+              <span className="text-[9px] font-semibold uppercase tracking-editorial-tight text-ivory/50 bg-white/[0.03] border border-white/[0.06] rounded-full px-2 py-0.5 truncate max-w-[120px]">
+                {r.eligibility}
+              </span>
+            )}
+          </div>
+
+          {/* Spots progress — gold / coral only */}
+          {spotsTotal > 0 && (
+            <div className="mt-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] text-ivory/40 font-medium uppercase tracking-editorial-tight">
+                  {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left` : "Full"}
+                </span>
+                <span
+                  className={`text-[9px] font-bold tabular-nums ${
+                    spotsPct >= 90 ? "text-coral" : "text-gold"
+                  }`}
+                >
+                  {spotsUsed}/{spotsTotal}
+                </span>
+              </div>
+              <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-500 ${
+                    spotsPct >= 90 ? "bg-coral" : "bg-gold"
+                  }`}
+                  style={{ width: `${spotsPct}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Contact + CTA row */}
+          <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
+            {r.phone && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-gold font-semibold tabular-nums">
+                <Icon name="phone" size={10} />
+                {r.phone.replace(/(\d{3})(\d{3})(\d{4})/, "($1) $2-$3").slice(0, 14)}
+              </span>
+            )}
+            {r.website && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-ivory/50 font-semibold">
+                <Icon name="globe" size={10} />
+                Website
+              </span>
+            )}
+
+            {r.deadline && daysUntilDeadline !== null && daysUntilDeadline > 0 && (
+              <Tag
+                tone={daysUntilDeadline <= 7 ? "coral" : "gold"}
+                size="xs"
+              >
+                <Icon name="clock" size={9} />
+                {daysUntilDeadline <= 1 ? "Tomorrow" : `${daysUntilDeadline}d`}
+              </Tag>
+            )}
+
+            <span className="ml-auto shrink-0">
+              {r.accepts_applications && r.status === "open" ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
+                  Apply
+                  <Icon name="arrow-right-thin" size={11} />
+                </span>
+              ) : (
+                <Icon name="arrow-right-thin" size={14} className="text-gold/60 group-hover:text-gold transition-colors" />
+              )}
+            </span>
           </div>
         </div>
       </div>
