@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import {
   getStripe,
   generateOrderNumber,
@@ -11,6 +12,11 @@ import type { EventTicketConfig } from "@/types/database";
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
+    const adminSupabase = createAdminClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -125,7 +131,7 @@ export async function POST(request: Request) {
     for (const item of items as { config_id: string; quantity: number }[]) {
       const config = configMap.get(item.config_id)!;
 
-      const { data: updated, error: updateError } = await supabase
+      const { data: updated, error: updateError } = await adminSupabase
         .from("event_ticket_config")
         .update({ available_count: config.available_count - item.quantity })
         .eq("id", item.config_id)
@@ -137,7 +143,7 @@ export async function POST(request: Request) {
         // Rollback previously reserved
         for (const prev of reserved) {
           const prevConfig = configMap.get(prev.config_id)!;
-          await supabase
+          await adminSupabase
             .from("event_ticket_config")
             .update({
               available_count: prevConfig.available_count,
@@ -180,7 +186,7 @@ export async function POST(request: Request) {
     );
 
     // Create ticket_order
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await adminSupabase
       .from("ticket_orders")
       .insert({
         order_number,
@@ -216,7 +222,7 @@ export async function POST(request: Request) {
       };
     });
 
-    const { error: itemsError } = await supabase
+    const { error: itemsError } = await adminSupabase
       .from("ticket_order_items")
       .insert(orderItems);
 
@@ -235,7 +241,7 @@ export async function POST(request: Request) {
     });
 
     // Update order with Stripe PI id
-    await supabase
+    await adminSupabase
       .from("ticket_orders")
       .update({ stripe_payment_intent_id: paymentIntent.id })
       .eq("id", order.id);
