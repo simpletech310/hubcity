@@ -95,15 +95,13 @@ export default async function LivePage() {
     : { data: [], error: null };
   if (scheduleErr) console.error("schedule fetch error:", scheduleErr);
 
-  // Fetch the active Walmart pre-roll ad (inter-video spot on the live stream)
-  const { data: rawAd } = await supabase
+  // Fetch the active pre-roll ads (inter-video spots on the live stream and pre-roll)
+  const { data: rawAds } = await supabase
     .from("video_ads")
     .select("id, title, mux_playback_id, cta_text, cta_url, business_id, duration")
     .eq("is_active", true)
     .eq("ad_type", "pre_roll")
-    .not("mux_playback_id", "is", null)
-    .limit(1)
-    .maybeSingle();
+    .not("mux_playback_id", "is", null);
 
   // Current user + verification + follows + purchases
   const {
@@ -156,7 +154,7 @@ export default async function LivePage() {
       shows={(rawShows as Show[]) || []}
       timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
       liveSchedule={(rawSchedule as unknown as ScheduledBroadcast[]) || []}
-      walmartAd={(rawAd as VideoAd | null) ?? null}
+      ads={(rawAds as VideoAd[]) || []}
       canStream={canStream}
       userId={user?.id || null}
       isVerified={isVerified}

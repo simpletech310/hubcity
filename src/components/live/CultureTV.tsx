@@ -150,7 +150,7 @@ interface CultureTVProps {
   shows: Show[];
   timeBlocks: TimeBlock[];
   liveSchedule: ScheduledBroadcast[];
-  walmartAd: VideoAd | null;
+  ads: VideoAd[];
   canStream: boolean;
   userId: string | null;
   isVerified: boolean;
@@ -167,7 +167,8 @@ export default function CultureTV({
   shows,
   timeBlocks: allTimeBlocks,
   liveSchedule,
-  walmartAd,
+  ads,
+  walmartAd, // Keep parameter matching destructure but it's now ignored or mapped
   canStream,
   userId,
   isVerified,
@@ -589,7 +590,7 @@ export default function CultureTV({
           {/* ── Culture TV Live (simulated linear channel) ── */}
           <LiveSimulatedPlayer
             schedule={liveSchedule}
-            walmartAd={walmartAd}
+            ads={ads}
             userId={userId}
             onVideoChange={setActiveLiveVideoId}
           />

@@ -9,7 +9,7 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false })
 
 interface LiveSimulatedPlayerProps {
   schedule: ScheduledBroadcast[];
-  walmartAd: VideoAd | null;
+  ads: VideoAd[];
   userId: string | null;
   /**
    * Fires whenever the on-air content video changes (mount, schedule
@@ -39,10 +39,11 @@ function fmtAirtime(iso: string): string {
 
 export default function LiveSimulatedPlayer({
   schedule,
-  walmartAd,
+  ads,
   userId,
   onVideoChange,
 }: LiveSimulatedPlayerProps) {
+  const [currentAd, setCurrentAd] = useState<VideoAd | null>(null);
   const [phase, setPhase] = useState<"content" | "ad">("content");
   const [currentIndex, setCurrentIndex] = useState(() =>
     findCurrentIndex(schedule, Date.now())
@@ -92,14 +93,16 @@ export default function LiveSimulatedPlayer({
   }, [currentVideo?.id, phase]);
 
   const handleContentEnded = useCallback(() => {
-    // Run the Walmart ad, then advance to next non-ad slot
-    if (walmartAd?.mux_playback_id) {
+    // Pick a random ad, then advance to next non-ad slot
+    if (ads && ads.length > 0) {
+      const randomAd = ads[Math.floor(Math.random() * ads.length)];
+      setCurrentAd(randomAd);
       setPhase("ad");
     } else {
       advanceToNextContent();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walmartAd]);
+  }, [ads]);
 
   const advanceToNextContent = useCallback(() => {
     // Skip over ad-slot broadcasts; land on the next content slot
@@ -181,16 +184,16 @@ export default function LiveSimulatedPlayer({
             onEnded={handleContentEnded}
           />
         )}
-        {phase === "ad" && walmartAd?.mux_playback_id && (
+        {phase === "ad" && currentAd?.mux_playback_id && (
           <MuxPlayer
             key={`ad-${currentBroadcast.id}`}
-            playbackId={walmartAd.mux_playback_id}
+            playbackId={currentAd.mux_playback_id}
             streamType="on-demand"
             autoPlay
             accentColor="#F2A900"
             style={{ aspectRatio: "16/9", width: "100%" }}
             metadata={{
-              video_title: `Ad: ${walmartAd.title}`,
+              video_title: `Ad: ${currentAd.title}`,
               viewer_user_id: userId || "anon",
             }}
             onEnded={handleAdEnded}
