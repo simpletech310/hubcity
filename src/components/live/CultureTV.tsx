@@ -168,7 +168,6 @@ export default function CultureTV({
   timeBlocks: allTimeBlocks,
   liveSchedule,
   ads,
-  walmartAd, // Keep parameter matching destructure but it's now ignored or mapped
   canStream,
   userId,
   isVerified,
