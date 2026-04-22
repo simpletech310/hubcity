@@ -52,172 +52,121 @@ export default function UserPostsGrid({
     return () => window.removeEventListener("keydown", onKey);
   }, [openIndex]);
 
-  // Lock body scroll while overlay is open
-  useEffect(() => {
-    if (openIndex == null) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [openIndex]);
-
+  // Lock body scroll removal - we want them to scroll natively now.
+  
   if (posts.length === 0) {
     return (
       <div className="text-center py-12 text-white/30 text-sm">No posts yet</div>
     );
   }
 
-  return (
-    <>
-      {/* Grid */}
-      <div className="grid grid-cols-3 gap-0.5 rounded-xl overflow-hidden">
-        {posts.map((post, idx) => {
-          const totalReactions = post.reaction_counts
-            ? Object.values(post.reaction_counts).reduce(
-                (sum, n) => sum + ((n as number) ?? 0),
-                0
-              )
-            : 0;
-          const isVideo = post.media_type === "video";
-          const isImage = post.media_type === "image" || (post.image_url && !isVideo);
-          const tileImg = post.image_url ?? null;
-
-          return (
-            <button
-              key={post.id}
-              onClick={() => setOpenIndex(idx)}
-              className="relative aspect-square group overflow-hidden bg-white/[0.04] press"
-              aria-label="Open post"
-            >
-              {tileImg ? (
-                <Image
-                  src={tileImg}
-                  alt="Post"
-                  fill
-                  sizes="(max-width: 430px) 33vw, 144px"
-                  className="object-cover transition-opacity group-hover:opacity-80"
-                />
-              ) : isVideo && post.video_url ? (
-                // Video post without a poster thumbnail — show a dark tile
-                // with a play icon; user sees the frame once they open it.
-                <div className="absolute inset-0 bg-gradient-to-br from-black via-deep to-black flex items-center justify-center">
-                  <Icon name="video" size={22} className="text-white/30" />
-                </div>
-              ) : (
-                // Text-only — render a colored card with a snippet
-                <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/20 via-royal/30 to-midnight p-2 flex items-center">
-                  <p className="text-[10px] text-white/70 line-clamp-5 leading-snug">
-                    {post.body || ""}
-                  </p>
-                </div>
-              )}
-
-              {/* Type indicator (top-right) */}
-              {isVideo && (
-                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
-                    <polygon points="6,4 20,12 6,20" />
-                  </svg>
-                </div>
-              )}
-
-              {/* Hover overlay with stats — desktop only */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
-                <div className="flex items-center gap-3 w-full">
-                  <span className="text-[10px] text-white flex items-center gap-1">
-                    <Icon name="heart-pulse" size={10} className="text-white" />
-                    {totalReactions}
-                  </span>
-                  <span className="text-[10px] text-white flex items-center gap-1">
-                    <Icon name="chat" size={10} className="text-white" />
-                    {post.comment_count ?? 0}
-                  </span>
-                </div>
-              </div>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Fullscreen post viewer overlay */}
-      {openIndex != null && (
-        <div
-          ref={overlayRef}
-          className="fixed inset-0 z-[400] bg-midnight overflow-y-auto overscroll-contain"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Posts"
-        >
-          {/* Sticky top bar (has a secondary close; the primary is the
-              thumb-reachable floating button below) */}
-          <div className="sticky top-0 z-10 flex items-center justify-between px-4 py-3 bg-gradient-to-b from-midnight via-midnight/90 to-transparent pointer-events-none">
-            <button
-              onClick={() => setOpenIndex(null)}
-              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white press hover:bg-black/80 pointer-events-auto shadow-lg"
-              aria-label="Close posts"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
-            <span className="font-heading font-bold text-white text-sm drop-shadow pointer-events-none">
-              Posts
-            </span>
-            <div className="w-10 h-10" />
-          </div>
-
-          {/* Stacked posts */}
-          <div className="max-w-[430px] mx-auto flex flex-col gap-3 px-3 pb-32 -mt-12">
-            {posts.map((post, idx) => (
-              <div
-                key={post.id}
-                ref={(el) => {
-                  postRefs.current[idx] = el;
-                }}
-                data-post-index={idx}
-              >
-                <PostCard
-                  post={post}
-                  userReactions={userReactions[post.id] || []}
-                  userId={userId}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Thumb-reachable floating close (bottom-right). Sits above the
-              bottom safe-area so it's usable on every device. */}
+  if (openIndex != null) {
+    return (
+      <div className="animate-in fade-in duration-300">
+        {/* Inline Navigation Header */}
+        <div className="flex items-center mb-4 sticky top-[60px] z-20 bg-deep/90 backdrop-blur-md py-2 -mx-4 px-4 border-b border-white/[0.04]">
           <button
             onClick={() => setOpenIndex(null)}
-            className="fixed right-5 z-20 w-14 h-14 rounded-full bg-gold text-midnight shadow-[0_8px_30px_rgba(0,0,0,0.5)] flex items-center justify-center press hover:bg-gold-light transition-colors"
-            style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
-            aria-label="Close posts"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs font-semibold hover:border-white/20 transition-all border border-white/10 shadow-sm"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 6l12 12M18 6L6 18" />
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
+            Grid View
           </button>
         </div>
-      )}
-    </>
+
+        {/* Stacked posts directly inline */}
+        <div className="flex flex-col gap-3 pb-24">
+          {posts.map((post, idx) => (
+            <div
+              key={post.id}
+              ref={(el) => {
+                postRefs.current[idx] = el;
+              }}
+              data-post-index={idx}
+            >
+              <PostCard
+                post={post}
+                userReactions={userReactions[post.id] || []}
+                userId={userId}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-3 gap-0.5 rounded-xl overflow-hidden animate-in fade-in duration-300">
+      {posts.map((post, idx) => {
+        const totalReactions = post.reaction_counts
+          ? Object.values(post.reaction_counts).reduce(
+              (sum, n) => sum + ((n as number) ?? 0),
+              0
+            )
+          : 0;
+        const isVideo = post.media_type === "video";
+        const isImage = post.media_type === "image" || (post.image_url && !isVideo);
+        const tileImg = post.image_url ?? null;
+
+        return (
+          <button
+            key={post.id}
+            onClick={() => {
+              setOpenIndex(idx);
+              // Small delay to let the DOM swap render before scrolling
+              setTimeout(() => {
+                postRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }, 50);
+            }}
+            className="relative aspect-square group overflow-hidden bg-white/[0.04] press"
+            aria-label="Open post"
+          >
+            {tileImg ? (
+              <Image
+                src={tileImg}
+                alt="Post"
+                fill
+                sizes="(max-width: 430px) 33vw, 144px"
+                className="object-cover transition-opacity group-hover:opacity-80"
+              />
+            ) : isVideo && post.video_url ? (
+              <div className="absolute inset-0 bg-gradient-to-br from-black via-deep to-black flex items-center justify-center">
+                <Icon name="video" size={22} className="text-white/30" />
+              </div>
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/20 via-royal/30 to-midnight p-2 flex items-center">
+                <p className="text-[10px] text-white/70 line-clamp-5 leading-snug">
+                  {post.body || ""}
+                </p>
+              </div>
+            )}
+
+            {isVideo && (
+              <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                  <polygon points="6,4 20,12 6,20" />
+                </svg>
+              </div>
+            )}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
+              <div className="flex items-center gap-3 w-full">
+                <span className="text-[10px] text-white flex items-center gap-1">
+                  <Icon name="heart-pulse" size={10} className="text-white" />
+                  {totalReactions}
+                </span>
+                <span className="text-[10px] text-white flex items-center gap-1">
+                  <Icon name="chat" size={10} className="text-white" />
+                  {post.comment_count ?? 0}
+                </span>
+              </div>
+            </div>
+          </button>
+        );
+      })}
+    </div>
   );
 }
