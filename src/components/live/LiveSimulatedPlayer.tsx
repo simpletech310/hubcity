@@ -43,8 +43,17 @@ export default function LiveSimulatedPlayer({
   userId,
   onVideoChange,
 }: LiveSimulatedPlayerProps) {
-  const [currentAd, setCurrentAd] = useState<VideoAd | null>(null);
-  const [phase, setPhase] = useState<"content" | "ad">("content");
+  const [currentAd, setCurrentAd] = useState<VideoAd | null>(() => {
+    const startIdx = findCurrentIndex(schedule, Date.now());
+    if (schedule[startIdx]?.is_ad_slot && ads && ads.length > 0) {
+      return ads[Math.floor(Math.random() * ads.length)];
+    }
+    return null;
+  });
+  const [phase, setPhase] = useState<"content" | "ad">(() => {
+    const startIdx = findCurrentIndex(schedule, Date.now());
+    return schedule[startIdx]?.is_ad_slot ? "ad" : "content";
+  });
   const [currentIndex, setCurrentIndex] = useState(() =>
     findCurrentIndex(schedule, Date.now())
   );
@@ -66,9 +75,17 @@ export default function LiveSimulatedPlayer({
       if (newIdx !== currentIndex) {
         const entry = schedule[newIdx];
         const offset = (Date.now() - new Date(entry.starts_at).getTime()) / 1000;
+        const isAd = entry.is_ad_slot;
         setCurrentIndex(newIdx);
         setStartTime(Math.max(0, offset));
-        setPhase("content");
+        
+        if (isAd && ads && ads.length > 0) {
+          setCurrentAd(currentAd || ads[Math.floor(Math.random() * ads.length)]);
+          setPhase("ad");
+        } else {
+          setPhase("content");
+        }
+        
         mountedAt.current = Date.now();
       }
     };
