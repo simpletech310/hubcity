@@ -52,37 +52,35 @@ export default async function DepartmentDetailPage({
   const services = (dept.services ?? []).filter((s) => s.is_active).sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* Back Button */}
-      <div className="px-5 pt-4 mb-3">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/city-hall/departments"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M10 12L6 8l4-4" />
           </svg>
           Departments
         </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ {categoryLabel.toUpperCase()}</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 44, lineHeight: 0.92 }}>{dept.name}</h1>
+        {dept.head_name && (
+          <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+            {dept.head_name}{dept.head_title ? ` — ${dept.head_title}` : ""}
+          </p>
+        )}
       </div>
 
-      <div className="px-5">
-        {/* Header */}
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shrink-0 border border-gold/15">
-            <Icon name={iconName} size={24} />
-          </div>
-          <div className="flex-1">
-            <h1 className="font-heading text-xl font-bold mb-1 leading-tight">
-              {dept.name}
-            </h1>
-            {dept.head_name && (
-              <p className="text-sm text-txt-secondary font-medium">
-                {dept.head_name}
-                {dept.head_title ? ` — ${dept.head_title}` : ""}
-              </p>
-            )}
-          </div>
+      <div className="px-5 pt-5">
+        {/* Header placeholder removed — moved to hero */}
+        <div className="sr-only">
+          <Icon name={iconName} size={24} />
         </div>
 
         {/* Category badge */}

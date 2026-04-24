@@ -77,12 +77,13 @@ export default async function SavedItemsPage() {
   };
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* Header */}
-      <div className="px-5 pt-4 mb-5">
+      <div className="px-5 pt-6 pb-4 mb-5" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <Link
           href="/profile"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -96,8 +97,9 @@ export default async function SavedItemsPage() {
           </svg>
           Profile
         </Link>
-        <h1 className="font-heading text-2xl font-bold mb-1">Saved Items</h1>
-        <p className="text-sm text-txt-secondary">
+        <p className="c-kicker">§ PROFILE · SAVED</p>
+        <h1 className="c-hero">Saved Items.</h1>
+        <p className="c-serif-it">
           {items.length} saved item{items.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -108,7 +110,7 @@ export default async function SavedItemsPage() {
           <Link key={biz.id} href={`/business/${biz.slug || biz.id}`}>
             <Card hover>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div className="w-11 h-11 bg-gradient-to-br from-emerald/15 to-emerald/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
                   {categoryIcons[biz.category] || "store"}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -137,7 +139,7 @@ export default async function SavedItemsPage() {
           <Link key={ev.id} href={`/events/${ev.id}`}>
             <Card hover>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-coral/15 to-coral/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div className="w-11 h-11 bg-gradient-to-br from-coral/15 to-coral/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
                   {categoryIcons[ev.category] || "calendar"}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -163,7 +165,7 @@ export default async function SavedItemsPage() {
           <Link key={res.id} href={`/resources/${res.id}`}>
             <Card hover>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-cyan/15 to-cyan/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div className="w-11 h-11 bg-gradient-to-br from-cyan/15 to-cyan/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
                   {categoryIcons[res.category] || "document"}
                 </div>
                 <div className="flex-1 min-w-0">

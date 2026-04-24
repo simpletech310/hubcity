@@ -77,12 +77,16 @@ export default async function TransitStopDetailPage({
   const isRail = stop.route_type === "rail";
 
   return (
-    <div className="animate-fade-in pb-24">
-      {/* Back */}
-      <div className="px-5 pt-4 mb-3">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
+      {/* Back + Hero */}
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/city-data/transit"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -96,6 +100,11 @@ export default async function TransitStopDetailPage({
           </svg>
           Transit
         </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ TRANSIT · {isRail ? "RAIL" : "BUS"}{stop.route_name ? ` · ${stop.route_name.toUpperCase()}` : ""}</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 40, lineHeight: 0.95 }}>{stop.name}</h1>
+        {stop.route_name && (
+          <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>{stop.route_name}</p>
+        )}
       </div>
 
       {/* Hero */}

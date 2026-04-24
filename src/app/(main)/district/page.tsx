@@ -326,44 +326,31 @@ export default async function DistrictPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28">
-      {/* ── Map Hero ──────────────────────────────────── */}
+    <div className="culture-surface min-h-dvh pb-28">
+      {/* Hero */}
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE CIVIC · {userDistrict ? `DISTRICT ${userDistrict}` : "ALL DISTRICTS"}
+        </div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>
+          {userDistrict ? (DISTRICT_NAMES[userDistrict] ?? `District ${userDistrict}`) : "My District."}
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          {userDisplayName
+            ? `Welcome back, ${userDisplayName.split(" ")[0]}. Your personalized district hub.`
+            : "Explore all 4 council districts."}
+        </p>
+      </div>
+      {/* Map */}
       <div className="relative">
         <DistrictMap
           district={userDistrict}
           height="220px"
           className="w-full"
         />
-        {/* Gradient overlay at bottom of map */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-midnight to-transparent" />
-        {/* District label overlay */}
-        <div className="absolute bottom-3 left-5 right-5 z-10">
-          {userDistrict && districtColor ? (
-            <div className="flex items-center gap-2.5">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ backgroundColor: `${districtColor.accent}20`, border: `1px solid ${districtColor.accent}40` }}
-              >
-                <span className="font-heading font-bold text-[15px]" style={{ color: districtColor.accent }}>
-                  D{userDistrict}
-                </span>
-              </div>
-              <div>
-                <h1 className="font-heading text-[18px] font-bold text-white">
-                  {DISTRICT_NAMES[userDistrict] ?? `District ${userDistrict}`}
-                </h1>
-                <p className="text-[11px] text-white/50">
-                  {userDisplayName ? `Welcome back, ${userDisplayName.split(" ")[0]}` : "Your personalized district hub"}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div>
-              <h1 className="font-heading text-[20px] font-bold text-white">City of Compton</h1>
-              <p className="text-[11px] text-white/50">Explore all 4 council districts</p>
-            </div>
-          )}
-        </div>
       </div>
 
       <div className="px-5 space-y-5 mt-2">

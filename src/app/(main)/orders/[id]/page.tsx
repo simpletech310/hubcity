@@ -24,12 +24,16 @@ export default async function OrderTrackingPage({
   const o = order as Order & { business: Business; items: OrderItem[] };
 
   return (
-    <div className="animate-fade-in pb-24">
-      {/* Back */}
-      <div className="px-5 pt-4 mb-4">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
+      {/* Back + Hero */}
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/orders"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -43,9 +47,14 @@ export default async function OrderTrackingPage({
           </svg>
           My Orders
         </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ ORDER · {o.order_number}</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 40, lineHeight: 0.95 }}>{o.business?.name ?? "Order"}</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          {o.type === "delivery" ? "Delivery order" : "Pickup order"}.
+        </p>
       </div>
 
-      <div className="px-5 space-y-5">
+      <div className="px-5 pt-5 space-y-5">
         {/* Live Order Header + Status Stepper */}
         <OrderTracker
           orderId={o.id}

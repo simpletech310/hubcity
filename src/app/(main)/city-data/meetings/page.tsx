@@ -36,12 +36,24 @@ export default async function MeetingsPage() {
   const past = (meetings as CityMeeting[] | null)?.filter((m) => m.date < now).reverse() ?? [];
 
   return (
-    <div className="min-h-screen bg-midnight text-white">
+    <div className="culture-surface min-h-dvh">
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY DATA · MEETINGS</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>City Meetings.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Council meetings, agendas, and public comment.
+        </p>
+      </div>
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <SectionHeader
-          title="City Meetings"
-          subtitle="Council meetings, agendas, and public comment"
-        />
+        <div className="sr-only">
+          <SectionHeader
+            title="City Meetings"
+            subtitle="Council meetings, agendas, and public comment"
+          />
+        </div>
 
         {/* Upcoming Meetings */}
         <h2 className="mb-4 text-xl font-semibold text-gold">Upcoming</h2>

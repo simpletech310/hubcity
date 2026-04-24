@@ -60,18 +60,16 @@ export default async function MyRsvpsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28 animate-fade-in">
+    <div className="culture-surface min-h-dvh pb-28 animate-fade-in">
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-midnight/80 backdrop-blur-xl border-b border-white/[0.04]">
-        <div className="flex items-center gap-3 px-5 py-3.5">
-          <Link href="/profile" className="press">
-            <Icon name="back" size={20} className="text-white/60" />
-          </Link>
-          <h1 className="font-heading text-[17px] font-bold">My RSVPs</h1>
-          <span className="text-[11px] text-white/40 font-medium ml-1">
-            {allRsvps.length} total
-          </span>
-        </div>
+      <div className="px-5 pt-6 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
+        <Link href="/profile" className="press inline-flex items-center gap-1.5 mb-3" style={{ color: "var(--ink-strong)" }}>
+          <Icon name="back" size={16} />
+          <span className="text-sm font-semibold">Profile</span>
+        </Link>
+        <p className="c-kicker">§ PROFILE · RSVPS</p>
+        <h1 className="c-hero">My RSVPs.</h1>
+        <p className="c-serif-it">{allRsvps.length} total</p>
       </div>
 
       <div className="px-5 mt-4 space-y-6">
@@ -79,7 +77,7 @@ export default async function MyRsvpsPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald" />
-            <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider">
+            <p className="c-kicker">
               Upcoming ({upcoming.length})
             </p>
           </div>
@@ -93,30 +91,31 @@ export default async function MyRsvpsPage() {
                   <Link
                     key={rsvp.id}
                     href={`/profile/rsvps/${rsvp.id}`}
-                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-emerald/20 transition-colors"
+                    className="block c-frame p-3.5 press hover:border-emerald/40 transition-colors"
+                    style={{ background: "var(--paper-soft)" }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex flex-col items-center justify-center shrink-0">
+                      <div className="w-12 h-14 bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex flex-col items-center justify-center shrink-0">
                         <p className="text-[9px] text-emerald font-bold uppercase leading-none">
                           {date.toLocaleDateString("en-US", { month: "short" })}
                         </p>
-                        <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
+                        <p className="text-[18px] font-heading font-bold leading-none mt-0.5" style={{ color: "var(--ink-strong)" }}>
                           {date.getDate()}
                         </p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white truncate">
+                        <p className="c-card-t truncate">
                           {event.title}
                         </p>
                         <div className="flex items-center gap-2 mt-0.5">
                           {event.start_time && (
-                            <span className="text-[10px] text-white/40 flex items-center gap-0.5">
+                            <span className="c-meta flex items-center gap-0.5">
                               <Icon name="clock" size={10} />
                               {event.start_time}
                             </span>
                           )}
                           {event.location_name && (
-                            <span className="text-[10px] text-white/40 truncate flex items-center gap-0.5">
+                            <span className="c-meta truncate flex items-center gap-0.5">
                               <Icon name="map-pin" size={10} />
                               {event.location_name}
                             </span>
@@ -128,7 +127,7 @@ export default async function MyRsvpsPage() {
                           </span>
                         )}
                       </div>
-                      <div className={`shrink-0 px-2 py-1 rounded-lg ${status.bg} border border-white/[0.04]`}>
+                      <div className={`shrink-0 px-2 py-1 ${status.bg} border border-black/10`}>
                         <span className={`text-[9px] font-bold ${status.text}`}>{status.label}</span>
                       </div>
                     </div>
@@ -137,9 +136,9 @@ export default async function MyRsvpsPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-              <Icon name="calendar" size={28} className="text-white/15 mx-auto mb-2" />
-              <p className="text-[13px] text-white/40 font-medium">No upcoming RSVPs</p>
+            <div className="text-center py-10 c-frame" style={{ background: "var(--paper-soft)" }}>
+              <Icon name="calendar" size={28} className="mx-auto mb-2" style={{ color: "var(--ink-strong)", opacity: 0.3 }} />
+              <p className="c-body font-medium">No upcoming RSVPs</p>
               <Link
                 href="/events"
                 className="inline-block mt-3 text-[12px] text-gold font-semibold press"
@@ -154,8 +153,8 @@ export default async function MyRsvpsPage() {
         {past.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
-              <p className="text-[11px] text-white/40 font-semibold uppercase tracking-wider">
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--ink-strong)", opacity: 0.3 }} />
+              <p className="c-kicker">
                 Past ({past.length})
               </p>
             </div>
@@ -167,29 +166,30 @@ export default async function MyRsvpsPage() {
                   <Link
                     key={rsvp.id}
                     href={`/profile/rsvps/${rsvp.id}`}
-                    className="block glass-card-elevated rounded-2xl p-3.5 press opacity-60 hover:opacity-80 transition-opacity"
+                    className="block c-frame p-3.5 press opacity-60 hover:opacity-80 transition-opacity"
+                    style={{ background: "var(--paper-soft)" }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-14 rounded-xl bg-white/[0.03] border border-white/[0.05] flex flex-col items-center justify-center shrink-0">
-                        <p className="text-[9px] text-white/40 font-bold uppercase leading-none">
+                      <div className="w-12 h-14 border border-black/10 flex flex-col items-center justify-center shrink-0" style={{ background: "var(--paper-warm)" }}>
+                        <p className="c-meta font-bold uppercase leading-none">
                           {date.toLocaleDateString("en-US", { month: "short" })}
                         </p>
-                        <p className="text-[18px] font-heading font-bold text-white/60 leading-none mt-0.5">
+                        <p className="text-[18px] font-heading font-bold leading-none mt-0.5" style={{ color: "var(--ink-strong)" }}>
                           {date.getDate()}
                         </p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white/70 truncate">
+                        <p className="c-card-t truncate">
                           {event.title}
                         </p>
                         {event.location_name && (
-                          <span className="text-[10px] text-white/30 truncate flex items-center gap-0.5 mt-0.5">
+                          <span className="c-meta truncate flex items-center gap-0.5 mt-0.5">
                             <Icon name="map-pin" size={10} />
                             {event.location_name}
                           </span>
                         )}
                       </div>
-                      <span className="text-[9px] text-white/30 font-medium shrink-0">Attended</span>
+                      <span className="c-meta font-medium shrink-0">Attended</span>
                     </div>
                   </Link>
                 );

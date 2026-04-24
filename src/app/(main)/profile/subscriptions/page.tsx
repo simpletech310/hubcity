@@ -42,21 +42,23 @@ export default async function SubscriptionsPage() {
   }>;
 
   return (
-    <div className="animate-fade-in pb-safe">
-      <div className="px-5 pt-6 pb-3">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      <div className="px-5 pt-6 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <Link
           href="/profile"
-          className="inline-flex items-center gap-1 text-xs text-txt-secondary hover:text-white mb-3"
+          className="inline-flex items-center gap-1 text-xs mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <Icon name="back" size={14} /> Back to profile
         </Link>
-        <h1 className="font-heading font-bold text-2xl">Subscriptions</h1>
-        <p className="text-xs text-txt-secondary">
+        <p className="c-kicker">§ PROFILE · SUBSCRIPTIONS</p>
+        <h1 className="c-hero">Subscriptions.</h1>
+        <p className="c-serif-it">
           Channels you support, billing, and receipts.
         </p>
       </div>
 
-      <div className="px-5 mb-4">
+      <div className="px-5 mb-4 pt-4">
         <OpenPortalButton />
       </div>
 
@@ -86,7 +88,7 @@ export default async function SubscriptionsPage() {
             return (
               <Card key={sub.id}>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden shrink-0 c-frame">
                     {channel.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img

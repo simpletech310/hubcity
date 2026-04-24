@@ -98,25 +98,37 @@ export default function ProductDetailModal({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ background: "rgba(26,21,18,0.72)" }}
         onClick={onClose}
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-[430px] max-h-[90vh] bg-deep rounded-t-3xl overflow-hidden animate-slide-up flex flex-col">
+      <div
+        className="relative w-full max-w-[430px] max-h-[90vh] overflow-hidden animate-slide-up flex flex-col"
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink-strong)",
+          borderTop: "3px solid var(--rule-strong-c)",
+        }}
+      >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-midnight/70 backdrop-blur-sm flex items-center justify-center press"
+          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center press"
+          style={{
+            background: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
         >
-          <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+          <svg width="16" height="16" fill="none" stroke="var(--paper)" strokeWidth="2" strokeLinecap="round">
             <path d="M4 4l8 8M12 4l-8 8" />
           </svg>
         </button>
 
         {/* Image Gallery */}
         {images.length > 0 ? (
-          <div className="relative">
+          <div className="relative" style={{ borderBottom: "2px solid var(--rule-strong-c)" }}>
             <div
               ref={scrollRef}
               onScroll={handleScroll}
@@ -126,7 +138,8 @@ export default function ProductDetailModal({
               {images.map((url, i) => (
                 <div
                   key={i}
-                  className="w-full shrink-0 snap-center aspect-square relative bg-card"
+                  className="w-full shrink-0 snap-center aspect-square relative"
+                  style={{ background: "var(--paper-soft)" }}
                 >
                   <Image
                     src={url}
@@ -143,10 +156,17 @@ export default function ProductDetailModal({
                       }
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="absolute inset-0 flex items-center justify-center bg-black/30"
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ background: "rgba(26,21,18,0.3)" }}
                     >
-                      <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#111">
+                      <div
+                        className="w-14 h-14 flex items-center justify-center"
+                        style={{
+                          background: "var(--gold-c)",
+                          border: "3px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--ink-strong)">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
@@ -161,19 +181,25 @@ export default function ProductDetailModal({
                 {images.map((_, i) => (
                   <div
                     key={i}
-                    className={`w-1.5 h-1.5 rounded-full transition-colors ${
-                      i === activeImage ? "bg-white" : "bg-white/40"
-                    }`}
+                    className="w-2 h-2 transition-colors"
+                    style={{
+                      background: i === activeImage ? "var(--gold-c)" : "var(--paper)",
+                      border: "1.5px solid var(--rule-strong-c)",
+                    }}
                   />
                 ))}
               </div>
             )}
           </div>
         ) : (
-          <div className="aspect-[4/3] bg-card flex items-center justify-center">
-            <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1} className="text-white/20">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
+          <div
+            className="aspect-[4/3] flex items-center justify-center"
+            style={{
+              background: "var(--paper-soft)",
+              borderBottom: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="c-meta" style={{ opacity: 0.4 }}>NO IMAGE</span>
           </div>
         )}
 
@@ -181,23 +207,31 @@ export default function ProductDetailModal({
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {/* Name + Price */}
           <div>
-            <h2 className="font-heading text-xl font-bold">{item.name}</h2>
-            <p className="text-lg font-heading font-bold text-gold mt-1">
+            <h2 className="c-hero" style={{ fontSize: "24px" }}>{item.name}</h2>
+            <p className="c-hero mt-1" style={{ color: "var(--gold-c)", fontSize: "20px" }}>
               ${(displayPrice / 100).toFixed(2)}
             </p>
           </div>
 
           {/* SKU + Stock */}
           {(item.sku || stockCount !== null) && (
-            <div className="flex items-center gap-3 text-xs text-txt-secondary">
-              {item.sku && <span>SKU: {selectedVariant?.sku || item.sku}</span>}
+            <div className="flex items-center gap-3 flex-wrap">
+              {item.sku && (
+                <span className="c-meta">SKU: {selectedVariant?.sku || item.sku}</span>
+              )}
               {stockCount !== null && stockCount !== undefined && (
-                <span className={stockCount > 0 ? "text-emerald" : "text-coral"}>
+                <span
+                  className="c-badge"
+                  style={{
+                    background: stockCount > 0 ? "var(--green-c, #2d6a4f)" : "var(--red-c, #c0392b)",
+                    color: "#fff",
+                  }}
+                >
                   {stockCount > 0 ? `${stockCount} in stock` : "Out of stock"}
                 </span>
               )}
               {item.is_digital && (
-                <span className="bg-blue-500/15 text-blue-400 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                <span className="c-badge c-badge-ink" style={{ fontSize: "10px" }}>
                   Digital
                 </span>
               )}
@@ -206,19 +240,21 @@ export default function ProductDetailModal({
 
           {/* Description */}
           {item.description && (
-            <p className="text-sm text-txt-secondary leading-relaxed">
-              {item.description}
-            </p>
+            <p className="c-body">{item.description}</p>
           )}
 
           {/* Video section */}
           {hasVideo && (
             <div>
-              <h3 className="text-xs font-bold text-txt-secondary uppercase tracking-wider mb-2">
-                Product Video
-              </h3>
+              <h3 className="c-kicker mb-2">Product Video</h3>
               {item.mux_playback_id ? (
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-card">
+                <div
+                  className="relative aspect-video overflow-hidden"
+                  style={{
+                    background: "var(--paper-soft)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   <Image
                     src={`https://image.mux.com/${item.mux_playback_id}/thumbnail.jpg`}
                     alt={`${item.name} video`}
@@ -229,10 +265,17 @@ export default function ProductDetailModal({
                     href={`https://stream.mux.com/${item.mux_playback_id}.m3u8`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute inset-0 flex items-center justify-center bg-black/20"
+                    className="absolute inset-0 flex items-center justify-center"
+                    style={{ background: "rgba(26,21,18,0.2)" }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#111">
+                    <div
+                      className="w-12 h-12 flex items-center justify-center"
+                      style={{
+                        background: "var(--gold-c)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--ink-strong)">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </div>
@@ -243,16 +286,26 @@ export default function ProductDetailModal({
                   href={item.video_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 rounded-xl bg-card border border-border-subtle p-3 press"
+                  className="flex items-center gap-3 p-3 press"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 >
-                  <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--ink-strong)" strokeWidth="2">
                       <path d="M8 5v14l11-7z" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold">Watch Video</p>
-                    <p className="text-[10px] text-txt-secondary">Opens in new tab</p>
+                    <p className="c-card-t" style={{ fontSize: "13px" }}>Watch Video</p>
+                    <p className="c-meta" style={{ fontSize: "10px" }}>Opens in new tab</p>
                   </div>
                 </a>
               ) : null}
@@ -262,13 +315,17 @@ export default function ProductDetailModal({
           {/* Variant Picker */}
           {variantsLoading ? (
             <div className="py-2">
-              <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin mx-auto" />
+              <div
+                className="w-6 h-6 rounded-full animate-spin mx-auto"
+                style={{
+                  border: "2px solid var(--ink-strong)",
+                  borderTopColor: "transparent",
+                }}
+              />
             </div>
           ) : hasVariants ? (
             <div>
-              <h3 className="text-xs font-bold text-txt-secondary uppercase tracking-wider mb-2">
-                Options
-              </h3>
+              <h3 className="c-kicker mb-2">Options</h3>
               <div className="flex flex-wrap gap-2">
                 {variants.map((v) => {
                   const isSelected = selectedVariant?.id === v.id;
@@ -278,17 +335,22 @@ export default function ProductDetailModal({
                       key={v.id}
                       onClick={() => setSelectedVariant(isSelected ? null : v)}
                       disabled={vOutOfStock}
-                      className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all press ${
-                        isSelected
-                          ? "bg-gold text-midnight border border-gold"
-                          : vOutOfStock
-                          ? "bg-white/5 text-txt-secondary/40 border border-border-subtle cursor-not-allowed line-through"
-                          : "bg-white/[0.06] text-white border border-border-subtle hover:border-gold/30"
-                      }`}
+                      className="px-4 py-2.5 c-card-t press transition-colors"
+                      style={{
+                        fontSize: "13px",
+                        background: isSelected
+                          ? "var(--gold-c)"
+                          : "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                        opacity: vOutOfStock ? 0.4 : 1,
+                        textDecoration: vOutOfStock ? "line-through" : "none",
+                        cursor: vOutOfStock ? "not-allowed" : "pointer",
+                      }}
                     >
                       {v.name}
                       {v.price_override !== null && v.price_override !== item.price && (
-                        <span className="ml-1.5 text-xs opacity-70">
+                        <span className="ml-1.5 c-meta" style={{ color: "inherit" }}>
                           ${(v.price_override / 100).toFixed(2)}
                         </span>
                       )}
@@ -297,7 +359,7 @@ export default function ProductDetailModal({
                 })}
               </div>
               {needsVariantSelection && (
-                <p className="text-[10px] text-gold/70 mt-1.5">
+                <p className="c-meta mt-1.5" style={{ color: "var(--red-c, #c0392b)" }}>
                   Please select an option
                 </p>
               )}
@@ -306,15 +368,22 @@ export default function ProductDetailModal({
         </div>
 
         {/* Add to Cart fixed bottom */}
-        <div className="p-5 pt-3 border-t border-border-subtle bg-deep">
+        <div
+          className="p-5 pt-3"
+          style={{
+            borderTop: "2px solid var(--rule-strong-c)",
+            background: "var(--paper)",
+          }}
+        >
           <button
             onClick={handleAdd}
             disabled={isOutOfStock || needsVariantSelection}
-            className="w-full bg-gradient-to-r from-gold to-gold-light text-midnight font-bold py-3.5 rounded-xl press disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="c-btn c-btn-primary w-full"
+            style={{
+              opacity: isOutOfStock || needsVariantSelection ? 0.4 : 1,
+              cursor: isOutOfStock || needsVariantSelection ? "not-allowed" : "pointer",
+            }}
           >
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
-              <path d="M9 3v12M3 9h12" />
-            </svg>
             {isOutOfStock
               ? "Out of Stock"
               : needsVariantSelection

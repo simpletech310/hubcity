@@ -282,11 +282,19 @@ export default function TransitClient() {
   return (
     <div className="animate-fade-in pb-28">
       {/* Header */}
-      <div className="px-5 pt-5 pb-4">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY DATA · LA METRO</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 46, lineHeight: 0.92 }}>Transit Tracker.</h1>
+        <p className="c-serif-it mt-2 mb-4" style={{ fontSize: 13 }}>
+          LA Metro · Live arrivals · Compton.
+        </p>
         <div className="flex items-center justify-between mb-1">
-          <div>
-            <h1 className="font-heading font-bold text-xl text-white">Transit Tracker</h1>
-            <p className="text-[12px] text-white/40 mt-0.5">LA Metro · Live arrivals · Compton</p>
+          <div className="hidden">
+            <h1 className="font-heading font-bold text-xl">Transit Tracker</h1>
+            <p className="text-[12px] mt-0.5">LA Metro · Live arrivals · Compton</p>
           </div>
           <button
             onClick={refreshAll}

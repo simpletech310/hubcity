@@ -68,12 +68,24 @@ export default async function SafetyPage() {
   const resolutionRate = totalIssues > 0 ? Math.round((totalResolved / totalIssues) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-midnight text-white">
+    <div className="culture-surface min-h-dvh">
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY DATA · SAFETY</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>Community Safety.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Issue tracking and emergency resources for Compton.
+        </p>
+      </div>
       <div className="mx-auto max-w-6xl px-4 py-8">
-        <SectionHeader
-          title="Community Safety"
-          subtitle="Issue tracking and emergency resources for Compton"
-        />
+        <div className="sr-only">
+          <SectionHeader
+            title="Community Safety"
+            subtitle="Issue tracking and emergency resources for Compton"
+          />
+        </div>
 
         {/* Resolution Stats */}
         <div className="mb-8 grid grid-cols-3 gap-4">

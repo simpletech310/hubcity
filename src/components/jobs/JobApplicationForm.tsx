@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
 import { createClient } from "@/lib/supabase/client";
 import type { JobListing } from "@/types/database";
 
@@ -104,48 +102,70 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
     }
   }
 
+  const inputStyle: React.CSSProperties = {
+    background: "var(--paper)",
+    color: "var(--ink-strong)",
+    border: "2px solid var(--rule-strong-c)",
+    borderRadius: 0,
+  };
+
+  function inputErrStyle(hasErr: boolean): React.CSSProperties {
+    return hasErr
+      ? { ...inputStyle, border: "2px solid var(--red-c, #c0392b)" }
+      : inputStyle;
+  }
+
   if (success) {
     return (
-      <div className="animate-fade-in pb-24">
+      <div
+        className="animate-fade-in pb-24 min-h-screen"
+        style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+      >
         <div className="px-5 pt-4">
           <div className="text-center py-12 space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald/20 flex items-center justify-center mx-auto">
+            <div
+              className="w-16 h-16 flex items-center justify-center mx-auto"
+              style={{
+                background: "var(--gold-c)",
+                border: "3px solid var(--rule-strong-c)",
+              }}
+            >
               <svg
                 width="32"
                 height="32"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
+                stroke="var(--ink-strong)"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-emerald"
               >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
             <div>
-              <h2 className="font-heading text-xl font-bold">
-                Application Submitted!
+              <h2 className="c-hero" style={{ fontSize: "28px" }}>
+                Application Submitted
               </h2>
-              <p className="text-sm text-txt-secondary mt-1">
+              <p className="c-meta mt-2">
                 Your application for {job.title} has been submitted
                 successfully.
               </p>
             </div>
             <div className="space-y-3">
-              <Button
-                fullWidth
+              <button
+                type="button"
                 onClick={() => router.push("/profile/jobs")}
+                className="c-btn c-btn-primary w-full"
               >
                 View My Applications
-              </Button>
-              <Button
-                fullWidth
-                variant="secondary"
+              </button>
+              <button
+                type="button"
                 onClick={() => router.push("/jobs")}
+                className="c-btn c-btn-outline w-full"
               >
                 Browse Jobs
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -154,16 +174,23 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div
+      className="animate-fade-in pb-24 min-h-screen"
+      style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+    >
       {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+      <div
+        className="px-5 pt-4 pb-4 mb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href={`/jobs/${job.slug || job.id}`}
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="c-kicker inline-flex items-center gap-1.5"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -173,49 +200,72 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
           </svg>
           Back
         </Link>
-        <h1 className="font-heading text-xl font-bold mt-3">
+        <h1 className="c-hero mt-3" style={{ fontSize: "28px" }}>
           Apply: {job.title}
         </h1>
       </div>
 
       {/* Form */}
       <div className="px-5 space-y-4">
-        <Input
-          label="Full Name *"
-          type="text"
-          value={fullName}
-          onChange={(e) => {
-            setFullName(e.target.value);
-            if (errors.fullName) setErrors((p) => { const n = { ...p }; delete n.fullName; return n; });
-          }}
-          placeholder="Your full name"
-          error={errors.fullName}
-        />
+        {/* Full Name */}
+        <div className="w-full">
+          <label className="c-kicker block mb-2">
+            Full Name <span style={{ color: "var(--red-c, #c0392b)" }}>*</span>
+          </label>
+          <input
+            type="text"
+            value={fullName}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              if (errors.fullName) setErrors((p) => { const n = { ...p }; delete n.fullName; return n; });
+            }}
+            placeholder="Your full name"
+            className="w-full px-4 py-3 text-sm focus:outline-none"
+            style={inputErrStyle(!!errors.fullName)}
+          />
+          {errors.fullName && (
+            <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{errors.fullName}</p>
+          )}
+        </div>
 
-        <Input
-          label="Email *"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (errors.email) setErrors((p) => { const n = { ...p }; delete n.email; return n; });
-          }}
-          placeholder="your@email.com"
-          error={errors.email}
-        />
+        {/* Email */}
+        <div className="w-full">
+          <label className="c-kicker block mb-2">
+            Email <span style={{ color: "var(--red-c, #c0392b)" }}>*</span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (errors.email) setErrors((p) => { const n = { ...p }; delete n.email; return n; });
+            }}
+            placeholder="your@email.com"
+            className="w-full px-4 py-3 text-sm focus:outline-none"
+            style={inputErrStyle(!!errors.email)}
+          />
+          {errors.email && (
+            <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{errors.email}</p>
+          )}
+        </div>
 
-        <Input
-          label="Phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="(310) 555-0100"
-        />
+        {/* Phone */}
+        <div className="w-full">
+          <label className="c-kicker block mb-2">Phone</label>
+          <input
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="(310) 555-0100"
+            className="w-full px-4 py-3 text-sm focus:outline-none"
+            style={inputStyle}
+          />
+        </div>
 
         {/* US Citizen toggle */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-txt-secondary mb-1.5">
-            Are you a US citizen? *
+          <label className="c-kicker block mb-2">
+            Are you a US citizen? <span style={{ color: "var(--red-c, #c0392b)" }}>*</span>
           </label>
           <div className="flex gap-2">
             <button
@@ -224,11 +274,13 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 setIsUsCitizen(true);
                 if (errors.isUsCitizen) setErrors((p) => { const n = { ...p }; delete n.isUsCitizen; return n; });
               }}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all press ${
-                isUsCitizen === true
-                  ? "bg-emerald/20 text-emerald border border-emerald/30"
-                  : "bg-white/5 text-txt-secondary border border-border-subtle hover:border-white/20"
-              }`}
+              className="flex-1 py-3 c-card-t press transition-colors"
+              style={{
+                fontSize: "13px",
+                background: isUsCitizen === true ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               Yes
             </button>
@@ -238,24 +290,26 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 setIsUsCitizen(false);
                 if (errors.isUsCitizen) setErrors((p) => { const n = { ...p }; delete n.isUsCitizen; return n; });
               }}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all press ${
-                isUsCitizen === false
-                  ? "bg-coral/20 text-coral border border-coral/30"
-                  : "bg-white/5 text-txt-secondary border border-border-subtle hover:border-white/20"
-              }`}
+              className="flex-1 py-3 c-card-t press transition-colors"
+              style={{
+                fontSize: "13px",
+                background: isUsCitizen === false ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               No
             </button>
           </div>
           {errors.isUsCitizen && (
-            <p className="mt-1 text-xs text-coral">{errors.isUsCitizen}</p>
+            <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{errors.isUsCitizen}</p>
           )}
         </div>
 
         {/* Compton Resident toggle */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-txt-secondary mb-1.5">
-            Are you a Compton resident? *
+          <label className="c-kicker block mb-2">
+            Are you a Compton resident? <span style={{ color: "var(--red-c, #c0392b)" }}>*</span>
           </label>
           <div className="flex gap-2">
             <button
@@ -264,11 +318,13 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 setIsComptonResident(true);
                 if (errors.isComptonResident) setErrors((p) => { const n = { ...p }; delete n.isComptonResident; return n; });
               }}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all press ${
-                isComptonResident === true
-                  ? "bg-emerald/20 text-emerald border border-emerald/30"
-                  : "bg-white/5 text-txt-secondary border border-border-subtle hover:border-white/20"
-              }`}
+              className="flex-1 py-3 c-card-t press transition-colors"
+              style={{
+                fontSize: "13px",
+                background: isComptonResident === true ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               Yes
             </button>
@@ -278,17 +334,19 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
                 setIsComptonResident(false);
                 if (errors.isComptonResident) setErrors((p) => { const n = { ...p }; delete n.isComptonResident; return n; });
               }}
-              className={`flex-1 py-3 rounded-xl text-sm font-semibold transition-all press ${
-                isComptonResident === false
-                  ? "bg-coral/20 text-coral border border-coral/30"
-                  : "bg-white/5 text-txt-secondary border border-border-subtle hover:border-white/20"
-              }`}
+              className="flex-1 py-3 c-card-t press transition-colors"
+              style={{
+                fontSize: "13px",
+                background: isComptonResident === false ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               No
             </button>
           </div>
           {errors.isComptonResident && (
-            <p className="mt-1 text-xs text-coral">
+            <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>
               {errors.isComptonResident}
             </p>
           )}
@@ -296,10 +354,17 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
 
         {/* Resume upload */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+          <label className="c-kicker block mb-2">
             Resume (PDF, max 5MB)
           </label>
-          <label className="flex items-center justify-center gap-2 w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm cursor-pointer hover:border-gold/30 transition-colors press">
+          <label
+            className="flex items-center justify-center gap-2 w-full px-4 py-3 cursor-pointer press"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
             <svg
               width="18"
               height="18"
@@ -307,12 +372,11 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
-              className="text-txt-secondary"
             >
               <path d="M9 2v10M5 6l4-4 4 4" />
               <path d="M2 12v2a2 2 0 002 2h10a2 2 0 002-2v-2" />
             </svg>
-            <span className={resumeFile ? "text-white" : "text-txt-secondary"}>
+            <span className="c-card-t" style={{ fontSize: "13px" }}>
               {resumeFile ? resumeFile.name : "Upload Resume"}
             </span>
             <input
@@ -332,13 +396,13 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             />
           </label>
           {errors.resume && (
-            <p className="mt-1 text-xs text-coral">{errors.resume}</p>
+            <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{errors.resume}</p>
           )}
         </div>
 
         {/* References */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+          <label className="c-kicker block mb-2">
             References (optional)
           </label>
           <textarea
@@ -346,13 +410,14 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             onChange={(e) => setReferencesText(e.target.value)}
             placeholder="Name, phone/email, relationship..."
             rows={3}
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors resize-none"
+            className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+            style={inputStyle}
           />
         </div>
 
         {/* Cover Note */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+          <label className="c-kicker block mb-2">
             Cover Note (optional)
           </label>
           <textarea
@@ -360,13 +425,20 @@ export default function JobApplicationForm({ job }: JobApplicationFormProps) {
             onChange={(e) => setCoverNote(e.target.value)}
             placeholder="Tell us why you're interested in this position..."
             rows={4}
-            className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors resize-none"
+            className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+            style={inputStyle}
           />
         </div>
 
-        <Button fullWidth size="lg" onClick={handleSubmit} loading={loading}>
-          Submit Application
-        </Button>
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="c-btn c-btn-primary w-full"
+          style={{ opacity: loading ? 0.6 : 1 }}
+        >
+          {loading ? "Submitting..." : "Submit Application"}
+        </button>
       </div>
     </div>
   );

@@ -79,42 +79,17 @@ export default async function CityHallPage() {
   const events = (cityEvents ?? []) as CityEvent[];
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* Hero Section */}
-      <section className="relative px-5 pt-2 pb-6">
-        <div className="relative rounded-3xl overflow-hidden min-h-[200px] flex flex-col justify-end">
-          <Image
-            src="/images/generated/city-hall-hero.png"
-            alt="Compton City Hall"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/60 to-midnight/20" />
-          <div className="absolute inset-0 pattern-dots opacity-20" />
-
-          <div className="relative z-10 p-6 pb-7">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-gold/20 border border-gold/30 flex items-center justify-center">
-                <Icon name="landmark" size={24} />
-              </div>
-              <div>
-                <p className="text-gold text-[10px] font-bold tracking-[0.25em] uppercase">
-                  City of Compton
-                </p>
-                <h1 className="font-display text-[28px] font-bold leading-[1.1]">
-                  City Hall
-                </h1>
-              </div>
-            </div>
-            <p className="text-txt-secondary text-sm leading-relaxed max-w-[280px]">
-              Your digital gateway to Compton city government services and information.
-            </p>
-            <p className="text-gold/70 text-[11px] font-medium mt-2">
-              Serving the Culture since 1888
-            </p>
-          </div>
-        </div>
+      <section
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ VOL·01 · ISSUE CIVIC · CITY OF COMPTON</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 52, lineHeight: 0.9 }}>City Hall.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Your digital gateway to Compton city government services. Serving the Culture since 1888.
+        </p>
       </section>
 
       {/* Quick Links Grid */}

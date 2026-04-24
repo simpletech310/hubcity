@@ -176,7 +176,7 @@ export default function ReportIssuePage() {
   // Success state
   if (createdIssue) {
     return (
-      <div className="animate-fade-in pb-24">
+      <div className="culture-surface min-h-dvh animate-fade-in pb-24">
         <div className="px-5 pt-6">
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
@@ -226,34 +226,34 @@ export default function ReportIssuePage() {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-coral/20 via-midnight to-midnight" />
-        <div className="relative px-5 pt-6 pb-8">
-          <Link
-            href="/city-hall/issues"
-            className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold mb-4 press"
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <Link
+          href="/city-hall/issues"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold mb-3 press"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           >
-            <svg
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              <path d="M10 12L6 8l4-4" />
-            </svg>
-            Issue Tracker
-          </Link>
-          <h1 className="font-heading text-2xl font-bold mb-1">
-            Report an Issue
-          </h1>
-          <p className="text-sm text-txt-secondary">
-            Help us fix problems in your neighborhood.
-          </p>
-        </div>
+            <path d="M10 12L6 8l4-4" />
+          </svg>
+          Issue Tracker
+        </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY HALL · REPORT</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>Report an Issue.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Help us fix problems in your neighborhood.
+        </p>
       </div>
 
       <div className="px-5 space-y-5 mt-4">

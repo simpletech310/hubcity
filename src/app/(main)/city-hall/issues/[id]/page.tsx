@@ -138,18 +138,27 @@ export default function IssueDetailPage() {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="px-5 pt-4 pb-3">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/city-hall/issues"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M10 12L6 8l4-4" />
           </svg>
           Issue Tracker
         </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY HALL · ISSUE #{issue.id.slice(0, 6).toUpperCase()}</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 40, lineHeight: 0.95 }}>{issue.title}</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          {STATUS_LABELS[issue.status]} · {issue.type.replace("_", " ")}
+        </p>
       </div>
 
       <div className="px-5">

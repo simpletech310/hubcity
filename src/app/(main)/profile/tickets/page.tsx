@@ -108,10 +108,10 @@ export default async function MyTicketsPage() {
     });
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-midnight/95 backdrop-blur-sm border-b border-border-subtle px-5 py-4 flex items-center gap-3">
-        <Link href="/profile" className="press">
+      <div className="px-5 pt-6 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
+        <Link href="/profile" className="press inline-flex items-center gap-1.5 mb-3" style={{ color: "var(--ink-strong)" }}>
           <svg
             width="20"
             height="20"
@@ -119,22 +119,21 @@ export default async function MyTicketsPage() {
             stroke="currentColor"
             strokeWidth="2"
             strokeLinecap="round"
-            className="text-txt-secondary"
           >
             <path d="M15 18l-6-6 6-6" />
           </svg>
+          <span className="text-sm font-semibold">Profile</span>
         </Link>
-        <div>
-          <h1 className="font-heading font-bold text-base leading-tight">My Tickets</h1>
-          <p className="text-[11px] text-txt-secondary">
-            {orders.length} order{orders.length !== 1 ? "s" : ""}
-          </p>
-        </div>
+        <p className="c-kicker">§ PROFILE · TICKETS</p>
+        <h1 className="c-hero">My Tickets.</h1>
+        <p className="c-serif-it">
+          {orders.length} order{orders.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       {orders.length === 0 ? (
         <div className="px-5 pt-16 flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-2xl bg-gold/10 flex items-center justify-center mb-4">
+          <div className="w-16 h-16 bg-gold/10 flex items-center justify-center mb-4 c-frame">
             <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gold">
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-5.25h5.25M7.5 15h3M3.375 5.25c-.621 0-1.125.504-1.125 1.125v3.026a2.999 2.999 0 010 5.198v3.026c0 .621.504 1.125 1.125 1.125h17.25c.621 0 1.125-.504 1.125-1.125v-3.026a3 3 0 010-5.198V6.375c0-.621-.504-1.125-1.125-1.125H3.375z" />
             </svg>
@@ -145,7 +144,7 @@ export default async function MyTicketsPage() {
           </p>
           <Link
             href="/events"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight text-sm font-semibold press"
+            className="c-btn c-btn-accent c-btn-sm"
           >
             Browse Events
           </Link>

@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
-import Input from "@/components/ui/Input";
 import type { Resource, ApplicationField } from "@/types/database";
 
 interface GrantApplicationFormProps {
@@ -77,117 +74,143 @@ export default function GrantApplicationForm({
     }
   }
 
+  const inputBaseStyle: React.CSSProperties = {
+    background: "var(--paper)",
+    color: "var(--ink-strong)",
+    border: "2px solid var(--rule-strong-c)",
+    borderRadius: 0,
+  };
+
   function renderField(field: ApplicationField) {
     const value = formData[field.name] ?? "";
     const error = errors[field.name];
+    const errBorder = error
+      ? { border: "2px solid var(--red-c, #c0392b)" }
+      : null;
 
     switch (field.type) {
       case "textarea":
         return (
           <div key={field.name} className="w-full">
-            <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+            <label className="c-kicker block mb-2">
               {field.label}
-              {field.required && <span className="text-coral ml-0.5">*</span>}
+              {field.required && <span className="ml-1" style={{ color: "var(--red-c, #c0392b)" }}>*</span>}
             </label>
             <textarea
               value={value}
               onChange={(e) => updateField(field.name, e.target.value)}
               placeholder={field.placeholder}
               rows={4}
-              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors resize-none ${
-                error ? "border-coral/50" : "border-border-subtle"
-              }`}
+              className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+              style={{ ...inputBaseStyle, ...(errBorder || {}) }}
             />
-            {error && <p className="mt-1 text-xs text-coral">{error}</p>}
+            {error && (
+              <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{error}</p>
+            )}
           </div>
         );
 
       case "select":
         return (
           <div key={field.name} className="w-full">
-            <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+            <label className="c-kicker block mb-2">
               {field.label}
-              {field.required && <span className="text-coral ml-0.5">*</span>}
+              {field.required && <span className="ml-1" style={{ color: "var(--red-c, #c0392b)" }}>*</span>}
             </label>
             <select
               value={value}
               onChange={(e) => updateField(field.name, e.target.value)}
-              className={`w-full bg-white/5 border rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors appearance-none ${
-                error ? "border-coral/50" : "border-border-subtle"
-              } ${!value ? "text-txt-secondary" : ""}`}
+              className="w-full px-4 py-3 text-sm focus:outline-none appearance-none"
+              style={{ ...inputBaseStyle, ...(errBorder || {}) }}
             >
-              <option value="" className="bg-deep">
+              <option value="">
                 {field.placeholder ?? "Select..."}
               </option>
               {field.options?.map((opt) => (
-                <option key={opt} value={opt} className="bg-deep">
+                <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
             </select>
-            {error && <p className="mt-1 text-xs text-coral">{error}</p>}
+            {error && (
+              <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{error}</p>
+            )}
           </div>
         );
 
       default:
         return (
-          <Input
-            key={field.name}
-            label={
-              field.label +
-              (field.required ? " *" : "")
-            }
-            type={field.type}
-            value={value}
-            onChange={(e) => updateField(field.name, e.target.value)}
-            placeholder={field.placeholder}
-            error={error}
-          />
+          <div key={field.name} className="w-full">
+            <label className="c-kicker block mb-2">
+              {field.label}
+              {field.required && <span className="ml-1" style={{ color: "var(--red-c, #c0392b)" }}>*</span>}
+            </label>
+            <input
+              type={field.type}
+              value={value}
+              onChange={(e) => updateField(field.name, e.target.value)}
+              placeholder={field.placeholder}
+              className="w-full px-4 py-3 text-sm focus:outline-none"
+              style={{ ...inputBaseStyle, ...(errBorder || {}) }}
+            />
+            {error && (
+              <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{error}</p>
+            )}
+          </div>
         );
     }
   }
 
   if (success) {
     return (
-      <div className="animate-fade-in pb-24">
+      <div
+        className="animate-fade-in pb-24 min-h-screen"
+        style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+      >
         <div className="px-5 pt-4">
           <div className="text-center py-12 space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald/20 flex items-center justify-center mx-auto">
+            <div
+              className="w-16 h-16 flex items-center justify-center mx-auto"
+              style={{
+                background: "var(--gold-c)",
+                border: "3px solid var(--rule-strong-c)",
+              }}
+            >
               <svg
                 width="32"
                 height="32"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
+                stroke="var(--ink-strong)"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-emerald"
               >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
             <div>
-              <h2 className="font-heading text-xl font-bold">
-                Application Submitted!
+              <h2 className="c-hero" style={{ fontSize: "28px" }}>
+                Application Submitted
               </h2>
-              <p className="text-sm text-txt-secondary mt-1">
+              <p className="c-meta mt-2">
                 Your application for {resource.name} has been submitted successfully.
               </p>
             </div>
             <div className="space-y-3">
-              <Button
-                fullWidth
+              <button
+                type="button"
                 onClick={() => router.push("/profile/applications")}
+                className="c-btn c-btn-primary w-full"
               >
                 View My Applications
-              </Button>
-              <Button
-                fullWidth
-                variant="secondary"
+              </button>
+              <button
+                type="button"
                 onClick={() => router.push("/resources")}
+                className="c-btn c-btn-outline w-full"
               >
                 Browse Resources
-              </Button>
+              </button>
             </div>
           </div>
         </div>
@@ -196,16 +219,23 @@ export default function GrantApplicationForm({
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div
+      className="animate-fade-in pb-24 min-h-screen"
+      style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+    >
       {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+      <div
+        className="px-5 pt-4 pb-4 mb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href={`/resources/${resource.slug || resource.id}`}
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="c-kicker inline-flex items-center gap-1.5"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -215,11 +245,11 @@ export default function GrantApplicationForm({
           </svg>
           Back
         </Link>
-        <h1 className="font-heading text-xl font-bold mt-3">
+        <h1 className="c-hero mt-3" style={{ fontSize: "28px" }}>
           Apply: {resource.name}
         </h1>
         {resource.organization && (
-          <p className="text-sm text-txt-secondary mt-0.5">
+          <p className="c-kicker mt-1" style={{ opacity: 0.7 }}>
             {resource.organization}
           </p>
         )}
@@ -227,8 +257,15 @@ export default function GrantApplicationForm({
 
       {/* Deadline banner */}
       {resource.deadline && (
-        <div className="mx-5 mb-4 bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5">
-          <p className="text-xs text-coral font-semibold">
+        <div
+          className="mx-5 mb-4 px-4 py-3"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--red-c, #c0392b)",
+            color: "var(--red-c, #c0392b)",
+          }}
+        >
+          <p className="c-kicker" style={{ color: "inherit" }}>
             Deadline:{" "}
             {new Date(resource.deadline).toLocaleDateString("en-US", {
               month: "long",
@@ -242,22 +279,29 @@ export default function GrantApplicationForm({
       {/* Form */}
       <div className="px-5 space-y-4">
         {fields.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-txt-secondary text-sm">
+          <div
+            className="text-center py-12"
+            style={{
+              background: "var(--paper-soft)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <p className="c-meta">
               This resource does not have an application form configured.
             </p>
           </div>
         ) : (
           <>
             {fields.map(renderField)}
-            <Button
-              fullWidth
-              size="lg"
+            <button
+              type="button"
               onClick={handleSubmit}
-              loading={loading}
+              disabled={loading}
+              className="c-btn c-btn-primary w-full"
+              style={{ opacity: loading ? 0.6 : 1 }}
             >
-              Submit Application
-            </Button>
+              {loading ? "Submitting..." : "Submit Application"}
+            </button>
           </>
         )}
       </div>

@@ -43,12 +43,13 @@ export default async function MyApplicationsPage() {
   })[];
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+      <div className="px-5 pt-6 pb-4 mb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <Link
           href="/profile"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -62,9 +63,9 @@ export default async function MyApplicationsPage() {
           </svg>
           Back
         </Link>
-        <h1 className="font-heading text-2xl font-bold mt-3">
-          My Applications
-        </h1>
+        <p className="c-kicker">§ PROFILE · APPLICATIONS</p>
+        <h1 className="c-hero">My Applications.</h1>
+        <p className="c-serif-it">Grants, programs, and requests.</p>
       </div>
 
       <div className="px-5 space-y-3">

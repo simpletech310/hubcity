@@ -71,26 +71,20 @@ export default async function CityDataPage() {
   const resolutionRate = totalIssues > 0 ? Math.round(((resolvedCount ?? 0) / totalIssues) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28">
+    <div className="culture-surface min-h-dvh pb-28">
       {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-gold/8 via-midnight to-midnight" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-        <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold/5 blur-3xl" />
-        <div className="relative z-10 px-5 pt-6 pb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <Icon name="chart" size={18} className="text-gold" />
-            </div>
-            <div>
-              <h1 className="font-heading text-[20px] font-bold text-white">City at a Glance</h1>
-            </div>
-          </div>
-          <p className="text-[12px] text-white/40 ml-10">Real-time data for Compton, CA</p>
-        </div>
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ VOL·01 · ISSUE CIVIC · CITY DATA</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>City at a Glance.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Real-time data for Compton, CA.
+        </p>
       </div>
 
-      <div className="px-5 space-y-5">
+      <div className="px-5 pt-5 space-y-5">
         {/* Alert Banner */}
         {alerts && alerts.length > 0 && (
           <AlertBanner alerts={alerts as CityAlert[]} />

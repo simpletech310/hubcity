@@ -169,15 +169,16 @@ export default async function RsvpDetailPage({
     .slice(0, 5);
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28 animate-fade-in">
+    <div className="culture-surface min-h-dvh pb-28 animate-fade-in">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-30 bg-midnight/80 backdrop-blur-xl border-b border-white/[0.04]">
-        <div className="flex items-center gap-3 px-5 py-3.5">
-          <Link href="/profile/rsvps" className="press">
-            <Icon name="back" size={20} className="text-white/60" />
-          </Link>
-          <h1 className="font-heading text-[17px] font-bold">RSVP Details</h1>
-        </div>
+      <div className="px-5 pt-6 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
+        <Link href="/profile/rsvps" className="press inline-flex items-center gap-1.5 mb-3" style={{ color: "var(--ink-strong)" }}>
+          <Icon name="back" size={16} />
+          <span className="text-sm font-semibold">RSVPs</span>
+        </Link>
+        <p className="c-kicker">§ PROFILE · RSVP</p>
+        <h1 className="c-hero">RSVP Details.</h1>
+        <p className="c-serif-it">Your ticket to the moment.</p>
       </div>
 
       {/* Event Hero */}
@@ -203,7 +204,7 @@ export default async function RsvpDetailPage({
 
         {/* Title overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="font-heading text-xl font-bold text-white leading-tight">
+          <h2 className="c-title text-white leading-tight">
             {event.title}
           </h2>
         </div>
@@ -213,7 +214,7 @@ export default async function RsvpDetailPage({
         {/* RSVP Status Badge */}
         <div className="flex items-center gap-3">
           <div
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl ${status.bg} border border-white/[0.06]`}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 ${status.bg} border border-black/10`}
           >
             <div
               className={`w-2 h-2 rounded-full ${
@@ -221,7 +222,7 @@ export default async function RsvpDetailPage({
                   ? "bg-emerald"
                   : rsvp.status === "interested"
                   ? "bg-gold"
-                  : "bg-white/30"
+                  : "bg-black/30"
               }`}
             />
             <span className={`text-[13px] font-bold ${status.text}`}>
@@ -231,24 +232,24 @@ export default async function RsvpDetailPage({
         </div>
 
         {/* Event Details Card */}
-        <div className="glass-card-elevated rounded-2xl p-4 space-y-3.5">
+        <div className="c-frame p-4 space-y-3.5" style={{ background: "var(--paper-soft)" }}>
           {/* Date + Time */}
           <div className="flex items-start gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-8 h-8 bg-gold/10 flex items-center justify-center shrink-0 mt-0.5">
               <Icon name="calendar" size={16} className="text-gold" />
             </div>
             <div>
-              <p className="text-[13px] font-semibold text-white">
+              <p className="c-card-t">
                 {formatDateNice(event.start_date)}
               </p>
               {event.start_time && (
-                <p className="text-[11px] text-txt-secondary mt-0.5">
+                <p className="c-meta mt-0.5">
                   {formatTime12h(event.start_time)}
                   {event.end_time && ` - ${formatTime12h(event.end_time)}`}
                 </p>
               )}
               {event.end_date && event.end_date !== event.start_date && (
-                <p className="text-[11px] text-txt-secondary mt-0.5">
+                <p className="c-meta mt-0.5">
                   to {formatDateNice(event.end_date)}
                 </p>
               )}
@@ -258,17 +259,17 @@ export default async function RsvpDetailPage({
           {/* Location */}
           {(event.location_name || event.address) && (
             <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-coral/10 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-8 h-8 bg-coral/10 flex items-center justify-center shrink-0 mt-0.5">
                 <Icon name="map-pin" size={16} className="text-coral" />
               </div>
               <div>
                 {event.location_name && (
-                  <p className="text-[13px] font-semibold text-white">
+                  <p className="c-card-t">
                     {event.location_name}
                   </p>
                 )}
                 {event.address && (
-                  <p className="text-[11px] text-txt-secondary mt-0.5">
+                  <p className="c-meta mt-0.5">
                     {event.address}
                   </p>
                 )}
@@ -279,7 +280,7 @@ export default async function RsvpDetailPage({
           {/* Category */}
           {event.category && (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-hc-purple/10 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 bg-hc-purple/10 flex items-center justify-center shrink-0">
                 <Icon name="tag" size={16} className="text-gold" />
               </div>
               <Badge variant="purple" label={event.category} />
@@ -288,8 +289,8 @@ export default async function RsvpDetailPage({
 
           {/* Description */}
           {event.description && (
-            <div className="pt-2 border-t border-border-subtle">
-              <p className="text-[12px] text-txt-secondary leading-relaxed whitespace-pre-line">
+            <div className="pt-2 border-t border-black/10">
+              <p className="c-body leading-relaxed whitespace-pre-line">
                 {event.description}
               </p>
             </div>
@@ -298,11 +299,11 @@ export default async function RsvpDetailPage({
 
         {/* Attendee Preview */}
         {(goingCount > 0 || interestedCount > 0) && (
-          <div className="glass-card-elevated rounded-2xl p-4">
+          <div className="c-frame p-4" style={{ background: "var(--paper-soft)" }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Icon name="users" size={16} className="text-white/40" />
-                <p className="text-[12px] text-txt-secondary font-medium">
+                <Icon name="users" size={16} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
+                <p className="c-body font-medium">
                   {goingCount > 0 && (
                     <span>
                       <span className="text-emerald font-semibold">
@@ -312,7 +313,7 @@ export default async function RsvpDetailPage({
                     </span>
                   )}
                   {goingCount > 0 && interestedCount > 0 && (
-                    <span className="mx-1.5 text-white/20">&middot;</span>
+                    <span className="mx-1.5" style={{ color: "var(--ink-strong)", opacity: 0.3 }}>&middot;</span>
                   )}
                   {interestedCount > 0 && (
                     <span>
@@ -331,7 +332,8 @@ export default async function RsvpDetailPage({
                   {avatarAttendees.map((a) => (
                     <div
                       key={a.user_id}
-                      className="w-7 h-7 rounded-full border-2 border-midnight overflow-hidden"
+                      className="w-7 h-7 rounded-full border-2 overflow-hidden"
+                      style={{ borderColor: "var(--paper)" }}
                     >
                       <Image
                         src={a.profile!.avatar_url!}
@@ -343,8 +345,8 @@ export default async function RsvpDetailPage({
                     </div>
                   ))}
                   {attendees.length > 5 && (
-                    <div className="w-7 h-7 rounded-full border-2 border-midnight bg-white/10 flex items-center justify-center">
-                      <span className="text-[9px] font-bold text-white/60">
+                    <div className="w-7 h-7 rounded-full border-2 bg-black/10 flex items-center justify-center" style={{ borderColor: "var(--paper)" }}>
+                      <span className="text-[9px] font-bold" style={{ color: "var(--ink-strong)" }}>
                         +{attendees.length - 5}
                       </span>
                     </div>
@@ -359,7 +361,7 @@ export default async function RsvpDetailPage({
         <div className="space-y-2.5">
           <Link
             href={eventLink}
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-gold/10 border border-gold/20 text-gold font-semibold text-[14px] press hover:bg-gold/15 transition-colors"
+            className="c-btn c-btn-accent w-full"
           >
             <Icon name="calendar" size={16} />
             View Event
@@ -372,7 +374,7 @@ export default async function RsvpDetailPage({
               href={calendarUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl glass-card-elevated border border-border-subtle text-txt-secondary font-semibold text-[13px] press hover:border-white/20 transition-colors"
+              className="c-btn c-btn-outline flex-1"
             >
               <Icon name="calendar" size={14} />
               Add to Calendar
@@ -381,7 +383,7 @@ export default async function RsvpDetailPage({
         </div>
 
         {/* RSVP'd Date */}
-        <p className="text-center text-[11px] text-white/30 pt-2 pb-4">
+        <p className="c-meta text-center pt-2 pb-4">
           RSVP&apos;d on {rsvpDate}
         </p>
       </div>

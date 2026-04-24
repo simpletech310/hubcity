@@ -55,27 +55,27 @@ export default function MyReportedIssuesPage() {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/20 via-midnight to-midnight" />
-        <div className="relative px-5 pt-6 pb-8">
-          <Link
-            href="/city-hall/issues"
-            className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold mb-4 press"
-          >
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <path d="M10 12L6 8l4-4" />
-            </svg>
-            Issue Tracker
-          </Link>
-          <h1 className="font-heading text-2xl font-bold mb-1">
-            My Reported Issues
-          </h1>
-          <p className="text-sm text-txt-secondary">
-            Track the status of issues you have reported.
-          </p>
-        </div>
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <Link
+          href="/city-hall/issues"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold mb-3 press"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <path d="M10 12L6 8l4-4" />
+          </svg>
+          Issue Tracker
+        </Link>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY HALL · MY REPORTS</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>My Issues.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Track the status of issues you have reported.
+        </p>
       </div>
 
       {/* Issues List */}

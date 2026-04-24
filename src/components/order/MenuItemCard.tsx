@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import { useCart } from "@/lib/cart";
 import type { MenuItem } from "@/types/database";
 
@@ -37,10 +35,21 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
     return (
       <div
         onClick={() => onTap?.(item)}
-        className="rounded-2xl bg-card border border-border-subtle overflow-hidden press hover:border-gold/20 transition-colors cursor-pointer"
+        className="overflow-hidden press cursor-pointer transition-colors"
+        style={{
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
       >
         {/* Product Image */}
-        <div className="relative aspect-square bg-midnight/50">
+        <div
+          className="relative aspect-square"
+          style={{
+            background: "var(--paper-soft)",
+            borderBottom: "2px solid var(--rule-strong-c)",
+          }}
+        >
           {item.image_url ? (
             <Image
               src={item.image_url}
@@ -50,16 +59,22 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-3xl opacity-20">
-                {item.is_digital ? "phone" : "cart"}
+              <span className="c-meta" style={{ opacity: 0.4 }}>
+                {item.is_digital ? "DIGITAL" : "NO IMAGE"}
               </span>
             </div>
           )}
 
           {/* Video play overlay */}
           {hasVideo && (
-            <div className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
+            <div
+              className="absolute top-2 right-2 w-7 h-7 flex items-center justify-center"
+              style={{
+                background: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="var(--gold-c)">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
@@ -67,20 +82,28 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
 
           {/* Gallery indicator */}
           {hasGallery && (
-            <div className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-sm flex items-center gap-1">
-              <svg width="10" height="10" fill="none" stroke="white" strokeWidth="2">
-                <rect x="1" y="1" width="8" height="8" rx="1" />
-              </svg>
-              <span className="text-[9px] font-bold text-white">
-                {(item.gallery_urls?.length ?? 0) + (item.image_url ? 1 : 0)}
-              </span>
+            <div
+              className="absolute top-2 left-2 px-1.5 py-0.5 flex items-center gap-1 c-kicker"
+              style={{
+                background: "var(--ink-strong)",
+                color: "var(--paper)",
+                fontSize: "9px",
+              }}
+            >
+              {(item.gallery_urls?.length ?? 0) + (item.image_url ? 1 : 0)}
             </div>
           )}
 
           {/* Out of stock overlay */}
           {outOfStock && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-xs font-bold text-white bg-coral/80 px-2 py-1 rounded-lg">
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: "rgba(26,21,18,0.6)" }}
+            >
+              <span
+                className="c-badge c-badge-live"
+                style={{ fontSize: "11px" }}
+              >
                 Sold Out
               </span>
             </div>
@@ -88,7 +111,10 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
 
           {/* Digital badge */}
           {item.is_digital && (
-            <div className="absolute bottom-2 left-2 bg-blue-500/80 backdrop-blur-sm text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+            <div
+              className="absolute bottom-2 left-2 c-badge c-badge-ink"
+              style={{ fontSize: "9px" }}
+            >
               Digital
             </div>
           )}
@@ -96,22 +122,28 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
 
         {/* Info */}
         <div className="p-3">
-          <h3 className="text-[13px] font-bold truncate">{item.name}</h3>
+          <h3 className="c-card-t truncate" style={{ fontSize: "13px" }}>{item.name}</h3>
           {item.description && (
-            <p className="text-[10px] text-txt-secondary mt-0.5 line-clamp-1">
+            <p className="c-body-sm mt-0.5 truncate" style={{ fontSize: "11px", opacity: 0.75 }}>
               {item.description}
             </p>
           )}
           <div className="flex items-center justify-between mt-2">
-            <span className="text-sm font-heading font-bold text-gold">
+            <span className="c-hero" style={{ fontSize: "18px" }}>
               ${(item.price / 100).toFixed(2)}
             </span>
             <button
               onClick={handleAdd}
               disabled={outOfStock}
-              className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center press disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-7 h-7 flex items-center justify-center press"
+              style={{
+                background: "var(--gold-c)",
+                border: "2px solid var(--rule-strong-c)",
+                opacity: outOfStock ? 0.3 : 1,
+                cursor: outOfStock ? "not-allowed" : "pointer",
+              }}
             >
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
+              <svg width="14" height="14" fill="none" stroke="var(--ink-strong)" strokeWidth="2.5" strokeLinecap="round">
                 <path d="M7 2v10M2 7h10" />
               </svg>
             </button>
@@ -121,16 +153,29 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
     );
   }
 
-  // Standard list layout (restaurant) - enhanced with image support
+  // Standard list layout (restaurant)
   return (
-    <Card>
+    <div
+      className="p-3"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        color: "var(--ink-strong)",
+      }}
+    >
       <div
         className={`flex items-start gap-3 ${onTap ? "cursor-pointer" : ""}`}
         onClick={() => onTap?.(item)}
       >
         {/* Product image thumbnail */}
         {item.image_url && (
-          <div className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-card">
+          <div
+            className="relative w-16 h-16 overflow-hidden shrink-0"
+            style={{
+              background: "var(--paper-soft)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             <Image
               src={item.image_url}
               alt={item.name}
@@ -138,9 +183,18 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
               className="object-cover"
             />
             {hasVideo && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                <div className="w-6 h-6 rounded-full bg-white/80 flex items-center justify-center">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="#111">
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ background: "rgba(26,21,18,0.3)" }}
+              >
+                <div
+                  className="w-6 h-6 flex items-center justify-center"
+                  style={{
+                    background: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--ink-strong)">
                     <path d="M8 5v14l11-7z" />
                   </svg>
                 </div>
@@ -150,35 +204,37 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
         )}
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-[13px] font-bold truncate">{item.name}</h3>
+          <h3 className="c-card-t truncate" style={{ fontSize: "13px" }}>{item.name}</h3>
           {item.description && (
-            <p className="text-[11px] text-txt-secondary mt-0.5 line-clamp-2">
+            <p className="c-body-sm mt-0.5 line-clamp-2" style={{ fontSize: "11px", opacity: 0.75 }}>
               {item.description}
             </p>
           )}
-          <div className="flex items-center gap-2 mt-1.5">
-            <p className="text-sm font-heading font-bold text-gold">
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <p className="c-hero" style={{ fontSize: "16px" }}>
               ${(item.price / 100).toFixed(2)}
             </p>
             {item.is_digital && (
-              <span className="bg-blue-500/15 text-blue-400 px-1.5 py-0.5 rounded text-[9px] font-bold">
+              <span className="c-badge c-badge-ink" style={{ fontSize: "9px" }}>
                 Digital
               </span>
             )}
             {outOfStock && (
-              <span className="text-[10px] text-coral font-bold">Sold Out</span>
+              <span className="c-badge c-badge-live" style={{ fontSize: "9px" }}>
+                Sold Out
+              </span>
             )}
           </div>
         </div>
 
-        <Button
-          size="sm"
+        <button
           onClick={handleAdd}
-          className="shrink-0 mt-1"
           disabled={outOfStock}
+          className="c-btn c-btn-accent c-btn-sm shrink-0 mt-1"
+          style={{ opacity: outOfStock ? 0.3 : 1 }}
         >
           Add
-        </Button>
+        </button>
       </div>
 
       {/* Horizontal image scroller for gallery */}
@@ -187,7 +243,11 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
           {item.gallery_urls.map((url, i) => (
             <div
               key={i}
-              className="relative w-20 h-20 rounded-lg overflow-hidden shrink-0 bg-card"
+              className="relative w-20 h-20 overflow-hidden shrink-0"
+              style={{
+                background: "var(--paper-soft)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
               <Image
                 src={url}
@@ -199,6 +259,6 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
           ))}
         </div>
       )}
-    </Card>
+    </div>
   );
 }

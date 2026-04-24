@@ -90,16 +90,16 @@ function SkeletonCards() {
       {[0, 1, 2].map((i) => (
         <div
           key={i}
-          className="rounded-xl bg-white/[0.04] border border-border-subtle overflow-hidden animate-pulse"
-          style={{ animationDelay: `${i * 80}ms` }}
+          className="c-frame overflow-hidden animate-pulse"
+          style={{ animationDelay: `${i * 80}ms`, background: "var(--paper-soft)" }}
         >
           <div className="p-4 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-white/[0.06] shrink-0" />
+            <div className="w-10 h-10 bg-black/10 shrink-0" />
             <div className="flex-1 space-y-2">
-              <div className="h-3 bg-white/[0.06] rounded-full w-3/4" />
-              <div className="h-2.5 bg-white/[0.04] rounded-full w-1/2" />
+              <div className="h-3 bg-black/10 rounded-full w-3/4" />
+              <div className="h-2.5 bg-black/5 rounded-full w-1/2" />
             </div>
-            <div className="w-14 h-5 bg-white/[0.06] rounded-full" />
+            <div className="w-14 h-5 bg-black/10 rounded-full" />
           </div>
         </div>
       ))}
@@ -122,10 +122,10 @@ function EmptyState({
 }) {
   return (
     <div className="text-center py-16 flex flex-col items-center gap-3">
-      <div className="w-14 h-14 rounded-full bg-white/[0.04] border border-border-subtle flex items-center justify-center">
-        <Icon name={iconName} size={24} className="text-txt-secondary" />
+      <div className="w-14 h-14 rounded-full border border-black/20 flex items-center justify-center" style={{ background: "var(--paper-soft)" }}>
+        <Icon name={iconName} size={24} style={{ color: "var(--ink-strong)" }} />
       </div>
-      <p className="text-[13px] text-txt-secondary max-w-[220px] leading-relaxed">
+      <p className="c-body max-w-[220px] leading-relaxed">
         {message}
       </p>
       <Link
@@ -251,65 +251,55 @@ export default function HubPage() {
   ];
 
   return (
-    <div className="animate-fade-in pb-safe">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* ------------------------------------------------------------------ */}
       {/* Page header                                                          */}
       {/* ------------------------------------------------------------------ */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/8 via-deep to-transparent" />
-        <div className="absolute inset-0 pattern-dots opacity-10" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-midnight to-transparent" />
-        <div className="relative z-10 px-5 pt-5 pb-4">
-          <Link
-            href="/profile"
-            className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+      <div className="px-5 pt-6 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
+        <Link
+          href="/profile"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          <svg
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
           >
-            <svg
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-            >
-              <path d="M10 12L6 8l4-4" />
-            </svg>
-            Profile
-          </Link>
-          <h1 className="font-heading text-2xl font-bold mb-1">Your Hub</h1>
-          <p className="text-[12px] text-txt-secondary">
-            All your activity in one place
-          </p>
-        </div>
+            <path d="M10 12L6 8l4-4" />
+          </svg>
+          Profile
+        </Link>
+        <p className="c-kicker">§ PROFILE · HUB</p>
+        <h1 className="c-hero">Your Hub.</h1>
+        <p className="c-serif-it">
+          All your activity in one place.
+        </p>
       </div>
 
       {/* ------------------------------------------------------------------ */}
       {/* Tab pills                                                            */}
       {/* ------------------------------------------------------------------ */}
-      <div className="flex gap-2 px-5 pb-4 mt-1 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-2 px-5 py-4 overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`
-                shrink-0 inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] font-bold
-                border transition-all duration-200 press
-                ${
-                  isActive
-                    ? "bg-gold text-midnight border-gold shadow-sm shadow-gold/30"
-                    : "bg-white/[0.04] text-txt-secondary border-white/[0.08] hover:border-gold/20 hover:text-ivory"
-                }
-              `}
+              className={`c-chip ${isActive ? "active gold" : ""}`}
             >
               {tab.label}
               {!loading && tab.count > 0 && (
                 <span
                   className={`
-                    inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold
-                    ${isActive ? "bg-midnight/20 text-midnight" : "bg-white/10 text-txt-secondary"}
+                    inline-flex items-center justify-center w-4 h-4 rounded-full text-[9px] font-bold ml-1.5
+                    ${isActive ? "bg-black/20" : "bg-black/10"}
                   `}
+                  style={{ color: "var(--ink-strong)" }}
                 >
                   {tab.count > 99 ? "99+" : tab.count}
                 </span>
@@ -538,7 +528,7 @@ export default function HubPage() {
       {/* Footer */}
       {!loading && (
         <div className="px-5 pt-10 pb-6 text-center">
-          <p className="text-[10px] text-txt-secondary/40">
+          <p className="c-meta" style={{ opacity: 0.5 }}>
             Made with love in Compton
           </p>
         </div>

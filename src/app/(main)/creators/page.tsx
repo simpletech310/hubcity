@@ -229,17 +229,18 @@ export default async function CreatorsPage({
   }
 
   return (
-    <div className="animate-fade-in pb-safe">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-midnight" />
-        <div className="relative px-5 pt-6 pb-5">
-          <h1 className="font-heading text-2xl font-bold mb-1">Discover</h1>
-          <p className="text-sm text-txt-secondary">
-            Cool things to watch from creators across every Culture city
-            {activeCity ? ` — including ${activeCity.name}` : ""}.
-          </p>
-        </div>
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ VOL·01 · ISSUE DISCOVER</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 52, lineHeight: 0.9 }}>Discover.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Cool things to watch from creators across every Culture city
+          {activeCity ? ` — including ${activeCity.name}` : ""}.
+        </p>
       </div>
 
       {/* ── Filters ───────────────────────────────────────────────── */}

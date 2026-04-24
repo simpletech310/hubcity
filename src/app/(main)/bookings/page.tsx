@@ -41,12 +41,16 @@ export default async function MyBookingsPage() {
   const bookingList = (bookings ?? []) as (Booking & { business: Business })[];
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+      <div
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/profile"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -60,10 +64,14 @@ export default async function MyBookingsPage() {
           </svg>
           Back
         </Link>
-        <h1 className="font-heading text-2xl font-bold mt-3">My Bookings</h1>
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ COMMERCE · APPOINTMENTS</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>My Bookings.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Appointments and reservations.
+        </p>
       </div>
 
-      <div className="px-5 space-y-3">
+      <div className="px-5 pt-5 space-y-3">
         {bookingList.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-txt-secondary text-sm mb-4">

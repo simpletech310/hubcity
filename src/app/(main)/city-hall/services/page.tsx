@@ -59,21 +59,26 @@ export default function ServicesPage() {
   const onlineCount = filtered.filter((s) => s.is_online).length;
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* Back + Header */}
-      <div className="px-5 pt-4 mb-3">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/city-hall"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press mb-3"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M10 12L6 8l4-4" />
           </svg>
           City Hall
         </Link>
-        <h1 className="font-heading text-2xl font-bold mb-1">City Services</h1>
-        <p className="text-sm text-txt-secondary">
-          Browse all city services across departments
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ CITY HALL · SERVICES</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>City Services.</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Browse all city services across departments.
         </p>
       </div>
 

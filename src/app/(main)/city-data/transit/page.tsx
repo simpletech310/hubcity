@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function TransitPage() {
   return (
-    <div className="min-h-screen bg-midnight text-white">
+    <div className="culture-surface min-h-dvh">
       <TransitClient />
     </div>
   );

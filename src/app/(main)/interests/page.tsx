@@ -28,19 +28,22 @@ export default async function InterestsPage() {
   const selectedIds = new Set(mine.map((i) => i.category_id));
 
   return (
-    <main className="px-6 py-8 max-w-xl mx-auto text-white">
-      <header className="mb-6">
-        <p className="text-[11px] font-semibold text-gold uppercase tracking-widest mb-2">
-          Personalize Your Culture Feed
-        </p>
-        <h1 className="font-display text-3xl leading-tight">What moves you?</h1>
-        <p className="mt-2 text-sm text-txt-secondary">
+    <main className="culture-surface min-h-dvh">
+      <header
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>§ PERSONALIZE YOUR FEED</div>
+        <h1 className="c-hero mt-2" style={{ fontSize: 48, lineHeight: 0.9 }}>What moves you?</h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
           Pick the categories you care about. We&apos;ll surface exhibits, events,
           and stories from cultural organizations across your cities.
         </p>
       </header>
 
-      <InterestsForm categories={categories} selectedIds={[...selectedIds]} />
+      <div className="px-6 py-8 max-w-xl mx-auto">
+        <InterestsForm categories={categories} selectedIds={[...selectedIds]} />
+      </div>
     </main>
   );
 }

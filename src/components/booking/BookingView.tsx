@@ -10,8 +10,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { getStripeClient } from "@/lib/stripe-client";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
 import type { Business, Service, BusinessStaff } from "@/types/database";
 
 interface BookingViewProps {
@@ -107,34 +105,52 @@ function BookingCheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center justify-between px-1 mb-2">
+      <div className="c-ink-block p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-txt-secondary">Service</p>
-          <p className="text-sm font-bold">{serviceName}</p>
+          <p className="c-kicker" style={{ color: "var(--paper)", opacity: 0.7 }}>Service</p>
+          <p className="c-card-t mt-1" style={{ color: "var(--paper)", fontSize: "14px" }}>{serviceName}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-txt-secondary">Amount Due</p>
-          <p className="text-lg font-heading font-bold text-gold">
+          <p className="c-kicker" style={{ color: "var(--paper)", opacity: 0.7 }}>Amount Due</p>
+          <p className="c-hero mt-1" style={{ color: "var(--gold-c)", fontSize: "22px" }}>
             ${(chargeAmount / 100).toFixed(2)}
           </p>
         </div>
       </div>
 
-      <PaymentElement options={{ layout: "tabs" }} />
+      <div className="c-frame p-3" style={{ background: "var(--paper)" }}>
+        <PaymentElement options={{ layout: "tabs" }} />
+      </div>
 
       {error && (
-        <div className="bg-coral/10 border border-coral/20 rounded-xl p-3">
-          <p className="text-xs text-coral">{error}</p>
+        <div
+          className="p-3"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--red-c, #c0392b)",
+            color: "var(--red-c, #c0392b)",
+          }}
+        >
+          <p className="c-meta" style={{ color: "inherit" }}>{error}</p>
         </div>
       )}
 
       <div className="flex gap-3">
-        <Button type="button" variant="secondary" onClick={onCancel} className="flex-1">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="c-btn c-btn-outline flex-1"
+        >
           Cancel
-        </Button>
-        <Button type="submit" loading={loading} disabled={!stripe} className="flex-1">
-          Pay ${(chargeAmount / 100).toFixed(2)}
-        </Button>
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="c-btn c-btn-primary flex-1"
+          style={{ opacity: loading || !stripe ? 0.6 : 1 }}
+        >
+          {loading ? "Processing..." : `Pay $${(chargeAmount / 100).toFixed(2)}`}
+        </button>
       </div>
     </form>
   );
@@ -157,7 +173,7 @@ export default function BookingView({ business, services }: BookingViewProps) {
   // Staff/provider state
   const [staffList, setStaffList] = useState<(BusinessStaff & { staff_services: { service_id: string }[] })[]>([]);
   const [selectedStaff, setSelectedStaff] = useState<BusinessStaff | null>(null);
-  const [staffLoaded, setStaffLoaded] = useState(false);
+  const [, setStaffLoaded] = useState(false);
 
   // Payment state
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -306,16 +322,23 @@ export default function BookingView({ business, services }: BookingViewProps) {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div
+      className="animate-fade-in pb-24 min-h-screen"
+      style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+    >
       {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+      <div
+        className="px-5 pt-4 pb-4 mb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href={`/business/${business.slug || business.id}`}
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="c-kicker inline-flex items-center gap-1.5"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -325,10 +348,10 @@ export default function BookingView({ business, services }: BookingViewProps) {
           </svg>
           Back
         </Link>
-        <h1 className="font-heading text-2xl font-bold mt-3">
+        <h1 className="c-hero mt-3" style={{ fontSize: "32px" }}>
           {business.name}
         </h1>
-        <p className="text-sm text-txt-secondary mt-0.5">Book Appointment</p>
+        <p className="c-kicker mt-1" style={{ opacity: 0.7 }}>Book Appointment</p>
       </div>
 
       {/* Step Indicator */}
@@ -342,21 +365,31 @@ export default function BookingView({ business, services }: BookingViewProps) {
             }).map((s, i, arr) => (
               <div key={s} className="flex items-center gap-2 flex-1">
                 <div
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    s === step
-                      ? "bg-gold w-3 h-3"
-                      : STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
-                      ? "bg-gold/50"
-                      : "bg-white/10"
-                  }`}
+                  className="transition-all"
+                  style={{
+                    width: s === step ? "14px" : "10px",
+                    height: s === step ? "14px" : "10px",
+                    background:
+                      s === step
+                        ? "var(--gold-c)"
+                        : STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
+                        ? "var(--ink-strong)"
+                        : "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 />
                 {i < arr.length - 1 && (
                   <div
-                    className={`flex-1 h-px ${
-                      STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
-                        ? "bg-gold/30"
-                        : "bg-white/10"
-                    }`}
+                    className="flex-1"
+                    style={{
+                      height: "2px",
+                      background:
+                        STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step)
+                          ? "var(--ink-strong)"
+                          : "var(--rule-strong-c)",
+                      opacity:
+                        STEP_ORDER.indexOf(s) < STEP_ORDER.indexOf(step) ? 1 : 0.3,
+                    }}
                   />
                 )}
               </div>
@@ -369,53 +402,57 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {/* Step 1: Select Service */}
         {step === "service" && (
           <div className="space-y-3">
-            <h2 className="font-heading font-bold text-base">Select a Service</h2>
+            <h2 className="c-card-t" style={{ fontSize: "16px" }}>Select a Service</h2>
             {services.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-txt-secondary text-sm">
+              <div className="text-center py-12 c-frame" style={{ background: "var(--paper-soft)" }}>
+                <p className="c-meta">
                   No services available right now.
                 </p>
               </div>
             ) : (
-              services.map((service) => (
-                <Card
-                  key={service.id}
-                  hover
-                  className={
-                    selectedService?.id === service.id
-                      ? "border-gold/40 glow-gold-sm"
-                      : ""
-                  }
-                  onClick={() => {
-                    setSelectedService(service);
-                    setStep("date");
-                  }}
-                >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="text-[13px] font-bold">{service.name}</h3>
-                      {service.description && (
-                        <p className="text-[11px] text-txt-secondary mt-0.5">
-                          {service.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs text-txt-secondary">
-                          {service.duration} min
-                        </p>
-                        {(service.deposit_amount ?? 0) > 0 && (
-                          <span className="text-[10px] text-emerald bg-emerald/10 px-1.5 py-0.5 rounded-full font-medium">
-                            ${((service.deposit_amount ?? 0) / 100).toFixed(2)} deposit
-                          </span>
+              services.map((service) => {
+                const isSelected = selectedService?.id === service.id;
+                return (
+                  <button
+                    key={service.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedService(service);
+                      setStep("date");
+                    }}
+                    className="w-full text-left p-4 press transition-colors"
+                    style={{
+                      background: isSelected ? "var(--gold-c)" : "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="c-card-t" style={{ fontSize: "14px" }}>{service.name}</h3>
+                        {service.description && (
+                          <p className="c-body-sm mt-1" style={{ color: "var(--ink-strong)", opacity: 0.75 }}>
+                            {service.description}
+                          </p>
                         )}
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <span className="c-meta">
+                            {service.duration} min
+                          </span>
+                          {(service.deposit_amount ?? 0) > 0 && (
+                            <span className="c-badge c-badge-ok">
+                              ${((service.deposit_amount ?? 0) / 100).toFixed(2)} deposit
+                            </span>
+                          )}
+                        </div>
                       </div>
+                      <span className="c-hero shrink-0" style={{ fontSize: "20px" }}>
+                        ${(service.price / 100).toFixed(2)}
+                      </span>
                     </div>
-                    <span className="font-heading font-bold text-gold text-sm">
-                      ${(service.price / 100).toFixed(2)}
-                    </span>
-                  </div>
-                </Card>
-              ))
+                  </button>
+                );
+              })
             )}
           </div>
         )}
@@ -424,24 +461,28 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {step === "date" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading font-bold text-base">Select Date</h2>
+              <h2 className="c-card-t" style={{ fontSize: "16px" }}>Select Date</h2>
               <button
                 onClick={() => setStep("service")}
-                className="text-gold text-xs font-semibold press"
+                className="c-btn c-btn-outline c-btn-sm"
               >
                 Change Service
               </button>
             </div>
 
             {selectedService && (
-              <Card className="bg-white/[0.03]">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-semibold">{selectedService.name}</span>
-                  <span className="text-gold">
-                    ${(selectedService.price / 100).toFixed(2)} / {selectedService.duration}min
-                  </span>
-                </div>
-              </Card>
+              <div
+                className="p-3 flex items-center justify-between"
+                style={{
+                  background: "var(--paper-soft)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <span className="c-card-t" style={{ fontSize: "13px" }}>{selectedService.name}</span>
+                <span className="c-meta" style={{ color: "var(--ink-strong)" }}>
+                  ${(selectedService.price / 100).toFixed(2)} / {selectedService.duration}min
+                </span>
+              </div>
             )}
 
             <div
@@ -460,26 +501,26 @@ export default function BookingView({ business, services }: BookingViewProps) {
                       setSelectedDate(date);
                       setStep("time");
                     }}
-                    className={`flex flex-col items-center min-w-[60px] py-3 px-3 rounded-xl transition-all press shrink-0 ${
-                      isSelected
-                        ? "bg-gold text-midnight"
-                        : "bg-white/[0.06] border border-border-subtle text-white hover:border-gold/20"
-                    }`}
+                    className="flex flex-col items-center min-w-[64px] py-3 px-3 transition-colors press shrink-0"
+                    style={{
+                      background: isSelected ? "var(--gold-c)" : "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
                   >
-                    <span className="text-[10px] font-semibold uppercase">
+                    <span className="c-kicker" style={{ fontSize: "10px" }}>
                       {dayAbbrevs[date.getDay()]}
                     </span>
-                    <span className="text-lg font-bold mt-0.5">
+                    <span className="c-hero mt-0.5" style={{ fontSize: "22px" }}>
                       {date.getDate()}
                     </span>
-                    <span className="text-[10px]">
+                    <span className="c-meta" style={{ fontSize: "10px" }}>
                       {monthAbbrevs[date.getMonth()]}
                     </span>
                     {isToday && (
                       <span
-                        className={`text-[8px] font-bold mt-0.5 ${
-                          isSelected ? "text-midnight/60" : "text-gold"
-                        }`}
+                        className="c-kicker mt-0.5"
+                        style={{ fontSize: "8px" }}
                       >
                         TODAY
                       </span>
@@ -495,17 +536,17 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {step === "time" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="font-heading font-bold text-base">Select Time</h2>
+              <h2 className="c-card-t" style={{ fontSize: "16px" }}>Select Time</h2>
               <button
                 onClick={() => setStep("date")}
-                className="text-gold text-xs font-semibold press"
+                className="c-btn c-btn-outline c-btn-sm"
               >
                 Change Date
               </button>
             </div>
 
             {selectedDate && (
-              <p className="text-sm text-txt-secondary">
+              <p className="c-meta">
                 {selectedDate.toLocaleDateString("en-US", {
                   weekday: "long",
                   month: "long",
@@ -515,20 +556,22 @@ export default function BookingView({ business, services }: BookingViewProps) {
             )}
 
             {slotsLoading ? (
-              <div className="text-center py-12">
-                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-sm text-txt-secondary">
-                  Loading available times...
-                </p>
+              <div className="text-center py-12 c-frame" style={{ background: "var(--paper-soft)" }}>
+                <div
+                  className="w-8 h-8 rounded-full animate-spin mx-auto mb-3"
+                  style={{
+                    border: "2px solid var(--ink-strong)",
+                    borderTopColor: "transparent",
+                  }}
+                />
+                <p className="c-meta">Loading available times...</p>
               </div>
             ) : availableSlots.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-txt-secondary text-sm">
-                  No available times for this date.
-                </p>
+              <div className="text-center py-12 c-frame" style={{ background: "var(--paper-soft)" }}>
+                <p className="c-meta">No available times for this date.</p>
                 <button
                   onClick={() => setStep("date")}
-                  className="text-gold text-sm font-semibold mt-3 press"
+                  className="c-btn c-btn-outline c-btn-sm mt-3"
                 >
                   Try another date
                 </button>
@@ -544,11 +587,13 @@ export default function BookingView({ business, services }: BookingViewProps) {
                         setSelectedTime(slot);
                         setStep("confirm");
                       }}
-                      className={`py-3 px-2 rounded-xl text-sm font-semibold transition-all press ${
-                        isSelected
-                          ? "bg-gold text-midnight"
-                          : "bg-white/[0.06] border border-border-subtle text-white hover:border-gold/20"
-                      }`}
+                      className="py-3 px-2 c-card-t transition-colors press"
+                      style={{
+                        fontSize: "13px",
+                        background: isSelected ? "var(--gold-c)" : "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                      }}
                     >
                       {slot}
                     </button>
@@ -562,21 +607,27 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {/* Step 4: Confirm */}
         {step === "confirm" && (
           <div className="space-y-4">
-            <h2 className="font-heading font-bold text-base">
+            <h2 className="c-card-t" style={{ fontSize: "16px" }}>
               Confirm Booking
             </h2>
 
-            <Card>
+            <div
+              className="p-4"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Service</span>
-                  <span className="font-semibold">
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Service</span>
+                  <span className="c-card-t" style={{ fontSize: "13px" }}>
                     {selectedService?.name}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Date</span>
-                  <span>
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Date</span>
+                  <span className="c-body-sm">
                     {selectedDate?.toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -585,52 +636,61 @@ export default function BookingView({ business, services }: BookingViewProps) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Time</span>
-                  <span>{selectedTime}</span>
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Time</span>
+                  <span className="c-body-sm">{selectedTime}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Duration</span>
-                  <span>{selectedService?.duration} min</span>
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Duration</span>
+                  <span className="c-body-sm">{selectedService?.duration} min</span>
                 </div>
-                <div className="border-t border-border-subtle pt-2 flex justify-between font-bold">
-                  <span>Total Price</span>
-                  <span className="text-gold">
-                    ${((selectedService?.price ?? 0) / 100).toFixed(2)}
-                  </span>
-                </div>
-                {(selectedService?.deposit_amount ?? 0) > 0 && (
-                  <>
-                    <div className="flex justify-between text-emerald">
-                      <span>Deposit Due Now</span>
-                      <span className="font-bold">
-                        ${((selectedService?.deposit_amount ?? 0) / 100).toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-txt-secondary text-xs">
-                      <span>Balance at Appointment</span>
-                      <span>
-                        ${(((selectedService?.price ?? 0) - (selectedService?.deposit_amount ?? 0)) / 100).toFixed(2)}
-                      </span>
-                    </div>
-                  </>
-                )}
               </div>
-            </Card>
+            </div>
+
+            {/* Totals block */}
+            <div className="c-ink-block p-4 space-y-2">
+              <div className="flex justify-between">
+                <span style={{ opacity: 0.75 }}>Total Price</span>
+                <span className="c-card-t" style={{ color: "var(--gold-c)", fontSize: "16px" }}>
+                  ${((selectedService?.price ?? 0) / 100).toFixed(2)}
+                </span>
+              </div>
+              {(selectedService?.deposit_amount ?? 0) > 0 && (
+                <>
+                  <div
+                    className="flex justify-between pt-2"
+                    style={{ borderTop: "2px solid var(--paper)" }}
+                  >
+                    <span style={{ opacity: 0.75 }}>Deposit Due Now</span>
+                    <span className="c-card-t" style={{ color: "var(--gold-c)", fontSize: "14px" }}>
+                      ${((selectedService?.deposit_amount ?? 0) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-xs" style={{ opacity: 0.75 }}>
+                    <span>Balance at Appointment</span>
+                    <span>
+                      ${(((selectedService?.price ?? 0) - (selectedService?.deposit_amount ?? 0)) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Provider Selection */}
             {serviceProviders.length > 0 && (
               <div>
-                <label className="block text-sm font-medium text-txt-secondary mb-2">
+                <label className="c-kicker block mb-2">
                   Preferred Provider (optional)
                 </label>
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => setSelectedStaff(null)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                      !selectedStaff
-                        ? "bg-gold/15 text-gold border border-gold/30"
-                        : "bg-white/5 text-txt-secondary border border-border-subtle"
-                    }`}
+                    className="px-3 py-2 c-card-t press transition-colors"
+                    style={{
+                      fontSize: "11px",
+                      background: !selectedStaff ? "var(--gold-c)" : "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
                   >
                     Any Available
                   </button>
@@ -638,13 +698,23 @@ export default function BookingView({ business, services }: BookingViewProps) {
                     <button
                       key={s.id}
                       onClick={() => setSelectedStaff(s)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                        selectedStaff?.id === s.id
-                          ? "bg-gold/15 text-gold border border-gold/30"
-                          : "bg-white/5 text-txt-secondary border border-border-subtle"
-                      }`}
+                      className="flex items-center gap-2 px-3 py-2 c-card-t press transition-colors"
+                      style={{
+                        fontSize: "11px",
+                        background: selectedStaff?.id === s.id ? "var(--gold-c)" : "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                      }}
                     >
-                      <div className="w-6 h-6 rounded-full bg-gold/10 flex items-center justify-center text-[10px] font-bold text-gold">
+                      <div
+                        className="w-6 h-6 flex items-center justify-center c-card-t"
+                        style={{
+                          fontSize: "10px",
+                          background: "var(--paper-soft)",
+                          border: "2px solid var(--rule-strong-c)",
+                          color: "var(--ink-strong)",
+                        }}
+                      >
                         {s.name.charAt(0)}
                       </div>
                       {s.name}
@@ -656,7 +726,7 @@ export default function BookingView({ business, services }: BookingViewProps) {
 
             {/* Notes */}
             <div>
-              <label className="block text-sm font-medium text-txt-secondary mb-1.5">
+              <label className="c-kicker block mb-2">
                 Notes (optional)
               </label>
               <textarea
@@ -664,27 +734,37 @@ export default function BookingView({ business, services }: BookingViewProps) {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Any special requests..."
                 rows={3}
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors resize-none"
+                className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+                style={{
+                  background: "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  borderRadius: 0,
+                }}
               />
             </div>
 
             <div className="flex gap-3">
-              <Button
-                variant="secondary"
+              <button
+                type="button"
                 onClick={() => setStep("time")}
-                className="flex-1"
+                className="c-btn c-btn-outline flex-1"
               >
                 Back
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
                 onClick={handleConfirm}
-                loading={loading}
-                className="flex-1"
+                disabled={loading}
+                className="c-btn c-btn-primary flex-1"
+                style={{ opacity: loading ? 0.6 : 1 }}
               >
-                {(selectedService?.deposit_amount ?? 0) > 0
+                {loading
+                  ? "Processing..."
+                  : (selectedService?.deposit_amount ?? 0) > 0
                   ? "Confirm & Pay"
                   : "Confirm Booking"}
-              </Button>
+              </button>
             </div>
           </div>
         )}
@@ -692,18 +772,18 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {/* Step 5: Payment */}
         {step === "payment" && clientSecret && bookingId && (
           <div className="space-y-4">
-            <h2 className="font-heading font-bold text-base">Payment</h2>
+            <h2 className="c-card-t" style={{ fontSize: "16px" }}>Payment</h2>
             <Elements
               stripe={getStripeClient()}
               options={{
                 clientSecret,
                 appearance: {
-                  theme: "night",
+                  theme: "flat",
                   variables: {
-                    colorPrimary: "#F2A900",
-                    colorBackground: "#16161a",
-                    colorText: "#ffffff",
-                    borderRadius: "12px",
+                    colorPrimary: "#1A1512",
+                    colorBackground: "#EDE6D6",
+                    colorText: "#1A1512",
+                    borderRadius: "0px",
                   },
                 },
               }}
@@ -722,40 +802,51 @@ export default function BookingView({ business, services }: BookingViewProps) {
         {/* Success */}
         {step === "success" && bookingResult && (
           <div className="text-center py-8 space-y-5">
-            <div className="w-16 h-16 rounded-full bg-emerald/20 flex items-center justify-center mx-auto">
+            <div
+              className="w-16 h-16 flex items-center justify-center mx-auto"
+              style={{
+                background: "var(--gold-c)",
+                border: "3px solid var(--rule-strong-c)",
+              }}
+            >
               <svg
                 width="32"
                 height="32"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
+                stroke="var(--ink-strong)"
+                strokeWidth="3"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-emerald"
               >
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
             <div>
-              <h2 className="font-heading text-xl font-bold">
-                Booking Confirmed!
+              <h2 className="c-hero" style={{ fontSize: "28px" }}>
+                Booking Confirmed
               </h2>
-              <p className="text-sm text-txt-secondary mt-1">
+              <p className="c-meta mt-2">
                 Your appointment has been booked.
               </p>
             </div>
 
-            <Card>
-              <div className="space-y-2 text-sm text-left">
+            <div
+              className="p-4 text-left"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Service</span>
-                  <span className="font-semibold">
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Service</span>
+                  <span className="c-card-t" style={{ fontSize: "13px" }}>
                     {bookingResult.service_name}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Date</span>
-                  <span>
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Date</span>
+                  <span className="c-body-sm">
                     {new Date(bookingResult.date + "T00:00:00").toLocaleDateString(
                       "en-US",
                       { weekday: "short", month: "short", day: "numeric" }
@@ -763,34 +854,35 @@ export default function BookingView({ business, services }: BookingViewProps) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Time</span>
-                  <span>{bookingResult.start_time}</span>
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Time</span>
+                  <span className="c-body-sm">{bookingResult.start_time}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-txt-secondary">Location</span>
-                  <span className="text-right max-w-[60%]">
+                  <span className="c-kicker" style={{ opacity: 0.7 }}>Location</span>
+                  <span className="c-body-sm text-right max-w-[60%]">
                     {business.address}
                   </span>
                 </div>
               </div>
-            </Card>
+            </div>
 
             <div className="space-y-3">
-              <Button
-                fullWidth
+              <button
+                type="button"
                 onClick={() => router.push("/bookings")}
+                className="c-btn c-btn-primary w-full"
               >
                 View My Bookings
-              </Button>
-              <Button
-                fullWidth
-                variant="secondary"
+              </button>
+              <button
+                type="button"
                 onClick={() =>
                   router.push(`/business/${business.slug || business.id}`)
                 }
+                className="c-btn c-btn-outline w-full"
               >
                 Back to Business
-              </Button>
+              </button>
             </div>
           </div>
         )}

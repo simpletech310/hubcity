@@ -51,54 +51,40 @@ export default async function ChooseCityPage({
   };
 
   return (
-    <main className="min-h-screen bg-midnight text-white">
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#1a1510] via-[#12100a] to-midnight" />
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] via-transparent to-transparent" />
-        <div className="absolute inset-0 pattern-dots opacity-10 pointer-events-none" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-
-        <div className="relative z-10 px-6 py-12 max-w-2xl mx-auto">
-          <p className="text-[11px] font-semibold text-gold uppercase tracking-widest mb-3">
-            {hint ? (
-              <span className="inline-flex items-center gap-1.5">
-                <Icon
-                  name={hint.icon as "calendar"}
-                  size={12}
-                  className="text-gold"
-                />
-                {hint.label} · Choose a city
-              </span>
-            ) : (
-              "Pick a city to explore"
-            )}
-          </p>
-          <h1 className="font-display text-4xl md:text-5xl leading-[1.05]">
-            {hint ? (
-              <>
-                Where do you want to see{" "}
-                <span className="text-gold-gradient">{hint.label.toLowerCase()}</span>?
-              </>
-            ) : (
-              <>
-                Where are we <span className="text-gold-gradient">connecting</span>?
-              </>
-            )}
-          </h1>
-          <p className="mt-4 text-sm text-txt-secondary max-w-prose">
-            {SITE_NAME} is a marketplace for the culture, small businesses, and
-            everyday life of your city. Pick one to browse — events, food,
-            jobs, resources, and more. Verify your address later to unlock
-            district programs, council updates, and resident-only features.
-          </p>
-
-          {pending && (
-            <div className="mt-4 rounded-lg border border-gold/30 bg-gold/10 px-3 py-2 text-[12px] text-gold/90">
-              <strong>{pending}</strong> is launching soon — pick another city
-              for now.
-            </div>
+    <main className="culture-surface min-h-dvh">
+      <section
+        className="px-6 py-10 max-w-2xl mx-auto"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          {hint ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Icon name={hint.icon as "calendar"} size={12} />
+              {hint.label.toUpperCase()} · CHOOSE A CITY
+            </span>
+          ) : (
+            "§ PICK A CITY TO EXPLORE"
           )}
         </div>
+        <h1 className="c-hero mt-3" style={{ fontSize: 56, lineHeight: 0.9 }}>
+          {hint ? (
+            <>Where do you want to see {hint.label.toLowerCase()}?</>
+          ) : (
+            <>Where are we connecting?</>
+          )}
+        </h1>
+        <p className="c-serif-it mt-3" style={{ fontSize: 14 }}>
+          {SITE_NAME} is a marketplace for the culture, small businesses, and
+          everyday life of your city. Pick one to browse — events, food,
+          jobs, resources, and more.
+        </p>
+
+        {pending && (
+          <div className="mt-4 border px-3 py-2 text-[12px]" style={{ borderColor: "var(--ink-strong)", color: "var(--ink-strong)" }}>
+            <strong>{pending}</strong> is launching soon — pick another city
+            for now.
+          </div>
+        )}
       </section>
 
       <section className="px-6 py-8 max-w-2xl mx-auto">

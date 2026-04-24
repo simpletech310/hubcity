@@ -8,7 +8,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { getStripeClient } from "@/lib/stripe-client";
-import Button from "@/components/ui/Button";
 
 interface PaymentSheetProps {
   open: boolean;
@@ -91,28 +90,37 @@ function CheckoutForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Order summary */}
-      <div className="flex items-center justify-between px-1 mb-2">
+      <div className="c-ink-block p-4 flex items-center justify-between">
         <div>
-          <p className="text-xs text-txt-secondary">Order</p>
-          <p className="text-sm font-bold">{orderNumber}</p>
+          <p className="c-kicker" style={{ color: "var(--paper)", opacity: 0.7 }}>Order</p>
+          <p className="c-card-t mt-1" style={{ color: "var(--paper)", fontSize: "14px" }}>{orderNumber}</p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-txt-secondary">Total</p>
-          <p className="text-lg font-heading font-bold text-gold">
+          <p className="c-kicker" style={{ color: "var(--paper)", opacity: 0.7 }}>Total</p>
+          <p className="c-hero mt-1" style={{ color: "var(--gold-c)", fontSize: "22px" }}>
             ${(total / 100).toFixed(2)}
           </p>
         </div>
       </div>
 
-      <PaymentElement
-        options={{
-          layout: "tabs",
-        }}
-      />
+      <div className="c-frame p-3" style={{ background: "var(--paper)" }}>
+        <PaymentElement
+          options={{
+            layout: "tabs",
+          }}
+        />
+      </div>
 
       {error && (
-        <div className="bg-coral/10 border border-coral/20 rounded-xl p-3">
-          <p className="text-xs text-coral">{error}</p>
+        <div
+          className="p-3"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--red-c, #c0392b)",
+            color: "var(--red-c, #c0392b)",
+          }}
+        >
+          <p className="c-meta" style={{ color: "inherit" }}>{error}</p>
         </div>
       )}
 
@@ -120,21 +128,19 @@ function CheckoutForm({
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 py-3 text-sm font-medium text-txt-secondary bg-white/5 rounded-xl press"
           disabled={loading}
+          className="c-btn c-btn-outline flex-1"
         >
           Cancel
         </button>
-        <Button
+        <button
           type="submit"
-          fullWidth
-          size="lg"
-          loading={loading}
-          disabled={!stripe || !elements}
-          className="flex-[2]"
+          disabled={loading || !stripe || !elements}
+          className="c-btn c-btn-primary flex-[2]"
+          style={{ opacity: loading ? 0.6 : 1 }}
         >
-          Pay ${(total / 100).toFixed(2)}
-        </Button>
+          {loading ? "Processing..." : `Pay $${(total / 100).toFixed(2)}`}
+        </button>
       </div>
     </form>
   );
@@ -157,40 +163,53 @@ export default function PaymentSheet({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        className="fixed inset-0 z-40"
+        style={{ background: "rgba(26,21,18,0.72)" }}
         onClick={onClose}
       />
 
       {/* Sheet */}
       <div className="fixed inset-x-0 bottom-0 z-50 max-w-[430px] mx-auto">
-        <div className="bg-deep border-t border-border-subtle rounded-t-3xl">
+        <div
+          style={{
+            background: "var(--paper)",
+            color: "var(--ink-strong)",
+            borderTop: "3px solid var(--rule-strong-c)",
+          }}
+        >
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 rounded-full bg-white/20" />
+            <div
+              className="w-10 h-1"
+              style={{ background: "var(--ink-strong)", opacity: 0.4 }}
+            />
           </div>
 
           {/* Header */}
-          <div className="px-5 pb-3">
-            <h2 className="font-heading text-lg font-bold">Payment</h2>
-            <p className="text-xs text-txt-secondary">
+          <div
+            className="px-5 pb-3"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <h2 className="c-hero" style={{ fontSize: "24px" }}>Payment</h2>
+            <p className="c-kicker mt-1" style={{ opacity: 0.7 }}>
               Secure checkout powered by Stripe
             </p>
           </div>
 
           {/* Stripe Elements */}
-          <div className="px-5 pb-8">
+          <div className="px-5 pt-4 pb-8">
             <Elements
               stripe={stripePromise}
               options={{
                 clientSecret,
                 appearance: {
-                  theme: "night",
+                  theme: "flat",
                   variables: {
-                    colorPrimary: "#F2A900",
-                    colorBackground: "#1a1a2e",
-                    colorText: "#FFFFFF",
-                    colorTextSecondary: "#9E9A93",
-                    borderRadius: "12px",
+                    colorPrimary: "#1A1512",
+                    colorBackground: "#EDE6D6",
+                    colorText: "#1A1512",
+                    colorTextSecondary: "#5B544D",
+                    borderRadius: "0px",
                     fontFamily: "Inter, system-ui, sans-serif",
                   },
                 },
