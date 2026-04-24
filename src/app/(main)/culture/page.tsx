@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
-import EditorialHeader from "@/components/ui/EditorialHeader";
-import FeaturedCard from "@/components/ui/FeaturedCard";
 import AdZone from "@/components/ui/AdZone";
-import Card from "@/components/ui/Card";
-import MuseumWingCard from "@/components/culture/MuseumWingCard";
-import ExhibitCard from "@/components/culture/ExhibitCard";
-import GalleryItemCard from "@/components/culture/GalleryItemCard";
-import PersonCard from "@/components/culture/PersonCard";
-import Link from "next/link";
 import Icon from "@/components/ui/Icon";
+import {
+  CultureMarquee,
+  CultureChipRow,
+  CultureSectionHead,
+  CultureNumberedRow,
+} from "@/components/culture";
 
 export async function generateMetadata(): Promise<Metadata> {
   const city = await getActiveCity();
@@ -21,6 +20,32 @@ export async function generateMetadata(): Promise<Metadata> {
     description: `Immerse yourself in ${name}'s culture — exhibits, gallery, notable people, music heritage, history, and community stories.`,
   };
 }
+
+type Exhibit = {
+  id: string;
+  slug: string | null;
+  title: string;
+  description: string | null;
+  cover_image_url: string | null;
+  wing: string | null;
+  is_featured: boolean | null;
+};
+
+type GalleryItem = {
+  id: string;
+  slug?: string | null;
+  title: string;
+  image_url: string | null;
+  description: string | null;
+};
+
+type NotablePerson = {
+  id: string;
+  slug?: string | null;
+  name: string;
+  headline?: string | null;
+  image_url: string | null;
+};
 
 export default async function CulturePage() {
   const city = await getActiveCity();
@@ -46,7 +71,7 @@ export default async function CulturePage() {
       .eq("city_id", city.id)
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(3),
+      .limit(5),
     supabase
       .from("gallery_items")
       .select("*")
@@ -91,9 +116,9 @@ export default async function CulturePage() {
       .eq("city_id", city.id),
   ]);
 
-  const exhibits = exhibitsRes.data ?? [];
-  const galleryItems = galleryRes.data ?? [];
-  const people = peopleRes.data ?? [];
+  const exhibits = (exhibitsRes.data ?? []) as Exhibit[];
+  const galleryItems = (galleryRes.data ?? []) as GalleryItem[];
+  const people = (peopleRes.data ?? []) as NotablePerson[];
   const events = eventsRes.data ?? [];
 
   const counts = {
@@ -103,292 +128,503 @@ export default async function CulturePage() {
     library: libraryCountRes.count ?? 0,
   };
 
+  // Feature the first exhibit as the hero longread
+  const feature = exhibits[0] ?? null;
+
+  // Reading Room cards: mix remaining exhibits + gallery + people
+  type ReadingCard = {
+    id: string;
+    kicker: string;
+    title: string;
+    image: string | null;
+    href: string;
+    heightPx: number;
+  };
+  const readingCards: ReadingCard[] = [];
+  exhibits.slice(1, 3).forEach((e, i) =>
+    readingCards.push({
+      id: `ex-${e.id}`,
+      kicker: (e.wing ?? "EXHIBIT").toUpperCase(),
+      title: e.title,
+      image: e.cover_image_url,
+      href: `/culture/exhibits/${e.slug || e.id}`,
+      heightPx: i === 0 ? 220 : 190,
+    }),
+  );
+  galleryItems.slice(0, 1).forEach((g) =>
+    readingCards.push({
+      id: `g-${g.id}`,
+      kicker: "GALLERY",
+      title: g.title ?? "Gallery piece",
+      image: g.image_url,
+      href: `/culture/gallery/${g.slug || g.id}`,
+      heightPx: 190,
+    }),
+  );
+  people.slice(0, 1).forEach((p) =>
+    readingCards.push({
+      id: `p-${p.id}`,
+      kicker: "PEOPLE",
+      title: p.name,
+      image: p.image_url,
+      href: `/culture/people/${p.slug || p.id}`,
+      heightPx: 240,
+    }),
+  );
+  while (readingCards.length < 4 && galleryItems[readingCards.length]) {
+    const g = galleryItems[readingCards.length];
+    readingCards.push({
+      id: `g2-${g.id}`,
+      kicker: "GALLERY",
+      title: g.title ?? "Gallery piece",
+      image: g.image_url,
+      href: `/culture/gallery/${g.slug || g.id}`,
+      heightPx: readingCards.length % 2 === 0 ? 220 : 190,
+    });
+  }
+
+  // Sections list (navigation rail)
+  const sections = [
+    { href: "/culture/exhibits", label: "EXHIBITS", meta: counts.exhibits ? `${counts.exhibits} ON VIEW` : "NEW" },
+    { href: "/culture/gallery", label: "GALLERY", meta: counts.gallery ? `${counts.gallery} PIECES` : "COLLECTION" },
+    { href: "/culture/people", label: "PEOPLE", meta: counts.people ? `${counts.people} FIGURES` : "LEGENDS" },
+    { href: "/culture/history", label: "HISTORY", meta: `${city.name.toUpperCase()} TIMELINE` },
+    { href: "/culture/library", label: "LIBRARY", meta: counts.library ? `${counts.library} READS` : "BOOKS" },
+    { href: "/culture/events", label: "EVENTS", meta: "CULTURAL CALENDAR" },
+    { href: "/culture/landmarks", label: "LANDMARKS", meta: "HISTORIC SITES" },
+  ];
+
+  const cityUpper = city.name.toUpperCase();
+  const issue = Math.max(1, (new Date().getDate() % 20) + 1);
+  const marqueeItems = [
+    `HERITAGE · ${cityUpper}`,
+    "SOUND · HUB RADIO AM",
+    "STYLE · FIELD GUIDE",
+    "FOOD · LOCAL STAYS BOOKED",
+    "ART · ON THE WALLS",
+  ];
+
+  // Split feature title across two/three lines (uppercase)
+  const featureTitleRaw = feature?.title ?? "CULTURE ON THE BLOCK";
+  const featureWords = featureTitleRaw.toUpperCase().split(/\s+/);
+  const featureLines: string[] = (() => {
+    if (featureWords.length <= 1) return featureWords;
+    if (featureWords.length === 2) return featureWords;
+    // 3+ words: try to break evenly
+    const mid = Math.ceil(featureWords.length / 2);
+    return [featureWords.slice(0, mid).join(" "), featureWords.slice(mid).join(" ")];
+  })();
+
   return (
-    <div className="space-y-8 pb-20">
-      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-            VOL · 01 · ISSUE HERITAGE
-          </span>
-          <span className="block w-1 h-1 rounded-full bg-gold/60" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-            {city.name.toUpperCase()}
-          </span>
+    <div
+      className="culture-surface min-h-dvh mx-auto max-w-[430px] relative"
+      style={{ paddingBottom: 120 }}
+    >
+      {/* Masthead block */}
+      <div className="px-[18px] pt-5 pb-6">
+        <div className="c-kicker">
+          § VOLUME {new Date().getFullYear() % 100} · ISSUE {issue} ·{" "}
+          {new Date()
+            .toLocaleDateString("en-US", { month: "long" })
+            .toUpperCase()}
         </div>
-        <h1 className="masthead text-white text-[44px]">HERITAGE.</h1>
-        <div className="mt-3 flex items-center gap-3">
-          <span className="block h-[2px] w-8 bg-gold" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-            The museum, muralists, and landmarks of {city.name}.
-          </span>
-        </div>
-      </header>
+        <h1
+          className="c-display mt-2.5"
+          style={{ fontSize: 78, lineHeight: 0.78, letterSpacing: "-0.025em" }}
+        >
+          CULT—
+          <br />
+          URE.
+        </h1>
+        <p
+          className="c-serif-it mt-3.5"
+          style={{ fontSize: 14, lineHeight: 1.55, maxWidth: "92%" }}
+        >
+          Printed weekly from {city.name}. The music, the food, the fits, the
+          streets. Edited by the block, for the block.
+        </p>
+      </div>
 
-      {/* Generic city culture hero — same structure for every city */}
-      <section className="relative w-full overflow-hidden">
-        <div className="relative min-h-[220px] flex flex-col justify-end">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1510] via-[#12100a] to-midnight" />
-          <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.04] via-transparent to-transparent" />
-          <div className="absolute inset-0 pattern-dots opacity-10 pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+      {/* Marquee */}
+      <CultureMarquee items={marqueeItems} />
 
-          <div className="relative z-10 px-6 pb-6 pt-10">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/25 flex items-center justify-center">
-                <Icon name="landmark" size={14} className="text-gold" />
-              </div>
-              <span className="text-[11px] font-semibold text-gold uppercase tracking-widest">
-                {city.name}, {city.state} · Culture
+      {/* Genre chips */}
+      <CultureChipRow
+        chips={[
+          { label: "LONGREADS", href: "/culture" },
+          { label: "HERITAGE", href: "/culture/history" },
+          { label: "STYLE", href: "/culture/gallery" },
+          { label: "SOUND", href: "/live" },
+          { label: "FOOD", href: "/food" },
+          { label: "STREETS", href: "/culture/landmarks" },
+          { label: "ART", href: "/culture/exhibits" },
+        ]}
+        activeIndex={0}
+      />
+
+      {/* Feature spread */}
+      {feature && (
+        <div className="px-[18px] pt-2 pb-7">
+          <div className="c-kicker mb-2.5">§ HERITAGE · LONGREAD</div>
+          <h2
+            className="c-display"
+            style={{ fontSize: 66, lineHeight: 0.82 }}
+          >
+            {featureLines.map((line, i) => (
+              <span key={i}>
+                {line}
+                {i < featureLines.length - 1 && <br />}
               </span>
-            </div>
-            <h1 className="font-display text-[32px] md:text-5xl leading-[1.1] text-white">
-              Culture in{" "}
-              <span className="text-gold-gradient">{city.name}</span>
-            </h1>
-            <p className="mt-3 text-sm text-txt-secondary max-w-xs leading-relaxed">
-              Exhibits, art, heritage, and the people shaping the story of {city.name}.
+            ))}
+          </h2>
+          {feature.description && (
+            <p
+              className="c-serif-it mt-4"
+              style={{ fontSize: 15, lineHeight: 1.4 }}
+            >
+              {feature.description.slice(0, 180)}
+              {feature.description.length > 180 ? "…" : ""}
             </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Explore-by-section tiles — apply to any city */}
-      <section className="px-5">
-        <h2 className="font-heading font-bold text-base flex items-center gap-2 mb-4">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          Explore
-        </h2>
-        <div className="grid grid-cols-2 gap-3">
-          <MuseumWingCard
-            href="/culture/exhibits"
-            icon="palette"
-            title="Exhibits"
-            subtitle="Curated collections"
-            count={counts.exhibits}
-          />
-          <MuseumWingCard
-            href="/culture/gallery"
-            icon="frame"
-            title="Gallery"
-            subtitle="Art & artifacts"
-            count={counts.gallery}
-          />
-          <MuseumWingCard
-            href="/culture/people"
-            icon="person"
-            title="People"
-            subtitle="Notable figures"
-            count={counts.people}
-          />
-          <MuseumWingCard
-            href="/culture/history"
-            icon="scroll"
-            title="History"
-            subtitle={`${city.name} timeline`}
-          />
-          <MuseumWingCard
-            href="/culture/library"
-            icon="book"
-            title="Library"
-            subtitle="Books & reads"
-            count={counts.library}
-          />
-          <MuseumWingCard
-            href="/culture/events"
-            icon="calendar"
-            title="Events"
-            subtitle="Cultural calendar"
-          />
-          <MuseumWingCard
-            href="/culture/landmarks"
-            icon="map-pin"
-            title="Landmarks"
-            subtitle="Historic sites"
-          />
-        </div>
-      </section>
-
-      {/* Compton-only: feature the Compton Art & History Museum as a partner institution */}
-      {isCompton && (
-        <section className="px-5">
-          <EditorialHeader kicker="FEATURED INSTITUTION" title="Compton Art & History Museum" />
-          <div className="mt-3 rounded-2xl bg-white/[0.02] border border-border-subtle p-5">
-            <p className="text-[13px] text-txt-secondary leading-relaxed">
-              A groundbreaking space bringing together art, history, and community.
-              Amplifying the culture of Compton and greater South Los Angeles.
-            </p>
-            <div className="flex items-center gap-2 mt-3 text-[11px] text-txt-secondary">
-              <Icon name="map-pin" size={12} className="text-gold" />
-              <span>306 W Compton Blvd. #104, Compton, CA 90220</span>
-            </div>
-            <div className="flex items-center gap-3 mt-2 text-[11px] text-txt-secondary">
-              <Icon name="clock" size={12} className="text-gold" />
-              <span>Tue–Sat 10am–3pm</span>
-              <span className="text-white/15">·</span>
-              <span>(310) 627-9022</span>
-            </div>
-            <div className="flex items-center gap-3 mt-3">
-              <a href="https://www.comptonmuseum.org" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-gold font-semibold press">
-                <Icon name="globe" size={12} /> Visit website
-              </a>
-              <a href="https://www.instagram.com/comptonmuseum" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-txt-secondary hover:text-gold transition-colors press">
-                Instagram
-              </a>
-              <a href="https://www.facebook.com/ComptonMuseum" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[11px] text-txt-secondary hover:text-gold transition-colors press">
-                Facebook
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Non-Compton empty-state hint when there's nothing city-scoped yet */}
-      {!isCompton && exhibits.length === 0 && galleryItems.length === 0 && people.length === 0 && events.length === 0 && (
-        <section className="px-5">
-          <div className="rounded-2xl border border-dashed border-border-subtle bg-white/[0.02] p-5">
-            <h3 className="font-heading font-bold text-sm flex items-center gap-2 mb-1">
-              <Icon name="sparkle" size={16} className="text-gold" />
-              {city.name} culture coming soon
-            </h3>
-            <p className="text-[12px] text-txt-secondary leading-relaxed">
-              We&rsquo;re onboarding {city.name}&rsquo;s museums, galleries, and cultural organizations.
-              Check back soon, or switch cities from the header to explore another.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* Featured Exhibit */}
-      {exhibits.length > 0 && (
-        <section className="px-5">
-          <EditorialHeader kicker="NOW SHOWING" title="Current Exhibits" />
-          <div className="space-y-3">
-            {exhibits.slice(0, 1).map((exhibit) => (
-              <FeaturedCard
-                key={exhibit.id}
-                title={exhibit.title}
-                subtitle={exhibit.description?.slice(0, 120)}
-                imageUrl={exhibit.cover_image_url}
-                badge={exhibit.is_featured ? { label: "Featured", variant: "gold" as const } : undefined}
-                href={`/culture/exhibits/${exhibit.slug || exhibit.id}`}
-                kicker={exhibit.wing ?? "Exhibit"}
+          )}
+          <Link
+            href={`/culture/exhibits/${feature.slug || feature.id}`}
+            className="block mt-4 relative c-frame-strong"
+            style={{ aspectRatio: "4 / 5" }}
+          >
+            {feature.cover_image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={feature.cover_image_url}
+                alt={feature.title}
+                className="w-full h-full object-cover"
               />
-            ))}
-            {exhibits.length > 1 && (
-              <div className="grid grid-cols-2 gap-3">
-                {exhibits.slice(1, 3).map((exhibit) => (
-                  <ExhibitCard key={exhibit.id} exhibit={exhibit} />
-                ))}
-              </div>
+            ) : (
+              <div className="w-full h-full c-ph" aria-hidden />
             )}
+            <span
+              className="c-badge c-badge-gold absolute"
+              style={{ left: -4, top: -4, padding: "5px 10px" }}
+            >
+              #{String(issue).padStart(3, "0")}
+            </span>
+          </Link>
+
+          {/* Dropcap body */}
+          {feature.description && feature.description.length > 180 && (
+            <p
+              className="c-dropcap mt-4"
+              style={{
+                fontSize: 14,
+                fontFamily: "var(--font-fraunces), Fraunces, Georgia, serif",
+                lineHeight: 1.55,
+                color: "var(--ink-strong)",
+              }}
+            >
+              {feature.description}
+            </p>
+          )}
+
+          {/* Author row */}
+          <div
+            className="mt-5 py-4 flex items-center gap-3"
+            style={{
+              borderTop: "2px solid var(--rule-strong-c)",
+              borderBottom: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <div
+              className="c-ink-block shrink-0 flex items-center justify-center"
+              style={{
+                width: 38,
+                height: 38,
+                color: "var(--gold-c)",
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 900,
+                fontSize: 13,
+                letterSpacing: "0.05em",
+              }}
+            >
+              HC
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="c-card-t" style={{ fontSize: 15 }}>
+                HUB CITY EDITORS
+              </div>
+              <div className="c-kicker mt-0.5" style={{ fontSize: 9 }}>
+                {feature.wing ?? "CULTURE"} · 12 MIN
+              </div>
+            </div>
+            <div
+              className="shrink-0 flex items-center justify-center"
+              style={{
+                width: 38,
+                height: 38,
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <Icon name="bookmark" size={16} />
+            </div>
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Gallery Preview */}
-      {galleryItems.length > 0 && (
-        <section className="px-5">
-          <EditorialHeader kicker="THE COLLECTION" title="Gallery" />
-          <div className="grid grid-cols-3 gap-2">
-            {galleryItems.slice(0, 6).map((item) => (
-              <GalleryItemCard key={item.id} item={item} />
+      {/* Reading Room 2x2 asymmetric */}
+      {readingCards.length > 0 && (
+        <div className="px-[18px] pb-7">
+          <div className="c-kicker">§ THE READING ROOM</div>
+          <div className="c-title mt-1.5">THIS WEEK.</div>
+          <div
+            className="mt-4 grid gap-3"
+            style={{ gridTemplateColumns: "1fr 1fr" }}
+          >
+            {readingCards.slice(0, 4).map((card, i) => (
+              <Link
+                key={card.id}
+                href={card.href}
+                className="block"
+                style={{ marginTop: i % 2 ? 22 : 0 }}
+              >
+                <div
+                  className="c-frame"
+                  style={{ height: card.heightPx, overflow: "hidden" }}
+                >
+                  {card.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={card.image}
+                      alt={card.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full c-ph" />
+                  )}
+                </div>
+                <div className="c-kicker mt-2" style={{ fontSize: 9 }}>
+                  {card.kicker}
+                </div>
+                <div
+                  className="c-card-t mt-1"
+                  style={{
+                    fontSize: 15,
+                    textWrap: "balance" as const,
+                  }}
+                >
+                  {card.title}
+                </div>
+              </Link>
             ))}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Ad Zone */}
-      <div className="px-5">
+      {/* Ad zone */}
+      <div className="px-[18px] pb-6">
         <AdZone zone="feed_banner" />
       </div>
 
-      {/* Notable People */}
-      {people.length > 0 && (
-        <section className="px-5">
-          <EditorialHeader
-            kicker={`${city.name.toUpperCase()} LEGENDS`}
-            title="Notable People"
-          />
-          <div className="flex gap-3 overflow-x-auto scrollbar-hide -mx-5 px-5 pb-2">
-            {people.map((person) => (
-              <div key={person.id} className="min-w-[160px] max-w-[170px] shrink-0">
-                <PersonCard person={person} />
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* Pull quote */}
+      <section
+        className="c-ink-block"
+        style={{
+          padding: "32px 22px",
+          borderTop: "4px solid var(--gold-c)",
+          borderBottom: "4px solid var(--gold-c)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 80,
+            lineHeight: 0.5,
+            fontFamily: "var(--font-anton), Anton, sans-serif",
+            color: "var(--gold-c)",
+            marginBottom: 10,
+          }}
+        >
+          &ldquo;
+        </div>
+        <p className="c-title" style={{ color: "var(--paper)", fontSize: 28 }}>
+          We don&rsquo;t cover the culture. We in it.
+        </p>
+        <div className="c-kicker mt-4" style={{ color: "var(--gold-c)" }}>
+          — HUB CITY · ISS.{issue}
+        </div>
+      </section>
 
-      {/* History Teaser — Compton only (hardcoded "Since 1867"/Compton copy) */}
+      {/* § THE SECTIONS navigation list (replaces museum wing grid) */}
+      <div className="px-[18px] pt-7 pb-6">
+        <div className="c-kicker mb-1.5">§ THE SECTIONS</div>
+        <div className="c-title mb-3" style={{ fontSize: 28 }}>
+          EXPLORE.
+        </div>
+        <div>
+          {sections.map((s, i) => (
+            <CultureNumberedRow
+              key={s.href}
+              n={String(i + 1).padStart(2, "0")}
+              kicker={s.meta}
+              title={s.label}
+              href={s.href}
+              topRule={true}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Compton partner institution */}
       {isCompton && (
-        <section className="px-5">
-          <Link
-            href="/culture/history"
-            className="block group relative overflow-hidden rounded-2xl border border-border-subtle p-6 card-glow transition-all duration-300 hover:border-gold/20"
+        <section
+          className="c-ink-block"
+          style={{
+            padding: "28px 18px",
+            borderTop: "3px solid var(--gold-c)",
+          }}
+        >
+          <div className="c-kicker" style={{ color: "var(--gold-c)" }}>
+            § FEATURED INSTITUTION
+          </div>
+          <h3
+            className="c-hero mt-2"
+            style={{ color: "var(--paper)", fontSize: 32 }}
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-gold/5 via-transparent to-gold/3" />
-            <div className="pattern-chevron absolute inset-0 opacity-5 pointer-events-none" />
-            <div className="relative z-10">
-              <span className="text-xs font-semibold text-gold uppercase tracking-wider">
-                Since 1867
-              </span>
-              <h3 className="font-display text-2xl text-white mt-2">
-                The Story of Compton
-              </h3>
-              <p className="text-txt-secondary mt-2 text-sm max-w-xs">
-                From a farming settlement to the cultural capital of the West Coast. Explore the full timeline.
-              </p>
-              <span className="inline-block mt-4 text-gold text-sm font-semibold group-hover:translate-x-1 transition-transform">
-                Explore History &rarr;
-              </span>
-            </div>
-          </Link>
+            Compton Art
+            <br />
+            &amp; History Museum
+          </h3>
+          <p
+            className="mt-3"
+            style={{
+              fontFamily: "var(--font-body), Inter, sans-serif",
+              fontSize: 13,
+              lineHeight: 1.55,
+              color: "rgba(243,238,220,0.75)",
+            }}
+          >
+            A groundbreaking space bringing together art, history, and
+            community. Amplifying the culture of Compton and greater South Los
+            Angeles.
+          </p>
+          <div
+            className="mt-4"
+            style={{
+              borderTop: "1px solid rgba(243,238,220,0.2)",
+              paddingTop: 12,
+              display: "flex",
+              flexDirection: "column",
+              gap: 6,
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontSize: 11,
+              color: "rgba(243,238,220,0.75)",
+            }}
+          >
+            <div>306 W COMPTON BLVD. #104, COMPTON, CA 90220</div>
+            <div>TUE–SAT · 10AM–3PM · (310) 627-9022</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3 mt-4">
+            <a
+              href="https://www.comptonmuseum.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="c-btn c-btn-accent c-btn-sm"
+            >
+              VISIT SITE
+            </a>
+            <a
+              href="https://www.instagram.com/comptonmuseum"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="c-kicker"
+              style={{ color: "var(--gold-c)" }}
+            >
+              INSTAGRAM ↗
+            </a>
+            <a
+              href="https://www.facebook.com/ComptonMuseum"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="c-kicker"
+              style={{ color: "var(--gold-c)" }}
+            >
+              FACEBOOK ↗
+            </a>
+          </div>
         </section>
       )}
 
-      {/* Upcoming Cultural Events */}
+      {/* Upcoming cultural events */}
       {events.length > 0 && (
-        <section className="px-5">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-heading font-bold text-base flex items-center gap-2">
-              <div className="w-1 h-5 rounded-full bg-gold" />
-              Upcoming Events
-            </h2>
-            <Link href="/culture/events" className="text-[11px] text-gold font-semibold press">
-              All Events
-            </Link>
+        <>
+          <CultureSectionHead
+            kicker="§ ON THE CALENDAR"
+            title="Upcoming."
+          />
+          <div className="px-[18px] pb-8">
+            {events.map((e, i) => {
+              const d = new Date(e.start_date);
+              const dateStr =
+                d.toLocaleDateString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                }).toUpperCase();
+              return (
+                <CultureNumberedRow
+                  key={e.id}
+                  n={String(i + 1).padStart(2, "0")}
+                  kicker={dateStr}
+                  title={e.title}
+                  meta={e.location_name ?? undefined}
+                  href={`/events/${e.id}`}
+                  topRule={i > 0}
+                />
+              );
+            })}
           </div>
-          <div className="space-y-2">
-            {events.map((event) => (
-              <Card key={event.id} hover padding>
-                <div className="flex items-center gap-3">
-                  <div className="shrink-0 w-11 h-11 rounded-xl bg-gold/10 flex flex-col items-center justify-center border border-gold/20">
-                    <span className="text-[9px] text-gold font-semibold uppercase">
-                      {new Date(event.start_date).toLocaleDateString("en-US", {
-                        month: "short",
-                      })}
-                    </span>
-                    <span className="text-sm font-bold text-gold leading-none">
-                      {new Date(event.start_date).getDate()}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="font-heading font-bold text-[13px] text-white truncate">
-                      {event.title}
-                    </h3>
-                    {event.location_name && (
-                      <p className="text-[11px] text-txt-secondary truncate">
-                        {event.location_name}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </section>
+        </>
       )}
 
+      {/* Empty state when nothing yet */}
+      {!isCompton &&
+        exhibits.length === 0 &&
+        galleryItems.length === 0 &&
+        people.length === 0 &&
+        events.length === 0 && (
+          <section
+            className="mx-[18px] mb-6 p-5"
+            style={{ border: "2px dashed var(--rule-strong-c)" }}
+          >
+            <div className="c-kicker mb-2">§ NOTICE</div>
+            <h3 className="c-card-t" style={{ fontSize: 16 }}>
+              {city.name.toUpperCase()} CULTURE — COMING SOON
+            </h3>
+            <p
+              className="mt-2"
+              style={{
+                fontFamily: "var(--font-body), Inter, sans-serif",
+                fontSize: 12,
+                lineHeight: 1.5,
+                color: "var(--ink-soft)",
+              }}
+            >
+              We&rsquo;re onboarding {city.name}&rsquo;s museums, galleries,
+              and cultural organizations. Check back soon, or switch cities
+              from the header to explore another.
+            </p>
+          </section>
+        )}
+
+      {/* Colophon */}
+      <div
+        className="px-[18px] py-5"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="c-kicker" style={{ opacity: 0.5 }}>
+            HUB CITY · CULTURE · {cityUpper}
+          </span>
+          <span className="c-kicker" style={{ opacity: 0.5 }}>
+            ISS.{issue}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
