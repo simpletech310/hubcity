@@ -1,6 +1,7 @@
 import ToastProvider from "@/components/ui/Toast";
 import CityProvider from "@/components/city/CityProvider";
 import CultureBottomNav from "@/components/culture/CultureBottomNav";
+import CultureTopNav from "@/components/culture/CultureTopNav";
 import {
   getActiveCity,
   getActiveCityFromCookie,
@@ -41,6 +42,7 @@ export default async function MainLayout({
         className="culture-surface max-w-[430px] mx-auto min-h-dvh relative"
         style={{ color: "var(--ink-strong)" }}
       >
+        <CultureTopNav />
         <main className="pb-24 pb-safe overflow-y-auto overflow-x-hidden c-noscroll">
           {children}
         </main>
