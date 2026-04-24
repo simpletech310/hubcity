@@ -294,6 +294,17 @@ export default async function HomePage() {
   // ── Derived UI values ────────────────────────────────────────────────────
   const cityName = activeCity?.name ?? "Everywhere";
   const cityUpper = cityName.toUpperCase();
+
+  // Wordmark: "HUB CITY." only when the active city is Compton (the flagship).
+  // For every other city, the masthead wears the city's own name so the
+  // paper feels like a local edition. When nothing's selected, the wordmark
+  // falls back to a generic "CULTURE." title.
+  const wordmark = (() => {
+    if (!activeCity) return "CULTURE.";
+    const slug = (activeCity.slug ?? "").toLowerCase();
+    if (slug === "compton") return "HUB CITY.";
+    return `${cityUpper}.`;
+  })();
   const today = new Date();
   const dateLabel = today.toLocaleDateString("en-US", {
     month: "short",
@@ -385,7 +396,7 @@ export default async function HomePage() {
         vol={volLabel}
         iss={issLabel}
         date={dateLabel}
-        wordmark="HUB CITY."
+        wordmark={wordmark}
         actions={
           <>
             <Link

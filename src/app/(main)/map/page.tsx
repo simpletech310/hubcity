@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import MapExplorer from "@/components/map/MapExplorer";
 import type { MapPoint } from "@/types/map";
+import Link from "next/link";
 import { getActiveCity } from "@/lib/city-context";
 
 export const metadata: Metadata = {
@@ -228,6 +229,14 @@ export default async function MapPage() {
         <span className="c-kicker" style={{ color: "var(--paper)" }}>
           THE ATLAS · {cityUpper} · {points.length} PINS
         </span>
+        <span className="flex-1" />
+        <Link
+          href="/choose-city"
+          className="c-kicker"
+          style={{ color: "var(--gold-c)" }}
+        >
+          CHANGE ↗
+        </Link>
       </div>
 
       {/* Masthead title */}
