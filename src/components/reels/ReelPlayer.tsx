@@ -156,30 +156,47 @@ export default function ReelPlayer({
         </div>
       )}
 
-      {/* Play icon when paused */}
+      {/* Play icon when paused — gold square with ink triangle */}
       {!playing && active && (
         <button
           onClick={togglePlay}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
-          <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 64,
+              height: 64,
+              background: "var(--gold-c)",
+              border: "3px solid var(--paper)",
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="var(--ink-strong)">
               <polygon points="6,4 20,12 6,20" />
             </svg>
           </div>
         </button>
       )}
 
-      {/* Progress bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/10">
+      {/* Progress bar — gold on ink-tinted track */}
+      <div
+        className="absolute bottom-0 left-0 right-0"
+        style={{ height: 2, background: "rgba(245,239,224,0.18)" }}
+      >
         <div
-          className="h-full bg-white/80 transition-all"
-          style={{ width: `${progress * 100}%` }}
+          className="h-full transition-all"
+          style={{ width: `${progress * 100}%`, background: "var(--gold-c)" }}
         />
       </div>
 
-      {/* Left: caption + author */}
-      <div className="absolute left-0 right-16 bottom-0 p-4 pb-6 pointer-events-none">
+      {/* Left: caption + author over ink gradient */}
+      <div
+        className="absolute left-0 right-16 bottom-0 p-4 pb-6 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.4) 35%, rgba(26,21,18,0.85) 100%)",
+        }}
+      >
         {author && (
           <Link
             href={author.handle ? `/user/${author.handle}` : "#"}
@@ -189,32 +206,49 @@ export default function ReelPlayer({
               <img
                 src={author.avatar_url}
                 alt=""
-                className="w-8 h-8 rounded-full object-cover border border-white/20"
+                className="w-8 h-8 rounded-full object-cover"
+                style={{ border: "2px solid var(--paper)" }}
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center text-xs font-bold">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--paper)",
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 12,
+                }}
+              >
                 {author.display_name.charAt(0)}
               </div>
             )}
-            <span className="text-[13px] font-bold text-white drop-shadow">
+            <span
+              className="c-card-t"
+              style={{ color: "var(--paper)", fontSize: 13 }}
+            >
               {author.display_name}
             </span>
             {author.verification_status === "verified" && (
-              <Icon name="verified" size={12} className="text-cyan" />
+              <Icon name="verified" size={12} style={{ color: "var(--gold-c)" }} />
             )}
             {reel.is_story && (
-              <Badge label="Story" variant="purple" />
+              <Badge label="STORY" variant="gold" />
             )}
           </Link>
         )}
         {reel.caption && (
-          <p className="text-[13px] text-white/95 line-clamp-3 drop-shadow leading-snug">
+          <p
+            className="c-serif-it line-clamp-3"
+            style={{ color: "var(--paper)", fontSize: 13, lineHeight: 1.4 }}
+          >
             {reel.caption}
           </p>
         )}
       </div>
 
-      {/* Right: action column — emoji reactions + comments + share */}
+      {/* Right action column */}
       <div className="absolute right-2 bottom-20 flex flex-col items-center gap-5">
         <ReelEngagementBar
           reelId={reel.id}
@@ -231,15 +265,24 @@ export default function ReelPlayer({
           className="flex flex-col items-center gap-1 press"
           aria-label={muted ? "Unmute" : "Mute"}
         >
-          <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md border border-white/20 flex items-center justify-center hover:border-gold/40 transition-colors">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 44,
+              height: 44,
+              background: "var(--ink-strong)",
+              border: "2px solid var(--paper)",
+              color: "var(--paper)",
+            }}
+          >
             {muted ? (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                 <line x1="23" y1="9" x2="17" y2="15" />
                 <line x1="17" y1="9" x2="23" y2="15" />
               </svg>
             ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
                 <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
               </svg>

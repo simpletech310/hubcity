@@ -101,10 +101,20 @@ export default function ReelsViewer({
 
   if (reels.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center px-8 text-white/60">
-        <Icon name="video" size={40} className="text-white/20 mb-3" />
-        <p className="text-base font-semibold">No reels yet</p>
-        <p className="text-sm mt-1">Be the first to post a reel.</p>
+      <div
+        className="h-full flex flex-col items-center justify-center text-center px-8"
+        style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+      >
+        <div
+          className="mb-4 flex items-center justify-center"
+          style={{ width: 56, height: 56, border: "2px solid var(--rule-strong-c)", background: "var(--paper-soft)" }}
+        >
+          <Icon name="video" size={28} style={{ color: "var(--ink-strong)" }} />
+        </div>
+        <p className="c-card-t" style={{ fontSize: 16 }}>No reels yet</p>
+        <p className="c-serif-it mt-1" style={{ fontSize: 13, opacity: 0.7 }}>
+          Be the first to post a reel.
+        </p>
       </div>
     );
   }
@@ -152,66 +162,80 @@ export default function ReelsViewer({
         ))}
       </div>
 
-      {/* Top header */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 via-black/30 to-transparent z-20 pointer-events-none">
+      {/* Top header — printed label on translucent ink gradient */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 z-20 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(26,21,18,0.6) 0%, rgba(26,21,18,0.2) 60%, transparent 100%)",
+        }}
+      >
         <button
           onClick={() => {
             if (onClose) {
               onClose();
               return;
             }
-            // Prefer going back if there's history, otherwise route to the
-            // main feed so the user is never stuck inside the reels viewer.
             if (typeof window !== "undefined" && window.history.length > 1) {
               router.back();
             } else {
               router.push("/pulse");
             }
           }}
-          className="w-11 h-11 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center text-white press hover:bg-black/80 pointer-events-auto shadow-lg"
+          className="flex items-center justify-center press pointer-events-auto"
+          style={{
+            width: 40,
+            height: 40,
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--ink-strong)",
+          }}
           aria-label="Close reels"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
-        <h1 className="font-heading font-bold text-white text-base drop-shadow pointer-events-none">
-          Reels
-        </h1>
-        <div className="w-11 h-11" />
+        <div
+          className="inline-flex items-center gap-1.5 px-2 pointer-events-none"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+            height: 26,
+          }}
+        >
+          <span
+            style={{
+              width: 6,
+              height: 6,
+              background: "var(--gold-c)",
+              display: "inline-block",
+            }}
+          />
+          <span className="c-kicker" style={{ fontSize: 10 }}>
+            REELS
+          </span>
+        </div>
+        <div style={{ width: 40, height: 40 }} />
       </div>
 
-      {/* Thumb-reachable floating close (bottom-left so it doesn't collide
-          with the reel action column on the right) */}
-      <button
-        onClick={() => {
-          if (onClose) { onClose(); return; }
-          if (typeof window !== "undefined" && window.history.length > 1) {
-            router.back();
-          } else {
-            router.push("/pulse");
-          }
-        }}
-        className="fixed left-5 z-30 w-14 h-14 rounded-full bg-black/80 backdrop-blur-md border border-white/30 text-white shadow-[0_8px_30px_rgba(0,0,0,0.6)] flex items-center justify-center press hover:bg-black"
-        style={{ bottom: "calc(env(safe-area-inset-bottom, 0px) + 90px)" }}
-        aria-label="Close reels"
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
-      </button>
-
-      {/* Tap-to-unmute hint — shown when the browser blocks audio autoplay */}
+      {/* Tap-to-unmute hint — paper chip, ink border */}
       {showUnmuteHint && (
         <button
           onClick={enableSound}
-          className="absolute top-16 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black text-[12px] font-bold shadow-lg press animate-fade-in"
+          className="absolute top-16 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-2 px-3 py-2 press animate-fade-in"
+          style={{
+            background: "var(--paper)",
+            color: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
             <path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07" />
           </svg>
-          Tap for sound
+          <span className="c-kicker" style={{ fontSize: 10 }}>
+            TAP FOR SOUND
+          </span>
         </button>
       )}
     </div>

@@ -73,22 +73,36 @@ export default function HeroGallery({
             </div>
           ))}
         </div>
-        {/* Dots */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+        {/* Dots — printed bars, no pills */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-10">
           {images.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Show photo ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all ${
-                i === active ? "w-6 bg-white" : "w-1.5 bg-white/50"
-              }`}
+              style={{
+                height: 4,
+                width: i === active ? 22 : 6,
+                background: i === active ? "var(--gold-c)" : "var(--paper)",
+                border: "1.5px solid var(--rule-strong-c)",
+                transition: "width 150ms",
+              }}
             />
           ))}
         </div>
-        {/* Counter pill */}
-        <div className="absolute top-3 right-3 z-10 bg-black/60 backdrop-blur-sm rounded-full px-2.5 py-1">
-          <span className="text-[10px] font-bold text-white">
+        {/* Counter — paper chip with ink border */}
+        <div
+          className="absolute top-3 right-3 z-10 inline-flex items-center px-2"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+            height: 22,
+          }}
+        >
+          <span
+            className="c-kicker"
+            style={{ fontSize: 10, letterSpacing: "0.12em" }}
+          >
             {active + 1} / {images.length}
           </span>
         </div>
@@ -116,8 +130,18 @@ export default function HeroGallery({
               className="object-cover"
             />
             {i === 3 && images.length > 5 && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ background: "rgba(26,21,18,0.72)" }}
+              >
+                <span
+                  className="c-hero"
+                  style={{
+                    fontSize: 28,
+                    lineHeight: 1,
+                    color: "var(--paper)",
+                  }}
+                >
                   +{images.length - 5}
                 </span>
               </div>

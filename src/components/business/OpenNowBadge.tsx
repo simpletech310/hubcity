@@ -143,23 +143,38 @@ export default function OpenNowBadge({ hours }: { hours: HoursMap }) {
   if (!status) return null;
   const isOpen = status.state === "open";
   const isWarn = status.state === "closing-soon";
-  const dotClass = isOpen ? "bg-emerald" : isWarn ? "bg-gold" : "bg-coral";
-  const textClass = isOpen ? "text-emerald" : isWarn ? "text-gold" : "text-coral";
-  const bgClass = isOpen
-    ? "bg-emerald/15 border-emerald/20"
-    : isWarn
-      ? "bg-gold/15 border-gold/20"
-      : "bg-coral/10 border-coral/20";
+  // Culture palette: gold fill for open, paper+ink for warn/closed.
+  // Dots use gold/ink so they read on all surfaces.
+  const badgeStyle: React.CSSProperties = isOpen
+    ? {
+        background: "var(--gold-c)",
+        color: "var(--ink-strong)",
+        border: "2px solid var(--rule-strong-c)",
+      }
+    : {
+        background: "var(--paper)",
+        color: "var(--ink-strong)",
+        border: "2px solid var(--rule-strong-c)",
+      };
   return (
-    <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border ${bgClass}`}
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-1 c-kicker"
+      style={{ ...badgeStyle, fontSize: 10, letterSpacing: "0.12em" }}
       title={status.subtext ?? undefined}
     >
-      <div className={`w-1.5 h-1.5 rounded-full ${dotClass} ${isOpen ? "animate-pulse" : ""}`} />
-      <span className={`text-[10px] font-bold ${textClass}`}>{status.label}</span>
+      <span
+        className={isOpen ? "animate-pulse" : ""}
+        style={{
+          width: 6,
+          height: 6,
+          background: isWarn ? "var(--gold-c)" : "var(--ink-strong)",
+          display: "inline-block",
+        }}
+      />
+      <span>{status.label.toUpperCase()}</span>
       {status.subtext && (
-        <span className="text-[10px] text-txt-secondary">· {status.subtext}</span>
+        <span style={{ opacity: 0.7 }}>· {status.subtext}</span>
       )}
-    </div>
+    </span>
   );
 }

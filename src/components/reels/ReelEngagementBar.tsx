@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactionEmoji } from "@/types/database";
-import { REACTION_EMOJI_MAP, REACTION_COLORS } from "@/lib/constants";
+import { REACTION_EMOJI_MAP } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import EmojiPicker from "@/components/social/EmojiPicker";
 import GifPicker from "@/components/social/GifPicker";
@@ -253,10 +253,28 @@ export default function ReelEngagementBar({
 
   // ── RAIL variant (overlay on a fullscreen reel) ─────────
   if (variant === "rail") {
+    const railTileStyle = (active: boolean): React.CSSProperties => ({
+      width: 44,
+      height: 44,
+      background: active ? "var(--gold-c)" : "var(--ink-strong)",
+      border: "2px solid var(--paper)",
+      color: active ? "var(--ink-strong)" : "var(--paper)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    });
+    const railCountStyle: React.CSSProperties = {
+      fontFamily: "var(--font-dm-mono), monospace",
+      fontWeight: 500,
+      fontSize: 10,
+      letterSpacing: "0.06em",
+      color: "var(--paper)",
+      textShadow: "0 1px 2px rgba(0,0,0,0.7)",
+    };
     return (
       <>
         <div className="flex flex-col items-center gap-5 select-none">
-          {/* Primary reaction — tap toggles heart, long-press opens palette */}
+          {/* Primary reaction — square ink tile, gold when active */}
           <button
             type="button"
             onClick={() => toggle(topEmoji)}
@@ -267,23 +285,21 @@ export default function ReelEngagementBar({
             className="flex flex-col items-center gap-1 press"
             aria-label="React"
           >
-            <div
-              className={`w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md border transition-all ${
-                userReactions.has(topEmoji)
-                  ? "bg-coral/20 border-coral/40 scale-105"
-                  : "bg-black/40 border-white/20 hover:border-gold/40"
-              }`}
-            >
-              <span className="text-xl">{REACTION_EMOJI_MAP[topEmoji]}</span>
+            <div style={railTileStyle(userReactions.has(topEmoji))}>
+              <span style={{ fontSize: 20, lineHeight: 1 }}>{REACTION_EMOJI_MAP[topEmoji]}</span>
             </div>
-            <span className="text-[11px] font-bold text-white tabular-nums drop-shadow">
-              {totalReactions}
-            </span>
+            <span style={railCountStyle}>{totalReactions}</span>
           </button>
 
-          {/* Emoji palette on long-press */}
+          {/* Emoji palette on long-press — paper column with ink border */}
           {emojiPalette && (
-            <div className="flex flex-col items-center gap-2 rounded-full bg-black/70 border border-white/10 backdrop-blur-md p-2">
+            <div
+              className="flex flex-col items-center"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
               {emojis.map((e) => (
                 <button
                   key={e}
@@ -292,11 +308,15 @@ export default function ReelEngagementBar({
                     toggle(e);
                     setEmojiPalette(false);
                   }}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center press ${
-                    userReactions.has(e) ? REACTION_COLORS[e].bg : "hover:bg-white/10"
-                  }`}
+                  className="flex items-center justify-center press"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    background: userReactions.has(e) ? "var(--gold-c)" : "var(--paper)",
+                    borderTop: "1px solid var(--rule-strong-c)",
+                  }}
                 >
-                  <span className="text-base">{REACTION_EMOJI_MAP[e]}</span>
+                  <span style={{ fontSize: 16, lineHeight: 1 }}>{REACTION_EMOJI_MAP[e]}</span>
                 </button>
               ))}
             </div>
@@ -309,14 +329,12 @@ export default function ReelEngagementBar({
             className="flex flex-col items-center gap-1 press"
             aria-label="Comments"
           >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/20 hover:border-gold/40 transition-colors">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white" strokeLinecap="round" strokeLinejoin="round">
+            <div style={railTileStyle(false)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <span className="text-[11px] font-bold text-white tabular-nums drop-shadow">
-              {commentCount}
-            </span>
+            <span style={railCountStyle}>{commentCount}</span>
           </button>
 
           {/* Share */}
@@ -330,12 +348,12 @@ export default function ReelEngagementBar({
             className="flex flex-col items-center gap-1 press"
             aria-label="Share"
           >
-            <div className="w-12 h-12 rounded-full flex items-center justify-center backdrop-blur-md bg-black/40 border border-white/20 hover:border-gold/40 transition-colors">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white" strokeLinecap="round" strokeLinejoin="round">
+            <div style={railTileStyle(false)}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
               </svg>
             </div>
-            <span className="text-[11px] font-bold text-white/70 drop-shadow">Share</span>
+            <span style={railCountStyle}>SHARE</span>
           </button>
         </div>
 
@@ -420,23 +438,41 @@ function Sheet({
         className="absolute inset-0 sheet-backdrop animate-fade-in"
         onClick={onClose}
       />
-      <div className="relative w-full sm:max-w-md glass-card-elevated rounded-t-3xl sm:rounded-3xl max-h-[85vh] flex flex-col animate-sheet-up">
-        {/* Grabber */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
-        </div>
+      <div
+        className="relative w-full sm:max-w-md max-h-[85vh] flex flex-col animate-sheet-up"
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink-strong)",
+          borderTop: "3px solid var(--rule-strong-c)",
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06]">
-          <p className="font-display text-[17px] leading-none text-white">
-            {commentCount} {commentCount === 1 ? "comment" : "comments"}
-          </p>
+        <div
+          className="flex items-center justify-between px-5 py-3"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <div>
+            <div className="c-kicker" style={{ opacity: 0.65, fontSize: 10 }}>
+              § COMMENTS
+            </div>
+            <p className="c-card-t" style={{ fontSize: 15, marginTop: 2 }}>
+              {commentCount} {commentCount === 1 ? "Comment" : "Comments"}
+            </p>
+          </div>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="w-8 h-8 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center press hover:bg-white/[0.1]"
+            className="flex items-center justify-center press"
+            style={{
+              width: 32,
+              height: 32,
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           >
-            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M2 2l10 10M12 2L2 12" />
             </svg>
           </button>
@@ -446,10 +482,18 @@ function Sheet({
         <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-5">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="w-6 h-6 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
+              <div
+                className="rounded-full animate-spin"
+                style={{
+                  width: 24,
+                  height: 24,
+                  border: "2px solid rgba(26,21,18,0.2)",
+                  borderTopColor: "var(--gold-c)",
+                }}
+              />
             </div>
           ) : comments.length === 0 ? (
-            <p className="text-center text-[12px] text-ivory/50 py-12">
+            <p className="c-serif-it text-center py-12" style={{ fontSize: 13, opacity: 0.7 }}>
               Be the first to comment.
             </p>
           ) : (
@@ -461,27 +505,43 @@ function Sheet({
 
         {/* Reply-to strip */}
         {replyTo && (
-          <div className="px-5 py-2 flex items-center justify-between bg-gold/5 border-t border-gold/10">
-            <p className="text-[11px] text-ivory/60">
+          <div
+            className="px-5 py-2 flex items-center justify-between"
+            style={{
+              background: "var(--paper-warm)",
+              borderTop: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <p className="c-meta" style={{ textTransform: "none", fontSize: 11 }}>
               Replying to{" "}
-              <span className="text-gold font-semibold">
+              <span
+                style={{
+                  color: "var(--ink-strong)",
+                  fontFamily: "var(--font-archivo-narrow)",
+                  fontWeight: 800,
+                }}
+              >
                 {replyTo.author?.display_name ?? "someone"}
               </span>
             </p>
             <button
               type="button"
               onClick={onCancelReply}
-              className="text-[10px] text-ivory/50 hover:text-white uppercase tracking-editorial-tight"
+              className="c-kicker press"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.65 }}
             >
-              Cancel
+              CANCEL
             </button>
           </div>
         )}
 
         {/* Composer */}
-        <div className="px-4 pt-3 pb-4 border-t border-white/[0.06] relative">
+        <div
+          className="px-4 pt-3 pb-4 relative"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           {(gifOpen || emojiOpen) && (
-            <div className="absolute bottom-[72px] left-4 right-4 rounded-2xl overflow-hidden z-10">
+            <div className="absolute bottom-[72px] left-4 right-4 overflow-hidden z-10" style={{ border: "2px solid var(--rule-strong-c)" }}>
               {gifOpen && (
                 <GifPicker
                   open={true}
@@ -508,7 +568,13 @@ function Sheet({
                 setEmojiOpen(!emojiOpen);
                 setGifOpen(false);
               }}
-              className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center press"
+              className="flex items-center justify-center press"
+              style={{
+                width: 34,
+                height: 34,
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
               aria-label="Emoji"
             >
               <span className="text-base">😊</span>
@@ -519,7 +585,15 @@ function Sheet({
                 setGifOpen(!gifOpen);
                 setEmojiOpen(false);
               }}
-              className="w-9 h-9 rounded-full bg-white/[0.06] border border-white/10 flex items-center justify-center press text-[10px] font-bold tracking-wider text-gold"
+              className="flex items-center justify-center press c-kicker"
+              style={{
+                width: 34,
+                height: 34,
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 10,
+              }}
               aria-label="GIF"
             >
               GIF
@@ -537,15 +611,23 @@ function Sheet({
                   submit();
                 }
               }}
-              className="flex-1 min-h-[40px] max-h-32 resize-none bg-white/[0.04] border border-white/10 rounded-2xl px-4 py-2.5 text-[13px] text-ivory placeholder:text-ivory/40 focus:outline-none focus:border-gold/40"
+              className="flex-1 min-h-[40px] max-h-32 resize-none px-3 py-2 outline-none"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 13,
+                fontFamily: "var(--font-fraunces), serif",
+              }}
             />
             <button
               type="button"
               onClick={() => submit()}
               disabled={!body.trim() || submitting || !userId}
-              className="shrink-0 px-4 h-10 rounded-full bg-gold text-midnight text-[11px] font-bold uppercase tracking-editorial-tight press disabled:opacity-40"
+              className="c-btn c-btn-primary c-btn-sm press disabled:opacity-40 shrink-0"
+              style={{ height: 34 }}
             >
-              Send
+              SEND
             </button>
           </div>
         </div>
@@ -580,9 +662,23 @@ function CommentItem({
           width={32}
           height={32}
           className="rounded-full shrink-0 object-cover"
+          style={{ border: "2px solid var(--rule-strong-c)" }}
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold/30 to-gold/10 flex items-center justify-center text-[10px] font-bold text-gold shrink-0">
+        <div
+          className="flex items-center justify-center shrink-0"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontWeight: 800,
+            fontSize: 11,
+          }}
+        >
           {initials}
         </div>
       )}
@@ -591,35 +687,43 @@ function CommentItem({
           {c.author?.handle ? (
             <Link
               href={`/user/${c.author.handle}`}
-              className="text-[12px] font-semibold text-white hover:text-gold press"
+              className="c-card-t press"
+              style={{ fontSize: 12, color: "var(--ink-strong)" }}
             >
               {c.author.display_name}
             </Link>
           ) : (
-            <span className="text-[12px] font-semibold text-white">
+            <span className="c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
               {c.author?.display_name ?? "Someone"}
             </span>
           )}
-          <span className="text-[10px] text-ivory/40">{timeAgo(c.created_at)}</span>
+          <span className="c-kicker" style={{ fontSize: 9, opacity: 0.55 }}>
+            {timeAgo(c.created_at)}
+          </span>
         </div>
         {gifMatch ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={gifMatch[1]}
             alt="GIF"
-            className="mt-1.5 rounded-xl max-w-[240px] border border-white/10"
+            className="mt-1.5 max-w-[240px]"
+            style={{ border: "2px solid var(--rule-strong-c)" }}
           />
         ) : (
-          <p className="text-[13px] text-ivory/80 leading-snug mt-0.5 whitespace-pre-wrap break-words">
+          <p
+            className="c-body mt-0.5 whitespace-pre-wrap break-words"
+            style={{ fontSize: 13, lineHeight: 1.4 }}
+          >
             {c.body}
           </p>
         )}
         <button
           type="button"
           onClick={() => onReply(c)}
-          className="mt-1 text-[10px] font-bold uppercase tracking-editorial-tight text-ivory/40 hover:text-gold press"
+          className="mt-1 c-kicker press"
+          style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.55 }}
         >
-          Reply
+          REPLY
         </button>
         {c.replies && c.replies.length > 0 && (
           <div className="mt-2 space-y-3">
