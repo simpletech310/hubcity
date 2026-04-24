@@ -111,25 +111,27 @@ export default function EventsPage() {
   const heroEvent = featured.length > 0 ? featured[heroIndex % featured.length] : events[0];
 
   return (
-    <div className="animate-fade-in">
-      {/* Editorial Masthead */}
-      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-            VOL · 01 · ISSUE EVENTS
-          </span>
-          <span className="block w-1 h-1 rounded-full bg-gold/60" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-            {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
-          </span>
+    <div className="culture-surface animate-fade-in min-h-dvh">
+      {/* Culture Masthead — paper/ink */}
+      <header
+        className="px-[18px] pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § ISSUE EVENTS · {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
         </div>
-        <h1 className="masthead text-white text-[44px]">EVENTS.</h1>
-        <div className="mt-3 flex items-center gap-3">
-          <span className="block h-[2px] w-8 bg-gold" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-            What&apos;s happening in {activeCity?.name ?? "your city"}
-          </span>
-        </div>
+        <h1
+          className="c-display mt-2"
+          style={{ fontSize: 72, lineHeight: 0.82, letterSpacing: "-0.02em" }}
+        >
+          EVENTS.
+        </h1>
+        <p
+          className="c-serif-it mt-2"
+          style={{ fontSize: 14, lineHeight: 1.45 }}
+        >
+          What&apos;s happening in {activeCity?.name ?? "your city"}.
+        </p>
       </header>
 
       {/* ══════════════════════════════════════════════════════
@@ -246,43 +248,53 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════
-          QUICK STATS BAR — Editorial
-          ══════════════════════════════════════════════════════ */}
-      <div className="px-5 mb-6">
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: "Events", value: events.length.toString() },
-            { label: "Today", value: todayEvents.length.toString() },
-            { label: "Going", value: totalRSVP.toLocaleString() },
-            { label: "Featured", value: featured.length.toString() },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
-              <p className="font-display text-[20px] leading-none text-gold tabular-nums">{stat.value}</p>
-              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">{stat.label}</p>
+      {/* Stats strip — 4 cells divided by 2px ink rules */}
+      <div
+        className="grid grid-cols-4 mb-6"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        {[
+          { label: "EVENTS", value: events.length.toString() },
+          { label: "TODAY", value: todayEvents.length.toString() },
+          { label: "GOING", value: totalRSVP.toLocaleString() },
+          { label: "FEATURED", value: featured.length.toString() },
+        ].map((stat, i) => (
+          <div
+            key={stat.label}
+            className="text-center"
+            style={{
+              padding: "14px 10px",
+              borderRight: i < 3 ? "2px solid var(--rule-strong-c)" : "none",
+              background: i === 0 ? "var(--gold-c)" : "var(--paper)",
+            }}
+          >
+            <div
+              className="c-display c-tabnum"
+              style={{ fontSize: 22, lineHeight: 1 }}
+            >
+              {stat.value}
             </div>
-          ))}
-        </div>
+            <div className="c-kicker mt-1.5" style={{ fontSize: 9 }}>
+              {stat.label}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* ══════════════════════════════════════════════════════
           CATEGORY FILTERS — Plain editorial chips
           ══════════════════════════════════════════════════════ */}
-      <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
+      <div className="c-noscroll flex gap-1.5 px-[14px] mb-6 overflow-x-auto pb-1">
         {categories.map((cat) => {
           const isActive = activeCategory === cat.value;
           return (
             <button
               key={cat.value}
               onClick={() => setActiveCategory(cat.value)}
-              className={`inline-flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
-                isActive
-                  ? "bg-gold text-midnight border border-gold"
-                  : "panel-editorial text-ivory/70 border border-white/[0.08] hover:border-gold/30 hover:text-white"
-              }`}
+              className={`c-chip${isActive ? " gold" : ""} inline-flex items-center gap-1.5`}
             >
-              <Icon name={cat.icon} size={13} />
-              {cat.label}
+              <Icon name={cat.icon} size={12} />
+              {cat.label.toUpperCase()}
             </button>
           );
         })}

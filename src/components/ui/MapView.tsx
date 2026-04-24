@@ -217,7 +217,7 @@ export default function MapView({
           zoom,
         }}
         style={{ width: "100%", height: "100%" }}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
+        mapStyle="mapbox://styles/mapbox/light-v11"
         onLoad={handleLoad}
         reuseMaps
       >

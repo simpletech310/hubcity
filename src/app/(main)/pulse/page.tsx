@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import PulseFeed from "@/components/pulse/PulseFeed";
-import { Masthead } from "@/components/ui/editorial";
 import { getActiveCity } from "@/lib/city-context";
 import type { Post, ReactionEmoji, LiveStream, Poll, Survey, Reel } from "@/types/database";
 
@@ -225,14 +224,41 @@ export default async function PulsePage() {
 
   const city = await getActiveCity();
 
+  const now = new Date();
+  const dateLabel = now
+    .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+    .toUpperCase();
+  const volLabel = `VOL.${now.getFullYear() % 100}`;
+  const isoWeek = Math.ceil(
+    ((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000 +
+      new Date(now.getFullYear(), 0, 1).getDay() +
+      1) /
+      7,
+  );
+  const issLabel = `ISS.${isoWeek}`;
+
   return (
-    <div className="animate-fade-in">
-      <Masthead
-        volume="VOL · 01"
-        issue={`ISSUE ${new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase()}`}
-        headline="THE FEED"
-        strap={`Voices, photos, and dispatches from ${city?.name ?? "your city"}`}
-      />
+    <div className="culture-surface animate-fade-in min-h-dvh">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § {volLabel} · {issLabel} · {dateLabel}
+        </div>
+        <h1
+          className="c-display mt-2"
+          style={{ fontSize: 72, lineHeight: 0.82, letterSpacing: "-0.02em" }}
+        >
+          THE FEED.
+        </h1>
+        <p
+          className="c-serif-it mt-2"
+          style={{ fontSize: 14, lineHeight: 1.45 }}
+        >
+          Voices, photos, and dispatches from {city?.name ?? "your city"}.
+        </p>
+      </div>
       <PulseFeed
         posts={posts}
         userReactions={userReactions}
