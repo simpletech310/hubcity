@@ -1,7 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import ModerationClient from "./ModerationClient";
 
-// Normalize Supabase joined-relation arrays to single objects (or null)
+type PostAuthor = {
+  display_name: string;
+  handle: string;
+  avatar_url: string | null;
+};
+
+type ReelAuthor = {
+  display_name: string;
+  handle: string;
+};
+
+// Supabase returns joined relations as either a single object or an array
+// depending on FK cardinality; normalize both shapes to a single object or null.
 function firstOrNull<T>(val: T | T[] | null | undefined): T | null {
   if (!val) return null;
   return Array.isArray(val) ? (val[0] ?? null) : val;
@@ -54,20 +66,15 @@ export default async function AdminModerationPage() {
           .limit(50)
       : { data: [] };
 
-  // Normalize joined arrays → single objects
+  // Normalize joined arrays → single objects with explicit typing
   const flaggedPosts = (rawPosts ?? []).map((p) => ({
     ...p,
-    author: firstOrNull(p.author as Parameters<typeof firstOrNull>[0]),
+    author: firstOrNull<PostAuthor>(p.author as PostAuthor | PostAuthor[] | null),
   }));
   const flaggedReels = (rawReels ?? []).map((r) => ({
     ...r,
-    author: firstOrNull(r.author as Parameters<typeof firstOrNull>[0]),
+    author: firstOrNull<ReelAuthor>(r.author as ReelAuthor | ReelAuthor[] | null),
   }));
 
-  return (
-    <ModerationClient
-      posts={flaggedPosts}
-      reels={flaggedReels}
-    />
-  );
+  return <ModerationClient posts={flaggedPosts} reels={flaggedReels} />;
 }
