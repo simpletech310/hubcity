@@ -58,7 +58,7 @@ export default function MusicHeritagePage() {
       <section className="px-5 max-w-4xl mx-auto">
         <div className="pattern-dots absolute inset-0 opacity-5 pointer-events-none" />
         <div className="relative">
-          <h2 className="font-display text-2xl md:text-3xl text-text-primary text-center mb-10">
+          <h2 className="c-hero text-center mb-10" style={{ fontSize: "clamp(1.75rem, 5vw, 2.25rem)", color: "var(--ink-strong)" }}>
             A Musical Timeline
           </h2>
           <TimelineView items={MUSIC_TIMELINE} />
@@ -67,18 +67,21 @@ export default function MusicHeritagePage() {
 
       {/* Legacy CTA */}
       <section className="px-5">
-        <div className="rounded-2xl bg-gradient-to-r from-gold/10 to-purple-900/20 border border-gold/20 p-6 md:p-8 text-center">
-          <h3 className="font-display text-xl md:text-2xl text-text-primary">
+        <div
+          className="p-6 md:p-8 text-center"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <h3 className="c-hero" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)", color: "var(--ink-strong)" }}>
             Know a Compton artist?
           </h3>
-          <p className="text-text-secondary text-sm mt-2 max-w-md mx-auto">
+          <p className="c-body mt-2 max-w-md mx-auto" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             Help us document the full story. Submit an artist or music
             landmark to be featured on Culture.
           </p>
-          <a
-            href="/culture/artists"
-            className="inline-block mt-4 px-6 py-2.5 bg-gold text-black font-semibold rounded-full text-sm hover:bg-gold/90 transition-colors"
-          >
+          <a href="/culture/artists" className="c-btn c-btn-primary c-btn-sm inline-block mt-4">
             Explore Artists
           </a>
         </div>

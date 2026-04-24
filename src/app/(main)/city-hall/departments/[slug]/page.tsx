@@ -91,8 +91,8 @@ export default async function DepartmentDetailPage({
         {/* Description */}
         {dept.description && (
           <div className="mb-5">
-            <h2 className="font-heading font-bold text-base mb-2">About</h2>
-            <p className="text-[13px] text-txt-secondary leading-relaxed">
+            <h2 className="c-card-t mb-2">About</h2>
+            <p className="c-body text-[13px] leading-relaxed">
               {dept.description}
             </p>
           </div>
@@ -100,18 +100,18 @@ export default async function DepartmentDetailPage({
 
         {/* Contact Info */}
         <Card variant="glass-elevated" className="mb-5">
-          <h3 className="font-heading font-bold text-sm mb-3">Contact Information</h3>
+          <h3 className="c-card-t mb-3">Contact Information</h3>
           <div className="space-y-3">
             {dept.address && (
               <div className="flex items-center gap-3">
                 <Icon name="pin" size={18} />
-                <p className="text-sm">{dept.address}</p>
+                <p className="text-sm" style={{ color: "var(--ink-strong)" }}>{dept.address}</p>
               </div>
             )}
             {dept.phone && (
               <div className="flex items-center gap-3">
                 <Icon name="phone" size={18} />
-                <a href={`tel:${dept.phone}`} className="text-sm text-gold font-medium">
+                <a href={`tel:${dept.phone}`} className="text-sm font-medium" style={{ color: "var(--gold-c)" }}>
                   {dept.phone}
                 </a>
               </div>
@@ -119,7 +119,7 @@ export default async function DepartmentDetailPage({
             {dept.email && (
               <div className="flex items-center gap-3">
                 <Icon name="mail" size={18} />
-                <a href={`mailto:${dept.email}`} className="text-sm text-gold font-medium">
+                <a href={`mailto:${dept.email}`} className="text-sm font-medium" style={{ color: "var(--gold-c)" }}>
                   {dept.email}
                 </a>
               </div>
@@ -127,7 +127,7 @@ export default async function DepartmentDetailPage({
             {dept.hours && (
               <div className="flex items-center gap-3">
                 <Icon name="clock" size={18} />
-                <p className="text-sm">{typeof dept.hours === 'string' ? dept.hours : JSON.stringify(dept.hours)}</p>
+                <p className="text-sm" style={{ color: "var(--ink-strong)" }}>{typeof dept.hours === 'string' ? dept.hours : JSON.stringify(dept.hours)}</p>
               </div>
             )}
           </div>
@@ -136,7 +136,7 @@ export default async function DepartmentDetailPage({
         {/* Services */}
         {services.length > 0 && (
           <div className="mb-6">
-            <h2 className="font-heading font-bold text-base mb-3">
+            <h2 className="c-card-t mb-3">
               Services ({services.length})
             </h2>
             <div className="space-y-2.5 stagger">

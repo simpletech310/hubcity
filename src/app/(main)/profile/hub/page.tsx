@@ -332,25 +332,23 @@ export default function HubPage() {
                       const badge = savedBadge(item.item_type);
                       return (
                         <Link key={item.id} href="#">
-                          <Card
-                            variant="glass"
-                            hover
-                            className="relative overflow-hidden h-full"
+                          <div
+                            className="c-frame p-3 relative overflow-hidden h-full press"
+                            style={{ background: "var(--paper-soft)" }}
                           >
-                            <div className="absolute top-0 left-0 right-0 h-0.5 bg-gold/30" />
                             <div className="flex flex-col gap-2 h-full min-h-[80px]">
                               <Badge
                                 label={badge.label}
                                 variant={badge.variant}
                               />
-                              <p className="text-[12px] font-semibold leading-snug flex-1 capitalize">
+                              <p className="c-card-t flex-1 capitalize" style={{ fontSize: 12 }}>
                                 Item &middot; {item.item_type}
                               </p>
-                              <p className="text-[10px] text-txt-secondary mt-auto">
+                              <p className="c-meta mt-auto">
                                 {timeAgo(item.created_at)}
                               </p>
                             </div>
-                          </Card>
+                          </div>
                         </Link>
                       );
                     })}
@@ -376,35 +374,42 @@ export default function HubPage() {
                       rsvp.status.charAt(0).toUpperCase() +
                       rsvp.status.slice(1);
                     return (
-                      <Card
+                      <div
                         key={rsvp.id}
-                        variant="glass"
-                        className="relative overflow-hidden"
+                        className="c-frame p-3 relative overflow-hidden"
+                        style={{ background: "var(--paper-soft)" }}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-blue rounded-l-xl" />
                         <div className="flex items-center gap-3">
                           {/* Cover thumbnail */}
                           {event?.cover_image_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={event.cover_image_url}
                               alt={event.title}
-                              className="w-10 h-10 rounded-lg object-cover shrink-0"
+                              className="w-10 h-10 object-cover shrink-0"
+                              style={{ border: "2px solid var(--rule-strong-c)" }}
                             />
                           ) : (
-                            <div className="w-10 h-10 rounded-lg bg-hc-blue/10 flex items-center justify-center shrink-0">
+                            <div
+                              className="w-10 h-10 flex items-center justify-center shrink-0"
+                              style={{
+                                background: "var(--paper-warm)",
+                                border: "2px solid var(--rule-strong-c)",
+                              }}
+                            >
                               <Icon
                                 name="calendar"
                                 size={18}
-                                className="text-hc-blue"
+                                style={{ color: "var(--ink-strong)" }}
                               />
                             </div>
                           )}
                           {/* Info */}
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold truncate">
+                            <p className="c-card-t truncate" style={{ fontSize: 12 }}>
                               {event?.title ?? "Event"}
                             </p>
-                            <p className="text-[10px] text-txt-secondary mt-0.5">
+                            <p className="c-meta mt-0.5">
                               {event?.starts_at
                                 ? formatEventDate(event.starts_at)
                                 : "Date TBD"}
@@ -412,7 +417,7 @@ export default function HubPage() {
                           </div>
                           <Badge label={badgeLabel} variant={badgeVariant} />
                         </div>
-                      </Card>
+                      </div>
                     );
                   })
                 )}
@@ -436,36 +441,41 @@ export default function HubPage() {
                       order.status.slice(1);
                     const total = `$${(order.total / 100).toFixed(2)}`;
                     return (
-                      <Card
+                      <div
                         key={order.id}
-                        variant="glass"
-                        className="relative overflow-hidden"
+                        className="c-frame p-3 relative overflow-hidden"
+                        style={{ background: "var(--paper-soft)" }}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gold/50 rounded-l-xl" />
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
+                          <div
+                            className="w-10 h-10 flex items-center justify-center shrink-0"
+                            style={{
+                              background: "var(--gold-c)",
+                              border: "2px solid var(--rule-strong-c)",
+                            }}
+                          >
                             <Icon
                               name="receipt"
                               size={18}
-                              className="text-gold"
+                              style={{ color: "var(--ink-strong)" }}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold truncate">
+                            <p className="c-card-t truncate" style={{ fontSize: 12 }}>
                               {order.businesses?.name ?? "Order"}
                             </p>
-                            <p className="text-[10px] text-txt-secondary mt-0.5">
+                            <p className="c-meta mt-0.5">
                               {timeAgo(order.created_at)}
                             </p>
                           </div>
                           <div className="flex flex-col items-end gap-1 shrink-0">
-                            <span className="font-heading font-bold text-[13px] text-gold">
+                            <span className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
                               {total}
                             </span>
                             <Badge label={badgeLabel} variant={badgeVariant} />
                           </div>
                         </div>
-                      </Card>
+                      </div>
                     );
                   })
                 )}
@@ -488,34 +498,40 @@ export default function HubPage() {
                       ? `/live/channel/${channel.slug}`
                       : `/live/channel/${sub.channel_id}`;
                     return (
-                      <Card
+                      <div
                         key={sub.id}
-                        variant="glass"
-                        className="relative overflow-hidden"
+                        className="c-frame p-3 relative overflow-hidden"
+                        style={{ background: "var(--paper-soft)" }}
                       >
-                        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald/60 rounded-l-xl" />
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-emerald/10 flex items-center justify-center shrink-0">
+                          <div
+                            className="w-10 h-10 flex items-center justify-center shrink-0"
+                            style={{
+                              background: "var(--paper-warm)",
+                              border: "2px solid var(--rule-strong-c)",
+                            }}
+                          >
                             <Icon
                               name="video"
                               size={18}
-                              className="text-emerald"
+                              style={{ color: "var(--ink-strong)" }}
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold truncate">
+                            <p className="c-card-t truncate" style={{ fontSize: 12 }}>
                               {channel?.name ?? "Channel"}
                             </p>
                             <Badge label="Active" variant="emerald" />
                           </div>
                           <Link
                             href={href}
-                            className="shrink-0 text-[11px] font-bold text-gold press hover:underline"
+                            className="shrink-0 c-kicker press"
+                            style={{ color: "var(--ink-strong)", textDecoration: "underline" }}
                           >
-                            Watch →
+                            WATCH →
                           </Link>
                         </div>
-                      </Card>
+                      </div>
                     );
                   })
                 )}

@@ -42,7 +42,13 @@ export default async function DiscussionsPage() {
     <div className="space-y-6 pb-20">
       <CultureHero title="Discussions" subtitle="Community conversations about Compton's culture and heritage." imageUrl="/images/art/IMG_2790.jpg" />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -50,17 +56,20 @@ export default async function DiscussionsPage() {
 
       {/* Discussion Prompts */}
       <section className="px-5">
-        <div className="rounded-2xl bg-gold/5 border border-gold/15 p-4 mb-4">
-          <p className="text-xs font-semibold text-gold uppercase tracking-wider mb-2">
+        <div
+          className="p-4 mb-4"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <p className="c-kicker mb-2" style={{ color: "var(--ink-strong)" }}>
             Join the Conversation
           </p>
-          <p className="text-sm text-txt-secondary leading-relaxed">
-            Share your Compton stories, memories, and cultural knowledge with the community. Use <span className="text-gold font-semibold">#culture</span> or <span className="text-gold font-semibold">#compton-history</span> in your Pulse posts.
+          <p className="c-body leading-relaxed" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+            Share your Compton stories, memories, and cultural knowledge with the community. Use <span className="c-serif-it" style={{ color: "var(--ink-strong)", fontWeight: 700 }}>#culture</span> or <span className="c-serif-it" style={{ color: "var(--ink-strong)", fontWeight: 700 }}>#compton-history</span> in your Pulse posts.
           </p>
-          <Link
-            href="/pulse"
-            className="inline-block mt-3 px-4 py-2 bg-gold text-midnight rounded-xl text-xs font-bold hover:bg-gold/90 transition-colors"
-          >
+          <Link href="/pulse" className="c-btn c-btn-primary c-btn-sm inline-block mt-3">
             Post to Pulse
           </Link>
         </div>
@@ -81,40 +90,46 @@ export default async function DiscussionsPage() {
                   <Card hover padding>
                     <div className="flex items-start gap-3">
                       {/* Author avatar */}
-                      <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center overflow-hidden shrink-0">
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+                        style={{
+                          background: "var(--paper-soft)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
                         {author?.avatar_url ? (
                           <img src={author.avatar_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <span className="text-xs font-bold text-txt-secondary">
+                          <span className="c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                             {author?.display_name?.[0]?.toUpperCase() ?? "?"}
                           </span>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[12px] font-semibold text-white truncate">
+                          <span className="c-card-t truncate" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                             {author?.display_name ?? "Community Member"}
                           </span>
-                          <span className="text-[10px] text-txt-secondary">
+                          <span className="c-meta" style={{ fontSize: 10 }}>
                             {timeAgo(post.created_at)}
                           </span>
                         </div>
                         {post.museum_topic && (
-                          <span className="inline-block px-2 py-0.5 rounded-md bg-gold/10 text-gold text-[10px] font-semibold mb-1.5">
+                          <span className="c-badge-gold inline-block mb-1.5">
                             {post.museum_topic}
                           </span>
                         )}
-                        <p className="text-[12px] text-txt-secondary leading-relaxed line-clamp-3">
+                        <p className="c-body leading-relaxed line-clamp-3" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                           {post.body}
                         </p>
                         <div className="flex items-center gap-3 mt-2">
                           {totalReactions > 0 && (
-                            <span className="text-[10px] text-txt-secondary">
+                            <span className="c-meta" style={{ fontSize: 10 }}>
                               {totalReactions} reaction{totalReactions !== 1 ? "s" : ""}
                             </span>
                           )}
                           {post.comment_count > 0 && (
-                            <span className="text-[10px] text-txt-secondary">
+                            <span className="c-meta" style={{ fontSize: 10 }}>
                               {post.comment_count} comment{post.comment_count !== 1 ? "s" : ""}
                             </span>
                           )}
@@ -127,16 +142,19 @@ export default async function DiscussionsPage() {
             })}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="chat" size={28} /></span>
-            <p className="text-sm font-medium mb-1">No discussions yet</p>
-            <p className="text-xs text-txt-secondary mb-4">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="chat" size={28} /></span>
+            <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>No discussions yet</p>
+            <p className="c-body mb-4" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
               Be the first to share a cultural story or memory.
             </p>
-            <Link
-              href="/pulse"
-              className="inline-block px-5 py-2.5 bg-gradient-to-r from-gold to-gold-light text-midnight rounded-xl text-xs font-bold"
-            >
+            <Link href="/pulse" className="c-btn c-btn-primary c-btn-sm">
               Start a Discussion
             </Link>
           </div>

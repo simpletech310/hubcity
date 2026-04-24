@@ -99,39 +99,34 @@ export default function PodcastsPage() {
       </div>
 
       {/* ── Quick Stats ── */}
-      <div className="px-5 -mt-1 mb-5">
-        <div className="grid grid-cols-3 gap-2.5 stagger">
-          {[
-            { label: "Episodes", value: podcasts.length, color: "#F2A900" },
-            {
-              label: "Total Listens",
-              value: podcasts.reduce((sum, p) => sum + (p.listen_count || 0), 0),
-              color: "#22C55E",
-            },
-            {
-              label: "Channels",
-              value: new Set(podcasts.map((p) => p.channel_id).filter(Boolean)).size,
-              color: "#06B6D4",
-            },
-          ].map((stat) => (
-            <Card key={stat.label} variant="glass" className="p-3 text-center relative overflow-hidden">
-
-              <div
-                className="absolute top-0 left-0 right-0 h-0.5"
-                style={{ background: stat.color }}
-              />
-              <p
-                className="font-heading font-bold text-lg leading-none mb-0.5"
-                style={{ color: stat.color }}
-              >
-                {stat.value}
-              </p>
-              <p className="text-[9px] text-txt-secondary font-semibold uppercase tracking-wider">
-                {stat.label}
-              </p>
-            </Card>
-          ))}
-        </div>
+      <div
+        className="grid grid-cols-3 mb-6"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        {[
+          { label: "EPISODES", value: podcasts.length, gold: true },
+          {
+            label: "LISTENS",
+            value: podcasts.reduce((sum, p) => sum + (p.listen_count || 0), 0),
+          },
+          {
+            label: "CHANNELS",
+            value: new Set(podcasts.map((p) => p.channel_id).filter(Boolean)).size,
+          },
+        ].map((stat, i) => (
+          <div
+            key={stat.label}
+            className="text-center"
+            style={{
+              padding: "14px 10px",
+              borderRight: i < 2 ? "2px solid var(--rule-strong-c)" : "none",
+              background: stat.gold ? "var(--gold-c)" : "var(--paper)",
+            }}
+          >
+            <div className="c-display c-tabnum" style={{ fontSize: 22, lineHeight: 1 }}>{stat.value}</div>
+            <div className="c-kicker mt-1.5" style={{ fontSize: 9 }}>{stat.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* ── Channel Filters ── */}
@@ -151,21 +146,24 @@ export default function PodcastsPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton h-28 rounded-2xl" />
+            <div key={i} className="skeleton h-28" style={{ border: "2px solid var(--rule-strong-c)" }} />
           ))}
         </div>
       ) : podcasts.length === 0 ? (
         <div className="px-5 text-center py-16">
-          <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-            <Icon name="headphones" size={28} className="text-txt-secondary" />
+          <div
+            className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <Icon name="headphones" size={28} style={{ color: "var(--ink-strong)" }} />
           </div>
-          <p className="text-sm font-bold mb-1">No episodes found</p>
-          <p className="text-xs text-txt-secondary mb-4">
+          <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No episodes found</p>
+          <p className="c-meta mb-4">
             Try a different channel filter
           </p>
           <button
             onClick={() => setActiveChannel("all")}
-            className="text-xs text-gold font-semibold press"
+            className="c-btn c-btn-outline c-btn-sm press"
           >
             Show all episodes
           </button>
@@ -197,16 +195,19 @@ function EpisodeCard({ podcast }: { podcast: PodcastWithChannel }) {
       <Card hover padding={false}>
         <div className="flex gap-3 p-3">
           {/* Thumbnail / Placeholder */}
-          <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-gold/10 to-hc-purple/10 flex items-center justify-center shrink-0 overflow-hidden relative">
+          <div
+            className="w-20 h-20 flex items-center justify-center shrink-0 overflow-hidden relative"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {podcast.thumbnail_url ? (
               <Image
                 src={podcast.thumbnail_url}
                 alt={podcast.title}
                 fill
-                className="object-cover rounded-xl"
+                className="object-cover"
               />
             ) : (
-              <Icon name="podcast" size={28} className="text-gold/60" />
+              <Icon name="podcast" size={28} style={{ color: "var(--ink-strong)" }} />
             )}
           </div>
 

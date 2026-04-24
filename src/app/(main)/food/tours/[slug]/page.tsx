@@ -55,7 +55,8 @@ export default async function TourDetailPage({
       <div className="px-5 pt-4 mb-3">
         <Link
           href="/food/tours"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 press c-kicker"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -121,11 +122,21 @@ export default async function TourDetailPage({
               <div key={stop.id} className="flex gap-3">
                 {/* Number circle */}
                 <div className="flex flex-col items-center shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold to-gold-light text-midnight flex items-center justify-center font-heading font-bold text-sm">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                      fontFamily: "var(--font-archivo), sans-serif",
+                      fontSize: 13,
+                      fontWeight: 800,
+                    }}
+                  >
                     {index + 1}
                   </div>
                   {index < stops.length - 1 && (
-                    <div className="w-0.5 flex-1 bg-border-subtle mt-2" />
+                    <div className="w-0.5 flex-1 mt-2" style={{ background: "var(--rule-strong-c)" }} />
                   )}
                 </div>
 
@@ -136,7 +147,10 @@ export default async function TourDetailPage({
                 >
                   <Card hover>
                     <div className="flex gap-3">
-                      <div className="w-14 h-14 rounded-xl shrink-0 overflow-hidden relative">
+                      <div
+                        className="w-14 h-14 shrink-0 overflow-hidden relative"
+                        style={{ border: "2px solid var(--rule-strong-c)" }}
+                      >
                         {biz?.image_urls?.[0] ? (
                           <Image
                             src={biz.image_urls[0]}
@@ -149,24 +163,24 @@ export default async function TourDetailPage({
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">
+                        <h3 className="c-card-t mb-0.5 truncate" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
                           {biz?.name ?? "Business"}
                         </h3>
                         {biz?.address && (
-                          <p className="text-[10px] text-txt-secondary mb-1 truncate">
+                          <p className="c-meta mb-1 truncate" style={{ fontSize: 10 }}>
                             <Icon name="pin" size={16} /> {biz.address.split(",")[0]}
                           </p>
                         )}
                         {stop.note && (
-                          <p className="text-[11px] text-gold italic">
+                          <p className="c-serif-it" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
                             {stop.note}
                           </p>
                         )}
                       </div>
                       {(biz?.rating_avg ?? 0) > 0 && (
                         <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
-                          <span className="text-xs font-bold">
+                          <span style={{ color: "var(--gold-c)" }}><Icon name="star" size={14} /></span>
+                          <span className="c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                             {Number(biz?.rating_avg ?? 0).toFixed(1)}
                           </span>
                         </div>

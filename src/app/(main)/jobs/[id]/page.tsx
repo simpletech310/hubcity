@@ -145,12 +145,15 @@ export default async function JobDetailPage({
 
       {/* Volunteer banner */}
       {isVolunteer && (
-        <div className="mx-5 mb-4 px-4 py-3 rounded-xl bg-gold/10 border border-gold/20">
+        <div
+          className="mx-5 mb-4 px-4 py-3 c-frame"
+          style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+        >
           <div className="flex items-center gap-2">
-            <span className="text-lg"><Icon name="handshake" size={20} /></span>
+            <span className="text-lg"><Icon name="handshake" size={20} style={{ color: "var(--ink-strong)" }} /></span>
             <div>
-              <p className="text-sm font-bold text-gold">Volunteer Opportunity</p>
-              <p className="text-[11px] text-txt-secondary">
+              <p className="c-kicker" style={{ color: "var(--ink-strong)" }}>Volunteer Opportunity</p>
+              <p className="c-meta">
                 Give back to your community
               </p>
             </div>
@@ -161,7 +164,10 @@ export default async function JobDetailPage({
       {/* Organization / Business Info */}
       <div className="px-5 mb-5">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-14 h-14 rounded-xl overflow-hidden relative bg-white/5 flex items-center justify-center shrink-0">
+          <div
+            className="w-14 h-14 overflow-hidden relative flex items-center justify-center shrink-0"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {businessImage ? (
               <img
                 src={businessImage}
@@ -261,8 +267,14 @@ export default async function JobDetailPage({
 
         {/* Posted by */}
         {poster && (
-          <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-xl bg-white/[0.03]">
-            <div className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center overflow-hidden shrink-0">
+          <div
+            className="flex items-center gap-2 mb-4 px-3 py-2 c-frame"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+            >
               {poster.avatar_url ? (
                 <img src={poster.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
@@ -307,20 +319,20 @@ export default async function JobDetailPage({
       {/* Apply Button */}
       <div className="px-5 mt-6">
         {hasApplied ? (
-          <div className="w-full py-3 rounded-xl text-center bg-emerald/20 text-emerald border border-emerald/30 font-semibold text-sm">
+          <div className="c-badge-ok inline-flex items-center gap-2 px-4 py-2 w-full justify-center">
             Applied <Icon name="check" size={16} />
           </div>
         ) : user ? (
           <Link
             href={`/jobs/${listing.slug || listing.id}/apply`}
-            className="block w-full py-3 rounded-xl text-center bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold text-sm press hover:opacity-90 transition-all"
+            className="c-btn c-btn-primary block w-full text-center press"
           >
             {isVolunteer ? "Volunteer Now" : "Apply Now"}
           </Link>
         ) : (
           <Link
             href={`/login?redirect=/jobs/${listing.slug || listing.id}/apply`}
-            className="block w-full py-3 rounded-xl text-center bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold text-sm press hover:opacity-90 transition-all"
+            className="c-btn c-btn-primary block w-full text-center press"
           >
             Sign in to {isVolunteer ? "Volunteer" : "Apply"}
           </Link>

@@ -254,11 +254,15 @@ export default async function CreatorsPage({
             <div className="flex gap-2 pb-1">
               <Link
                 href={filterHref("all", selectedCitySlug)}
-                className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
-                  selectedRole === "all"
-                    ? "bg-gold text-midnight border-gold"
-                    : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
-                }`}
+                className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                style={{
+                  background: selectedRole === "all" ? "var(--gold-c)" : "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 11,
+                  fontWeight: selectedRole === "all" ? 800 : 600,
+                }}
               >
                 All
               </Link>
@@ -266,11 +270,15 @@ export default async function CreatorsPage({
                 <Link
                   key={r}
                   href={filterHref(r, selectedCitySlug)}
-                  className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
-                    selectedRole === r
-                      ? "bg-gold text-midnight border-gold"
-                      : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
-                  }`}
+                  className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                  style={{
+                    background: selectedRole === r ? "var(--gold-c)" : "var(--paper)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    fontFamily: "var(--font-archivo-narrow), sans-serif",
+                    fontSize: 11,
+                    fontWeight: selectedRole === r ? 800 : 600,
+                  }}
                 >
                   {ROLE_LABEL[r]}
                 </Link>
@@ -288,11 +296,15 @@ export default async function CreatorsPage({
             <div className="flex gap-2 pb-1">
               <Link
                 href={filterHref(selectedRole, "all")}
-                className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
-                  selectedCitySlug === "all"
-                    ? "bg-gold text-midnight border-gold"
-                    : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
-                }`}
+                className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                style={{
+                  background: selectedCitySlug === "all" ? "var(--gold-c)" : "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 11,
+                  fontWeight: selectedCitySlug === "all" ? 800 : 600,
+                }}
               >
                 All cities
               </Link>
@@ -300,11 +312,15 @@ export default async function CreatorsPage({
                 <Link
                   key={c.slug}
                   href={filterHref(selectedRole, c.slug)}
-                  className={`shrink-0 text-[11px] font-bold rounded-full px-3.5 py-1.5 border transition-colors press ${
-                    selectedCitySlug === c.slug
-                      ? "bg-gold text-midnight border-gold"
-                      : "bg-white/[0.04] text-white/60 border-white/[0.08] hover:text-white hover:bg-white/[0.08]"
-                  }`}
+                  className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                  style={{
+                    background: selectedCitySlug === c.slug ? "var(--gold-c)" : "var(--paper)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    fontFamily: "var(--font-archivo-narrow), sans-serif",
+                    fontSize: 11,
+                    fontWeight: selectedCitySlug === c.slug ? 800 : 600,
+                  }}
                 >
                   {c.name}
                 </Link>
@@ -316,12 +332,13 @@ export default async function CreatorsPage({
         {/* Results summary + clear — only when a filter is active */}
         {(selectedRole !== "all" || selectedCitySlug !== "all") && (
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-white/40">
+            <span className="c-meta" style={{ fontSize: 11 }}>
               {creators.length} result{creators.length === 1 ? "" : "s"}
             </span>
             <Link
               href="/creators"
-              className="text-[11px] font-semibold text-gold press"
+              className="c-kicker press"
+              style={{ color: "var(--ink-strong)" }}
             >
               Clear filters
             </Link>
@@ -332,18 +349,21 @@ export default async function CreatorsPage({
       {/* Empty state — shown inline when a filter returned nothing, or
           as a full-page state when the platform has no creators at all. */}
       {creators.length === 0 && (
-        <div className="px-5 py-12 text-center">
-          <Icon name="sparkle" size={28} className="text-white/20 mx-auto mb-3" />
-          <p className="text-sm text-white/60 font-semibold mb-1">
+        <div
+          className="mx-5 my-6 py-12 px-6 text-center"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <Icon name="sparkle" size={28} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
+          <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             No creators match this filter
           </p>
-          <p className="text-[12px] text-white/40 mb-4">
+          <p className="c-body mb-4" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
             Try a different type or city.
           </p>
-          <Link
-            href="/creators"
-            className="inline-block px-4 py-2 rounded-full bg-gold text-midnight text-[12px] font-bold press"
-          >
+          <Link href="/creators" className="c-btn c-btn-primary c-btn-sm inline-block">
             See everyone
           </Link>
         </div>

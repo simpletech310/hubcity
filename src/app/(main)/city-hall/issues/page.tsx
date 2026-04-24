@@ -172,21 +172,24 @@ export default function CityIssuesPage() {
 
       {/* Report CTA */}
       <div className="px-5 mb-5">
-        <div className="rounded-xl bg-gradient-to-r from-coral/10 to-gold/10 border border-coral/20 p-4">
+        <div
+          className="c-frame p-4"
+          style={{ background: "var(--paper-warm)" }}
+        >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-coral/20 flex items-center justify-center shrink-0">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
+            >
               <Icon name="megaphone" size={18} />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-bold">See a problem?</p>
-              <p className="text-xs text-txt-secondary">
+              <p className="c-card-t">See a problem?</p>
+              <p className="c-body text-xs">
                 Report potholes, broken streetlights, graffiti, and more. Your reports help the city take action.
               </p>
             </div>
-            <Link
-              href="/city-hall/issues/new"
-              className="px-3 py-1.5 bg-coral text-white text-xs font-bold rounded-lg press shrink-0"
-            >
+            <Link href="/city-hall/issues/new" className="c-btn c-btn-primary c-btn-sm shrink-0">
               Report Issue
             </Link>
           </div>
@@ -197,21 +200,13 @@ export default function CityIssuesPage() {
       <div className="px-5 mb-3 flex gap-2">
         <button
           onClick={() => setViewMode("list")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            viewMode === "list"
-              ? "bg-gold/15 text-gold border border-gold/30"
-              : "bg-white/5 text-txt-secondary border border-border-subtle"
-          }`}
+          className={`c-btn c-btn-sm ${viewMode === "list" ? "c-btn-primary" : "c-btn-outline"}`}
         >
           <Icon name="document" size={12} /> List
         </button>
         <button
           onClick={() => setViewMode("map")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-            viewMode === "map"
-              ? "bg-gold/15 text-gold border border-gold/30"
-              : "bg-white/5 text-txt-secondary border border-border-subtle"
-          }`}
+          className={`c-btn c-btn-sm ${viewMode === "map" ? "c-btn-primary" : "c-btn-outline"}`}
         >
           <Icon name="pin" size={12} /> Map
         </button>
@@ -252,7 +247,7 @@ export default function CityIssuesPage() {
       {/* Map View */}
       {viewMode === "map" && (
         <div className="px-5 mb-5">
-          <div className="rounded-2xl overflow-hidden border border-border-subtle">
+          <div className="c-frame overflow-hidden">
             <MapView
               points={mapPoints}
               height="400px"

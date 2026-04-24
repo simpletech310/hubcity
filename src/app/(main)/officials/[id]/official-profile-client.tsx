@@ -36,40 +36,16 @@ interface AreaSchool {
 
 type Tab = "overview" | "votes" | "actions" | "flags" | "accountability";
 
-const TYPE_LABELS: Record<string, { text: string; color: string }> = {
-  mayor: { text: "Mayor", color: "text-gold bg-gold/10 border-gold/20" },
-  council_member: {
-    text: "Council Member",
-    color: "text-blue-400 bg-blue-400/10 border-blue-400/20",
-  },
-  city_manager: {
-    text: "City Manager",
-    color: "text-purple-400 bg-purple-400/10 border-purple-400/20",
-  },
-  board_president: {
-    text: "Board President",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  },
-  board_vp: {
-    text: "Vice President",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  },
-  board_clerk: {
-    text: "Clerk of Board",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  },
-  school_trustee: {
-    text: "Trustee",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  },
-  board_member: {
-    text: "Board Member",
-    color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
-  },
-  superintendent: {
-    text: "Superintendent",
-    color: "text-cyan-400 bg-cyan-400/10 border-cyan-400/20",
-  },
+const TYPE_LABELS: Record<string, { text: string; variant: "gold" | "ink" }> = {
+  mayor: { text: "Mayor", variant: "gold" },
+  council_member: { text: "Council Member", variant: "ink" },
+  city_manager: { text: "City Manager", variant: "ink" },
+  board_president: { text: "Board President", variant: "ink" },
+  board_vp: { text: "Vice President", variant: "ink" },
+  board_clerk: { text: "Clerk of Board", variant: "ink" },
+  school_trustee: { text: "Trustee", variant: "ink" },
+  board_member: { text: "Board Member", variant: "ink" },
+  superintendent: { text: "Superintendent", variant: "ink" },
 };
 
 const COUNCIL_TYPES = ["mayor", "council_member"];
@@ -107,7 +83,7 @@ export default function OfficialProfileClient({
 
   const typeLabel = TYPE_LABELS[official.official_type] ?? {
     text: official.official_type,
-    color: "text-zinc-400 bg-zinc-800 border-zinc-700",
+    variant: "ink" as const,
   };
 
   const locationLabel = official.district
@@ -142,7 +118,10 @@ export default function OfficialProfileClient({
       <div className="py-6">
         <div className="flex items-start gap-4">
           {/* Avatar */}
-          <div className="relative w-20 h-20 rounded-full overflow-hidden bg-zinc-800 flex-shrink-0 ring-2 ring-zinc-700">
+          <div
+            className="relative w-20 h-20 rounded-full overflow-hidden flex-shrink-0"
+            style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {official.photo_url ? (
               <Image
                 src={official.photo_url}
@@ -151,7 +130,10 @@ export default function OfficialProfileClient({
                 className="object-cover"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-zinc-500 text-2xl font-bold">
+              <div
+                className="w-full h-full flex items-center justify-center text-2xl font-bold"
+                style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+              >
                 {official.name
                   .split(" ")
                   .map((n) => n[0])
@@ -164,31 +146,27 @@ export default function OfficialProfileClient({
           {/* Info */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-bold text-white font-heading tracking-tight">
+              <h1 className="c-hero" style={{ fontSize: 24, lineHeight: 1 }}>
                 {official.name}
               </h1>
               {!official.is_voting_member && (
-                <span className="text-[9px] font-semibold text-zinc-500 bg-zinc-800 border border-zinc-700 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                  Non-Voting
-                </span>
+                <span className="c-badge-ink">Non-Voting</span>
               )}
             </div>
 
-            <p className="text-sm text-zinc-400 mt-0.5">{official.title}</p>
+            <p className="c-body text-sm mt-0.5">{official.title}</p>
 
             <div className="flex items-center gap-2 mt-2 flex-wrap">
-              <span
-                className={`text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded border ${typeLabel.color}`}
-              >
+              <span className={typeLabel.variant === "gold" ? "c-badge-gold" : "c-badge-ink"}>
                 {typeLabel.text}
               </span>
               {locationLabel && (
-                <span className="text-[10px] text-zinc-500 bg-zinc-800/60 px-2 py-0.5 rounded">
+                <span className="c-meta" style={{ fontSize: 10 }}>
                   {locationLabel}
                 </span>
               )}
               {official.party && (
-                <span className="text-[10px] text-zinc-500 bg-zinc-800/60 px-2 py-0.5 rounded">
+                <span className="c-meta" style={{ fontSize: 10 }}>
                   {official.party}
                 </span>
               )}
@@ -198,14 +176,10 @@ export default function OfficialProfileClient({
             {flags.length > 0 && (
               <div className="flex items-center gap-2 mt-2">
                 {criticalFlags > 0 && (
-                  <span className="text-[10px] font-semibold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded">
-                    {criticalFlags} critical
-                  </span>
+                  <span className="c-badge-live">{criticalFlags} critical</span>
                 )}
                 {warningFlags > 0 && (
-                  <span className="text-[10px] font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
-                    {warningFlags} warning
-                  </span>
+                  <span className="c-badge-gold">{warningFlags} warning</span>
                 )}
               </div>
             )}
@@ -216,12 +190,12 @@ export default function OfficialProfileClient({
         {official.running_for &&
           official.running_for !== "N/A" &&
           official.running_for !== "N/A (not elected)" && (
-            <div className="mt-4 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-              <p className="text-xs text-amber-400 font-semibold">
+            <div className="mt-4 c-frame p-3" style={{ background: "var(--paper-warm)" }}>
+              <p className="c-card-t" style={{ color: "var(--gold-c)" }}>
                 Running for: {official.running_for}
               </p>
               {official.term_expires && (
-                <p className="text-[10px] text-zinc-500 mt-0.5">
+                <p className="c-meta mt-0.5" style={{ fontSize: 10 }}>
                   Term: {official.term_expires}
                 </p>
               )}
@@ -230,26 +204,35 @@ export default function OfficialProfileClient({
       </div>
 
       {/* Tabs */}
-      <div className="sticky top-0 z-10 bg-black/90 backdrop-blur-md border-b border-zinc-800 -mx-4 px-4">
+      <div
+        className="sticky top-0 z-10 -mx-4 px-4"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="flex overflow-x-auto scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap py-3 px-4 text-sm font-medium transition-all relative ${
-                activeTab === tab.id
-                  ? "text-gold"
-                  : "text-zinc-500 hover:text-zinc-300"
-              }`}
+              className="whitespace-nowrap py-3 px-4 text-sm font-medium transition-all relative"
+              style={{
+                color: activeTab === tab.id ? "var(--gold-c)" : "var(--ink-strong)",
+                opacity: activeTab === tab.id ? 1 : 0.6,
+              }}
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className="ml-1.5 text-[10px] text-zinc-600">
+                <span className="ml-1.5 text-[10px]" style={{ opacity: 0.5 }}>
                   {tab.count}
                 </span>
               )}
               {activeTab === tab.id && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold" />
+                <div
+                  className="absolute bottom-0 left-0 right-0 h-0.5"
+                  style={{ background: "var(--gold-c)" }}
+                />
               )}
             </button>
           ))}
@@ -263,11 +246,11 @@ export default function OfficialProfileClient({
           <div className="space-y-6">
             {/* Background */}
             {official.background && (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-4">
-                <h3 className="text-xs font-semibold text-gold uppercase tracking-wider mb-2">
+              <div className="c-frame p-4" style={{ background: "var(--paper-warm)" }}>
+                <h3 className="c-kicker mb-2" style={{ color: "var(--gold-c)" }}>
                   Background
                 </h3>
-                <p className="text-sm text-zinc-300 leading-relaxed whitespace-pre-line">
+                <p className="c-body text-sm leading-relaxed whitespace-pre-line">
                   {official.background}
                 </p>
               </div>
@@ -304,23 +287,24 @@ export default function OfficialProfileClient({
             {/* Schools in Area (for trustees) */}
             {areaSchools.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-3">
+                <h3 className="c-kicker mb-3" style={{ color: "var(--ink-strong)" }}>
                   Schools in Area {official.trustee_area}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {areaSchools.map((school) => (
                     <div
                       key={school.id}
-                      className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3"
+                      className="c-frame p-3"
+                      style={{ background: "var(--paper)" }}
                     >
-                      <p className="text-[13px] font-semibold text-white">
+                      <p className="c-card-t text-[13px]">
                         {school.school_name}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-1.5 py-0.5 rounded">
+                        <span className="c-badge-ink">
                           {school.school_type}
                         </span>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="c-meta" style={{ fontSize: 10 }}>
                           {school.grades}
                         </span>
                       </div>
@@ -334,12 +318,13 @@ export default function OfficialProfileClient({
             {flags.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-red-400 uppercase tracking-wider">
+                  <h3 className="c-kicker" style={{ color: "var(--ink-strong)" }}>
                     Active Flags
                   </h3>
                   <button
                     onClick={() => setActiveTab("flags")}
-                    className="text-[10px] text-gold hover:text-gold/80 transition-colors"
+                    className="text-[10px] transition-colors"
+                    style={{ color: "var(--gold-c)" }}
                   >
                     View all →
                   </button>
@@ -352,12 +337,13 @@ export default function OfficialProfileClient({
             {isVoting && votes.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+                  <h3 className="c-kicker" style={{ color: "var(--ink-strong)" }}>
                     Recent Votes
                   </h3>
                   <button
                     onClick={() => setActiveTab("votes")}
-                    className="text-[10px] text-gold hover:text-gold/80 transition-colors"
+                    className="text-[10px] transition-colors"
+                    style={{ color: "var(--gold-c)" }}
                   >
                     View all →
                   </button>
@@ -370,12 +356,13 @@ export default function OfficialProfileClient({
             {isAppointed && actions.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-semibold text-purple-400 uppercase tracking-wider">
+                  <h3 className="c-kicker" style={{ color: "var(--ink-strong)" }}>
                     Recent Actions
                   </h3>
                   <button
                     onClick={() => setActiveTab("actions")}
-                    className="text-[10px] text-gold hover:text-gold/80 transition-colors"
+                    className="text-[10px] transition-colors"
+                    style={{ color: "var(--gold-c)" }}
                   >
                     View all →
                   </button>
@@ -390,10 +377,8 @@ export default function OfficialProfileClient({
         {activeTab === "votes" && (
           <div>
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-white">
-                Voting Record
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="c-card-t text-sm">Voting Record</h2>
+              <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>
                 {votes.length} recorded vote{votes.length !== 1 ? "s" : ""} on{" "}
                 {COUNCIL_TYPES.includes(official.official_type)
                   ? "city council"
@@ -409,10 +394,8 @@ export default function OfficialProfileClient({
         {activeTab === "actions" && (
           <div>
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-white">
-                Executive Actions
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="c-card-t text-sm">Executive Actions</h2>
+              <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>
                 {actions.length} tracked action{actions.length !== 1 ? "s" : ""}{" "}
                 as {official.title}.
               </p>
@@ -425,10 +408,8 @@ export default function OfficialProfileClient({
         {activeTab === "flags" && (
           <div>
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-white">
-                Flags &amp; Controversies
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="c-card-t text-sm">Flags &amp; Controversies</h2>
+              <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>
                 {flags.length} flag{flags.length !== 1 ? "s" : ""} on record.
                 Sourced from court records, audits, FPPC filings, and
                 investigative reporting.
@@ -442,10 +423,8 @@ export default function OfficialProfileClient({
         {activeTab === "accountability" && (
           <div>
             <div className="mb-4">
-              <h2 className="text-sm font-semibold text-white">
-                Accountability Vectors
-              </h2>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h2 className="c-card-t text-sm">Accountability Vectors</h2>
+              <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>
                 Key areas of evaluation for this official&apos;s role and
                 responsibilities.
               </p>
@@ -463,11 +442,11 @@ export default function OfficialProfileClient({
 
 function DetailCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-3">
-      <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold block mb-1">
+    <div className="c-frame p-3" style={{ background: "var(--paper)" }}>
+      <span className="c-kicker block mb-1">
         {label}
       </span>
-      <p className="text-sm text-white">{value}</p>
+      <p className="text-sm" style={{ color: "var(--ink-strong)" }}>{value}</p>
     </div>
   );
 }

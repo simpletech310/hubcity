@@ -221,7 +221,7 @@ function SkeletonCards() {
   return (
     <div className="space-y-4">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="rounded-2xl bg-card border border-border-subtle p-4">
+        <div key={i} className="c-frame p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
           <div className="animate-pulse flex gap-3">
             <div className="w-1 rounded-full bg-white/10 self-stretch" />
             <div className="flex-1 space-y-3">
@@ -432,13 +432,16 @@ export default function TicketSelectionPage() {
       {event && !checkout && (
         <div className="px-5 mb-5">
           <div
-            className="rounded-2xl p-4 border border-border-subtle relative overflow-hidden"
-            style={{ background: `linear-gradient(135deg, ${accentColor}10, ${accentColor}05)` }}
+            className="c-frame p-4 relative overflow-hidden"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
           >
-            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accentColor }} />
+            <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "var(--gold-c)" }} />
             <div className="flex items-start gap-3.5">
               {/* Mini image/gradient */}
-              <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 relative">
+              <div
+                className="w-14 h-14 overflow-hidden shrink-0 relative"
+                style={{ border: "2px solid var(--rule-strong-c)" }}
+              >
                 {event.image_url ? (
                   <Image src={event.image_url} alt={event.title} fill className="object-cover" />
                 ) : (
@@ -482,8 +485,8 @@ export default function TicketSelectionPage() {
 
         {/* Error state (on initial load) */}
         {!loading && error && !checkout && configs.length === 0 && (
-          <div className="p-4 rounded-2xl bg-coral/10 border border-coral/20 text-center">
-            <p className="text-coral text-sm mb-3">{error}</p>
+          <div className="c-frame p-4 text-center" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+            <p className="text-sm mb-3" style={{ color: "var(--ink-strong)" }}>{error}</p>
             <Button
               size="sm"
               variant="outline"
@@ -497,7 +500,10 @@ export default function TicketSelectionPage() {
         {/* Empty state */}
         {!loading && !error && configs.length === 0 && (
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
+            <div
+              className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+            >
               <Icon name="ticket" size={30} />
             </div>
             <p className="text-txt-secondary text-sm">No tickets available for this event.</p>
@@ -568,9 +574,10 @@ export default function TicketSelectionPage() {
               return (
                 <div
                   key={cfg.id}
-                  className={`rounded-2xl bg-card border border-border-subtle relative overflow-hidden transition-all duration-200 ${
-                    isSoldOut ? "opacity-40" : qty > 0 ? "border-gold/30 glow-gold-sm" : ""
+                  className={`c-frame relative overflow-hidden transition-all duration-200 ${
+                    isSoldOut ? "opacity-40" : ""
                   }`}
+                  style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                 >
                   {/* Left accent */}
                   <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl" style={{ background: sectionColor }} />
@@ -623,7 +630,8 @@ export default function TicketSelectionPage() {
                           <button
                             onClick={() => setQty(cfg.id, -1)}
                             disabled={qty === 0}
-                            className="w-9 h-9 rounded-xl bg-surface border border-border-subtle flex items-center justify-center text-lg font-bold disabled:opacity-20 press transition-colors"
+                            className="w-9 h-9 flex items-center justify-center text-lg font-bold disabled:opacity-20 press transition-colors"
+                            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                             aria-label="Decrease quantity"
                           >
                             &minus;
@@ -634,11 +642,11 @@ export default function TicketSelectionPage() {
                           <button
                             onClick={() => setQty(cfg.id, 1)}
                             disabled={qty >= max}
-                            className="w-9 h-9 rounded-xl border flex items-center justify-center text-lg font-bold disabled:opacity-20 press transition-colors"
+                            className="w-9 h-9 flex items-center justify-center text-lg font-bold disabled:opacity-20 press transition-colors"
                             style={{
-                              background: `${sectionColor}15`,
-                              borderColor: `${sectionColor}30`,
-                              color: sectionColor,
+                              background: "var(--gold-c)",
+                              border: "2px solid var(--rule-strong-c)",
+                              color: "var(--ink-strong)",
                             }}
                             aria-label="Increase quantity"
                           >
@@ -664,7 +672,7 @@ export default function TicketSelectionPage() {
 
             {/* Inline error for checkout failures */}
             {error && (
-              <div className="p-3 rounded-xl bg-coral/10 border border-coral/20">
+              <div className="p-3 c-frame" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <p className="text-coral text-sm">{error}</p>
               </div>
             )}

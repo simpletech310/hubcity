@@ -220,12 +220,12 @@ export default function EventsPage() {
             <div className="flex gap-3">
               <Link
                 href={`/events/${heroEvent.id}`}
-                className="inline-flex items-center gap-2 bg-gold text-midnight px-5 py-3 rounded-xl uppercase tracking-editorial-tight text-[11px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                className="c-btn c-btn-primary press"
               >
                 Get Tickets
                 <Icon name="arrow-right-thin" size={12} />
               </Link>
-              <button className="inline-flex items-center gap-2 border border-gold/40 text-white px-5 py-3 rounded-xl uppercase tracking-editorial-tight text-[11px] font-bold press hover:bg-gold/10 transition-colors">
+              <button className="c-btn c-btn-outline press">
                 Share
               </button>
             </div>
@@ -303,7 +303,7 @@ export default function EventsPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-28 rounded-2xl" />
+            <div key={i} className="skeleton h-28" style={{ border: "2px solid var(--rule-strong-c)" }} />
           ))}
         </div>
       ) : (
@@ -318,7 +318,7 @@ export default function EventsPage() {
                   <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                     № 01
                   </span>
-                  <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  <span className="c-kicker" style={{ opacity: 0.65 }}>
                     Happening Today
                   </span>
                   <Tag tone="coral" size="xs">
@@ -347,7 +347,7 @@ export default function EventsPage() {
                   <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                     № {todayEvents.length > 0 ? "02" : "01"}
                   </span>
-                  <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                  <span className="c-kicker" style={{ opacity: 0.65 }}>
                     This Week
                   </span>
                   <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -374,7 +374,7 @@ export default function EventsPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № {todayEvents.length > 0 && thisWeekEvents.length > 0 ? "03" : todayEvents.length > 0 || thisWeekEvents.length > 0 ? "02" : "01"}
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   Can&apos;t Miss
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -401,7 +401,7 @@ export default function EventsPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № 04
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   Browse by Category
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -413,13 +413,17 @@ export default function EventsPage() {
                     <button
                       key={cat.value}
                       onClick={() => setActiveCategory(cat.value)}
-                      className="rounded-xl panel-editorial p-3.5 text-left press hover:border-gold/30 transition-colors group"
+                      className="c-frame p-3.5 text-left press group"
+                      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                     >
-                      <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center mb-2.5 group-hover:border-gold/40 transition-colors">
-                        <Icon name={cat.icon} size={18} className="text-gold" />
+                      <div
+                        className="w-10 h-10 flex items-center justify-center mb-2.5"
+                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                      >
+                        <Icon name={cat.icon} size={18} style={{ color: "var(--ink-strong)" }} />
                       </div>
-                      <p className="font-display text-[15px] leading-tight text-white">{cat.label}</p>
-                      <p className="text-[10px] font-semibold uppercase tracking-editorial-tight text-gold/70 mt-1 tabular-nums">
+                      <p className="c-card-t" style={{ fontSize: 15, color: "var(--ink-strong)" }}>{cat.label}</p>
+                      <p className="c-kicker mt-1 tabular-nums">
                         {catEvents.length} {catEvents.length === 1 ? "event" : "events"}
                       </p>
                     </button>
@@ -437,7 +441,7 @@ export default function EventsPage() {
               <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                 № 05
               </span>
-              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+              <span className="c-kicker" style={{ opacity: 0.65 }}>
                 {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
               </span>
               <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -451,11 +455,14 @@ export default function EventsPage() {
               ))}
               {events.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl bg-white/[0.04] border border-gold/15 flex items-center justify-center mx-auto mb-4">
-                    <Icon name="calendar" size={28} className="text-gold" />
+                  <div
+                    className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
+                    <Icon name="calendar" size={28} style={{ color: "var(--ink-strong)" }} />
                   </div>
-                  <p className="font-display text-[17px] text-white mb-1">No events found</p>
-                  <p className="text-[12px] text-ivory/55 max-w-[240px] mx-auto">
+                  <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No events found</p>
+                  <p className="c-meta max-w-[240px] mx-auto">
                     Try a different category or check back soon for new events
                   </p>
                 </div>
@@ -467,30 +474,26 @@ export default function EventsPage() {
               BOTTOM CTA — Host your event
               ══════════════════════════════════════════════════ */}
           <section className="px-5 mb-8">
-            <div className="relative overflow-hidden rounded-2xl panel-editorial border-gold/25 p-5">
-              <div
-                className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none"
-                style={{
-                  backgroundImage:
-                    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
-                }}
-              />
+            <div className="c-frame relative overflow-hidden p-5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="relative">
-                <div className="w-10 h-10 rounded-xl border border-gold/25 bg-ink flex items-center justify-center mb-3">
-                  <Icon name="calendar" size={20} className="text-gold" />
+                <div
+                  className="w-10 h-10 flex items-center justify-center mb-3"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="calendar" size={20} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <p className="text-[10px] font-bold tracking-editorial uppercase text-gold mb-1">
+                <p className="c-kicker mb-1">
                   Got something planned?
                 </p>
-                <h3 className="font-display text-[22px] leading-tight text-white mb-1.5">
+                <h3 className="c-card-t mb-1.5" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
                   Host Your Event
                 </h3>
-                <p className="text-[12px] text-ivory/55 leading-relaxed mb-4 max-w-[280px]">
+                <p className="c-body mb-4 max-w-[280px]">
                   Reach every citizen in {activeCity?.name ?? "your city"}. List your event for free.
                 </p>
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-2 bg-gold text-midnight rounded-xl px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press hover:bg-gold-light transition-colors"
+                  className="c-btn c-btn-primary c-btn-sm press"
                 >
                   List an Event
                   <Icon name="arrow-right-thin" size={12} />
@@ -517,32 +520,35 @@ function EventListRow({ event, live = false }: { event: Event; live?: boolean })
       href={`/events/${event.id}`}
       className="block press group"
     >
-      <div className="rounded-2xl panel-editorial p-3.5 transition-colors hover:border-gold/30 relative overflow-hidden">
+      <div className="c-frame p-3.5 transition-colors relative overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
         {live && (
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-coral" />
+          <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "var(--gold-c)" }} />
         )}
         <div className="flex items-center gap-3">
           {/* Editorial date block */}
-          <div className="w-12 h-14 rounded-xl border border-gold/20 bg-ink flex flex-col items-center justify-center shrink-0">
-            <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">
+          <div
+            className="w-12 h-14 flex flex-col items-center justify-center shrink-0"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <p className="c-kicker leading-none" style={{ fontSize: 9 }}>
               {date.month}
             </p>
-            <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">
+            <p className="c-card-t mt-1 tabular-nums" style={{ fontSize: 20, color: "var(--ink-strong)" }}>
               {date.day}
             </p>
           </div>
 
           {/* Middle — title + meta */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
+            <h3 className="c-card-t line-clamp-1" style={{ fontSize: 17, color: "var(--ink-strong)" }}>
               {event.title}
             </h3>
-            <div className="flex items-center gap-1.5 text-[11px] text-ivory/55 mt-0.5 truncate">
-              <Icon name="clock" size={11} className="text-gold/70" />
+            <div className="flex items-center gap-1.5 c-meta mt-0.5 truncate">
+              <Icon name="clock" size={11} style={{ color: "var(--ink-strong)", opacity: 0.7 }} />
               <span>{date.time}</span>
               {event.location_name && (
                 <>
-                  <span className="w-0.5 h-0.5 rounded-full bg-ivory/40" />
+                  <span className="w-0.5 h-0.5 rounded-full" style={{ background: "var(--ink-strong)", opacity: 0.4 }} />
                   <span className="truncate">{event.location_name}</span>
                 </>
               )}
@@ -591,7 +597,7 @@ function EventCardFeatured({ event }: { event: Event }) {
 
   return (
     <Link href={`/events/${event.id}`} className="block press group">
-      <div className="relative rounded-2xl overflow-hidden panel-editorial hover:border-gold/30 transition-colors">
+      <div className="relative c-frame overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
         <div className="h-[200px] relative">
           {event.image_url ? (
             <Image src={event.image_url} alt={event.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
@@ -610,11 +616,14 @@ function EventCardFeatured({ event }: { event: Event }) {
           </div>
 
           {/* Editorial date block */}
-          <div className="absolute top-3 right-3 w-12 h-14 rounded-xl border border-gold/30 bg-ink/80 backdrop-blur-sm flex flex-col items-center justify-center">
-            <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">
+          <div
+            className="absolute top-3 right-3 w-12 h-14 flex flex-col items-center justify-center"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <p className="c-kicker leading-none" style={{ fontSize: 9 }}>
               {date.month}
             </p>
-            <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">
+            <p className="c-card-t mt-1 tabular-nums" style={{ fontSize: 20, color: "var(--ink-strong)" }}>
               {date.day}
             </p>
           </div>
@@ -640,7 +649,7 @@ function EventCardFeatured({ event }: { event: Event }) {
           </div>
         </div>
 
-        <div className="p-3.5 flex items-center justify-between gap-2 bg-ink/40">
+        <div className="p-3.5 flex items-center justify-between gap-2" style={{ background: "var(--paper-warm)", borderTop: "2px solid var(--rule-strong-c)" }}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <Tag tone="gold" size="xs">{event.category}</Tag>
             {event.district && (
@@ -653,7 +662,7 @@ function EventCardFeatured({ event }: { event: Event }) {
               </span>
             )}
           </div>
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors shrink-0">
+          <span className="c-badge-gold inline-flex items-center gap-1 px-2.5 py-1 shrink-0">
             Tickets
             <Icon name="arrow-right-thin" size={11} />
           </span>

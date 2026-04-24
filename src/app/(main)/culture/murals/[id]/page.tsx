@@ -98,7 +98,8 @@ export default async function MuralDetailPage({
               {imageUrls.map((url: string, i: number) => (
                 <div
                   key={i}
-                  className="shrink-0 w-[85vw] aspect-[16/10] snap-center overflow-hidden rounded-lg first:ml-5 last:mr-5"
+                  className="shrink-0 w-[85vw] aspect-[16/10] snap-center overflow-hidden first:ml-5 last:mr-5"
+                  style={{ border: "2px solid var(--rule-strong-c)" }}
                 >
                   <img
                     src={url}
@@ -143,18 +144,18 @@ export default async function MuralDetailPage({
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-4">
           {mural.district && (
-            <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-gold/10 text-gold border border-gold/20">
+            <span className="c-badge-gold">
               {typeof mural.district === "number"
                 ? `District ${mural.district}`
                 : mural.district}
             </span>
           )}
           {mural.year_created && (
-            <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-white/5 text-text-secondary border border-border-subtle">
+            <span className="c-badge-ink">
               {mural.year_created}
             </span>
           )}
-          <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20">
+          <span className="c-badge-gold">
             Public Art
           </span>
         </div>
@@ -171,31 +172,33 @@ export default async function MuralDetailPage({
 
         {/* Location Info */}
         <Card className="mt-6">
-          <h3 className="font-heading font-bold text-sm mb-3">Location</h3>
+          <h3 className="c-card-t mb-3" style={{ fontSize: 14, color: "var(--ink-strong)" }}>Location</h3>
           <div className="space-y-3">
             {mural.address && (
               <div className="flex items-center gap-3">
-                <span className="text-lg"><Icon name="pin" size={20} /></span>
+                <span style={{ color: "var(--ink-strong)" }}><Icon name="pin" size={20} /></span>
                 {mapsUrl ? (
                   <a
                     href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm text-gold font-medium hover:underline"
+                    className="c-card-t hover:underline"
+                    style={{ fontSize: 13, color: "var(--ink-strong)" }}
                   >
                     {mural.address}
                   </a>
                 ) : (
-                  <p className="text-sm text-text-secondary">{mural.address}</p>
+                  <p className="c-body" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{mural.address}</p>
                 )}
               </div>
             )}
             {mural.latitude && mural.longitude && (
               <div className="flex items-center gap-3">
-                <span className="text-lg"><Icon name="globe" size={20} /></span>
+                <span style={{ color: "var(--ink-strong)" }}><Icon name="globe" size={20} /></span>
                 <Link
                   href={`/map?lat=${mural.latitude}&lng=${mural.longitude}&zoom=17`}
-                  className="text-sm text-gold font-medium hover:underline"
+                  className="c-card-t hover:underline"
+                  style={{ fontSize: 13, color: "var(--ink-strong)" }}
                 >
                   View on Culture Map
                 </Link>
@@ -211,7 +214,7 @@ export default async function MuralDetailPage({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-gold text-midnight px-5 py-3 rounded-full text-sm font-bold press hover:bg-gold-light transition-colors"
+              className="c-btn c-btn-primary flex items-center justify-center gap-2"
             >
               <svg
                 width="18"
@@ -247,9 +250,16 @@ export default async function MuralDetailPage({
                 <Link
                   key={m.id}
                   href={`/culture/murals/${m.slug || m.id}`}
-                  className="group rounded-xl overflow-hidden border border-border-subtle bg-card hover:border-gold/20 transition-all"
+                  className="group overflow-hidden transition-all block"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 >
-                  <div className="aspect-[4/3] overflow-hidden bg-gradient-to-br from-purple-900/40 to-gold/10">
+                  <div
+                    className="aspect-[4/3] overflow-hidden"
+                    style={{ background: "var(--paper-soft)" }}
+                  >
                     {m.image_urls?.[0] ? (
                       <img
                         src={m.image_urls[0]}
@@ -257,17 +267,17 @@ export default async function MuralDetailPage({
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="text-3xl opacity-30"><Icon name="palette" size={28} /></span>
+                      <div className="w-full h-full flex items-center justify-center" style={{ color: "var(--ink-strong)", opacity: 0.3 }}>
+                        <Icon name="palette" size={28} />
                       </div>
                     )}
                   </div>
                   <div className="p-2.5">
-                    <p className="text-xs font-semibold text-text-primary truncate">
+                    <p className="c-card-t truncate" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                       {m.title}
                     </p>
                     {m.artist_name && (
-                      <p className="text-[10px] text-text-secondary truncate mt-0.5">
+                      <p className="c-meta truncate mt-0.5" style={{ fontSize: 10 }}>
                         by {m.artist_name}
                       </p>
                     )}

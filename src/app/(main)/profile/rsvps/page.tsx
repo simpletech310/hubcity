@@ -56,7 +56,7 @@ export default async function MyRsvpsPage() {
   const statusColors: Record<string, { text: string; bg: string; label: string }> = {
     going: { text: "text-emerald", bg: "bg-emerald/10", label: "Going" },
     interested: { text: "text-gold", bg: "bg-gold/10", label: "Interested" },
-    not_going: { text: "text-white/40", bg: "bg-white/5", label: "Not Going" },
+    not_going: { text: "", bg: "", label: "Not Going" },
   };
 
   return (

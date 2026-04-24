@@ -179,18 +179,19 @@ export default function ReportIssuePage() {
       <div className="culture-surface min-h-dvh animate-fade-in pb-24">
         <div className="px-5 pt-6">
           <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+            >
               <span className="text-3xl">&#x2705;</span>
             </div>
-            <h1 className="font-heading text-2xl font-bold mb-2">
-              Issue Reported
-            </h1>
-            <p className="text-sm text-txt-secondary mb-1">
+            <h1 className="c-hero mb-2" style={{ fontSize: 32 }}>Issue Reported</h1>
+            <p className="c-body text-sm mb-1">
               Thank you for helping improve Compton.
             </p>
-            <p className="text-sm text-txt-secondary mb-6">
+            <p className="c-body text-sm mb-6">
               Your report has been submitted and assigned to{" "}
-              <span className="text-gold font-semibold">
+              <span className="c-card-t" style={{ color: "var(--gold-c)" }}>
                 {ISSUE_DEPARTMENT_MAP[createdIssue.type]?.department || "City Hall"}
               </span>.
             </p>
@@ -259,7 +260,10 @@ export default function ReportIssuePage() {
       <div className="px-5 space-y-5 mt-4">
         {/* Error Banner */}
         {error && (
-          <div className="rounded-xl bg-coral/10 border border-coral/30 p-3 text-sm text-coral">
+          <div
+            className="c-frame p-3 text-sm"
+            style={{ background: "var(--paper-warm)", color: "var(--ink-strong)" }}
+          >
             {error}
           </div>
         )}
@@ -274,17 +278,15 @@ export default function ReportIssuePage() {
               <button
                 key={type.key}
                 onClick={() => handleTypeSelect(type.key)}
-                className={`
-                  flex flex-col items-center gap-1 p-3 rounded-xl border transition-all press
-                  ${
-                    selectedType === type.key
-                      ? "bg-gold/10 border-gold/50 ring-1 ring-gold/30"
-                      : "bg-card border-border-subtle hover:border-border-subtle/80"
-                  }
-                `}
+                className="flex flex-col items-center gap-1 p-3 transition-all press"
+                style={{
+                  background: selectedType === type.key ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
                 <Icon name={type.iconName} size={22} />
-                <span className="text-[10px] text-txt-secondary leading-tight text-center">
+                <span className="c-meta leading-tight text-center" style={{ fontSize: 10 }}>
                   {type.label}
                 </span>
               </button>
@@ -303,7 +305,12 @@ export default function ReportIssuePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={selectedType ? "Auto-generated, but you can edit" : "Select a type first"}
-            className="w-full bg-card border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all"
+            className="w-full px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           />
         </div>
 
@@ -318,7 +325,12 @@ export default function ReportIssuePage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the issue in detail..."
             rows={4}
-            className="w-full bg-card border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all resize-none"
+            className="w-full px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all resize-none"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           />
         </div>
 
@@ -334,7 +346,7 @@ export default function ReportIssuePage() {
             className="hidden"
           />
           {imagePreview ? (
-            <div className="relative rounded-xl overflow-hidden border border-border-subtle">
+            <div className="relative c-frame overflow-hidden">
               <Image
                 src={imagePreview}
                 alt="Issue photo preview"
@@ -343,8 +355,11 @@ export default function ReportIssuePage() {
                 className="w-full h-48 object-cover"
               />
               {uploading && (
-                <div className="absolute inset-0 bg-midnight/70 flex items-center justify-center">
-                  <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                <div
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ background: "rgba(26,21,18,0.7)" }}
+                >
+                  <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: "var(--gold-c)", borderTopColor: "transparent" }} />
                 </div>
               )}
               <button
@@ -353,7 +368,8 @@ export default function ReportIssuePage() {
                   setImageUrl(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-midnight/80 flex items-center justify-center text-white press"
+                className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center press"
+                style={{ background: "var(--ink-strong)", color: "var(--paper)" }}
               >
                 &#x2715;
               </button>
@@ -361,7 +377,12 @@ export default function ReportIssuePage() {
           ) : (
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 bg-card border border-dashed border-border-subtle rounded-xl py-8 text-sm text-txt-secondary hover:border-gold/30 transition-all press"
+              className="w-full flex items-center justify-center gap-2 py-8 text-sm press transition-all"
+              style={{
+                background: "var(--paper)",
+                border: "2px dashed var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               <svg
                 width="20"
@@ -394,12 +415,22 @@ export default function ReportIssuePage() {
               value={locationText}
               onChange={(e) => setLocationText(e.target.value)}
               placeholder="e.g. Compton Blvd near Central Ave"
-              className="flex-1 bg-card border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/50 focus:ring-1 focus:ring-gold/30 transition-all"
+              className="flex-1 px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             />
             <button
               onClick={handleUseCurrentLocation}
               disabled={locating}
-              className="shrink-0 px-3 bg-card border border-border-subtle rounded-xl text-gold text-xs font-semibold hover:bg-gold/5 transition-all press disabled:opacity-50"
+              className="shrink-0 px-3 text-xs font-semibold transition-all press disabled:opacity-50"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--gold-c)",
+              }}
             >
               {locating ? (
                 <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -432,14 +463,12 @@ export default function ReportIssuePage() {
               <button
                 key={d}
                 onClick={() => setDistrict(district === d ? null : d)}
-                className={`
-                  flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-all press
-                  ${
-                    district === d
-                      ? "bg-gold/10 border-gold/50 text-gold ring-1 ring-gold/30"
-                      : "bg-card border-border-subtle text-txt-secondary hover:border-border-subtle/80"
-                  }
-                `}
+                className="flex-1 py-2.5 text-sm font-semibold transition-all press"
+                style={{
+                  background: district === d ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
                 {d}
               </button>
@@ -452,13 +481,19 @@ export default function ReportIssuePage() {
 
         {/* Department Preview */}
         {selectedType && ISSUE_DEPARTMENT_MAP[selectedType] && (
-          <div className="rounded-xl bg-gold/5 border border-gold/20 p-3 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
+          <div
+            className="c-frame p-3 flex items-center gap-3"
+            style={{ background: "var(--paper-warm)" }}
+          >
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+              style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+            >
               <span className="text-sm">\uD83C\uDFDB\uFE0F</span>
             </div>
             <div>
-              <p className="text-xs text-txt-secondary">Will be routed to</p>
-              <p className="text-sm font-semibold text-gold">
+              <p className="c-meta" style={{ fontSize: 11 }}>Will be routed to</p>
+              <p className="c-card-t" style={{ color: "var(--gold-c)" }}>
                 {ISSUE_DEPARTMENT_MAP[selectedType].department}
               </p>
             </div>

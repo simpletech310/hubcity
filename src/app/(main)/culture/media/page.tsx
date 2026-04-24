@@ -50,7 +50,13 @@ export default async function MediaPage() {
     <div className="space-y-6 pb-20">
       <CultureHero title="Media" subtitle="Videos, documentaries, and cultural stories from the Museum." imageUrl="/images/art/IMG_2788.jpg" />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -59,24 +65,27 @@ export default async function MediaPage() {
       {/* Museum Channel Videos */}
       {videos.length > 0 && (
         <section className="px-5">
-          <h2 className="font-heading font-bold text-base mb-3">Museum Collection</h2>
+          <h2 className="c-card-t mb-3" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Museum Collection</h2>
           <div className="space-y-3">
             {videos.map((video) => (
               <Card key={video.id as string} hover padding>
                 <div className="flex gap-3">
-                  <div className="w-28 h-20 rounded-xl overflow-hidden shrink-0 bg-white/5">
+                  <div
+                    className="w-28 h-20 overflow-hidden shrink-0"
+                    style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     {typeof video.thumbnail_url === "string" && video.thumbnail_url ? (
                       <img src={video.thumbnail_url} alt="" className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center"><span className="text-2xl"><Icon name="film" size={24} /></span></div>
+                      <div className="w-full h-full flex items-center justify-center" style={{ color: "var(--ink-strong)" }}><Icon name="film" size={24} /></div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-bold text-[13px] line-clamp-2">
+                    <h3 className="c-card-t line-clamp-2" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
                       {video.title as string}
                     </h3>
                     {typeof video.view_count === "number" && (
-                      <p className="text-[10px] text-txt-secondary mt-1">
+                      <p className="c-meta mt-1" style={{ fontSize: 10 }}>
                         {video.view_count.toLocaleString()} views
                       </p>
                     )}
@@ -91,7 +100,7 @@ export default async function MediaPage() {
       {/* Culture Streams */}
       {liveStreams.length > 0 && (
         <section className="px-5">
-          <h2 className="font-heading font-bold text-base mb-3">Cultural Streams</h2>
+          <h2 className="c-card-t mb-3" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Cultural Streams</h2>
           <div className="space-y-3">
             {liveStreams.map((stream) => {
               const creatorRaw = stream.creator as unknown;
@@ -100,17 +109,20 @@ export default async function MediaPage() {
                 <Link key={stream.id} href={`/live/watch/${stream.id}`}>
                   <Card hover padding>
                     <div className="flex gap-3">
-                      <div className="w-20 h-14 rounded-xl overflow-hidden shrink-0 bg-white/5">
+                      <div
+                        className="w-20 h-14 overflow-hidden shrink-0"
+                        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
+                      >
                         {stream.thumbnail_url ? (
                           <img src={stream.thumbnail_url} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><span className="text-xl"><Icon name="live" size={20} /></span></div>
+                          <div className="w-full h-full flex items-center justify-center" style={{ color: "var(--ink-strong)" }}><Icon name="live" size={20} /></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-heading font-bold text-[13px] truncate">{stream.title}</h3>
+                        <h3 className="c-card-t truncate" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{stream.title}</h3>
                         {creator?.display_name && (
-                          <p className="text-[10px] text-txt-secondary mt-0.5">{creator.display_name}</p>
+                          <p className="c-meta mt-0.5" style={{ fontSize: 10 }}>{creator.display_name}</p>
                         )}
                       </div>
                     </div>
@@ -124,10 +136,16 @@ export default async function MediaPage() {
 
       {/* Empty state */}
       {videos.length === 0 && liveStreams.length === 0 && (
-        <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3"><Icon name="film" size={28} /></span>
-          <p className="text-sm font-medium mb-1">Media collection coming soon</p>
-          <p className="text-xs text-txt-secondary">
+        <div
+          className="text-center py-16 px-6 mx-5"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="film" size={28} /></span>
+          <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>Media collection coming soon</p>
+          <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
             Documentaries, interviews, and cultural films are being curated for the Museum.
           </p>
         </div>

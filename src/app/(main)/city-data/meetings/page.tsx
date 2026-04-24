@@ -56,7 +56,7 @@ export default async function MeetingsPage() {
         </div>
 
         {/* Upcoming Meetings */}
-        <h2 className="mb-4 text-xl font-semibold text-gold">Upcoming</h2>
+        <h2 className="c-card-t mb-4" style={{ color: "var(--gold-c)" }}>Upcoming</h2>
         {upcoming.length > 0 ? (
           <div className="mb-8 grid gap-4 sm:grid-cols-2">
             {upcoming.map((meeting) => (
@@ -64,9 +64,12 @@ export default async function MeetingsPage() {
             ))}
           </div>
         ) : (
-          <div className="mb-8 rounded-2xl bg-royal/50 p-8 text-center">
-            <p className="text-white/50">No upcoming meetings scheduled.</p>
-            <p className="mt-1 text-sm text-white/30">
+          <div
+            className="mb-8 c-frame p-8 text-center"
+            style={{ background: "var(--paper-warm)" }}
+          >
+            <p className="c-body">No upcoming meetings scheduled.</p>
+            <p className="c-meta mt-1 text-sm">
               Check back soon for the next city council meeting.
             </p>
           </div>
@@ -75,7 +78,7 @@ export default async function MeetingsPage() {
         {/* Past Meetings */}
         {past.length > 0 && (
           <>
-            <h2 className="mb-4 text-xl font-semibold text-white/70">Past Meetings</h2>
+            <h2 className="c-card-t mb-4">Past Meetings</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {past.slice(0, 10).map((meeting) => (
                 <MeetingCard key={meeting.id} meeting={meeting} isPast />

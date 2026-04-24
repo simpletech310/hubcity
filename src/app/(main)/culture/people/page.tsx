@@ -85,7 +85,13 @@ export default function PeoplePage() {
         imageUrl="/images/art/IMG_2775.JPG"
       />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -132,10 +138,10 @@ export default function PeoplePage() {
       {/* Loading state */}
       {loading && (
         <div className="px-5 space-y-4">
-          <div className="skeleton h-[200px] rounded-2xl" />
+          <div className="skeleton h-[200px]" />
           <div className="grid grid-cols-3 gap-1">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="skeleton aspect-square rounded-xl" />
+              <div key={i} className="skeleton aspect-square" />
             ))}
           </div>
         </div>
@@ -152,10 +158,16 @@ export default function PeoplePage() {
                 ))}
               </div>
             ) : people.length === 0 ? (
-              <div className="text-center py-16">
-                <Icon name="person" size={48} className="text-txt-secondary mx-auto mb-3" />
-                <p className="text-sm font-medium mb-1">People profiles coming soon</p>
-                <p className="text-xs text-txt-secondary">
+              <div
+                className="text-center py-16 px-6 mx-2"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name="person" size={48} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
+                <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>People profiles coming soon</p>
+                <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
                   We&apos;re documenting the stories of Compton&apos;s most influential figures.
                 </p>
               </div>
@@ -178,10 +190,16 @@ export default function PeoplePage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-16">
-              <Icon name="person" size={48} className="text-txt-secondary mx-auto mb-3" />
-              <p className="text-sm font-medium mb-1">People profiles coming soon</p>
-              <p className="text-xs text-txt-secondary">
+            <div
+              className="text-center py-16 px-6"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <Icon name="person" size={48} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
+              <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>People profiles coming soon</p>
+              <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
                 We&apos;re documenting the stories of Compton&apos;s most influential figures.
               </p>
             </div>

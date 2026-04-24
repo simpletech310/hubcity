@@ -125,11 +125,17 @@ export default async function ResourceDetailPage({
           </HeroBlock>
         </div>
       ) : (
-        <section className="mx-5 mt-2 panel-editorial rounded-3xl border border-gold/20 px-6 py-10 relative overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-gold/60 via-gold/25 to-transparent" />
+        <section
+          className="mx-5 mt-2 c-frame px-6 py-10 relative overflow-hidden"
+          style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--gold-c)" }} />
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center shrink-0">
-              <Icon name={icon} size={40} className="text-gold" />
+            <div
+              className="w-20 h-20 flex items-center justify-center shrink-0"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+            >
+              <Icon name={icon} size={40} style={{ color: "var(--ink-strong)" }} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -215,8 +221,11 @@ export default async function ResourceDetailPage({
 
           <EditorialCard variant="ink" border="gold" className="p-5">
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                <Icon name="document" size={18} className="text-gold" />
+              <div
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="document" size={18} style={{ color: "var(--ink-strong)" }} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
@@ -229,9 +238,12 @@ export default async function ResourceDetailPage({
             </div>
 
             {deadlineLabel && (
-              <div className="flex items-center gap-3 pt-4 mt-1 border-t border-gold/15">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Icon name="clock" size={18} className="text-gold" />
+              <div className="flex items-center gap-3 pt-4 mt-1" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
+                <div
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="clock" size={18} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div className="min-w-0">
                   <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
@@ -260,7 +272,10 @@ export default async function ResourceDetailPage({
             <div className="space-y-4">
               {res.phone && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <Icon name="phone" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -279,7 +294,10 @@ export default async function ResourceDetailPage({
 
               {res.address && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <Icon name="pin" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -295,7 +313,10 @@ export default async function ResourceDetailPage({
 
               {res.website && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <Icon name="globe" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -320,7 +341,10 @@ export default async function ResourceDetailPage({
 
               {res.hours && (
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <Icon name="clock" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">

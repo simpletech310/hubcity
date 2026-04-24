@@ -42,12 +42,15 @@ export default async function ArtDetailPage({
         />
 
         {/* Top nav overlay */}
-        <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/50 to-transparent p-4">
+        <div className="absolute top-0 left-0 right-0 z-20 p-4">
           <div className="flex items-center justify-between">
             <Link
               href="/"
-              className="w-10 h-10 rounded-full bg-white/80 border-2 flex items-center justify-center press"
-              style={{ borderColor: "var(--ink-strong)" }}
+              className="w-10 h-10 rounded-full flex items-center justify-center press"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--ink-strong)",
+              }}
             >
               <svg
                 width="18"
@@ -73,7 +76,7 @@ export default async function ArtDetailPage({
       {/* Editorial byline strip */}
       <div className="px-5 py-5 flex items-center justify-between" style={{ borderBottom: "3px solid var(--rule-strong-c, var(--ink-strong))" }}>
         <div className="flex items-baseline gap-3">
-          <span className="font-display text-[22px] leading-none tabular-nums" style={{ color: "var(--gold-c)" }}>&#8470; 01</span>
+          <span className="c-hero leading-none tabular-nums" style={{ fontSize: 22, color: "var(--ink-strong)" }}>&#8470; 01</span>
           <span className="c-kicker">FEATURE &middot; ART</span>
         </div>
         <span className="c-kicker">{art.year}</span>
@@ -103,7 +106,7 @@ export default async function ArtDetailPage({
                 </div>
               )}
               <div>
-                <p className="text-[14px] font-heading font-bold" style={{ color: "var(--gold-c)" }}>
+                <p className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                   {art.artist}
                 </p>
                 <p className="c-serif-it text-[12px]">

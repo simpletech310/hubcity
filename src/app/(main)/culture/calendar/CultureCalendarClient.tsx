@@ -63,7 +63,7 @@ export default function CultureCalendarClient({
 
       {/* Event List for current month */}
       <div className="space-y-3">
-        <h3 className="font-heading font-bold text-text-primary">
+        <h3 className="c-card-t" style={{ color: "var(--ink-strong)" }}>
           Events This Month
         </h3>
         {monthEvents.length > 0 ? (
@@ -71,24 +71,41 @@ export default function CultureCalendarClient({
             {monthEvents.map((event) => (
               <div
                 key={event.id}
-                className="flex items-start gap-3 bg-card rounded-xl border border-border-subtle p-4"
+                className="flex items-start gap-3 p-4"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
-                <div className="shrink-0 w-10 h-10 rounded-lg bg-gold/10 flex flex-col items-center justify-center border border-gold/20">
-                  <span className="text-xs font-bold text-gold">
+                <div
+                  className="shrink-0 w-10 h-10 flex flex-col items-center justify-center"
+                  style={{
+                    background: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <span
+                    className="text-xs"
+                    style={{
+                      color: "var(--ink-strong)",
+                      fontFamily: "var(--font-archivo), sans-serif",
+                      fontWeight: 800,
+                    }}
+                  >
                     {new Date(event.start_date).getDate()}
                   </span>
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-heading font-bold text-sm text-text-primary">
+                  <h4 className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                     {event.title}
                   </h4>
                   {event.location && (
-                    <p className="text-xs text-warm-gray mt-0.5">
+                    <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>
                       {event.location}
                     </p>
                   )}
                   {event.description && (
-                    <p className="text-xs text-text-secondary mt-1 line-clamp-2">
+                    <p className="c-body mt-1 line-clamp-2" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                       {event.description}
                     </p>
                   )}
@@ -97,7 +114,7 @@ export default function CultureCalendarClient({
             ))}
           </div>
         ) : (
-          <p className="text-text-secondary text-sm py-4">
+          <p className="c-body py-4" style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.7 }}>
             No cultural events this month.
           </p>
         )}

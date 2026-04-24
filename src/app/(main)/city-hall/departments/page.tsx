@@ -102,7 +102,12 @@ export default function DepartmentsPage() {
             placeholder="Search departments..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-border-subtle rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
+            className="w-full pl-11 pr-4 py-3 text-sm placeholder:text-txt-secondary focus:outline-none transition-all"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           />
         </div>
       </div>

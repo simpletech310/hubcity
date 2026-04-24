@@ -95,42 +95,45 @@ export default async function CityDataPage() {
 
         {/* Community Stats */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Community Pulse</p>
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>Community Pulse</p>
           <div className="grid grid-cols-4 gap-2">
-            <div className="rounded-xl bg-gradient-to-br from-gold/8 to-gold/3 border border-gold/15 p-3 text-center">
-              <p className="text-[18px] font-heading font-bold text-gold">{issuesCount ?? 0}</p>
-              <p className="text-[9px] text-white/40 font-medium leading-tight">Open Issues</p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-emerald/8 to-emerald/3 border border-emerald/15 p-3 text-center">
-              <p className="text-[18px] font-heading font-bold text-emerald">{resolutionRate}%</p>
-              <p className="text-[9px] text-white/40 font-medium leading-tight">Resolved</p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-cyan/8 to-cyan/3 border border-cyan/15 p-3 text-center">
-              <p className="text-[18px] font-heading font-bold text-cyan">{eventsCount ?? 0}</p>
-              <p className="text-[9px] text-white/40 font-medium leading-tight">Events</p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-hc-purple/8 to-hc-purple/3 border border-gold/15 p-3 text-center">
-              <p className="text-[18px] font-heading font-bold text-gold">4</p>
-              <p className="text-[9px] text-white/40 font-medium leading-tight">Districts</p>
-            </div>
+            {[
+              { value: issuesCount ?? 0, label: "Open Issues", gold: true },
+              { value: `${resolutionRate}%`, label: "Resolved" },
+              { value: eventsCount ?? 0, label: "Events" },
+              { value: 4, label: "Districts", gold: true },
+            ].map((stat, i) => (
+              <div
+                key={i}
+                className="c-frame p-3 text-center"
+                style={{ background: "var(--paper-warm)" }}
+              >
+                <p className="c-hero" style={{ fontSize: 20, color: stat.gold ? "var(--gold-c)" : "var(--ink-strong)" }}>{stat.value}</p>
+                <p className="c-meta leading-tight" style={{ fontSize: 9 }}>{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
 
         {/* Quick Links */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Explore</p>
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>Explore</p>
           <div className="grid grid-cols-2 gap-3">
             {QUICK_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`rounded-2xl bg-gradient-to-br ${link.color} border ${link.border} p-4 press hover:scale-[1.02] transition-all`}
+                className="c-frame p-4 press hover:scale-[1.02] transition-all"
+                style={{ background: "var(--paper)" }}
               >
-                <div className={`w-9 h-9 rounded-xl bg-white/[0.06] flex items-center justify-center mb-2.5`}>
-                  <Icon name={link.icon} size={18} className={link.iconColor} />
+                <div
+                  className="w-9 h-9 flex items-center justify-center mb-2.5"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name={link.icon} size={18} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <p className="font-heading text-[13px] font-bold text-white mb-0.5">{link.label}</p>
-                <p className="text-[10px] text-white/40 leading-snug">{link.desc}</p>
+                <p className="c-card-t text-[13px] mb-0.5">{link.label}</p>
+                <p className="c-body text-[10px] leading-snug">{link.desc}</p>
               </Link>
             ))}
           </div>
@@ -138,23 +141,33 @@ export default async function CityDataPage() {
 
         {/* Emergency Contacts */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Emergency Contacts</p>
-          <div className="glass-card-elevated rounded-2xl divide-y divide-white/[0.04]">
-            {EMERGENCY_CONTACTS.map((contact) => (
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>Emergency Contacts</p>
+          <div
+            className="c-frame"
+            style={{ background: "var(--paper)" }}
+          >
+            {EMERGENCY_CONTACTS.map((contact, i) => (
               <a
                 key={contact.label}
                 href={`tel:${contact.number.replace(/[^0-9]/g, "")}`}
-                className="flex items-center gap-3 px-4 py-3.5 press hover:bg-white/[0.02] transition-colors"
+                className="flex items-center gap-3 px-4 py-3.5 press transition-colors"
+                style={i > 0 ? { borderTop: "1.5px solid var(--rule-strong-c)" } : undefined}
               >
-                <div className={`w-9 h-9 rounded-xl ${contact.bg} flex items-center justify-center shrink-0`}>
-                  <Icon name={contact.icon} size={16} className={contact.color} />
+                <div
+                  className="w-9 h-9 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name={contact.icon} size={16} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold text-white">{contact.label}</p>
-                  <p className="text-[11px] text-white/40">{contact.number}</p>
+                  <p className="c-card-t text-[13px]">{contact.label}</p>
+                  <p className="c-meta" style={{ fontSize: 11 }}>{contact.number}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center shrink-0">
-                  <Icon name="phone" size={14} className="text-white/30" />
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: "var(--paper-warm)", border: "1.5px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="phone" size={14} style={{ color: "var(--ink-strong)" }} />
                 </div>
               </a>
             ))}
@@ -162,25 +175,28 @@ export default async function CityDataPage() {
         </div>
 
         {/* City Info Footer */}
-        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-5 text-center">
-          <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-3">
-            <Icon name="landmark" size={20} className="text-gold" />
+        <div className="c-frame p-5 text-center" style={{ background: "var(--paper-warm)" }}>
+          <div
+            className="w-10 h-10 flex items-center justify-center mx-auto mb-3"
+            style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <Icon name="landmark" size={20} style={{ color: "var(--ink-strong)" }} />
           </div>
-          <p className="font-heading text-[14px] font-bold text-white mb-1">City of Compton</p>
-          <p className="text-[11px] text-white/40 mb-3 leading-relaxed">
+          <p className="c-card-t mb-1">City of Compton</p>
+          <p className="c-body text-[11px] mb-3 leading-relaxed">
             Population 97,000+ &bull; 4 Council Districts &bull; 10.1 sq mi
           </p>
-          <div className="flex justify-center gap-2">
-            <Link href="/city-hall" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-gold bg-gold/10 rounded-full px-3 py-1.5 press">
-              <Icon name="landmark" size={12} className="text-gold" />
+          <div className="flex justify-center gap-2 flex-wrap">
+            <Link href="/city-hall" className="c-btn c-btn-outline c-btn-sm">
+              <Icon name="landmark" size={12} />
               City Hall
             </Link>
-            <Link href="/events" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-cyan bg-cyan/10 rounded-full px-3 py-1.5 press">
-              <Icon name="calendar" size={12} className="text-cyan" />
+            <Link href="/events" className="c-btn c-btn-outline c-btn-sm">
+              <Icon name="calendar" size={12} />
               Events
             </Link>
-            <Link href="/resources" className="inline-flex items-center gap-1.5 text-[11px] font-medium text-emerald bg-emerald/10 rounded-full px-3 py-1.5 press">
-              <Icon name="heart-pulse" size={12} className="text-emerald" />
+            <Link href="/resources" className="c-btn c-btn-outline c-btn-sm">
+              <Icon name="heart-pulse" size={12} />
               Resources
             </Link>
           </div>

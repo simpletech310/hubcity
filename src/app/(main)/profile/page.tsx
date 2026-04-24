@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -214,39 +213,51 @@ export default async function ProfilePage() {
   const postsTextOnly = (posts as Record<string, unknown>[]).filter((p) => !p.image_url);
 
   return (
-    <div className="animate-fade-in pb-safe">
+    <div className="animate-fade-in pb-safe culture-surface min-h-dvh">
       {/* -- Profile Hero -- */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-deep to-hc-purple/8" />
-        <div className="absolute inset-0 pattern-dots opacity-20" />
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-midnight to-transparent" />
-
+      <div className="relative overflow-hidden" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <div className="relative z-10 px-5 pt-5 pb-5">
           {/* Avatar & Name */}
           <div className="flex items-center gap-4 mb-4">
             <div className="relative">
               {profile?.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.avatar_url}
                   alt={displayName}
-                  className="w-[76px] h-[76px] rounded-full object-cover ring-4 ring-midnight shadow-lg shadow-gold/20"
+                  className="w-[76px] h-[76px] rounded-full object-cover"
+                  style={{ border: "3px solid var(--rule-strong-c)" }}
                 />
               ) : (
-                <div className="w-[76px] h-[76px] rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center text-midnight font-heading font-bold text-2xl ring-4 ring-midnight shadow-lg shadow-gold/20">
+                <div
+                  className="w-[76px] h-[76px] rounded-full flex items-center justify-center c-hero"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "3px solid var(--rule-strong-c)",
+                    fontSize: 30,
+                  }}
+                >
                   {displayName.charAt(0).toUpperCase()}
                 </div>
               )}
               {verificationStatus === "verified" && (
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald flex items-center justify-center ring-2 ring-midnight">
-                  <Icon name="check" size={12} className="text-white" strokeWidth={2.5} />
+                <div
+                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <Icon name="check" size={12} style={{ color: "var(--ink-strong)" }} strokeWidth={2.5} />
                 </div>
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-heading text-xl font-bold leading-tight truncate">
+              <h1 className="c-hero truncate" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
                 {displayName}
               </h1>
-              <p className="text-sm text-txt-secondary mb-1.5">{handle}</p>
+              <p className="c-meta mb-1.5">{handle}</p>
               <div className="flex gap-1.5 flex-wrap">
                 {verificationStatus === "verified" ? (
                   <Badge label="Verified" variant="emerald" iconName="verified" />
@@ -262,20 +273,26 @@ export default async function ProfilePage() {
 
             {/* Edit profile */}
             <Link href="/profile/edit" className="shrink-0">
-              <div className="w-9 h-9 rounded-xl glass-card border border-border-subtle flex items-center justify-center press hover:border-gold/20 transition-colors">
-                <Icon name="edit" size={16} className="text-txt-secondary" />
+              <div
+                className="w-9 h-9 flex items-center justify-center press"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name="edit" size={16} style={{ color: "var(--ink-strong)" }} />
               </div>
             </Link>
           </div>
 
           {/* Bio */}
           {bio && (
-            <p className="text-[12px] text-txt-secondary leading-relaxed mb-3 line-clamp-2">{bio}</p>
+            <p className="c-serif-it mb-3 line-clamp-2" style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.85 }}>{bio}</p>
           )}
 
           {/* Member since */}
           {memberSince && (
-            <p className="text-[10px] text-txt-secondary/60 mb-3">
+            <p className="c-meta mb-3" style={{ opacity: 0.65 }}>
               Compton member since {memberSince}
             </p>
           )}
@@ -283,23 +300,27 @@ export default async function ProfilePage() {
           {/* Stats */}
           <div className="grid grid-cols-4 gap-2">
             {([
-              { label: "Saved", value: savedCount ?? 0, icon: "bookmark" as IconName, color: "#F2A900" },
-              { label: "RSVPs", value: rsvpCount ?? 0, icon: "calendar" as IconName, color: "#3B82F6" },
-              { label: "Tickets", value: tickets.length, icon: "ticket" as IconName, color: "#8B5CF6" },
-              { label: "Tags", value: profileTags.length, icon: "lightbulb" as IconName, color: "#22C55E" },
+              { label: "Saved", value: savedCount ?? 0, icon: "bookmark" as IconName },
+              { label: "RSVPs", value: rsvpCount ?? 0, icon: "calendar" as IconName },
+              { label: "Tickets", value: tickets.length, icon: "ticket" as IconName },
+              { label: "Tags", value: profileTags.length, icon: "lightbulb" as IconName },
             ]).map((stat) => (
               <div
                 key={stat.label}
-                className="glass-card-elevated rounded-xl p-2.5 text-center relative overflow-hidden"
+                className="p-2.5 text-center relative overflow-hidden"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
-                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
-                <span className="block mb-0.5" style={{ color: stat.color }}>
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ background: "var(--gold-c)" }} />
+                <span className="block mb-0.5" style={{ color: "var(--ink-strong)" }}>
                   <Icon name={stat.icon} size={16} className="mx-auto" />
                 </span>
-                <p className="font-heading font-bold text-sm leading-none" style={{ color: stat.color }}>
+                <p className="c-hero" style={{ fontSize: 18, color: "var(--ink-strong)", lineHeight: 1 }}>
                   {stat.value}
                 </p>
-                <p className="text-[8px] text-txt-secondary mt-0.5 font-medium uppercase tracking-wider">{stat.label}</p>
+                <p className="c-kicker mt-0.5" style={{ fontSize: 8, color: "var(--ink-strong)", opacity: 0.65 }}>{stat.label}</p>
               </div>
             ))}
           </div>
@@ -308,27 +329,30 @@ export default async function ProfilePage() {
 
       {/* -- Creator Studio (creators only) -- */}
       {isCreator && (
-        <section className="px-5 mb-5">
+        <section className="px-5 mb-5 pt-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-hc-purple" />
-            <h2 className="font-heading font-bold text-base">Creator Studio</h2>
+            <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Creator Studio</h2>
           </div>
           <Link href="/dashboard/creator">
-            <Card variant="glass" hover className="relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gold" />
+            <div className="c-frame p-4 relative overflow-hidden press" style={{ background: "var(--paper-soft)" }}>
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: "var(--gold-c)" }} />
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
-                  <Icon name="dollar" size={22} className="text-gold" />
+                <div
+                  className="w-12 h-12 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="dollar" size={22} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-heading font-bold text-sm">Creator Dashboard</p>
-                  <p className="text-[10px] text-txt-secondary">
+                  <p className="c-card-t" style={{ fontSize: 14 }}>Creator Dashboard</p>
+                  <p className="c-meta">
                     Earnings, payouts, monetization settings
                   </p>
                 </div>
-                <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+                <Icon name="chevron-right" size={16} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
               </div>
-            </Card>
+            </div>
           </Link>
         </section>
       )}
@@ -336,20 +360,23 @@ export default async function ProfilePage() {
       {/* -- My Subscriptions (anyone) -- */}
       <section className="px-5 mb-5">
         <Link href="/profile/subscriptions">
-          <Card variant="glass" hover className="relative overflow-hidden">
+          <div className="c-frame p-4 relative overflow-hidden press" style={{ background: "var(--paper-soft)" }}>
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
-                <Icon name="bell" size={18} className="text-emerald" />
+              <div
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="bell" size={18} style={{ color: "var(--ink-strong)" }} />
               </div>
               <div className="flex-1">
-                <p className="font-heading font-bold text-[13px]">My Subscriptions</p>
-                <p className="text-[10px] text-txt-secondary">
+                <p className="c-card-t" style={{ fontSize: 13 }}>My Subscriptions</p>
+                <p className="c-meta">
                   Channels you support · billing
                 </p>
               </div>
-              <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+              <Icon name="chevron-right" size={16} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
             </div>
-          </Card>
+          </div>
         </Link>
       </section>
 
@@ -357,47 +384,49 @@ export default async function ProfilePage() {
       {userBusiness && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">My Business</h2>
+            <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>My Business</h2>
           </div>
           <Link href="/dashboard">
-            <Card variant="glass" className="bg-gradient-to-br from-gold/10 via-transparent to-transparent border-gold/20 hover:border-gold/40 transition-colors press relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-gold to-transparent" />
+            <div className="c-frame p-4 press relative overflow-hidden" style={{ background: "var(--gold-c)" }}>
               <div className="flex items-center gap-3.5 mb-3">
-                <div className="w-12 h-12 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center shrink-0">
-                  <Icon name="store" size={22} className="text-gold" />
+                <div
+                  className="w-12 h-12 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="store" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading font-bold text-[14px] truncate">{userBusiness.name}</p>
+                  <p className="c-card-t truncate" style={{ fontSize: 14 }}>{userBusiness.name}</p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[11px] text-txt-secondary capitalize">{userBusiness.category}</span>
+                    <span className="c-meta capitalize">{userBusiness.category}</span>
                     {Number(userBusiness.rating_avg) > 0 && (
                       <>
-                        <span className="text-txt-secondary/30">&middot;</span>
-                        <Icon name="star" size={11} className="text-gold" />
-                        <span className="text-[11px] text-gold">{Number(userBusiness.rating_avg).toFixed(1)}</span>
-                        <span className="text-[11px] text-txt-secondary">({userBusiness.rating_count})</span>
+                        <span style={{ color: "var(--ink-strong)", opacity: 0.3 }}>&middot;</span>
+                        <Icon name="star" size={11} style={{ color: "var(--ink-strong)" }} />
+                        <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>{Number(userBusiness.rating_avg).toFixed(1)}</span>
+                        <span className="c-meta">({userBusiness.rating_count})</span>
                       </>
                     )}
                   </div>
                 </div>
-                <Icon name="chevron-right" size={20} className="text-gold shrink-0" />
+                <Icon name="chevron-right" size={20} style={{ color: "var(--ink-strong)" }} className="shrink-0" />
               </div>
               <div className="grid grid-cols-3 gap-2">
-                <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <Icon name="receipt" size={16} className="text-txt-secondary mx-auto" />
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Orders</p>
+                <div className="p-2 text-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <Icon name="receipt" size={16} style={{ color: "var(--ink-strong)" }} className="mx-auto" />
+                  <p className="c-meta mt-0.5">Orders</p>
                 </div>
-                <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <Icon name="calendar" size={16} className="text-txt-secondary mx-auto" />
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Bookings</p>
+                <div className="p-2 text-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <Icon name="calendar" size={16} style={{ color: "var(--ink-strong)" }} className="mx-auto" />
+                  <p className="c-meta mt-0.5">Bookings</p>
                 </div>
-                <div className="bg-midnight/40 rounded-lg p-2 text-center">
-                  <Icon name="chart" size={16} className="text-txt-secondary mx-auto" />
-                  <p className="text-[10px] text-txt-secondary mt-0.5">Analytics</p>
+                <div className="p-2 text-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <Icon name="chart" size={16} style={{ color: "var(--ink-strong)" }} className="mx-auto" />
+                  <p className="c-meta mt-0.5">Analytics</p>
                 </div>
               </div>
-            </Card>
+            </div>
           </Link>
         </section>
       )}
@@ -406,35 +435,38 @@ export default async function ProfilePage() {
       {district && dInfo && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full" style={{ background: dInfo.color }} />
-            <h2 className="font-heading font-bold text-base">Your District</h2>
+            <div className="w-1 h-5" style={{ background: dInfo.color }} />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your District</h2>
           </div>
           <Link href="/district">
-            <Card variant="glass" className="relative overflow-hidden hover:border-gold/20 transition-colors press">
-              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: dInfo.color }} />
+            <div className="c-frame p-4 relative overflow-hidden press" style={{ background: "var(--paper-soft)" }}>
+              <div className="absolute top-0 left-0 right-0 h-1" style={{ background: dInfo.color }} />
               <div className="flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${dInfo.color}15` }}>
-                  <span className="font-heading font-bold text-xl" style={{ color: dInfo.color }}>{district}</span>
+                <div
+                  className="w-12 h-12 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span className="c-hero" style={{ fontSize: 20, color: "var(--ink-strong)" }}>{district}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-heading font-bold text-[13px]">{dInfo.council}</p>
-                  <p className="text-[11px] text-txt-secondary">{dInfo.area}</p>
+                  <p className="c-card-t" style={{ fontSize: 13 }}>{dInfo.council}</p>
+                  <p className="c-meta">{dInfo.area}</p>
                 </div>
                 <div className="shrink-0">
-                  <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+                  <Icon name="chevron-right" size={16} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
                 </div>
               </div>
 
               {/* District events */}
               {districtEvents.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-border-subtle">
-                  <p className="text-[9px] text-txt-secondary font-semibold uppercase tracking-wider mb-2">Upcoming in your district</p>
+                <div className="mt-3 pt-3" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
+                  <p className="c-kicker mb-2" style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.65 }}>Upcoming in your district</p>
                   <div className="space-y-1.5">
                     {districtEvents.slice(0, 2).map((evt) => (
                       <div key={evt.id as string} className="flex items-center gap-2">
-                        <Icon name="calendar" size={12} className="text-txt-secondary shrink-0" />
-                        <p className="text-[11px] truncate flex-1">{evt.title as string}</p>
-                        <p className="text-[9px] text-txt-secondary shrink-0">
+                        <Icon name="calendar" size={12} style={{ color: "var(--ink-strong)" }} className="shrink-0" />
+                        <p className="c-body truncate flex-1" style={{ fontSize: 11 }}>{evt.title as string}</p>
+                        <p className="c-meta shrink-0" style={{ fontSize: 9 }}>
                           {new Date(evt.start_date as string).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </p>
                       </div>
@@ -442,7 +474,7 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               )}
-            </Card>
+            </div>
           </Link>
         </section>
       )}
@@ -451,9 +483,9 @@ export default async function ProfilePage() {
       {upcomingEvents.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-hc-blue" />
-            <h2 className="font-heading font-bold text-base">Your Upcoming Events</h2>
-            <Link href="/events" className="ml-auto text-[10px] text-gold font-bold">See All</Link>
+            <div className="w-1 h-5 bg-hc-blue" />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your Upcoming Events</h2>
+            <Link href="/events" className="ml-auto c-kicker press" style={{ color: "var(--ink-strong)", textDecoration: "underline", fontSize: 10 }}>SEE ALL</Link>
           </div>
           <div className="space-y-2.5">
             {upcomingEvents.map((rsvp: Record<string, unknown>) => {
@@ -462,33 +494,33 @@ export default async function ProfilePage() {
               const eventDate = new Date(event.start_date as string);
               return (
                 <Link key={event.id as string} href={`/events/${event.slug}`}>
-                  <Card variant="glass" className="flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-blue rounded-l-xl" />
-                    <div className="w-11 h-11 rounded-lg bg-hc-blue/10 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-hc-blue uppercase">
+                  <div className="c-frame p-3 flex items-center gap-3 press relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>
+                    <div
+                      className="w-11 h-11 flex flex-col items-center justify-center shrink-0"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                    >
+                      <span className="c-kicker" style={{ fontSize: 8, color: "var(--ink-strong)", opacity: 0.7 }}>
                         {eventDate.toLocaleDateString("en-US", { month: "short" })}
                       </span>
-                      <span className="font-heading font-bold text-sm text-hc-blue leading-none">
+                      <span className="c-hero" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
                         {eventDate.getDate()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold truncate">{event.title as string}</p>
+                      <p className="c-card-t truncate" style={{ fontSize: 12 }}>{event.title as string}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {String(event.start_time ?? "") !== "" && (
-                          <span className="text-[10px] text-txt-secondary">{String(event.start_time)}</span>
+                          <span className="c-meta">{String(event.start_time)}</span>
                         )}
                         {String(event.location_name ?? "") !== "" && (
-                          <span className="text-[10px] text-txt-secondary truncate flex items-center gap-0.5">
+                          <span className="c-meta truncate flex items-center gap-0.5">
                             <Icon name="map-pin" size={10} className="shrink-0" /> {String(event.location_name)}
                           </span>
                         )}
                       </div>
                     </div>
-                    <div className="shrink-0 px-2 py-0.5 rounded-md bg-emerald/10 border border-emerald/20">
-                      <span className="text-[9px] font-bold text-emerald">Going</span>
-                    </div>
-                  </Card>
+                    <Badge label="Going" variant="emerald" />
+                  </div>
                 </Link>
               );
             })}
@@ -500,30 +532,31 @@ export default async function ProfilePage() {
       {tickets.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-hc-purple" />
-            <h2 className="font-heading font-bold text-base">Your Tickets</h2>
-            <Link href="/profile/tickets" className="ml-auto text-[10px] text-gold font-bold">See All</Link>
+            <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your Tickets</h2>
+            <Link href="/profile/tickets" className="ml-auto c-kicker press" style={{ color: "var(--ink-strong)", textDecoration: "underline", fontSize: 10 }}>SEE ALL</Link>
           </div>
           <div className="space-y-2.5">
             {(tickets as Record<string, unknown>[]).map((order) => {
               const event = order.event as Record<string, unknown> | null;
               return (
                 <Link key={order.id as string} href={`/tickets/${order.id}`}>
-                  <Card variant="glass" className="flex items-center gap-3 hover:border-gold/20 transition-colors press relative overflow-hidden">
-                    <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-hc-purple rounded-l-xl" />
-                    <div className="w-11 h-11 rounded-lg bg-hc-purple/10 flex items-center justify-center shrink-0">
-                      <Icon name="ticket" size={20} className="text-gold" />
+                  <div className="c-frame p-3 flex items-center gap-3 press relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>
+                    <div
+                      className="w-11 h-11 flex items-center justify-center shrink-0"
+                      style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+                    >
+                      <Icon name="ticket" size={20} style={{ color: "var(--ink-strong)" }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold truncate">{event ? (event.title as string) : "Event"}</p>
-                      <p className="text-[10px] text-txt-secondary">Order #{order.order_number as string}</p>
+                      <p className="c-card-t truncate" style={{ fontSize: 12 }}>{event ? (event.title as string) : "Event"}</p>
+                      <p className="c-meta">Order #{order.order_number as string}</p>
                     </div>
-                    <div className={`shrink-0 px-2 py-0.5 rounded-md ${order.status === "confirmed" ? "bg-emerald/10 border border-emerald/20" : "bg-gold/10 border border-gold/20"}`}>
-                      <span className={`text-[9px] font-bold ${order.status === "confirmed" ? "text-emerald" : "text-gold"}`}>
-                        {(order.status as string).charAt(0).toUpperCase() + (order.status as string).slice(1)}
-                      </span>
-                    </div>
-                  </Card>
+                    <Badge
+                      label={(order.status as string).charAt(0).toUpperCase() + (order.status as string).slice(1)}
+                      variant={order.status === "confirmed" ? "emerald" : "gold"}
+                    />
+                  </div>
                 </Link>
               );
             })}
@@ -534,8 +567,8 @@ export default async function ProfilePage() {
       {/* -- Profile Tags (interests) -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">Your Interests</h2>
+          <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your Interests</h2>
           <Badge label="AI Matched" variant="gold" shine iconName="sparkle" />
         </div>
         <div className="flex flex-wrap gap-2 mb-2">
@@ -543,20 +576,36 @@ export default async function ProfilePage() {
             profileTags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-hc-purple/10 border border-gold/20 text-gold text-[11px] font-semibold"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 c-kicker"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                  fontSize: 11,
+                  letterSpacing: "0.12em",
+                }}
               >
-                {tag}
+                #{tag.toUpperCase()}
               </span>
             ))
           ) : (
-            <span className="text-xs text-txt-secondary">No interests yet -- browse resources to get AI-matched tags</span>
+            <span className="c-meta">No interests yet — browse resources to get AI-matched tags</span>
           )}
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-dashed border-white/15 text-[11px] text-txt-secondary press hover:border-gold/30 hover:text-gold transition-all">
+          <button
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 c-kicker press"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px dashed var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 11,
+              letterSpacing: "0.12em",
+            }}
+          >
             <Icon name="plus" size={12} />
-            Add
+            ADD
           </button>
         </div>
-        <p className="text-[10px] text-txt-secondary leading-relaxed">
+        <p className="c-meta">
           Your interests help us match you with relevant resources, events & opportunities in Compton
         </p>
       </section>
@@ -567,8 +616,8 @@ export default async function ProfilePage() {
       {/* -- Culture Digital ID Card -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">My Culture Card</h2>
+          <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>My Culture Card</h2>
         </div>
         <CitizenIDCard
           avatarUrl={profile?.avatar_url}
@@ -586,9 +635,9 @@ export default async function ProfilePage() {
       {matchedResources.length > 0 && (
         <section className="mb-5">
           <div className="px-5 flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-emerald" />
-            <h2 className="font-heading font-bold text-base">Resources For You</h2>
-            <Link href="/resources" className="ml-auto text-[10px] text-gold font-bold">See All</Link>
+            <div className="w-1 h-5 bg-emerald" />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Resources For You</h2>
+            <Link href="/resources" className="ml-auto c-kicker press" style={{ color: "var(--ink-strong)", textDecoration: "underline", fontSize: 10 }}>SEE ALL</Link>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
             {matchedResources.map((res, i) => {
@@ -602,28 +651,31 @@ export default async function ProfilePage() {
                   className="shrink-0 w-[200px] animate-slide-in"
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
-                  <Card variant="glass" className="hover:border-gold/20 transition-colors press relative overflow-hidden h-full">
-                    <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: resAccent }} />
+                  <div className="c-frame p-3 press relative overflow-hidden h-full" style={{ background: "var(--paper-soft)" }}>
+                    <div className="absolute top-0 left-0 right-0 h-1" style={{ background: resAccent }} />
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${resAccent}15` }}>
-                        <Icon name={catIcon} size={16} style={{ color: resAccent }} />
+                      <div
+                        className="w-8 h-8 flex items-center justify-center"
+                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                      >
+                        <Icon name={catIcon} size={16} style={{ color: "var(--ink-strong)" }} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[8px] font-bold uppercase tracking-wider" style={{ color: resAccent }}>{cat}</p>
+                        <p className="c-kicker" style={{ fontSize: 8, color: "var(--ink-strong)" }}>{cat.toUpperCase()}</p>
                       </div>
                       {res.is_free === true && (
-                        <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald/10 text-emerald border border-emerald/20">FREE</span>
+                        <Badge label="FREE" variant="emerald" />
                       )}
                     </div>
-                    <h3 className="text-[12px] font-bold mb-1 line-clamp-2 leading-tight">{String(res.name)}</h3>
+                    <h3 className="c-card-t mb-1 line-clamp-2" style={{ fontSize: 12 }}>{String(res.name)}</h3>
                     {res.organization ? (
-                      <p className="text-[10px] text-txt-secondary truncate">{String(res.organization)}</p>
+                      <p className="c-meta truncate">{String(res.organization)}</p>
                     ) : null}
                     <div className="mt-2 flex items-center gap-1">
                       <div className={`w-1.5 h-1.5 rounded-full ${res.status === "open" ? "bg-emerald" : res.status === "limited" ? "bg-gold" : "bg-hc-blue"}`} />
-                      <span className="text-[9px] text-txt-secondary capitalize">{res.status as string}</span>
+                      <span className="c-meta capitalize">{res.status as string}</span>
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               );
             })}
@@ -634,8 +686,8 @@ export default async function ProfilePage() {
       {/* -- Quick Actions -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-cyan" />
-          <h2 className="font-heading font-bold text-base">Quick Actions</h2>
+          <div className="w-1 h-5 bg-cyan" />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Quick Actions</h2>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           {([
@@ -647,18 +699,21 @@ export default async function ProfilePage() {
             { label: "Food & Dining", icon: "utensils" as IconName, desc: "Order & explore", href: "/food", color: "#FF6B6B" },
           ]).map((action) => (
             <Link key={action.label} href={action.href}>
-              <Card variant="glass" className="hover:border-gold/20 transition-colors press relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: action.color }} />
+              <div className="c-frame p-3 press relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>
+                <div className="absolute top-0 left-0 right-0 h-1" style={{ background: action.color }} />
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${action.color}12` }}>
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <Icon name={action.icon} size={20} style={{ color: action.color }} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[12px] font-bold">{action.label}</p>
-                    <p className="text-[10px] text-txt-secondary">{action.desc}</p>
+                    <p className="c-card-t" style={{ fontSize: 12 }}>{action.label}</p>
+                    <p className="c-meta">{action.desc}</p>
                   </div>
                 </div>
-              </Card>
+              </div>
             </Link>
           ))}
         </div>
@@ -668,14 +723,14 @@ export default async function ProfilePage() {
       {posts.length > 0 && (
         <section className="px-5 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-coral" />
-            <h2 className="font-heading font-bold text-base">Your Posts</h2>
-            <Link href="/pulse" className="ml-auto text-[10px] text-gold font-bold">See All</Link>
+            <div className="w-1 h-5 bg-coral" />
+            <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your Posts</h2>
+            <Link href="/pulse" className="ml-auto c-kicker press" style={{ color: "var(--ink-strong)", textDecoration: "underline", fontSize: 10 }}>SEE ALL</Link>
           </div>
 
           {/* Instagram-style 3-col image grid */}
           {postsWithImages.length > 0 && (
-            <div className="grid grid-cols-3 gap-1 rounded-xl overflow-hidden mb-3">
+            <div className="grid grid-cols-3 gap-1 overflow-hidden mb-3" style={{ border: "2px solid var(--rule-strong-c)" }}>
               {postsWithImages.map((post) => (
                 <Link key={post.id as string} href={`/pulse/${post.id}`} className="relative aspect-square group">
                   <Image
@@ -685,7 +740,7 @@ export default async function ProfilePage() {
                     className="object-cover transition-opacity group-hover:opacity-80"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                    <p className="text-[10px] text-white font-medium line-clamp-2 leading-tight">
+                    <p className="c-body line-clamp-2" style={{ fontSize: 10, color: "var(--paper)" }}>
                       {post.body ? String(post.body).slice(0, 60) : ""}
                     </p>
                   </div>
@@ -698,14 +753,14 @@ export default async function ProfilePage() {
           {postsTextOnly.length > 0 && (
             <div className="space-y-2">
               {postsTextOnly.slice(0, 3).map((post) => (
-                <Card key={post.id as string} variant="glass" className="relative overflow-hidden">
-                  <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-coral rounded-l-xl" />
+                <div key={post.id as string} className="c-frame p-3 relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-coral" />
                   <div className="pl-2">
-                    {post.title ? <p className="text-[12px] font-bold mb-0.5">{String(post.title)}</p> : null}
-                    <p className="text-[11px] text-txt-secondary line-clamp-2">{post.body as string}</p>
-                    <p className="text-[9px] text-txt-secondary/50 mt-1">{timeAgo(post.created_at as string)}</p>
+                    {post.title ? <p className="c-card-t mb-0.5" style={{ fontSize: 12 }}>{String(post.title)}</p> : null}
+                    <p className="c-body line-clamp-2" style={{ fontSize: 11 }}>{post.body as string}</p>
+                    <p className="c-meta mt-1" style={{ fontSize: 9, opacity: 0.6 }}>{timeAgo(post.created_at as string)}</p>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           )}
@@ -715,20 +770,20 @@ export default async function ProfilePage() {
       {/* -- Emergency & Important Numbers -- */}
       <section className="px-5 mb-5">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-coral" />
-          <h2 className="font-heading font-bold text-base">Important Numbers</h2>
+          <div className="w-1 h-5 bg-coral" />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Important Numbers</h2>
         </div>
         <div className="grid grid-cols-3 gap-2">
           {emergencyContacts.map((contact) => (
             <a key={contact.label} href={`tel:${contact.number.replace(/[^0-9]/g, "")}`}>
-              <Card variant="glass" className="text-center hover:border-coral/20 transition-colors press relative overflow-hidden">
-                <div className="absolute top-0 left-0 right-0 h-0.5 bg-coral/40" />
+              <div className="c-frame p-3 text-center press relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>
+                <div className="absolute top-0 left-0 right-0 h-1 bg-coral" />
                 <span className="block mb-1">
                   <Icon name={contact.icon} size={20} className="text-coral mx-auto" />
                 </span>
-                <p className="text-[10px] font-bold mb-0.5">{contact.label}</p>
-                <p className="text-[9px] text-txt-secondary">{contact.number}</p>
-              </Card>
+                <p className="c-card-t mb-0.5" style={{ fontSize: 10 }}>{contact.label}</p>
+                <p className="c-meta" style={{ fontSize: 9 }}>{contact.number}</p>
+              </div>
             </a>
           ))}
         </div>
@@ -739,7 +794,7 @@ export default async function ProfilePage() {
 
       {/* -- Settings Menu -- */}
       <div className="px-5 space-y-1">
-        <p className="text-[10px] text-txt-secondary font-semibold uppercase tracking-wider mb-2">Account & Settings</p>
+        <p className="c-kicker mb-2" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>Account & Settings</p>
         {([
           { label: "My Orders", icon: "receipt" as IconName, href: "/orders" },
           { label: "My Bookings", icon: "calendar" as IconName, href: "/bookings" },
@@ -758,36 +813,33 @@ export default async function ProfilePage() {
           { label: "About Culture", icon: "info" as IconName, comingSoon: true },
         ] as { label: string; icon: IconName; href?: string; count?: number; highlight?: boolean; comingSoon?: boolean; detail?: string }[]).map((item) => {
           const content = (
-            <div className={`flex items-center justify-between py-3 px-1 rounded-xl transition-colors ${item.comingSoon ? "opacity-50 cursor-default" : "hover:bg-white/[0.03] press"}`}>
+            <div
+              className={`flex items-center justify-between py-3 px-2 transition-colors ${item.comingSoon ? "opacity-50 cursor-default" : "press"}`}
+              style={{ borderBottom: "1px solid var(--rule-strong-c)" }}
+            >
               <div className="flex items-center gap-3">
                 <span className="w-6 text-center flex items-center justify-center">
-                  <Icon name={item.icon} size={18} className="text-txt-secondary" />
+                  <Icon name={item.icon} size={18} style={{ color: "var(--ink-strong)" }} />
                 </span>
-                <span className="text-[13px] font-medium">{item.label}</span>
+                <span className="c-body" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{item.label}</span>
                 {item.comingSoon && (
-                  <span className="text-[9px] text-txt-secondary bg-white/[0.06] px-1.5 py-0.5 rounded-full font-medium">
-                    Coming Soon
-                  </span>
+                  <Badge label="Coming Soon" variant="gold" />
                 )}
                 {item.highlight === true ? (
-                  <span className="text-[9px] text-gold bg-gold/10 px-1.5 py-0.5 rounded-full font-bold">
-                    Verify Now
-                  </span>
+                  <Badge label="Verify Now" variant="gold" />
                 ) : null}
               </div>
               <div className="flex items-center gap-2">
                 {item.count !== undefined && item.count > 0 && (
-                  <span className="text-[10px] text-gold font-bold bg-gold/10 px-2 py-0.5 rounded-full">
-                    {item.count}
-                  </span>
+                  <Badge label={String(item.count)} variant="gold" />
                 )}
                 {item.detail && (
-                  <span className="text-[11px] text-txt-secondary">
+                  <span className="c-meta">
                     {item.detail}
                   </span>
                 )}
                 {!item.comingSoon && (
-                  <Icon name="chevron-right" size={16} className="text-txt-secondary/50" />
+                  <Icon name="chevron-right" size={16} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
                 )}
               </div>
             </div>
@@ -804,11 +856,11 @@ export default async function ProfilePage() {
       <div className="px-5 mt-8 mb-6">
         <SignOutButton />
 
-        <p className="text-center text-[10px] text-txt-secondary/50 mt-3">
+        <p className="c-meta text-center mt-3" style={{ opacity: 0.5 }}>
           {user.email}
         </p>
-        <p className="text-center text-[10px] text-txt-secondary/50 mt-1">
-          Culture v1.0.0 -- Made with love in Compton
+        <p className="c-meta text-center mt-1" style={{ opacity: 0.5 }}>
+          Culture v1.0.0 — Made with love in Compton
         </p>
       </div>
     </div>

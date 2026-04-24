@@ -268,7 +268,7 @@ export default function IssueDetailPage() {
 
         {/* Image */}
         {issue.image_url && (
-          <div className="mb-4 rounded-xl overflow-hidden">
+          <div className="mb-4 c-frame overflow-hidden">
             <img src={issue.image_url} alt="Issue photo" className="w-full" />
           </div>
         )}
@@ -344,20 +344,13 @@ export default function IssueDetailPage() {
           <button
             onClick={handleUpvote}
             disabled={upvoting}
-            className={`flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 press transition-all ${
-              userUpvoted
-                ? "bg-gold/20 border border-gold/40 text-gold"
-                : "bg-card border border-border-subtle text-txt-secondary"
-            }`}
+            className={`c-btn ${userUpvoted ? "c-btn-primary" : "c-btn-outline"} flex-1 justify-center`}
           >
             <Icon name="heart-pulse" size={16} /> {userUpvoted ? "Upvoted" : "Upvote"} · {issue.upvote_count}
           </button>
 
           {issue.source_post_id && (
-            <Link
-              href="/pulse"
-              className="flex-1 py-3 rounded-xl bg-card border border-border-subtle text-sm font-bold text-center press"
-            >
+            <Link href="/pulse" className="c-btn c-btn-outline flex-1 justify-center">
               <Icon name="chat" size={16} /> View Post
             </Link>
           )}

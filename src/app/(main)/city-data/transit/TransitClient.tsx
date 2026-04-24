@@ -66,24 +66,16 @@ interface ArrivalsState {
 function MinuteBadge({ minutes }: { minutes: number }) {
   if (minutes === 0) {
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />
+      <span className="c-badge-live animate-pulse">
+        <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: "#fff" }} />
         Now
       </span>
     );
   }
   if (minutes <= 5) {
-    return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-        {minutes} min
-      </span>
-    );
+    return <span className="c-badge-gold">{minutes} min</span>;
   }
-  return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white/8 text-white/70 border border-white/10">
-      {minutes} min
-    </span>
-  );
+  return <span className="c-badge-ink">{minutes} min</span>;
 }
 
 function StopCard({ stop, arrivalsData, onRefresh }: {
@@ -95,7 +87,7 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
   const isRail = route?.type === "rail";
 
   return (
-    <div className="rounded-2xl bg-white/[0.04] border border-white/[0.07] overflow-hidden">
+    <div className="c-frame overflow-hidden" style={{ background: "var(--paper)" }}>
       {/* Header */}
       <div
         className="px-4 py-3 flex items-center gap-3"
@@ -120,20 +112,18 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-bold text-white truncate">{stop.name}</p>
+          <p className="c-card-t text-[13px] truncate">{stop.name}</p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span
-              className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
-              style={{ color: route?.color || "#F2A900", background: `${route?.color || "#F2A900"}18` }}
-            >
+            <span className="c-badge-ink">
               {route?.label || stop.routeCode}
             </span>
-            <span className="text-[10px] text-white/40 truncate">{stop.address}</span>
+            <span className="c-meta truncate" style={{ fontSize: 10 }}>{stop.address}</span>
           </div>
         </div>
         <button
           onClick={() => onRefresh(stop)}
-          className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/8 transition-all shrink-0"
+          className="w-7 h-7 flex items-center justify-center transition-all shrink-0"
+          style={{ color: "var(--ink-strong)", opacity: 0.6 }}
           aria-label="Refresh arrivals"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -148,21 +138,26 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
       <div className="px-4 py-3">
         {arrivalsData?.loading && !arrivalsData.arrivals.length ? (
           <div className="flex items-center gap-2 py-2">
-            <div className="w-4 h-4 border-2 border-white/20 border-t-white/60 rounded-full animate-spin" />
-            <span className="text-[12px] text-white/40">Loading arrivals...</span>
+            <div
+              className="w-4 h-4 border-2 rounded-full animate-spin"
+              style={{ borderColor: "var(--rule-strong-c)", borderTopColor: "transparent" }}
+            />
+            <span className="c-meta" style={{ fontSize: 12 }}>Loading arrivals...</span>
           </div>
         ) : arrivalsData?.error ? (
           <div className="py-2">
-            <p className="text-[12px] text-white/40">{arrivalsData.error}</p>
-            <p className="text-[11px] text-white/25 mt-1">Check <a href="https://metro.net" target="_blank" rel="noreferrer" className="text-[#F2A900]/60 underline">metro.net</a> for schedules</p>
+            <p className="c-meta" style={{ fontSize: 12 }}>{arrivalsData.error}</p>
+            <p className="c-meta mt-1" style={{ fontSize: 11, opacity: 0.6 }}>
+              Check <a href="https://metro.net" target="_blank" rel="noreferrer" className="underline" style={{ color: "var(--gold-c)" }}>metro.net</a> for schedules
+            </p>
           </div>
         ) : arrivalsData?.arrivals.length ? (
           <div className="space-y-2">
             {arrivalsData.arrivals.slice(0, 3).map((a, i) => (
               <div key={`${a.trip_id}-${i}`} className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-[11px] text-white/40 w-4 shrink-0">{i + 1}</span>
-                  <p className="text-[12px] text-white/70 truncate">
+                  <span className="c-meta w-4 shrink-0" style={{ fontSize: 11 }}>{i + 1}</span>
+                  <p className="c-body truncate" style={{ fontSize: 12 }}>
                     {a.headsign || route?.direction || "Inbound"}
                   </p>
                 </div>
@@ -170,7 +165,7 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
               </div>
             ))}
             {arrivalsData.lastFetched && (
-              <p className="text-[10px] text-white/20 pt-1">
+              <p className="c-meta pt-1" style={{ fontSize: 10, opacity: 0.5 }}>
                 Updated {Math.round((Date.now() / 1000 - arrivalsData.lastFetched) / 60) < 1
                   ? "just now"
                   : `${Math.round((Date.now() / 1000 - arrivalsData.lastFetched) / 60)}m ago`}
@@ -178,7 +173,7 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
             )}
           </div>
         ) : (
-          <p className="text-[12px] text-white/35 py-1">No arrivals found — service may not be running</p>
+          <p className="c-meta py-1" style={{ fontSize: 12 }}>No arrivals found — service may not be running</p>
         )}
       </div>
 
@@ -188,15 +183,17 @@ function StopCard({ stop, arrivalsData, onRefresh }: {
           href={`https://maps.google.com/?q=${stop.lat},${stop.lng}`}
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-white/70 transition-colors"
+          className="c-meta flex items-center gap-1.5 transition-colors"
+          style={{ fontSize: 11 }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" /></svg>
           Directions
         </a>
-        <span className="text-white/15">·</span>
+        <span style={{ color: "var(--ink-strong)", opacity: 0.3 }}>·</span>
         <Link
           href={`/map?lat=${stop.lat}&lng=${stop.lng}&zoom=17`}
-          className="flex items-center gap-1.5 text-[11px] text-white/40 hover:text-[#F2A900]/70 transition-colors"
+          className="c-meta flex items-center gap-1.5 transition-colors"
+          style={{ fontSize: 11 }}
         >
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
           Map
@@ -296,10 +293,7 @@ export default function TransitClient() {
             <h1 className="font-heading font-bold text-xl">Transit Tracker</h1>
             <p className="text-[12px] mt-0.5">LA Metro · Live arrivals · Compton</p>
           </div>
-          <button
-            onClick={refreshAll}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F2A900]/10 border border-[#F2A900]/20 text-[#F2A900] text-[11px] font-bold press hover:bg-[#F2A900]/15 transition-all"
-          >
+          <button onClick={refreshAll} className="c-btn c-btn-primary c-btn-sm">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M23 4v6h-6" />
               <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
@@ -310,10 +304,10 @@ export default function TransitClient() {
 
         {/* Live indicator */}
         <div className="flex items-center gap-2 mt-3 mb-4">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[11px] text-white/40">
+          <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: "var(--gold-c)" }} />
+          <span className="c-meta" style={{ fontSize: 11 }}>
             Live · Updates every 60s · Powered by{" "}
-            <a href="https://api.metro.net" target="_blank" rel="noreferrer" className="text-[#F2A900]/60 hover:text-[#F2A900] transition-colors">
+            <a href="https://api.metro.net" target="_blank" rel="noreferrer" className="transition-colors" style={{ color: "var(--gold-c)" }}>
               LA Metro API
             </a>
           </span>
@@ -325,11 +319,7 @@ export default function TransitClient() {
             <button
               key={f}
               onClick={() => setActiveFilter(f)}
-              className={`px-4 py-2 rounded-xl text-[12px] font-bold transition-all ${
-                activeFilter === f
-                  ? "bg-[#F2A900] text-[#0A0A0A]"
-                  : "bg-white/[0.05] text-white/50 hover:text-white/80"
-              }`}
+              className={`c-btn c-btn-sm ${activeFilter === f ? "c-btn-primary" : "c-btn-outline"}`}
             >
               {f === "all" ? "All Stops" : f === "rail" ? "🚊 Rail" : "🚌 Bus"}
             </button>
@@ -341,9 +331,9 @@ export default function TransitClient() {
       {railStops.length > 0 && (
         <section className="px-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-[#0072BC]" />
-            <h2 className="font-heading font-bold text-sm text-white">Rail</h2>
-            <span className="text-[10px] text-white/30">{railStops.length} stations</span>
+            <div className="w-1 h-5" style={{ background: "var(--ink-strong)" }} />
+            <h2 className="c-card-t text-sm">Rail</h2>
+            <span className="c-meta" style={{ fontSize: 10 }}>{railStops.length} stations</span>
           </div>
           <div className="space-y-3">
             {railStops.map(stop => (
@@ -362,9 +352,9 @@ export default function TransitClient() {
       {busStops.length > 0 && (
         <section className="px-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-5 rounded-full bg-[#F2A900]" />
-            <h2 className="font-heading font-bold text-sm text-white">Bus Routes</h2>
-            <span className="text-[10px] text-white/30">{busStops.length} stops</span>
+            <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+            <h2 className="c-card-t text-sm">Bus Routes</h2>
+            <span className="c-meta" style={{ fontSize: 10 }}>{busStops.length} stops</span>
           </div>
           <div className="space-y-3">
             {busStops.map(stop => (
@@ -385,7 +375,8 @@ export default function TransitClient() {
           href="https://www.metro.net/riding/nextrip/"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] text-[12px] text-white/50 hover:text-white/80 hover:border-white/15 transition-all"
+          className="flex items-center justify-center gap-2 w-full py-3 c-frame transition-all"
+          style={{ background: "var(--paper-warm)", color: "var(--ink-strong)", fontSize: 12 }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           Full schedules & trip planning at metro.net

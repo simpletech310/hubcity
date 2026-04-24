@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import Icon from "@/components/ui/Icon";
@@ -108,45 +107,63 @@ export default async function SavedItemsPage() {
         {/* Businesses */}
         {(businesses || []).map((biz) => (
           <Link key={biz.id} href={`/business/${biz.slug || biz.id}`}>
-            <Card hover>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-emerald/15 to-emerald/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div
+                  className="w-11 h-11 flex items-center justify-center text-lg shrink-0"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   {categoryIcons[biz.category] || "store"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-heading font-bold text-[13px] truncate">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
                     {biz.name}
                   </h3>
-                  <p className="text-[11px] text-txt-secondary truncate">
+                  <p className="c-meta truncate">
                     {biz.address}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <Badge label="Business" variant="emerald" />
                   {biz.rating_avg > 0 && (
-                    <span className="text-[11px] text-gold font-bold">
-                      <Icon name="star" size={16} /> {biz.rating_avg.toFixed(1)}
+                    <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>
+                      <Icon name="star" size={12} /> {biz.rating_avg.toFixed(1)}
                     </span>
                   )}
                 </div>
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
 
         {/* Events */}
         {(events || []).map((ev) => (
           <Link key={ev.id} href={`/events/${ev.id}`}>
-            <Card hover>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-coral/15 to-coral/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div
+                  className="w-11 h-11 flex items-center justify-center text-lg shrink-0"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   {categoryIcons[ev.category] || "calendar"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-heading font-bold text-[13px] truncate">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
                     {ev.title}
                   </h3>
-                  <p className="text-[11px] text-txt-secondary">
+                  <p className="c-meta">
                     {new Date(ev.start_date).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -156,23 +173,32 @@ export default async function SavedItemsPage() {
                 </div>
                 <Badge label="Event" variant="coral" />
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
 
         {/* Resources */}
         {(resources || []).map((res) => (
           <Link key={res.id} href={`/resources/${res.id}`}>
-            <Card hover>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 bg-gradient-to-br from-cyan/15 to-cyan/5 flex items-center justify-center text-lg shrink-0 border border-border-subtle">
+                <div
+                  className="w-11 h-11 flex items-center justify-center text-lg shrink-0"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   {categoryIcons[res.category] || "document"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-heading font-bold text-[13px] truncate">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
                     {res.name}
                   </h3>
-                  <p className="text-[11px] text-txt-secondary truncate">
+                  <p className="c-meta truncate">
                     {res.organization}
                   </p>
                 </div>
@@ -181,22 +207,22 @@ export default async function SavedItemsPage() {
                   variant={res.status === "open" ? "emerald" : "cyan"}
                 />
               </div>
-            </Card>
+            </div>
           </Link>
         ))}
 
         {items.length === 0 && (
           <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="bookmark" size={28} /></span>
-            <p className="text-sm font-medium mb-1">Nothing saved yet</p>
-            <p className="text-xs text-txt-secondary mb-4">
+            <Icon name="bookmark" size={28} className="mx-auto mb-3" style={{ color: "var(--ink-strong)", opacity: 0.4 }} />
+            <p className="c-card-t mb-1" style={{ fontSize: 14 }}>Nothing saved yet</p>
+            <p className="c-meta mb-4">
               Save businesses, events, and resources to find them here
             </p>
             <Link
               href="/"
-              className="text-sm text-gold font-semibold press hover:underline"
+              className="c-btn c-btn-primary c-btn-sm press"
             >
-              Explore Culture →
+              EXPLORE CULTURE →
             </Link>
           </div>
         )}

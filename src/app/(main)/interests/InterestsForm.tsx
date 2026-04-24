@@ -58,26 +58,27 @@ export default function InterestsForm({ categories, selectedIds }: Props) {
               type="button"
               onClick={() => toggle(c.id)}
               aria-pressed={on}
-              className={[
-                "flex items-center gap-3 rounded-xl border p-3 text-left transition",
-                on
-                  ? "bg-gold/10 border-gold/40 text-white"
-                  : "bg-white/[0.02] border-white/10 text-txt-secondary hover:bg-white/[0.04]",
-              ].join(" ")}
+              className="flex items-center gap-3 p-3 text-left transition press"
+              style={{
+                background: on ? "var(--gold-c)" : "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
               <div
-                className={[
-                  "w-8 h-8 rounded-lg flex items-center justify-center",
-                  on ? "bg-gold/20 border border-gold/30" : "bg-white/5 border border-white/10",
-                ].join(" ")}
+                className="w-8 h-8 flex items-center justify-center"
+                style={{
+                  background: on ? "var(--ink-strong)" : "var(--paper-soft)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
                 <Icon
                   name={((c.icon || "palette").toLowerCase() as IconName)}
                   size={14}
-                  className={on ? "text-gold" : "text-white/50"}
+                  style={{ color: on ? "var(--gold-c)" : "var(--ink-strong)" }}
                 />
               </div>
-              <span className="text-sm font-medium">{c.name}</span>
+              <span className="c-card-t" style={{ fontSize: 13 }}>{c.name}</span>
             </button>
           );
         })}
@@ -88,14 +89,14 @@ export default function InterestsForm({ categories, selectedIds }: Props) {
           type="button"
           onClick={save}
           disabled={isPending}
-          className="px-5 py-2.5 rounded-lg bg-gold text-midnight font-semibold text-sm disabled:opacity-50"
+          className="c-btn c-btn-primary press disabled:opacity-50"
         >
-          {isPending ? "Saving…" : "Save interests"}
+          {isPending ? "SAVING…" : "SAVE INTERESTS"}
         </button>
         {savedAt && !isPending && (
-          <span className="text-xs text-emerald-300">Saved.</span>
+          <span className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.7 }}>SAVED.</span>
         )}
-        {error && <span className="text-xs text-coral-300">{error}</span>}
+        {error && <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>{error}</span>}
       </div>
     </div>
   );

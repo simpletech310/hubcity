@@ -80,7 +80,13 @@ export default function LandmarksPage() {
         imageUrl="/images/art/IMG_2774.JPG"
       />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -91,27 +97,37 @@ export default function LandmarksPage() {
         {landmarks.map((landmark) => (
           <div
             key={landmark.name}
-            className="rounded-2xl border border-border-subtle bg-card p-4 hover:border-gold/15 transition-colors"
+            className="p-4"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
           >
             <div className="flex gap-3">
-              <div className="shrink-0 w-11 h-11 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                <Icon name={landmark.icon} size={18} className="text-gold" />
+              <div
+                className="shrink-0 w-11 h-11 flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name={landmark.icon} size={18} style={{ color: "var(--ink-strong)" }} />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-heading font-bold text-[14px] text-white leading-tight">
+                  <h3 className="c-card-t leading-tight" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                     {landmark.name}
                   </h3>
                   {landmark.established && (
-                    <span className="shrink-0 text-[9px] font-semibold text-gold/60 bg-gold/8 rounded-full px-2 py-0.5">
+                    <span className="c-badge-gold shrink-0">
                       Est. {landmark.established}
                     </span>
                   )}
                 </div>
-                <p className="text-[12px] text-txt-secondary mt-1 leading-relaxed line-clamp-2">
+                <p className="c-body mt-1 leading-relaxed line-clamp-2" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
                   {landmark.description}
                 </p>
-                <p className="text-[11px] text-white/30 mt-2 flex items-center gap-1">
+                <p className="c-meta mt-2 flex items-center gap-1" style={{ fontSize: 11 }}>
                   <Icon name="pin" size={10} className="shrink-0" />
                   {landmark.location}
                 </p>

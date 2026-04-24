@@ -100,11 +100,18 @@ export default async function CityHallPage() {
             const inner = (
               <div className="flex flex-col items-center gap-2 py-3 press group">
                 <div
-                  className={`w-[50px] h-[50px] rounded-2xl bg-gradient-to-br ${link.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-white/[0.06]`}
+                  className="w-[50px] h-[50px] flex items-center justify-center group-hover:scale-110 transition-transform duration-300"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 >
                   <Icon name={link.iconName} size={20} />
                 </div>
-                <span className="text-[11px] font-semibold text-txt-secondary group-hover:text-white transition-colors text-center leading-tight">
+                <span
+                  className="c-meta text-center leading-tight"
+                  style={{ fontSize: 10, color: "var(--ink-strong)" }}
+                >
                   {link.label}
                 </span>
               </div>
@@ -143,9 +150,12 @@ export default async function CityHallPage() {
                 href={`/user/${member.handle}`}
                 className="shrink-0 w-[160px] press"
               >
-                <div className="bg-royal rounded-2xl border border-border-subtle overflow-hidden hover:border-gold/20 transition-all">
+                <div
+                  className="c-frame overflow-hidden transition-all"
+                  style={{ background: "var(--paper-warm)" }}
+                >
                   {/* Avatar */}
-                  <div className="relative h-[100px] bg-gradient-to-br from-gold/20 to-royal">
+                  <div className="relative h-[100px]" style={{ background: "var(--paper-soft)" }}>
                     {member.avatar_url && (
                       <img
                         src={member.avatar_url}
@@ -153,19 +163,21 @@ export default async function CityHallPage() {
                         className="absolute inset-0 w-full h-full object-cover"
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-royal via-transparent to-transparent" />
                     {/* Verified badge */}
-                    <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gold/20 border border-gold/30 flex items-center justify-center">
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="#F2A900">
+                    <div
+                      className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center"
+                      style={{ background: "var(--gold-c)", border: "1.5px solid var(--ink-strong)" }}
+                    >
+                      <svg width="10" height="10" viewBox="0 0 12 12" fill="var(--ink-strong)">
                         <path d="M6 0L7.5 2.5L10.5 1.5L10 4.5L12 6L10 7.5L10.5 10.5L7.5 9.5L6 12L4.5 9.5L1.5 10.5L2 7.5L0 6L2 4.5L1.5 1.5L4.5 2.5Z" />
                       </svg>
                     </div>
                   </div>
                   <div className="p-3 pt-2">
-                    <p className="font-heading font-bold text-[12px] leading-tight mb-0.5 truncate">
+                    <p className="c-card-t text-[12px] leading-tight mb-0.5 truncate">
                       {member.display_name}
                     </p>
-                    <p className="text-[10px] text-gold font-medium">
+                    <p className="c-meta" style={{ fontSize: 10, color: "var(--gold-c)" }}>
                       {member.display_name.includes("Mayor") ? "Mayor — At-Large" : `District ${member.district}`}
                     </p>
                   </div>
@@ -182,27 +194,27 @@ export default async function CityHallPage() {
         <Link href="/officials?tab=school_board" className="block press">
           <Card hover>
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                <Icon name="graduation" size={22} className="text-emerald-400" />
+              <div
+                className="w-12 h-12 flex items-center justify-center shrink-0"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="graduation" size={22} style={{ color: "var(--ink-strong)" }} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="font-heading font-bold text-[14px] leading-snug">
+                <h3 className="c-card-t text-[14px] leading-snug">
                   CUSD Board of Trustees
                 </h3>
-                <p className="text-[11px] text-txt-secondary leading-relaxed mt-0.5">
+                <p className="c-body text-[11px] leading-relaxed mt-0.5">
                   View trustee profiles, votes, and accountability scores
                 </p>
               </div>
-              <Icon name="chevron-right" size={14} className="text-emerald-400/50" />
+              <Icon name="chevron-right" size={14} style={{ color: "var(--ink-strong)", opacity: 0.5 }} />
             </div>
           </Card>
         </Link>
         <div className="mt-3">
-          <Link
-            href="/officials"
-            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-gold press"
-          >
-            View All Officials & Accountability
+          <Link href="/officials" className="c-btn c-btn-outline c-btn-sm">
+            View All Officials &amp; Accountability
             <Icon name="chevron-right" size={12} />
           </Link>
         </div>
@@ -225,12 +237,11 @@ export default async function CityHallPage() {
             ))}
           </div>
           {depts.length > 6 && (
-            <Link
-              href="/city-hall/departments"
-              className="block text-center text-sm text-gold font-semibold mt-4 press"
-            >
-              View All {depts.length} Departments
-            </Link>
+            <div className="text-center mt-4">
+              <Link href="/city-hall/departments" className="c-btn c-btn-outline c-btn-sm">
+                View All {depts.length} Departments
+              </Link>
+            </div>
           )}
         </section>
       )}
@@ -247,7 +258,10 @@ export default async function CityHallPage() {
               return (
                 <Card key={post.id} hover>
                   <div className="flex items-center gap-3 mb-2.5">
-                    <div className="w-9 h-9 rounded-full overflow-hidden relative ring-1 ring-gold/20">
+                    <div
+                      className="w-9 h-9 rounded-full overflow-hidden relative"
+                      style={{ border: "1.5px solid var(--rule-strong-c)" }}
+                    >
                       {post.author?.avatar_url ? (
                         <Image
                           src={post.author.avatar_url}
@@ -256,24 +270,30 @@ export default async function CityHallPage() {
                           className="object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-[11px] font-bold text-gold">
+                        <div
+                          className="w-full h-full flex items-center justify-center text-[11px] font-bold"
+                          style={{ background: "var(--paper-soft)", color: "var(--gold-c)" }}
+                        >
                           {post.author?.display_name?.split(" ").map((w) => w[0]).join("").slice(0, 2) ?? "?"}
                         </div>
                       )}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-[13px] font-bold">{post.author?.display_name ?? "City Official"}</p>
+                        <p className="c-card-t text-[13px]">{post.author?.display_name ?? "City Official"}</p>
                         {badge && <Badge label={badge.label} variant={badge.variant} />}
                       </div>
-                      <p className="text-[10px] text-txt-secondary">{timeAgo(post.created_at)}</p>
+                      <p className="c-meta" style={{ fontSize: 10 }}>{timeAgo(post.created_at)}</p>
                     </div>
                   </div>
-                  <p className="text-[12px] text-txt-secondary leading-relaxed line-clamp-3">
+                  <p className="c-body text-[12px] leading-relaxed line-clamp-3">
                     {post.body}
                   </p>
-                  <div className="flex items-center gap-4 mt-2.5 pt-2.5 border-t border-border-subtle">
-                    <span className="text-[11px] text-txt-secondary font-medium flex items-center gap-1">
+                  <div
+                    className="flex items-center gap-4 mt-2.5 pt-2.5"
+                    style={{ borderTop: "1.5px solid var(--rule-strong-c)" }}
+                  >
+                    <span className="c-meta flex items-center gap-1" style={{ fontSize: 11 }}>
                       {post.comment_count > 0 && <><Icon name="chat" size={12} /> {post.comment_count}</>}
                     </span>
                   </div>
@@ -298,23 +318,35 @@ export default async function CityHallPage() {
               <Link key={event.id} href={`/events/${event.id}`}>
                 <Card hover>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-14 rounded-lg bg-midnight/50 border border-gold/15 flex flex-col items-center justify-center shrink-0">
-                      <p className="text-[9px] text-gold font-bold uppercase leading-none">
+                    <div
+                      className="w-11 h-14 flex flex-col items-center justify-center shrink-0"
+                      style={{
+                        background: "var(--paper-warm)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      <p
+                        className="c-kicker leading-none"
+                        style={{ fontSize: 9, color: "var(--gold-c)" }}
+                      >
                         {new Date(event.start_date).toLocaleDateString("en-US", { month: "short" })}
                       </p>
-                      <p className="text-base font-bold leading-none mt-0.5">
+                      <p
+                        className="text-base font-bold leading-none mt-0.5"
+                        style={{ color: "var(--ink-strong)" }}
+                      >
                         {new Date(event.start_date).getDate()}
                       </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-[13px] truncate">{event.title}</p>
+                      <p className="c-card-t text-[13px] truncate">{event.title}</p>
                       {event.location_name && (
-                        <p className="text-[11px] text-txt-secondary truncate flex items-center gap-1">
+                        <p className="c-meta truncate flex items-center gap-1" style={{ fontSize: 11 }}>
                           <Icon name="pin" size={11} /> {event.location_name}
                         </p>
                       )}
                       {event.start_time && (
-                        <p className="text-[10px] text-txt-secondary mt-0.5 flex items-center gap-1">
+                        <p className="c-meta mt-0.5 flex items-center gap-1" style={{ fontSize: 10 }}>
                           <Icon name="clock" size={11} /> {event.start_time}
                         </p>
                       )}
@@ -330,22 +362,23 @@ export default async function CityHallPage() {
 
       {/* CTA Banner */}
       <section className="px-5 mb-8">
-        <div className="relative rounded-2xl overflow-hidden p-5 bg-gradient-to-br from-gold/10 via-deep to-midnight border border-gold/15">
-          <div className="pattern-dots absolute inset-0 opacity-15" />
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+        <div
+          className="relative overflow-hidden p-5 c-frame-strong"
+          style={{ background: "var(--paper-warm)" }}
+        >
           <div className="relative text-center">
             <span className="block mb-2"><Icon name="globe" size={28} /></span>
-            <h3 className="font-heading font-bold text-base mb-1">
-              Visit comptoncity.org
-            </h3>
-            <p className="text-[12px] text-txt-secondary leading-relaxed mb-4 max-w-[280px] mx-auto">
+            <h3 className="c-card-t mb-1">Visit comptoncity.org</h3>
+            <p
+              className="c-body text-[12px] leading-relaxed mb-4 max-w-[280px] mx-auto"
+            >
               For full city services, agendas, and official documents, visit the City of Compton website.
             </p>
             <a
               href="https://www.comptoncity.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-full text-xs font-bold press hover:bg-gold-light transition-colors"
+              className="c-btn c-btn-primary c-btn-sm"
             >
               Go to comptoncity.org
               <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">

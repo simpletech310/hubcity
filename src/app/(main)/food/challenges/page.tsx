@@ -20,7 +20,8 @@ export default async function FoodChallengesPage() {
       <div className="px-5 pt-4 mb-5">
         <Link
           href="/food"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+          className="inline-flex items-center gap-1.5 press mb-3 c-kicker"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -34,10 +35,10 @@ export default async function FoodChallengesPage() {
           </svg>
           Food
         </Link>
-        <h1 className="font-heading text-2xl font-bold mb-1">
+        <h1 className="c-hero mb-1" style={{ fontSize: "1.75rem", color: "var(--ink-strong)" }}>
           Food Challenges
         </h1>
-        <p className="text-sm text-txt-secondary">
+        <p className="c-body" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
           Compete, eat, and win prizes
         </p>
       </div>
@@ -49,10 +50,16 @@ export default async function FoodChallengesPage() {
             <ChallengeCard key={challenge.id} challenge={challenge} />
           ))
         ) : (
-          <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="trophy" size={28} /></span>
-            <p className="text-sm font-medium mb-1">No active challenges</p>
-            <p className="text-xs text-txt-secondary">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="trophy" size={28} /></span>
+            <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>No active challenges</p>
+            <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
               New food challenges are coming soon!
             </p>
           </div>

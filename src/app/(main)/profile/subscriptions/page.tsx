@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import OpenPortalButton from "./OpenPortalButton";
@@ -64,21 +63,22 @@ export default async function SubscriptionsPage() {
 
       <div className="px-5 space-y-3 mb-8">
         {list.length === 0 ? (
-          <Card>
+          <div className="c-frame p-4" style={{ background: "var(--paper-soft)" }}>
             <div className="text-center py-6">
               <Icon
                 name="dollar"
                 size={28}
-                className="text-txt-secondary mx-auto mb-2"
+                className="mx-auto mb-2"
+                style={{ color: "var(--ink-strong)", opacity: 0.5 }}
               />
-              <p className="text-sm text-txt-secondary">
+              <p className="c-body" style={{ fontSize: 13 }}>
                 You haven&apos;t subscribed to any creators yet.
               </p>
-              <Link href="/live" className="text-xs text-gold underline mt-2 inline-block">
-                Browse channels
+              <Link href="/live" className="c-kicker mt-2 inline-block press" style={{ color: "var(--ink-strong)", textDecoration: "underline", fontSize: 11 }}>
+                BROWSE CHANNELS
               </Link>
             </div>
-          </Card>
+          </div>
         ) : (
           list.map((sub) => {
             const channel = Array.isArray(sub.channel)
@@ -86,9 +86,15 @@ export default async function SubscriptionsPage() {
               : sub.channel;
             if (!channel) return null;
             return (
-              <Card key={sub.id}>
+              <div key={sub.id} className="c-frame p-3" style={{ background: "var(--paper-soft)" }}>
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden shrink-0 c-frame">
+                  <div
+                    className="w-12 h-12 flex items-center justify-center overflow-hidden shrink-0"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
                     {channel.avatar_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -97,7 +103,7 @@ export default async function SubscriptionsPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-gold font-heading font-bold text-sm">
+                      <span className="c-hero" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                         {channel.name.slice(0, 2).toUpperCase()}
                       </span>
                     )}
@@ -105,7 +111,8 @@ export default async function SubscriptionsPage() {
                   <div className="flex-1 min-w-0">
                     <Link
                       href={`/live/channel/${channel.id}`}
-                      className="text-sm font-bold hover:text-gold truncate block"
+                      className="c-card-t truncate block"
+                      style={{ fontSize: 14 }}
                     >
                       {channel.name}
                     </Link>
@@ -122,13 +129,13 @@ export default async function SubscriptionsPage() {
                         }
                       />
                       {sub.amount_cents ? (
-                        <span className="text-[10px] text-txt-secondary">
+                        <span className="c-meta">
                           {fmt(sub.amount_cents, sub.currency ?? "usd")}/mo
                         </span>
                       ) : null}
                     </div>
                     {sub.current_period_end && (
-                      <p className="text-[10px] text-txt-secondary mt-1">
+                      <p className="c-meta mt-1">
                         {sub.cancel_at_period_end ? "Ends" : "Renews"}{" "}
                         {new Date(sub.current_period_end).toLocaleDateString(
                           "en-US",
@@ -138,7 +145,7 @@ export default async function SubscriptionsPage() {
                     )}
                   </div>
                 </div>
-              </Card>
+              </div>
             );
           })
         )}

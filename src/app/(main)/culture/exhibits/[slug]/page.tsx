@@ -90,7 +90,7 @@ export default async function ExhibitDetailPage({
               {exhibit.era}
             </span>
           )}
-          <h1 className="c-hero text-white leading-tight" style={{ color: "#fff", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}>
+          <h1 className="c-hero leading-tight" style={{ color: "#fff", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}>
             {exhibit.title}
           </h1>
           {exhibit.subtitle && (

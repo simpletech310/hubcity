@@ -44,7 +44,13 @@ export default function GalleryPage() {
         imageUrl="/images/art/IMG_2777.JPG"
       />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -66,7 +72,7 @@ export default function GalleryPage() {
       {loading ? (
         <div className="px-5 grid grid-cols-2 gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="skeleton aspect-square rounded-2xl" />
+            <div key={i} className="skeleton aspect-square" />
           ))}
         </div>
       ) : items.length > 0 ? (
@@ -78,10 +84,16 @@ export default function GalleryPage() {
           </div>
         </section>
       ) : (
-        <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3"><Icon name="frame" size={28} /></span>
-          <p className="text-sm font-medium mb-1">Gallery coming soon</p>
-          <p className="text-xs text-txt-secondary">
+        <div
+          className="text-center py-16 px-5 mx-5"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="frame" size={28} /></span>
+          <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>Gallery coming soon</p>
+          <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
             Artworks and artifacts are being digitized for the collection.
           </p>
         </div>

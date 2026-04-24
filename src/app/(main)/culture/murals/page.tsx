@@ -50,19 +50,27 @@ export default async function MuralsPage({
       {/* District Filter */}
       <div className="px-5">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {DISTRICTS.map((d) => (
-            <a
-              key={d}
-              href={d === "All" ? "/culture/murals" : `/culture/murals?district=${encodeURIComponent(d)}`}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors border ${
-                d === activeDistrict
-                  ? "bg-gold text-black border-gold"
-                  : "bg-white/5 text-text-secondary border-border-subtle hover:border-gold/30"
-              }`}
-            >
-              {d}
-            </a>
-          ))}
+          {DISTRICTS.map((d) => {
+            const active = d === activeDistrict;
+            return (
+              <a
+                key={d}
+                href={d === "All" ? "/culture/murals" : `/culture/murals?district=${encodeURIComponent(d)}`}
+                className="shrink-0 px-4 py-1.5 transition-colors"
+                style={{
+                  background: active ? "var(--gold-c)" : "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 13,
+                  fontWeight: active ? 800 : 600,
+                  letterSpacing: "0.02em",
+                }}
+              >
+                {d}
+              </a>
+            );
+          })}
         </div>
       </div>
 
@@ -75,12 +83,18 @@ export default async function MuralsPage({
             ))}
           </div>
         ) : (
-          <div className="text-center py-16">
-            <span className="text-4xl mb-4 block"><Icon name="palette" size={28} /></span>
-            <h3 className="font-heading font-bold text-text-primary text-lg">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="mb-4 block" style={{ color: "var(--ink-strong)" }}><Icon name="palette" size={28} /></span>
+            <h3 className="c-card-t" style={{ fontSize: 18, color: "var(--ink-strong)" }}>
               No murals found
             </h3>
-            <p className="text-text-secondary text-sm mt-1">
+            <p className="c-body mt-1" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
               {activeDistrict !== "All"
                 ? `No murals listed for ${activeDistrict} yet.`
                 : "Murals will appear here as they are added."}

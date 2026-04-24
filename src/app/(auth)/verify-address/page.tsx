@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import Icon from "@/components/ui/Icon";
 
@@ -71,16 +70,24 @@ export default function VerifyAddressPage() {
   }
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-dvh bg-midnight flex flex-col items-center justify-center px-6">
-      <div className="w-16 h-16 rounded-2xl bg-gold-glow flex items-center justify-center mb-6">
-        <span className="text-3xl"><Icon name="pin" size={28} /></span>
+    <div className="max-w-[430px] mx-auto min-h-dvh flex flex-col items-center justify-center px-6 culture-surface">
+      <div
+        className="w-16 h-16 flex items-center justify-center mb-6"
+        style={{
+          background: "var(--gold-c)",
+          border: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
+        <Icon name="pin" size={28} />
       </div>
 
-      <h1 className="font-heading text-2xl font-bold mb-2">
-        Verify Your Address
+      <p className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>§ VERIFY</p>
+      <h1 className="c-hero mt-1 mb-1" style={{ fontSize: 34, color: "var(--ink-strong)" }}>
+        Verify Your Address.
       </h1>
-      <p className="text-txt-secondary text-sm text-center mb-8">
-        Help us connect you with your local scene and community resources
+      <p className="c-serif-it text-center mb-8" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
+        Help us connect you with your local scene and community resources.
       </p>
 
       <form onSubmit={handleVerify} className="w-full space-y-4">
@@ -107,39 +114,69 @@ export default function VerifyAddressPage() {
         />
 
         {error && (
-          <p className="text-sm text-coral bg-coral/10 rounded-lg px-3 py-2">
+          <div
+            className="px-4 py-3 c-kicker"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 12,
+              letterSpacing: "0.12em",
+            }}
+          >
             {error}
-          </p>
+          </div>
         )}
 
         {outcome?.kind === "pending_review" && (
-          <div className="rounded-lg bg-gold/10 border border-gold/20 px-3 py-3 text-sm text-gold">
-            <p className="font-semibold mb-1">We&rsquo;re reviewing your address</p>
-            <p className="text-gold/80">{outcome.message}</p>
+          <div
+            className="px-4 py-3"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <p className="c-kicker mb-1" style={{ fontSize: 11, letterSpacing: "0.12em" }}>
+              REVIEWING YOUR ADDRESS
+            </p>
+            <p className="c-body" style={{ fontSize: 13 }}>{outcome.message}</p>
           </div>
         )}
 
         {outcome?.kind === "rejected" && (
-          <div className="rounded-lg bg-coral/10 border border-coral/20 px-3 py-3 text-sm">
-            <p className="font-semibold text-coral mb-1">{outcome.message}</p>
+          <div
+            className="px-4 py-3"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+            }}
+          >
+            <p className="c-kicker mb-1" style={{ fontSize: 11, letterSpacing: "0.12em" }}>{outcome.message}</p>
             {outcome.supported && outcome.supported.length > 0 && (
-              <p className="text-coral/80">
+              <p style={{ fontSize: 12, opacity: 0.8 }}>
                 Currently supported cities: {outcome.supported.join(", ")}.
               </p>
             )}
           </div>
         )}
 
-        <Button type="submit" fullWidth loading={loading}>
-          Verify & Continue
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="c-btn c-btn-primary w-full press disabled:opacity-50"
+        >
+          {loading ? "VERIFYING…" : "VERIFY & CONTINUE"}
+        </button>
       </form>
 
       <button
         onClick={() => router.push("/")}
-        className="text-sm text-txt-secondary mt-6 hover:text-white"
+        className="c-kicker mt-6 press"
+        style={{ color: "var(--ink-strong)", opacity: 0.6, fontSize: 11, letterSpacing: "0.14em" }}
       >
-        Skip for now
+        SKIP FOR NOW
       </button>
     </div>
   );

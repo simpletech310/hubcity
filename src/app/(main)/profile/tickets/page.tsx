@@ -172,8 +172,8 @@ export default async function MyTicketsPage() {
           {past.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-xs font-bold text-txt-secondary uppercase tracking-wider">Past</span>
-                <span className="text-[10px] text-txt-secondary bg-white/[0.06] px-2 py-0.5 rounded-full font-medium">
+                <span className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.6 }}>Past</span>
+                <span className="c-meta px-2 py-0.5 rounded-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                   {past.length}
                 </span>
               </div>
@@ -216,7 +216,7 @@ function OrderCard({ order }: { order: OrderWithEvent }) {
               <span className="text-3xl">{categoryEmojis[category] || "calendar"}</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
           {/* Status badge overlaid */}
           <div className="absolute top-2.5 right-2.5">

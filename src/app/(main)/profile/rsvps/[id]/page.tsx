@@ -23,7 +23,7 @@ const categoryGradients: Record<string, string> = {
 const statusConfig: Record<string, { text: string; bg: string; label: string }> = {
   going: { text: "text-emerald", bg: "bg-emerald/10", label: "Going" },
   interested: { text: "text-gold", bg: "bg-gold/10", label: "Interested" },
-  not_going: { text: "text-white/40", bg: "bg-white/5", label: "Not Going" },
+  not_going: { text: "", bg: "", label: "Not Going" },
 };
 
 function formatTime12h(time: string): string {
@@ -200,11 +200,11 @@ export default async function RsvpDetailPage({
           </div>
         )}
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
         {/* Title overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="c-title text-white leading-tight">
+          <h2 className="c-card-t" style={{ fontSize: 22, color: "var(--paper)", lineHeight: 1.15 }}>
             {event.title}
           </h2>
         </div>

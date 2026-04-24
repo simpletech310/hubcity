@@ -112,10 +112,10 @@ export default async function ArtistProfilePage({
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
             {posts.map((post) => (
               <Card key={post.id} hover padding>
-                <p className="text-sm text-text-secondary line-clamp-3">
+                <p className="c-body line-clamp-3" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
                   {post.body || "..."}
                 </p>
-                <span className="text-[11px] text-warm-gray mt-2 block">
+                <span className="c-meta mt-2 block" style={{ fontSize: 11 }}>
                   {new Date(post.created_at).toLocaleDateString()}
                 </span>
               </Card>
@@ -132,11 +132,14 @@ export default async function ArtistProfilePage({
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             {videos.map((video) => (
               <Card key={video.id} hover padding={false}>
-                <div className="aspect-video bg-black/40 flex items-center justify-center">
-                  <span className="text-3xl opacity-40"><Icon name="film" size={28} /></span>
+                <div
+                  className="aspect-video flex items-center justify-center"
+                  style={{ background: "var(--paper-soft)", borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span style={{ color: "var(--ink-strong)", opacity: 0.4 }}><Icon name="film" size={28} /></span>
                 </div>
                 <div className="p-4">
-                  <h3 className="font-heading font-bold text-sm text-text-primary truncate">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                     {video.title}
                   </h3>
                 </div>
@@ -147,9 +150,15 @@ export default async function ArtistProfilePage({
       )}
 
       {posts.length === 0 && videos.length === 0 && (
-        <div className="px-5 text-center py-12">
-          <span className="text-4xl mb-3 block"><Icon name="music" size={28} /></span>
-          <p className="text-text-secondary text-sm">
+        <div
+          className="mx-5 text-center py-12 px-6"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <span className="mb-3 block" style={{ color: "var(--ink-strong)" }}><Icon name="music" size={28} /></span>
+          <p className="c-body" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
             No content from this artist yet.
           </p>
         </div>

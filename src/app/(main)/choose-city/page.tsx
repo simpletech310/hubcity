@@ -88,26 +88,30 @@ export default async function ChooseCityPage({
       </section>
 
       <section className="px-6 py-8 max-w-2xl mx-auto">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-white/60 mb-3">
-          Live now
-        </h2>
+        <p className="c-kicker mb-3" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>
+          LIVE NOW
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {live.map((c) => (
             <Link
               key={c.id}
               href={cityHref(c.slug)}
-              className="group relative overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] hover:border-gold/40 hover:bg-white/[0.04] p-5 transition"
+              className="group relative p-5 transition press"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.06] to-transparent opacity-0 group-hover:opacity-100 transition" />
               <div className="relative flex items-center justify-between">
                 <div>
-                  <p className="font-display text-xl">{c.name}</p>
-                  <p className="text-[11px] text-white/40 mt-0.5">
+                  <p className="c-card-t" style={{ fontSize: 20 }}>{c.name}</p>
+                  <p className="c-meta mt-0.5">
                     {c.state} · {c.default_zip_codes.length} ZIP
                     {c.default_zip_codes.length === 1 ? "" : "s"}
                   </p>
                 </div>
-                <Icon name="forward" size={16} className="text-gold" />
+                <Icon name="forward" size={16} style={{ color: "var(--ink-strong)" }} />
               </div>
             </Link>
           ))}
@@ -115,17 +119,22 @@ export default async function ChooseCityPage({
 
         {comingSoon.length > 0 && (
           <>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-white/60 mt-8 mb-3">
-              Coming soon
-            </h2>
+            <p className="c-kicker mt-8 mb-3" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>
+              COMING SOON
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {comingSoon.map((c) => (
                 <div
                   key={c.id}
-                  className="rounded-xl border border-white/5 bg-white/[0.01] p-5 opacity-60"
+                  className="p-5 opacity-60"
+                  style={{
+                    background: "var(--paper-soft)",
+                    border: "2px solid var(--rule-strong-c)",
+                    color: "var(--ink-strong)",
+                  }}
                 >
-                  <p className="font-display text-xl">{c.name}</p>
-                  <p className="text-[11px] text-white/40 mt-0.5">
+                  <p className="c-card-t" style={{ fontSize: 20 }}>{c.name}</p>
+                  <p className="c-meta mt-0.5">
                     {c.state} · launching soon
                   </p>
                 </div>

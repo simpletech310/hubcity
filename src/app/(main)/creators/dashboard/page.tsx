@@ -120,8 +120,8 @@ export default function CreatorDashboardPage() {
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <div className="animate-pulse space-y-3">
-                <div className="h-4 bg-white/5 rounded w-1/3" />
-                <div className="h-6 bg-white/5 rounded w-1/2" />
+                <div className="h-4 w-1/3" style={{ background: "var(--paper-soft)" }} />
+                <div className="h-6 w-1/2" style={{ background: "var(--paper-soft)" }} />
               </div>
             </Card>
           ))}
@@ -153,11 +153,10 @@ export default function CreatorDashboardPage() {
   return (
     <div className="animate-fade-in pb-safe">
       {/* Creator Hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/8 via-deep to-hc-purple/6" />
-        <div className="absolute inset-0 pattern-dots opacity-15" />
-        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-midnight to-transparent" />
-
+      <div
+        className="relative overflow-hidden"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <div className="relative z-10 px-5 pt-6 pb-5">
           <div className="flex items-center gap-4">
             {profile.avatar_url ? (
@@ -166,42 +165,53 @@ export default function CreatorDashboardPage() {
                 alt={displayName}
                 width={64}
                 height={64}
-                className="w-16 h-16 rounded-full object-cover ring-4 ring-midnight shadow-lg shadow-gold/20"
+                className="w-16 h-16 rounded-full object-cover"
+                style={{ border: "2px solid var(--rule-strong-c)" }}
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center text-midnight font-heading font-bold text-xl ring-4 ring-midnight shadow-lg shadow-gold/20">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                  fontFamily: "var(--font-archivo), sans-serif",
+                  fontSize: 22,
+                  fontWeight: 800,
+                }}
+              >
                 {displayName.charAt(0).toUpperCase()}
               </div>
             )}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="font-heading text-xl font-bold truncate">{displayName}</h1>
+                <h1 className="c-card-t truncate" style={{ fontSize: 20, color: "var(--ink-strong)" }}>{displayName}</h1>
                 <CreatorBadge tier={tier} />
               </div>
-              <p className="text-sm text-txt-secondary">{profile.handle || "@creator"}</p>
+              <p className="c-meta" style={{ fontSize: 13 }}>{profile.handle || "@creator"}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <section className="px-5 mb-6">
+      <section className="px-5 mt-6 mb-6">
         <div className="grid grid-cols-2 gap-3">
           {kpis.map((kpi) => (
-            <Card key={kpi.label} variant="glass" className="relative overflow-hidden">
+            <Card key={kpi.label} className="relative overflow-hidden">
               <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: kpi.color }} />
               <div className="flex items-center gap-2.5">
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: `${kpi.color}12` }}
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
                 >
-                  <Icon name={kpi.iconName} size={20} style={{ color: kpi.color }} />
+                  <Icon name={kpi.iconName} size={20} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-heading font-bold text-lg leading-none" style={{ color: kpi.color }}>
+                  <p className="c-card-t leading-none" style={{ fontSize: 18, color: "var(--ink-strong)" }}>
                     {kpi.value}
                   </p>
-                  <p className="text-[9px] text-txt-secondary font-semibold uppercase tracking-wider mt-0.5">
+                  <p className="c-kicker mt-0.5" style={{ fontSize: 9 }}>
                     {kpi.label}
                   </p>
                 </div>
@@ -214,36 +224,39 @@ export default function CreatorDashboardPage() {
       {/* Channel Section */}
       <section className="px-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">Your Channel</h2>
+          <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Your Channel</h2>
         </div>
         {channel ? (
           <Link href={`/channels/${channel.slug}`}>
             <Card hover className="relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gold" />
+              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: "var(--gold-c)" }} />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center">
-                    <Icon name="live" size={22} className="text-gold" />
+                  <div
+                    className="w-12 h-12 flex items-center justify-center"
+                    style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+                  >
+                    <Icon name="live" size={22} style={{ color: "var(--ink-strong)" }} />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-heading font-bold text-sm">{channel.name}</p>
+                      <p className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>{channel.name}</p>
                       {channel.is_verified && (
                         <Badge label="Verified" variant="emerald" />
                       )}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-[10px] text-txt-secondary">
-                        <span className="text-white font-bold">{channel.follower_count}</span> followers
+                      <span className="c-meta" style={{ fontSize: 10 }}>
+                        <span className="c-card-t" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{channel.follower_count}</span> followers
                       </span>
-                      <span className="text-[10px] text-txt-secondary">
-                        <span className="text-white font-bold">{earningsData.total_views}</span> views
+                      <span className="c-meta" style={{ fontSize: 10 }}>
+                        <span className="c-card-t" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{earningsData.total_views}</span> views
                       </span>
                     </div>
                   </div>
                 </div>
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary/50">
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                   <path d="M6 4l4 4-4 4" />
                 </svg>
               </div>
@@ -252,7 +265,7 @@ export default function CreatorDashboardPage() {
         ) : (
           <Card>
             <div className="text-center py-4">
-              <p className="text-sm text-txt-secondary mb-3">No channel created yet</p>
+              <p className="c-body mb-3" style={{ fontSize: 14, color: "var(--ink-strong)" }}>No channel created yet</p>
               <Button variant="outline" size="sm">Create Channel</Button>
             </div>
           </Card>
@@ -262,22 +275,28 @@ export default function CreatorDashboardPage() {
       {/* Recent Earnings */}
       <section className="px-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-emerald" />
-          <h2 className="font-heading font-bold text-base">Recent Earnings</h2>
+          <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Recent Earnings</h2>
         </div>
         {earningsData.recent_earnings.length > 0 ? (
           <Card padding={false}>
-            <div className="divide-y divide-border-subtle">
-              {earningsData.recent_earnings.map((earning) => (
-                <div key={earning.id} className="flex items-center justify-between px-4 py-3">
+            <div>
+              {earningsData.recent_earnings.map((earning, i) => (
+                <div
+                  key={earning.id}
+                  className="flex items-center justify-between px-4 py-3"
+                  style={{
+                    borderTop: i === 0 ? undefined : "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   <div>
-                    <p className="text-xs font-semibold">{earning.source}</p>
-                    <p className="text-[10px] text-txt-secondary">
+                    <p className="c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{earning.source}</p>
+                    <p className="c-meta" style={{ fontSize: 10 }}>
                       {new Date(earning.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-heading font-bold text-sm text-emerald">
+                    <span className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                       {formatCurrency(earning.amount)}
                     </span>
                     <Badge
@@ -292,8 +311,8 @@ export default function CreatorDashboardPage() {
         ) : (
           <Card>
             <div className="text-center py-6">
-              <span className="block mb-2"><Icon name="chart" size={28} className="text-txt-secondary" /></span>
-              <p className="text-xs text-txt-secondary">
+              <span className="block mb-2" style={{ color: "var(--ink-strong)" }}><Icon name="chart" size={28} /></span>
+              <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
                 Earnings will appear here once you start creating content
               </p>
             </div>
@@ -304,8 +323,8 @@ export default function CreatorDashboardPage() {
       {/* Quick Actions */}
       <section className="px-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-5 rounded-full bg-hc-blue" />
-          <h2 className="font-heading font-bold text-base">Quick Actions</h2>
+          <div className="w-1 h-5" style={{ background: "var(--gold-c)" }} />
+          <h2 className="c-card-t" style={{ fontSize: 16, color: "var(--ink-strong)" }}>Quick Actions</h2>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
           {([
@@ -314,15 +333,15 @@ export default function CreatorDashboardPage() {
             { label: "Podcasts", iconName: "podcast" as IconName, color: "#8B5CF6", href: "/podcasts" },
           ]).map((action) => (
             <Link key={action.label} href={action.href}>
-              <Card hover variant="glass" className="relative overflow-hidden text-center">
+              <Card hover className="relative overflow-hidden text-center">
                 <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: action.color }} />
                 <div
-                  className="w-11 h-11 rounded-xl flex items-center justify-center mx-auto mb-2"
-                  style={{ background: `${action.color}12` }}
+                  className="w-11 h-11 flex items-center justify-center mx-auto mb-2"
+                  style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
                 >
-                  <Icon name={action.iconName} size={22} style={{ color: action.color }} />
+                  <Icon name={action.iconName} size={22} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <p className="text-[11px] font-bold">{action.label}</p>
+                <p className="c-card-t" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{action.label}</p>
               </Card>
             </Link>
           ))}
@@ -331,14 +350,20 @@ export default function CreatorDashboardPage() {
 
       {/* Revenue Split Reminder */}
       <section className="px-5 mb-8">
-        <div className="rounded-2xl bg-white/[0.03] border border-border-subtle p-4">
-          <p className="text-[10px] font-bold text-txt-secondary uppercase tracking-wider mb-2">Revenue Split</p>
-          <div className="flex items-center justify-center gap-2 text-xs">
-            <span className="text-gold font-bold">40% Creator</span>
-            <span className="text-white/20">/</span>
-            <span className="text-hc-blue font-bold">30% Platform</span>
-            <span className="text-white/20">/</span>
-            <span className="text-emerald font-bold">30% Community Fund</span>
+        <div
+          className="p-4"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <p className="c-kicker mb-2" style={{ color: "var(--ink-strong)" }}>Revenue Split</p>
+          <div className="flex items-center justify-center gap-2 c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
+            <span>40% Creator</span>
+            <span style={{ opacity: 0.3 }}>/</span>
+            <span>30% Platform</span>
+            <span style={{ opacity: 0.3 }}>/</span>
+            <span>30% Community Fund</span>
           </div>
         </div>
       </section>

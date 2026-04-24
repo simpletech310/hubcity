@@ -358,10 +358,11 @@ export default async function DistrictPage() {
         {!user && (
           <Link
             href="/auth"
-            className="block rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-4 press"
+            className="block c-frame p-4 press"
+            style={{ background: "var(--paper-warm)" }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}>
                 <Icon name="users" size={18} className="text-gold" />
               </div>
               <div className="flex-1">
@@ -377,10 +378,11 @@ export default async function DistrictPage() {
         {user && !userDistrict && (
           <Link
             href="/profile"
-            className="block rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-4 press"
+            className="block c-frame p-4 press"
+            style={{ background: "var(--paper-warm)" }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}>
                 <Icon name="map-pin" size={18} className="text-gold" />
               </div>
               <div className="flex-1">
@@ -394,7 +396,7 @@ export default async function DistrictPage() {
 
         {/* ── Council Member(s) ──────────────────────── */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
             {userDistrict ? "Your Representatives" : "Meet Your Council"}
           </p>
           <div className="space-y-3">
@@ -446,7 +448,7 @@ export default async function DistrictPage() {
         {/* ── Your School Trustee(s) ─────────────────── */}
         {trusteesList.length > 0 && (
           <div>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
               Your School Trustee{trusteesList.length > 1 ? "s" : ""}
             </p>
             <div className="space-y-2">
@@ -461,10 +463,10 @@ export default async function DistrictPage() {
         {areaSchoolsList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 Schools in Your Area
               </p>
-              <Link href="/schools" className="text-[10px] text-gold font-semibold press">
+              <Link href="/schools" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -472,10 +474,10 @@ export default async function DistrictPage() {
               {areaSchoolsList.map((school: any) => (
                 <div
                   key={school.id}
-                  className="glass-card-elevated rounded-2xl p-3.5"
+                  className="c-frame p-3.5" style={{ background: "var(--paper)" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0 c-frame">
                       <Icon name="graduation" size={18} className="text-emerald" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -509,10 +511,10 @@ export default async function DistrictPage() {
         {councilVotesList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 Recent Council Decisions
               </p>
-              <Link href="/officials" className="text-[10px] text-gold font-semibold press">
+              <Link href="/officials" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -524,7 +526,7 @@ export default async function DistrictPage() {
                 return (
                   <div
                     key={vote.id}
-                    className="glass-card-elevated rounded-2xl p-3.5"
+                    className="c-frame p-3.5" style={{ background: "var(--paper)" }}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -598,10 +600,10 @@ export default async function DistrictPage() {
         {boardActionsList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 Recent School Board Decisions
               </p>
-              <Link href="/officials" className="text-[10px] text-gold font-semibold press">
+              <Link href="/officials" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -615,7 +617,7 @@ export default async function DistrictPage() {
                 return (
                   <div
                     key={action.id}
-                    className="glass-card-elevated rounded-2xl p-3.5"
+                    className="c-frame p-3.5" style={{ background: "var(--paper)" }}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
@@ -687,23 +689,24 @@ export default async function DistrictPage() {
 
         {/* ── District Stats ─────────────────────────── */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
             {userDistrict ? "District Overview" : "Compton at a Glance"}
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Events", count: eventsList.length, icon: "calendar" as IconName, color: "text-gold", bg: "from-hc-purple/8 to-hc-purple/3", border: "border-gold/15" },
-              { label: "Businesses", count: businessCount ?? 0, icon: "store" as IconName, color: "text-gold", bg: "from-gold/8 to-gold/3", border: "border-gold/15" },
-              { label: "Schools", count: schoolsList.length, icon: "graduation" as IconName, color: "text-cyan", bg: "from-cyan/8 to-cyan/3", border: "border-cyan/15" },
-              { label: "Parks", count: parksList.length, icon: "tree" as IconName, color: "text-emerald", bg: "from-emerald/8 to-emerald/3", border: "border-emerald/15" },
+              { label: "Events", count: eventsList.length, icon: "calendar" as IconName },
+              { label: "Businesses", count: businessCount ?? 0, icon: "store" as IconName },
+              { label: "Schools", count: schoolsList.length, icon: "graduation" as IconName },
+              { label: "Parks", count: parksList.length, icon: "tree" as IconName },
             ].map((stat) => (
               <div
                 key={stat.label}
-                className={`rounded-xl bg-gradient-to-br ${stat.bg} border ${stat.border} p-2.5 text-center`}
+                className="c-frame p-2.5 text-center"
+                style={{ background: "var(--paper-warm)" }}
               >
-                <Icon name={stat.icon} size={16} className={`${stat.color} mx-auto mb-1`} />
-                <p className={`text-[16px] font-heading font-bold ${stat.color}`}>{stat.count}</p>
-                <p className="text-[8px] text-white/40 font-medium">{stat.label}</p>
+                <Icon name={stat.icon} size={16} style={{ color: "var(--gold-c)" }} className="mx-auto mb-1" />
+                <p className="c-hero" style={{ fontSize: 18, color: "var(--ink-strong)" }}>{stat.count}</p>
+                <p className="c-meta" style={{ fontSize: 8 }}>{stat.label}</p>
               </div>
             ))}
           </div>
@@ -712,10 +715,10 @@ export default async function DistrictPage() {
         {/* ── Quick Facts ─────────────────────────── */}
         {userDistrict && (schoolsList.length > 0 || parksList.length > 0 || (parkPrograms && parkPrograms.length > 0) || (districtPrograms && districtPrograms.length > 0)) && (
           <div>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
               Quick Facts — {DISTRICT_NAMES[userDistrict] ?? `District ${userDistrict}`}
             </p>
-            <div className="glass-card-elevated rounded-2xl overflow-hidden divide-y divide-white/[0.04]">
+            <div className="c-frame overflow-hidden" style={{ background: "var(--paper)" }}>
               {/* Schools by level */}
               {schoolsList.length > 0 && (() => {
                 const elementary = schoolsList.filter((s) => s.level === "elementary");
@@ -905,18 +908,22 @@ export default async function DistrictPage() {
 
         {/* ── Quick Links (moved here from bottom) ──── */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Quick Links</p>
+          <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>Quick Links</p>
           <div className="grid grid-cols-3 gap-2">
             {quickLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="flex flex-col items-center gap-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05] p-3 press hover:border-white/10 transition-colors"
+                className="flex flex-col items-center gap-1.5 c-frame p-3 press transition-colors"
+                style={{ background: "var(--paper)" }}
               >
-                <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center">
-                  <Icon name={link.icon} size={18} className={link.color} />
+                <div
+                  className="w-9 h-9 flex items-center justify-center"
+                  style={{ background: "var(--paper-warm)", border: "1.5px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name={link.icon} size={18} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <span className="text-[10px] text-white/50 font-medium">{link.label}</span>
+                <span className="c-meta" style={{ fontSize: 10 }}>{link.label}</span>
               </Link>
             ))}
           </div>
@@ -926,10 +933,10 @@ export default async function DistrictPage() {
         {alertsList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 {userDistrict ? "District Alerts" : "City Alerts"}
               </p>
-              <Link href="/city-data" className="text-[10px] text-gold font-semibold press">
+              <Link href="/city-data" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -937,7 +944,7 @@ export default async function DistrictPage() {
               {alertsList.map((alert) => {
                 const style = severityStyles[alert.severity ?? "info"] ?? severityStyles.info;
                 return (
-                  <Link key={alert.id} href="/city-data" className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-white/10 transition-colors">
+                  <Link key={alert.id} href="/city-data" className="block c-frame p-3.5 press transition-colors" style={{ background: "var(--paper)" }}>
                     <div className="flex items-start gap-3">
                       <div className={`w-8 h-8 rounded-lg ${style.bg} flex items-center justify-center shrink-0`}>
                         <Icon name={style.icon} size={14} className={style.color} />
@@ -964,7 +971,7 @@ export default async function DistrictPage() {
         {/* ── District Feed (Updates, Photos, Programs) ── */}
         {userDistrict && (
           <div>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
               District Feed
             </p>
             <DistrictFeed
@@ -982,7 +989,7 @@ export default async function DistrictPage() {
             <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
               {userDistrict ? "Events in Your District" : "Upcoming Events"}
             </p>
-            <Link href="/events" className="text-[10px] text-gold font-semibold press">
+            <Link href="/events" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
               View All
             </Link>
           </div>
@@ -994,10 +1001,10 @@ export default async function DistrictPage() {
                   <Link
                     key={event.id}
                     href={`/events/${event.id}`}
-                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
+                    className="block c-frame p-3.5 press transition-colors" style={{ background: "var(--paper)" }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-gold/10 flex flex-col items-center justify-center shrink-0">
+                      <div className="w-12 h-14 flex flex-col items-center justify-center shrink-0 c-frame" style={{ background: "var(--paper-warm)" }}>
                         <p className="text-[9px] text-gold font-bold uppercase leading-none">
                           {date.toLocaleDateString("en-US", { month: "short" })}
                         </p>
@@ -1023,9 +1030,12 @@ export default async function DistrictPage() {
               })}
             </div>
           ) : (
-            <div className="text-center py-8 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-              <Icon name="calendar" size={24} className="text-white/20 mx-auto mb-2" />
-              <p className="text-[12px] text-white/40">
+            <div
+              className="text-center py-8 c-frame"
+              style={{ background: "var(--paper-warm)" }}
+            >
+              <Icon name="calendar" size={24} style={{ color: "var(--ink-strong)", opacity: 0.4 }} className="mx-auto mb-2" />
+              <p className="c-body" style={{ fontSize: 12 }}>
                 {userDistrict ? "No upcoming events in your district" : "No upcoming events"}
               </p>
             </div>
@@ -1036,10 +1046,10 @@ export default async function DistrictPage() {
         {schoolsList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 {userDistrict ? "Schools in Your District" : "Schools in Compton"}
               </p>
-              <Link href="/schools" className="text-[10px] text-gold font-semibold press">
+              <Link href="/schools" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -1048,10 +1058,10 @@ export default async function DistrictPage() {
                 <Link
                   key={school.id}
                   href={`/schools/${school.slug || school.id}`}
-                  className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-cyan/20 transition-colors"
+                  className="block c-frame p-3.5 press transition-colors" style={{ background: "var(--paper)" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan/15 to-cyan/5 border border-cyan/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0 c-frame">
                       <Icon name="graduation" size={18} className="text-cyan" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1084,10 +1094,10 @@ export default async function DistrictPage() {
         {parksList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 {userDistrict ? "Parks in Your District" : "Parks in Compton"}
               </p>
-              <Link href="/parks" className="text-[10px] text-gold font-semibold press">
+              <Link href="/parks" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -1096,10 +1106,10 @@ export default async function DistrictPage() {
                 <Link
                   key={park.id}
                   href={`/parks/${park.slug || park.id}`}
-                  className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-emerald/20 transition-colors"
+                  className="block c-frame p-3.5 press transition-colors" style={{ background: "var(--paper)" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald/15 to-emerald/5 border border-emerald/10 flex items-center justify-center shrink-0">
+                    <div className="w-10 h-10 flex items-center justify-center shrink-0 c-frame">
                       <Icon name="tree" size={18} className="text-emerald" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -1137,8 +1147,8 @@ export default async function DistrictPage() {
         {(pollsWithVotes.length > 0 || surveysWithResponses.length > 0) && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">Community Voice</p>
-              <Link href="/pulse" className="text-[10px] text-gold font-semibold press">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>Community Voice</p>
+              <Link href="/pulse" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -1157,10 +1167,10 @@ export default async function DistrictPage() {
         {officialPostsList.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+              <p className="c-kicker" style={{ opacity: 0.65 }}>
                 {userDistrict ? "From Your Representatives" : "From City Hall"}
               </p>
-              <Link href="/pulse" className="text-[10px] text-gold font-semibold press">
+              <Link href="/pulse" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
                 View All
               </Link>
             </div>
@@ -1172,7 +1182,7 @@ export default async function DistrictPage() {
                   <Link
                     key={post.id}
                     href="/pulse"
-                    className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
+                    className="block c-frame p-3.5 press transition-colors" style={{ background: "var(--paper)" }}
                   >
                     <div className="flex items-start gap-3">
                       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-gold/20">
@@ -1214,7 +1224,7 @@ export default async function DistrictPage() {
         {/* ── Message Your Council Member ─────────── */}
         {userDistrict && councilMember && (
           <div>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+            <p className="c-kicker mb-3" style={{ opacity: 0.65 }}>
               Contact Your Council Member
             </p>
             <DistrictMessageForm
@@ -1225,10 +1235,10 @@ export default async function DistrictPage() {
         )}
 
         {/* ── Footer Info ────────────────────────────── */}
-        <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 text-center">
-          <p className="text-[11px] text-white/30 leading-relaxed">
+        <div className="c-frame p-4 text-center" style={{ background: "var(--paper-warm)" }}>
+          <p className="c-body leading-relaxed" style={{ fontSize: 11 }}>
             Compton has 4 city council districts. Each district is represented by a council member.
-            Contact City Hall at <a href="tel:3106035700" className="text-gold press">(310) 603-5700</a> for inquiries.
+            Contact City Hall at <a href="tel:3106035700" className="press" style={{ color: "var(--gold-c)" }}>(310) 603-5700</a> for inquiries.
           </p>
         </div>
       </div>
@@ -1263,7 +1273,7 @@ function CouncilCard({
   return (
     <Link
       href={handle ? `/user/${handle}` : "/city-hall"}
-      className="block glass-card-elevated rounded-2xl p-4 press hover:border-white/10 transition-colors"
+      className="block c-frame p-4 press transition-colors" style={{ background: "var(--paper)" }}
     >
       <div className="flex items-start gap-3.5">
         <div

@@ -47,7 +47,7 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
   const remaining = Math.max(0, ad.duration - elapsed);
 
   return (
-    <div className="rounded-2xl bg-card border border-border-subtle p-5 animate-fade-in">
+    <div className="p-5 animate-fade-in" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
       {/* Sponsored label */}
       <div className="flex items-center gap-2 mb-3">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-gold">
@@ -70,7 +70,10 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
       <div className="flex gap-3 mb-4">
         {/* Business image */}
         {ad.image_url && (
-          <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border-subtle bg-white/5">
+          <div
+            className="w-16 h-16 overflow-hidden shrink-0"
+            style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper-warm)" }}
+          >
             <img
               src={ad.image_url}
               alt={ad.business_name}
@@ -89,7 +92,7 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
           </p>
           <button
             onClick={onCtaClick}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/10 border border-gold/20 text-gold text-[11px] font-bold press hover:bg-gold/15 transition-colors"
+            className="c-btn c-btn-primary c-btn-sm press"
           >
             {ad.cta_text || "Learn More"}
             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -121,7 +124,7 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
         {canSkip ? (
           <button
             onClick={onSkip}
-            className="text-[11px] font-bold text-white/70 hover:text-white bg-white/10 hover:bg-white/15 px-3 py-1.5 rounded-lg transition-colors press"
+            className="c-btn c-btn-outline c-btn-sm press"
           >
             Skip &raquo;
           </button>
@@ -133,10 +136,10 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
       </div>
 
       {/* Progress bar */}
-      <div className="mt-3 h-1 bg-white/10 rounded-full overflow-hidden">
+      <div className="mt-3 h-1 overflow-hidden" style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-strong-c)" }}>
         <div
-          className="h-full bg-gold/60 rounded-full transition-all duration-1000 ease-linear"
-          style={{ width: `${(elapsed / ad.duration) * 100}%` }}
+          className="h-full transition-all duration-1000 ease-linear"
+          style={{ width: `${(elapsed / ad.duration) * 100}%`, background: "var(--gold-c)" }}
         />
       </div>
     </div>
@@ -381,13 +384,17 @@ function AudioPlayer({ src, podcastId }: { src: string; podcastId: string }) {
       )}
 
       {/* Main player - hidden during pre-roll, shown but disabled during mid-roll */}
-      <div className={`rounded-2xl bg-card border border-border-subtle p-5 transition-opacity ${showingPreroll ? "opacity-30 pointer-events-none" : showingMidroll ? "opacity-40 pointer-events-none" : ""}`}>
+      <div
+        className={`p-5 transition-opacity ${showingPreroll ? "opacity-30 pointer-events-none" : showingMidroll ? "opacity-40 pointer-events-none" : ""}`}
+        style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+      >
         {/* Controls row */}
         <div className="flex items-center justify-center gap-6 mb-5">
           {/* Rewind 15s */}
           <button
             onClick={() => skip(-15)}
-            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-white hover:bg-white/10 transition-colors press"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-colors press"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12.5 8c-3.6 0-6.5 2.9-6.5 6.5s2.9 6.5 6.5 6.5 6.5-2.9 6.5-6.5H21c0 4.7-3.8 8.5-8.5 8.5S4 19.7 4 15s3.8-8.5 8.5-8.5V3l5 4-5 4V8z" />
@@ -403,7 +410,8 @@ function AudioPlayer({ src, podcastId }: { src: string; podcastId: string }) {
               if (!prerollDone) return; // Must finish pre-roll first
               togglePlay();
             }}
-            className="w-14 h-14 rounded-full bg-gradient-to-r from-gold to-gold-light flex items-center justify-center text-midnight shadow-lg shadow-gold/20 press hover:opacity-90 transition-opacity"
+            className="w-14 h-14 rounded-full flex items-center justify-center press hover:opacity-90 transition-opacity"
+            style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
           >
             {playing ? (
               <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
@@ -426,7 +434,8 @@ function AudioPlayer({ src, podcastId }: { src: string; podcastId: string }) {
           {/* Forward 30s */}
           <button
             onClick={() => skip(30)}
-            className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-white hover:bg-white/10 transition-colors press"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-colors press"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M11.5 8c3.6 0 6.5 2.9 6.5 6.5S15.1 21 11.5 21 5 18.1 5 14.5H3c0 4.7 3.8 8.5 8.5 8.5S20 19.2 20 14.5 16.2 6 11.5 6V2.5L6.5 6.5l5 4V8z" />
@@ -441,15 +450,16 @@ function AudioPlayer({ src, podcastId }: { src: string; podcastId: string }) {
         <div
           ref={progressRef}
           onClick={seekTo}
-          className="relative h-2 bg-white/10 rounded-full cursor-pointer group mb-3"
+          className="relative h-2 cursor-pointer group mb-3"
+          style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-strong-c)" }}
         >
           <div
-            className="absolute inset-y-0 left-0 bg-gradient-to-r from-gold to-gold-light rounded-full transition-[width] duration-100"
-            style={{ width: `${progress}%` }}
+            className="absolute inset-y-0 left-0 transition-[width] duration-100"
+            style={{ width: `${progress}%`, background: "var(--gold-c)" }}
           />
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-gold shadow-md opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ left: `calc(${progress}% - 7px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{ left: `calc(${progress}% - 7px)`, background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
           />
         </div>
 
@@ -498,10 +508,10 @@ export default function PodcastEpisodePage() {
       <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
         <div className="px-5 pt-4">
           <div className="skeleton h-8 w-24 rounded-lg mb-6" />
-          <div className="skeleton h-64 rounded-2xl mb-4" />
+          <div className="skeleton h-64 mb-4" style={{ border: "2px solid var(--rule-strong-c)" }} />
           <div className="skeleton h-6 w-3/4 rounded-lg mb-2" />
           <div className="skeleton h-4 w-1/2 rounded-lg mb-6" />
-          <div className="skeleton h-32 rounded-2xl" />
+          <div className="skeleton h-32" style={{ border: "2px solid var(--rule-strong-c)" }} />
         </div>
       </div>
     );
@@ -510,8 +520,11 @@ export default function PodcastEpisodePage() {
   if (!podcast) {
     return (
       <div className="culture-surface min-h-dvh px-5 text-center py-20 animate-fade-in">
-        <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-          <Icon name="podcast" size={28} className="text-txt-secondary" />
+        <div
+          className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+          style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <Icon name="podcast" size={28} style={{ color: "var(--ink-strong)" }} />
         </div>
         <p className="text-sm font-bold mb-1">Episode not found</p>
         <p className="text-xs text-txt-secondary mb-4">
@@ -553,16 +566,19 @@ export default function PodcastEpisodePage() {
       <div className="px-5 mb-6">
         <div className="flex gap-4 items-start">
           {/* Cover art */}
-          <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-gold/10 to-hc-purple/10 flex items-center justify-center shrink-0 overflow-hidden relative border border-border-subtle">
+          <div
+            className="w-28 h-28 flex items-center justify-center shrink-0 overflow-hidden relative"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {podcast.thumbnail_url ? (
               <Image
                 src={podcast.thumbnail_url}
                 alt={podcast.title}
                 fill
-                className="object-cover rounded-2xl"
+                className="object-cover"
               />
             ) : (
-              <Icon name="podcast" size={36} className="text-gold/60" />
+              <Icon name="podcast" size={36} style={{ color: "var(--ink-strong)" }} />
             )}
           </div>
 
@@ -617,8 +633,8 @@ export default function PodcastEpisodePage() {
             <div className="w-1 h-5 rounded-full bg-gold" />
             <h2 className="font-heading font-bold text-base">About this Episode</h2>
           </div>
-          <div className="rounded-2xl bg-card border border-border-subtle p-4">
-            <p className="text-[13px] text-txt-secondary leading-relaxed whitespace-pre-wrap">
+          <div className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+            <p className="c-body whitespace-pre-wrap">
               {podcast.description}
             </p>
           </div>
@@ -632,8 +648,11 @@ export default function PodcastEpisodePage() {
             <div className="w-1 h-5 rounded-full bg-cyan" />
             <h2 className="font-heading font-bold text-base">Transcript</h2>
           </div>
-          <div className="rounded-2xl bg-card border border-border-subtle p-4 max-h-64 overflow-y-auto">
-            <p className="text-[12px] text-txt-secondary leading-relaxed whitespace-pre-wrap">
+          <div
+            className="p-4 max-h-64 overflow-y-auto"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <p className="c-body whitespace-pre-wrap">
               {podcast.transcript}
             </p>
           </div>

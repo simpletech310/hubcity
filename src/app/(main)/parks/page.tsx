@@ -94,52 +94,68 @@ export default async function ParksPage({
 
       <div className="px-5 space-y-5">
         {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-gradient-to-br from-emerald/8 to-emerald/3 border border-emerald/15 p-3 text-center">
-            <p className="text-[20px] font-heading font-bold text-emerald">{parksList.length}</p>
-            <p className="text-[9px] text-white/40 font-medium">Parks</p>
-          </div>
-          <div className="rounded-xl bg-gradient-to-br from-gold/8 to-gold/3 border border-gold/15 p-3 text-center">
-            <p className="text-[20px] font-heading font-bold text-gold">{programCount ?? 0}</p>
-            <p className="text-[9px] text-white/40 font-medium">Programs</p>
-          </div>
-          <div className="rounded-xl bg-gradient-to-br from-cyan/8 to-cyan/3 border border-cyan/15 p-3 text-center">
-            <p className="text-[20px] font-heading font-bold text-cyan">3</p>
-            <p className="text-[9px] text-white/40 font-medium">Rec Centers</p>
-          </div>
+        <div
+          className="grid grid-cols-3"
+          style={{ borderBottom: "3px solid var(--rule-strong-c)", borderTop: "2px solid var(--rule-strong-c)" }}
+        >
+          {[
+            { label: "Parks", value: parksList.length, gold: true },
+            { label: "Programs", value: programCount ?? 0, gold: false },
+            { label: "Rec Centers", value: 3, gold: false },
+          ].map((stat, i) => (
+            <div
+              key={stat.label}
+              className="text-center"
+              style={{
+                padding: "14px 10px",
+                borderRight: i < 2 ? "2px solid var(--rule-strong-c)" : "none",
+                background: stat.gold ? "var(--gold-c)" : "var(--paper)",
+              }}
+            >
+              <div className="c-display c-tabnum" style={{ fontSize: 22, lineHeight: 1 }}>{stat.value}</div>
+              <div className="c-kicker mt-1.5" style={{ fontSize: 9 }}>{stat.label}</div>
+            </div>
+          ))}
         </div>
 
         {/* Quick Links */}
         <div className="flex gap-2">
-          <Link href="/parks/programs" className="flex-1 flex items-center justify-center gap-2 bg-emerald/10 border border-emerald/20 rounded-xl py-2.5 press">
-            <Icon name="calendar" size={14} className="text-emerald" />
-            <span className="text-[12px] font-semibold text-emerald">View Programs</span>
+          <Link href="/parks/programs" className="c-btn c-btn-primary c-btn-sm flex-1 press">
+            <Icon name="calendar" size={14} />
+            View Programs
           </Link>
-          <Link href="/map?layer=parks" className="flex-1 flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl py-2.5 press">
-            <Icon name="map-pin" size={14} className="text-white/50" />
-            <span className="text-[12px] font-semibold text-white/50">View on Map</span>
+          <Link href="/map?layer=parks" className="c-btn c-btn-outline c-btn-sm flex-1 press">
+            <Icon name="map-pin" size={14} />
+            View on Map
           </Link>
         </div>
 
         {/* What You Can Do */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">What You Can Do</p>
+          <p className="c-kicker mb-3">What You Can Do</p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "BBQ & Picnic", icon: "bbq" as IconName, color: "text-orange-400" },
-              { label: "Sports", icon: "basketball" as IconName, color: "text-cyan" },
-              { label: "Swimming", icon: "swimming" as IconName, color: "text-hc-blue" },
-              { label: "Playgrounds", icon: "baby" as IconName, color: "text-pink" },
-              { label: "Walking", icon: "tree" as IconName, color: "text-emerald" },
-              { label: "Fitness", icon: "trophy" as IconName, color: "text-gold" },
-              { label: "Events", icon: "calendar" as IconName, color: "text-gold" },
-              { label: "Community", icon: "users" as IconName, color: "text-coral" },
+              { label: "BBQ & Picnic", icon: "bbq" as IconName },
+              { label: "Sports", icon: "basketball" as IconName },
+              { label: "Swimming", icon: "swimming" as IconName },
+              { label: "Playgrounds", icon: "baby" as IconName },
+              { label: "Walking", icon: "tree" as IconName },
+              { label: "Fitness", icon: "trophy" as IconName },
+              { label: "Events", icon: "calendar" as IconName },
+              { label: "Community", icon: "users" as IconName },
             ].map((item) => (
-              <div key={item.label} className="flex flex-col items-center gap-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05] p-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center">
-                  <Icon name={item.icon} size={16} className={item.color} />
+              <div
+                key={item.label}
+                className="flex flex-col items-center gap-1.5 p-2.5"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <div
+                  className="w-8 h-8 flex items-center justify-center"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name={item.icon} size={16} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <span className="text-[9px] text-white/50 font-medium text-center leading-tight">{item.label}</span>
+                <span className="c-kicker text-center" style={{ fontSize: 9 }}>{item.label}</span>
               </div>
             ))}
           </div>
@@ -147,15 +163,11 @@ export default async function ParksPage({
 
         {/* Amenity Filters */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Filter by Amenity</p>
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <p className="c-kicker mb-3">Filter by Amenity</p>
+          <div className="c-noscroll flex gap-1.5 overflow-x-auto pb-1">
             <a
               href="/parks"
-              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold transition-colors border ${
-                !activeAmenity
-                  ? "bg-emerald text-black border-emerald"
-                  : "bg-white/[0.04] text-white/50 border-white/[0.08] hover:border-emerald/30"
-              }`}
+              className={`c-chip${!activeAmenity ? " gold" : ""} inline-flex items-center gap-1.5`}
             >
               All Parks
             </a>
@@ -163,13 +175,9 @@ export default async function ParksPage({
               <a
                 key={f.key}
                 href={`/parks?amenity=${f.key}`}
-                className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full text-[11px] font-semibold transition-colors border ${
-                  activeAmenity === f.key
-                    ? "bg-emerald text-black border-emerald"
-                    : "bg-white/[0.04] text-white/50 border-white/[0.08] hover:border-emerald/30"
-                }`}
+                className={`c-chip${activeAmenity === f.key ? " gold" : ""} inline-flex items-center gap-1.5`}
               >
-                <Icon name={f.icon} size={12} className={activeAmenity === f.key ? "text-black" : "text-white/40"} />
+                <Icon name={f.icon} size={12} />
                 {f.label}
               </a>
             ))}
@@ -178,7 +186,7 @@ export default async function ParksPage({
 
         {/* Parks Grid */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">
+          <p className="c-kicker mb-3">
             {activeAmenity ? `Parks with ${activeAmenity.replace(/_/g, " ")}` : "All Parks"}
           </p>
           {parksList.length > 0 ? (
@@ -188,12 +196,18 @@ export default async function ParksPage({
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-              <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <Icon name="tree" size={24} className="text-white/20" />
+            <div
+              className="text-center py-12"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+            >
+              <div
+                className="w-12 h-12 flex items-center justify-center mx-auto mb-3"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="tree" size={24} style={{ color: "var(--ink-strong)" }} />
               </div>
-              <p className="text-[13px] font-semibold text-white/50">No parks found</p>
-              <p className="text-[11px] text-white/30 mt-1">
+              <p className="c-card-t" style={{ color: "var(--ink-strong)" }}>No parks found</p>
+              <p className="c-meta mt-1">
                 {activeAmenity ? `No parks with ${activeAmenity.replace(/_/g, " ")}.` : "Parks coming soon."}
               </p>
             </div>
@@ -202,30 +216,34 @@ export default async function ParksPage({
 
         {/* Recreation Centers */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Recreation Centers</p>
+          <p className="c-kicker mb-3">Recreation Centers</p>
           <div className="space-y-3">
             {REC_CENTERS.map((center) => (
               <Link
                 key={center.name}
                 href={center.href}
-                className="block glass-card-elevated rounded-2xl p-4 press hover:border-emerald/20 transition-colors"
+                className="block c-frame p-4 press"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald/10 flex items-center justify-center shrink-0">
-                    <Icon name="landmark" size={18} className="text-emerald" />
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  >
+                    <Icon name="landmark" size={18} style={{ color: "var(--ink-strong)" }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-white">{center.name}</p>
-                    <p className="text-[11px] text-white/40 mt-0.5">{center.address}</p>
+                    <p className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{center.name}</p>
+                    <p className="c-meta mt-0.5">{center.address}</p>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {center.features.map((f) => (
-                        <span key={f} className="text-[9px] text-emerald/70 bg-emerald/8 border border-emerald/10 rounded-full px-2 py-0.5">
+                        <span key={f} className="c-badge-ink inline-flex px-2 py-0.5" style={{ fontSize: 9 }}>
                           {f}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <Icon name="chevron-right" size={14} className="text-white/20 shrink-0 mt-1" />
+                  <Icon name="chevron-right" size={14} style={{ color: "var(--ink-strong)" }} className="shrink-0 mt-1" />
                 </div>
               </Link>
             ))}
@@ -234,34 +252,43 @@ export default async function ParksPage({
 
         {/* Contact & Info */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Contact Information</p>
-          <div className="glass-card-elevated rounded-2xl p-5">
+          <p className="c-kicker mb-3">Contact Information</p>
+          <div className="c-frame p-5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
-                <Icon name="phone" size={18} className="text-gold" />
+              <div
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="phone" size={18} style={{ color: "var(--ink-strong)" }} />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-white">{CONTACT_INFO.department}</p>
-                <p className="text-[11px] text-white/40">{CONTACT_INFO.address}</p>
+                <p className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{CONTACT_INFO.department}</p>
+                <p className="c-meta">{CONTACT_INFO.address}</p>
               </div>
             </div>
             <div className="space-y-2.5">
               <a href={`tel:${CONTACT_INFO.phone.replace(/[^0-9]/g, "")}`} className="flex items-center gap-3 press">
-                <div className="w-8 h-8 rounded-lg bg-emerald/10 flex items-center justify-center">
-                  <Icon name="phone" size={14} className="text-emerald" />
+                <div
+                  className="w-8 h-8 flex items-center justify-center"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="phone" size={14} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div>
-                  <p className="text-[12px] text-white/60">Phone</p>
-                  <p className="text-[13px] font-semibold text-white">{CONTACT_INFO.phone}</p>
+                  <p className="c-meta">Phone</p>
+                  <p className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{CONTACT_INFO.phone}</p>
                 </div>
               </a>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-cyan/10 flex items-center justify-center">
-                  <Icon name="clock" size={14} className="text-cyan" />
+                <div
+                  className="w-8 h-8 flex items-center justify-center"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="clock" size={14} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div>
-                  <p className="text-[12px] text-white/60">Office Hours</p>
-                  <p className="text-[13px] font-semibold text-white">{CONTACT_INFO.hours}</p>
+                  <p className="c-meta">Office Hours</p>
+                  <p className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{CONTACT_INFO.hours}</p>
                 </div>
               </div>
             </div>
@@ -270,8 +297,11 @@ export default async function ParksPage({
 
         {/* Park Rules & Tips */}
         <div>
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">Park Rules & Tips</p>
-          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 space-y-3">
+          <p className="c-kicker mb-3">Park Rules & Tips</p>
+          <div
+            className="p-4 space-y-3"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {[
               { text: "Parks open at dawn and close at dusk unless posted otherwise", icon: "sun" as IconName },
               { text: "BBQ pits are first-come, first-served. Bring your own charcoal", icon: "bbq" as IconName },
@@ -281,10 +311,13 @@ export default async function ParksPage({
               { text: "Report maintenance issues through the Culture app", icon: "megaphone" as IconName },
             ].map((rule) => (
               <div key={rule.text} className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
-                  <Icon name={rule.icon} size={12} className="text-white/30" />
+                <div
+                  className="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name={rule.icon} size={12} style={{ color: "var(--ink-strong)" }} />
                 </div>
-                <p className="text-[12px] text-white/50 leading-relaxed">{rule.text}</p>
+                <p className="c-body">{rule.text}</p>
               </div>
             ))}
           </div>

@@ -108,47 +108,30 @@ export default async function TransitStopDetailPage({
       </div>
 
       {/* Hero */}
-      <div className="mx-5 mb-6 rounded-2xl overflow-hidden">
-        <div
-          className={`relative p-6 ${
-            isRail
-              ? "bg-gradient-to-br from-blue-900/60 via-purple-900/30 to-blue-600/10"
-              : "bg-gradient-to-br from-purple-900/40 via-indigo-900/30 to-purple-600/10"
-          }`}
-        >
+      <div className="mx-5 mb-6 c-frame overflow-hidden">
+        <div className="relative p-6" style={{ background: "var(--paper-warm)" }}>
           <div className="flex items-start gap-4">
             <div
-              className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl ${
-                isRail
-                  ? "bg-blue-500/20 border border-blue-500/30"
-                  : "bg-purple-500/20 border border-purple-500/30"
-              }`}
+              className="w-14 h-14 flex items-center justify-center text-2xl"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
             >
-              {isRail ? "transit" : "transit"}
+              {isRail ? "🚊" : "🚌"}
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="font-display text-2xl font-bold text-text-primary leading-tight">
+              <h1 className="c-card-t text-2xl leading-tight">
                 {stop.name}
               </h1>
               {stop.route_name && (
-                <p className="text-text-secondary text-sm mt-1">
+                <p className="c-body text-sm mt-1">
                   {stop.route_name}
                 </p>
               )}
               <div className="flex flex-wrap gap-2 mt-3">
-                <span
-                  className={`px-3 py-1 text-[11px] font-semibold rounded-full uppercase ${
-                    isRail
-                      ? "bg-blue-500/15 text-blue-400 border border-blue-500/20"
-                      : "bg-purple-500/15 text-purple-400 border border-purple-500/20"
-                  }`}
-                >
+                <span className="c-badge-ink">
                   {isRail ? "Rail" : "Bus"}
                 </span>
                 {stop.is_active !== false && (
-                  <span className="px-3 py-1 text-[11px] font-semibold rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
-                    Active
-                  </span>
+                  <span className="c-badge-ok">Active</span>
                 )}
               </div>
             </div>
@@ -160,26 +143,26 @@ export default async function TransitStopDetailPage({
         {/* Schedule */}
         {schedule && (
           <Card className="mb-5">
-            <h3 className="font-heading font-bold text-sm mb-3">Schedule</h3>
+            <h3 className="c-card-t mb-3">Schedule</h3>
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-text-secondary">Weekdays</span>
-                <span className="text-sm font-medium">{schedule.weekday}</span>
+                <span className="c-meta" style={{ fontSize: 11 }}>Weekdays</span>
+                <span className="text-sm font-medium" style={{ color: "var(--ink-strong)" }}>{schedule.weekday}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-text-secondary">Saturday</span>
-                <span className="text-sm font-medium">
+                <span className="c-meta" style={{ fontSize: 11 }}>Saturday</span>
+                <span className="text-sm font-medium" style={{ color: "var(--ink-strong)" }}>
                   {schedule.saturday}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs text-text-secondary">Sunday</span>
-                <span className="text-sm font-medium">{schedule.sunday}</span>
+                <span className="c-meta" style={{ fontSize: 11 }}>Sunday</span>
+                <span className="text-sm font-medium" style={{ color: "var(--ink-strong)" }}>{schedule.sunday}</span>
               </div>
-              <div className="pt-2 border-t border-border-subtle">
+              <div className="pt-2" style={{ borderTop: "1.5px solid var(--rule-strong-c)" }}>
                 <div className="flex items-center gap-2">
                   <span className="text-lg"><Icon name="clock" size={20} /></span>
-                  <p className="text-xs text-text-secondary">
+                  <p className="c-meta" style={{ fontSize: 11 }}>
                     {schedule.frequency}
                   </p>
                 </div>
@@ -190,14 +173,15 @@ export default async function TransitStopDetailPage({
 
         {/* Location */}
         <Card className="mb-5">
-          <h3 className="font-heading font-bold text-sm mb-3">Location</h3>
+          <h3 className="c-card-t mb-3">Location</h3>
           <div className="space-y-3">
             {stop.latitude && stop.longitude && (
               <div className="flex items-center gap-3">
                 <span className="text-lg"><Icon name="globe" size={20} /></span>
                 <Link
                   href={`/map?lat=${stop.latitude}&lng=${stop.longitude}&zoom=16`}
-                  className="text-sm text-gold font-medium hover:underline"
+                  className="text-sm font-medium hover:underline"
+                  style={{ color: "var(--gold-c)" }}
                 >
                   View on Culture Map
                 </Link>
@@ -206,7 +190,7 @@ export default async function TransitStopDetailPage({
             {stop.gtfs_stop_id && (
               <div className="flex items-center gap-3">
                 <span className="text-lg"><Icon name="tag" size={20} /></span>
-                <p className="text-sm text-text-secondary">
+                <p className="c-meta" style={{ fontSize: 11 }}>
                   GTFS ID: <span className="font-mono">{stop.gtfs_stop_id}</span>
                 </p>
               </div>
@@ -221,14 +205,9 @@ export default async function TransitStopDetailPage({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-gold text-midnight px-5 py-3 rounded-full text-sm font-bold press hover:bg-gold-light transition-colors"
+              className="c-btn c-btn-primary"
             >
               <svg width="18" height="18" fill="none" viewBox="0 0 18 18">
-                <path
-                  d="M9 1C5.69 1 3 3.69 3 7c0 5.25 6 10 6 10s6-4.75 6-10c0-3.31-2.69-6-6-6z"
-                  fill="currentColor"
-                  opacity="0.2"
-                />
                 <path
                   d="M9 1C5.69 1 3 3.69 3 7c0 5.25 6 10 6 10s6-4.75 6-10c0-3.31-2.69-6-6-6z"
                   stroke="currentColor"
@@ -243,7 +222,7 @@ export default async function TransitStopDetailPage({
             href="https://www.metro.net/riding/nextrip/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 bg-white/10 text-white px-5 py-3 rounded-full text-sm font-medium press hover:bg-white/15 transition-colors border border-white/10"
+            className="c-btn c-btn-outline"
           >
             <Icon name="clock" size={16} /> Real-Time Arrivals on Metro.net
           </a>
@@ -252,7 +231,7 @@ export default async function TransitStopDetailPage({
         {/* Other Stops on Route */}
         {routeStops.length > 0 && (
           <div>
-            <h2 className="font-heading font-bold text-lg text-text-primary mb-3">
+            <h2 className="c-card-t text-lg mb-3">
               Other Stops on {stop.route_name}
             </h2>
             <div className="space-y-1.5">
@@ -260,14 +239,14 @@ export default async function TransitStopDetailPage({
                 <Link
                   key={s.id}
                   href={`/city-data/transit/${s.id}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-card border border-border-subtle hover:border-gold/20 transition-colors"
+                  className="flex items-center gap-3 p-3 c-frame transition-colors"
+                  style={{ background: "var(--paper)" }}
                 >
                   <span
-                    className={`w-3 h-3 rounded-full ${
-                      isRail ? "bg-blue-500" : "bg-purple-500"
-                    }`}
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: isRail ? "var(--ink-strong)" : "var(--gold-c)" }}
                   />
-                  <span className="text-sm text-text-primary font-medium">
+                  <span className="text-sm font-medium" style={{ color: "var(--ink-strong)" }}>
                     {s.name}
                   </span>
                 </Link>
@@ -277,14 +256,15 @@ export default async function TransitStopDetailPage({
         )}
 
         {/* Info */}
-        <div className="mt-8 rounded-2xl bg-white/[0.03] border border-border-subtle p-4 text-center">
-          <p className="text-xs text-text-secondary">
+        <div className="mt-8 c-frame p-4 text-center" style={{ background: "var(--paper-warm)" }}>
+          <p className="c-meta" style={{ fontSize: 11 }}>
             For the most up-to-date schedule and real-time arrivals, visit{" "}
             <a
               href="https://www.metro.net"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gold hover:underline"
+              className="hover:underline"
+              style={{ color: "var(--gold-c)" }}
             >
               metro.net
             </a>

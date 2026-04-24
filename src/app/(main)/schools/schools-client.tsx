@@ -80,13 +80,12 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function FeaturedSchoolCard({ school }: { school: School }) {
-  const color = levelColors[school.level];
   const schoolColors = getSchoolColors(school);
   return (
     <Link href={`/schools/${school.slug}`} className="block shrink-0 w-[280px] press">
       <div
-        className="relative h-[200px] rounded-2xl overflow-hidden border border-border-subtle"
-        style={{ borderColor: `${color}20` }}
+        className="relative h-[200px] overflow-hidden"
+        style={{ border: "2px solid var(--rule-strong-c)" }}
       >
         {school.image_url ? (
           <Image src={school.image_url} alt={school.name} fill className="object-cover" sizes="280px" />
@@ -100,14 +99,11 @@ function FeaturedSchoolCard({ school }: { school: School }) {
 
         {/* Top badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
-          <span
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide"
-            style={{ background: `${color}25`, color, border: `1px solid ${color}30` }}
-          >
+          <span className="c-badge-gold inline-flex px-2.5 py-1">
             {levelLabels[school.level]}
           </span>
           {school.notable_alumni && school.notable_alumni.length > 0 && (
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold bg-gold/15 text-gold border border-gold/20">
+            <span className="c-badge-gold inline-flex px-2 py-1">
               Notable Alumni
             </span>
           )}
@@ -132,36 +128,35 @@ function FeaturedSchoolCard({ school }: { school: School }) {
 }
 
 function SchoolCard({ school }: { school: School }) {
-  const color = levelColors[school.level];
   const schoolColors = getSchoolColors(school);
   const colorNames = getColorNames(school);
   return (
     <Link href={`/schools/${school.slug}`} className="block press">
       <div
-        className="relative bg-card rounded-2xl border border-border-subtle overflow-hidden transition-all hover:border-white/10"
-        style={{ borderLeftWidth: 3, borderLeftColor: color }}
+        className="relative overflow-hidden transition-all"
+        style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
       >
         <div className="p-4">
           {/* Header */}
           <div className="flex items-start gap-3 mb-3">
             {/* School icon/image */}
             <div
-              className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${schoolColors[0]}30, ${schoolColors[1]}15)` }}
+              className="w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
             >
               {school.image_url ? (
-                <Image src={school.image_url} alt={school.name} width={48} height={48} className="w-full h-full object-cover rounded-xl" />
+                <Image src={school.image_url} alt={school.name} width={48} height={48} className="w-full h-full object-cover" />
               ) : (
-                <span className="text-xl font-bold" style={{ color: schoolColors[0] }}>
+                <span className="c-card-t" style={{ fontSize: 20, color: "var(--ink-strong)" }}>
                   {school.name.split(" ").map(w => w[0]).slice(0, 2).join("")}
                 </span>
               )}
             </div>
 
             <div className="flex-1 min-w-0">
-              <h3 className="font-heading font-bold text-[14px] leading-tight mb-0.5">{school.name}</h3>
+              <h3 className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>{school.name}</h3>
               {school.tagline && (
-                <p className="text-[11px] text-white/50 italic">{school.tagline}</p>
+                <p className="c-serif-it" style={{ fontSize: 11 }}>{school.tagline}</p>
               )}
             </div>
 

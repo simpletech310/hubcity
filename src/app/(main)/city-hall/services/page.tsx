@@ -102,21 +102,25 @@ export default function ServicesPage() {
             placeholder="Search services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-card border border-border-subtle rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/30 focus:ring-1 focus:ring-gold/20 transition-all"
+            className="w-full pl-11 pr-4 py-3 text-sm placeholder:text-txt-secondary focus:outline-none transition-all"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           />
         </div>
       </div>
 
       {/* Stats row */}
       <div className="flex gap-3 px-5 mb-5">
-        <div className="flex items-center gap-2 bg-card rounded-full px-4 py-2 border border-border-subtle">
-          <Icon name="document" size={14} />
-          <span className="text-xs font-medium">{filtered.length} Total</span>
-        </div>
-        <div className="flex items-center gap-2 bg-emerald/10 rounded-full px-4 py-2 border border-emerald/20">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
-          <span className="text-xs font-medium text-emerald">{onlineCount} Online</span>
-        </div>
+        <span className="c-badge-ink">
+          <Icon name="document" size={14} /> {filtered.length} Total
+        </span>
+        <span className="c-badge-ok">
+          <span className="w-1.5 h-1.5 rounded-full" style={{ background: "var(--ok-c)" }} />
+          {onlineCount} Online
+        </span>
       </div>
 
       {/* Department Filter Chips */}

@@ -3,7 +3,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import { useActiveCity } from "@/hooks/useActiveCity";
 import type { BusinessCategory } from "@/types/database";
@@ -187,22 +186,31 @@ export default function BusinessSignupPage() {
   ];
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-dvh bg-midnight flex flex-col px-6 py-8">
+    <div className="max-w-[430px] mx-auto min-h-dvh flex flex-col px-6 py-8 culture-surface">
       {/* Logo */}
       <div className="flex items-center gap-3 mb-6 justify-center">
-        <div className="w-12 h-12 bg-gradient-to-br from-gold to-gold-light rounded-xl flex items-center justify-center font-heading font-extrabold text-xl text-midnight">
+        <div
+          className="w-12 h-12 flex items-center justify-center c-hero"
+          style={{
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            fontSize: 22,
+          }}
+        >
           K
         </div>
-        <span className="font-heading font-bold text-2xl tracking-tight">
-          K<span className="text-gold">nect</span>
+        <span className="c-hero" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
+          Knect
         </span>
       </div>
 
-      <h1 className="font-heading text-2xl font-bold text-center mb-1">
-        Register Your Business
+      <p className="c-kicker text-center" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>§ REGISTER</p>
+      <h1 className="c-hero text-center mt-1 mb-1" style={{ fontSize: 30, color: "var(--ink-strong)" }}>
+        Register Your Business.
       </h1>
-      <p className="text-txt-secondary text-sm text-center mb-6">
-        Join the {cityName} business community
+      <p className="c-serif-it text-center mb-6" style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.7 }}>
+        Join the {cityName} business community.
       </p>
 
       {/* Step Indicator */}
@@ -210,16 +218,20 @@ export default function BusinessSignupPage() {
         {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex-1 flex flex-col items-center gap-1.5">
             <div
-              className={`w-full h-1.5 rounded-full transition-colors ${
-                s <= step
-                  ? "bg-gradient-to-r from-gold to-gold-light"
-                  : "bg-white/10"
-              }`}
+              className="w-full h-1.5"
+              style={{
+                background: s <= step ? "var(--gold-c)" : "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             />
             <span
-              className={`text-[10px] font-medium ${
-                s <= step ? "text-gold" : "text-txt-secondary"
-              }`}
+              className="c-kicker"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.1em",
+                color: "var(--ink-strong)",
+                opacity: s <= step ? 1 : 0.4,
+              }}
             >
               {stepTitles[s - 1]}
             </span>
@@ -239,16 +251,26 @@ export default function BusinessSignupPage() {
           />
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-txt-secondary mb-1.5">
-              Category
+            <label
+              className="block c-kicker mb-1.5"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+            >
+              CATEGORY
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as BusinessCategory)}
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors"
+              className="w-full px-4 py-3 focus:outline-none transition-colors"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 14,
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+              }}
             >
               {BUSINESS_CATEGORIES.map((cat) => (
-                <option key={cat.value} value={cat.value} className="bg-midnight">
+                <option key={cat.value} value={cat.value}>
                   {cat.label}
                 </option>
               ))}
@@ -256,15 +278,25 @@ export default function BusinessSignupPage() {
           </div>
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-txt-secondary mb-1.5">
-              Description
+            <label
+              className="block c-kicker mb-1.5"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+            >
+              DESCRIPTION
             </label>
             <textarea
               placeholder="Tell the community about your business..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors resize-none"
+              className="w-full px-4 py-3 focus:outline-none resize-none transition-colors"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 14,
+                fontFamily: "var(--font-fraunces), serif",
+              }}
             />
           </div>
         </div>
@@ -313,7 +345,7 @@ export default function BusinessSignupPage() {
       {/* Step 3: Business Hours */}
       {step === 3 && (
         <div className="space-y-3">
-          <p className="text-xs text-txt-secondary mb-2">
+          <p className="c-serif-it mb-2" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
             Set your hours for each day. Toggle off for closed days.
           </p>
           {DAYS.map((day) => {
@@ -322,22 +354,29 @@ export default function BusinessSignupPage() {
             return (
               <div
                 key={day}
-                className="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 border border-border-subtle"
+                className="flex items-center gap-3 px-3 py-2.5"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
                 <div className="w-20 shrink-0">
-                  <span className="text-sm font-medium">{day.slice(0, 3)}</span>
+                  <span className="c-card-t" style={{ fontSize: 13 }}>{day.slice(0, 3)}</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => updateHours(key, "closed", !h.closed)}
-                  className={`w-10 h-5 rounded-full transition-colors shrink-0 ${
-                    !h.closed ? "bg-gold" : "bg-white/20"
-                  }`}
+                  className="w-10 h-5 rounded-full transition-colors shrink-0"
+                  style={{
+                    background: !h.closed ? "var(--gold-c)" : "var(--paper-soft)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 >
                   <div
-                    className={`w-4 h-4 bg-white rounded-full transition-transform mx-0.5 ${
-                      !h.closed ? "translate-x-5" : "translate-x-0"
+                    className={`w-3 h-3 rounded-full transition-transform ${
+                      !h.closed ? "translate-x-4" : "translate-x-0"
                     }`}
+                    style={{ background: "var(--ink-strong)" }}
                   />
                 </button>
                 {!h.closed ? (
@@ -346,18 +385,30 @@ export default function BusinessSignupPage() {
                       type="time"
                       value={h.open}
                       onChange={(e) => updateHours(key, "open", e.target.value)}
-                      className="bg-transparent border border-border-subtle rounded-lg px-2 py-1 text-xs text-white w-[90px] focus:outline-none focus:border-gold/40"
+                      className="px-2 py-1 w-[90px] focus:outline-none"
+                      style={{
+                        background: "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                        fontSize: 11,
+                      }}
                     />
-                    <span className="text-xs text-txt-secondary">to</span>
+                    <span className="c-meta" style={{ fontSize: 11 }}>to</span>
                     <input
                       type="time"
                       value={h.close}
                       onChange={(e) => updateHours(key, "close", e.target.value)}
-                      className="bg-transparent border border-border-subtle rounded-lg px-2 py-1 text-xs text-white w-[90px] focus:outline-none focus:border-gold/40"
+                      className="px-2 py-1 w-[90px] focus:outline-none"
+                      style={{
+                        background: "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                        fontSize: 11,
+                      }}
                     />
                   </div>
                 ) : (
-                  <span className="text-xs text-txt-secondary italic">Closed</span>
+                  <span className="c-serif-it" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.6 }}>Closed</span>
                 )}
               </div>
             );
@@ -368,63 +419,72 @@ export default function BusinessSignupPage() {
       {/* Step 4: Review */}
       {step === 4 && (
         <div className="space-y-4">
-          <div className="bg-white/5 rounded-2xl border border-border-subtle p-4 space-y-3">
-            <h3 className="font-heading font-semibold text-gold text-sm">
+          <div
+            className="c-frame p-4 space-y-3"
+            style={{ background: "var(--paper-soft)" }}
+          >
+            <h3 className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
               Business Info
             </h3>
-            <div className="space-y-1.5 text-sm">
+            <div className="space-y-1.5 c-body" style={{ fontSize: 13 }}>
               <p>
-                <span className="text-txt-secondary">Name:</span> {name}
+                <span className="c-meta">Name:</span> {name}
               </p>
               <p>
-                <span className="text-txt-secondary">Category:</span>{" "}
+                <span className="c-meta">Category:</span>{" "}
                 {BUSINESS_CATEGORIES.find((c) => c.value === category)?.label}
               </p>
               {description && (
                 <p>
-                  <span className="text-txt-secondary">Description:</span>{" "}
+                  <span className="c-meta">Description:</span>{" "}
                   {description}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="bg-white/5 rounded-2xl border border-border-subtle p-4 space-y-3">
-            <h3 className="font-heading font-semibold text-gold text-sm">
+          <div
+            className="c-frame p-4 space-y-3"
+            style={{ background: "var(--paper-soft)" }}
+          >
+            <h3 className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
               Location & Contact
             </h3>
-            <div className="space-y-1.5 text-sm">
+            <div className="space-y-1.5 c-body" style={{ fontSize: 13 }}>
               <p>
-                <span className="text-txt-secondary">Address:</span>{" "}
+                <span className="c-meta">Address:</span>{" "}
                 {street}, {cityName}, {cityState} {zip}
               </p>
               {phone && (
                 <p>
-                  <span className="text-txt-secondary">Phone:</span> {phone}
+                  <span className="c-meta">Phone:</span> {phone}
                 </p>
               )}
               {website && (
                 <p>
-                  <span className="text-txt-secondary">Website:</span> {website}
+                  <span className="c-meta">Website:</span> {website}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="bg-white/5 rounded-2xl border border-border-subtle p-4 space-y-3">
-            <h3 className="font-heading font-semibold text-gold text-sm">
+          <div
+            className="c-frame p-4 space-y-3"
+            style={{ background: "var(--paper-soft)" }}
+          >
+            <h3 className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
               Business Hours
             </h3>
-            <div className="space-y-1 text-sm">
+            <div className="space-y-1 c-body" style={{ fontSize: 13 }}>
               {DAYS.map((day) => {
                 const key = day.toLowerCase();
                 const h = hours[key];
                 return (
                   <div key={day} className="flex justify-between">
-                    <span className="text-txt-secondary">{day.slice(0, 3)}</span>
+                    <span className="c-meta">{day.slice(0, 3)}</span>
                     <span>
                       {h.closed ? (
-                        <span className="text-txt-secondary italic">Closed</span>
+                        <span className="c-serif-it" style={{ opacity: 0.6 }}>Closed</span>
                       ) : (
                         `${h.open} - ${h.close}`
                       )}
@@ -439,30 +499,52 @@ export default function BusinessSignupPage() {
 
       {/* Error */}
       {error && (
-        <p className="text-sm text-coral bg-coral/10 rounded-lg px-3 py-2 mt-4">
+        <div
+          className="px-4 py-3 mt-4 c-kicker"
+          style={{
+            background: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--gold-c)",
+            fontSize: 12,
+            letterSpacing: "0.12em",
+          }}
+        >
           {error}
-        </p>
+        </div>
       )}
 
       {/* Navigation Buttons */}
       <div className="flex gap-3 mt-6">
         {step > 1 && (
-          <Button variant="secondary" onClick={prevStep} className="flex-1">
-            Back
-          </Button>
+          <button
+            type="button"
+            onClick={prevStep}
+            className="c-btn c-btn-outline flex-1 press"
+          >
+            BACK
+          </button>
         )}
         {step < 4 ? (
-          <Button onClick={nextStep} className="flex-1">
-            Continue
-          </Button>
+          <button
+            type="button"
+            onClick={nextStep}
+            className="c-btn c-btn-primary flex-1 press"
+          >
+            CONTINUE
+          </button>
         ) : (
-          <Button onClick={handleSubmit} loading={loading} className="flex-1">
-            Create Business
-          </Button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={loading}
+            className="c-btn c-btn-primary flex-1 press disabled:opacity-50"
+          >
+            {loading ? "CREATING…" : "CREATE BUSINESS"}
+          </button>
         )}
       </div>
 
-      <p className="text-xs text-txt-secondary text-center mt-6">
+      <p className="c-meta text-center mt-6" style={{ fontSize: 11 }}>
         Your business will be reviewed before going live.
         <br />
         You can set up payments and menu items from your dashboard.

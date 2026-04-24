@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 type VerifyOutcome =
@@ -13,17 +12,17 @@ type VerifyOutcome =
 
 const BENEFITS = [
   {
-    icon: "🏅",
+    icon: "★",
     title: "Local badge",
     desc: "Show up first in your city's feed",
   },
   {
-    icon: "🎟️",
+    icon: "◆",
     title: "Member perks",
     desc: "Exclusive discounts from local independents",
   },
   {
-    icon: "🗳️",
+    icon: "§",
     title: "City polls",
     desc: "Vote on what matters in your scene",
   },
@@ -31,7 +30,7 @@ const BENEFITS = [
 
 export default function ClaimYourCityPage() {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-midnight" />}>
+    <Suspense fallback={<div className="min-h-dvh culture-surface" />}>
       <ClaimYourCityInner />
     </Suspense>
   );
@@ -105,30 +104,40 @@ function ClaimYourCityInner() {
   }
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-dvh bg-midnight flex flex-col px-6 pt-safe-top pb-8">
+    <div className="max-w-[430px] mx-auto min-h-dvh flex flex-col px-6 pt-safe-top pb-8 culture-surface">
       {/* Back arrow */}
       <div className="pt-4 pb-2">
         <Link
           href={nextPath === "/" ? "/" : nextPath}
-          className="inline-flex items-center gap-1.5 text-txt-secondary hover:text-white transition-colors text-sm"
+          className="inline-flex items-center gap-1.5 c-kicker press"
+          style={{ color: "var(--ink-strong)", fontSize: 11, letterSpacing: "0.14em" }}
           aria-label="Go back"
         >
-          <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
-          Back
+          BACK
         </Link>
       </div>
 
       {/* Hero */}
       <div className="flex flex-col items-center text-center pt-6 pb-8">
-        <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center mb-5 text-3xl">
-          📍
+        <div
+          className="w-16 h-16 flex items-center justify-center mb-5 c-hero"
+          style={{
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            fontSize: 30,
+          }}
+        >
+          §
         </div>
-        <h1 className="font-display text-[2rem] leading-[1.1] font-normal text-white mb-3">
+        <p className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>§ CLAIM</p>
+        <h1 className="c-hero mt-1 mb-3" style={{ fontSize: 36, lineHeight: 1.05, color: "var(--ink-strong)" }}>
           Claim your city.
         </h1>
-        <p className="text-txt-secondary text-sm leading-relaxed max-w-[280px]">
+        <p className="c-serif-it max-w-[280px]" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
           Get your local badge, priority in city feeds, and unlock exclusive member perks.
         </p>
       </div>
@@ -138,11 +147,12 @@ function ClaimYourCityInner() {
         {BENEFITS.map((b) => (
           <div
             key={b.title}
-            className="flex flex-col items-center text-center gap-2 p-3 rounded-2xl bg-white/4 border border-white/8"
+            className="flex flex-col items-center text-center gap-2 p-3 c-frame"
+            style={{ background: "var(--paper-soft)" }}
           >
-            <span className="text-2xl leading-none">{b.icon}</span>
-            <p className="text-[11px] font-semibold text-white leading-tight">{b.title}</p>
-            <p className="text-[10px] text-txt-secondary leading-tight">{b.desc}</p>
+            <span className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)", lineHeight: 1 }}>{b.icon}</span>
+            <p className="c-card-t" style={{ fontSize: 11 }}>{b.title}</p>
+            <p className="c-meta" style={{ fontSize: 10, lineHeight: 1.3 }}>{b.desc}</p>
           </div>
         ))}
       </div>
@@ -195,25 +205,48 @@ function ClaimYourCityInner() {
 
         {/* Inline error */}
         {error && (
-          <p className="text-sm text-coral bg-coral/10 rounded-xl px-3 py-2.5">
+          <div
+            className="px-4 py-3 c-kicker"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 12,
+              letterSpacing: "0.12em",
+            }}
+          >
             {error}
-          </p>
+          </div>
         )}
 
         {/* Pending review feedback */}
         {outcome?.kind === "pending_review" && (
-          <div className="rounded-xl bg-gold/8 border border-gold/20 px-4 py-3 text-sm text-gold">
-            <p className="font-semibold mb-1">We&rsquo;re reviewing your address</p>
-            <p className="text-gold/70 text-xs leading-relaxed">{outcome.message}</p>
+          <div
+            className="px-4 py-3"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <p className="c-kicker mb-1" style={{ fontSize: 11, letterSpacing: "0.12em" }}>REVIEWING YOUR ADDRESS</p>
+            <p className="c-body" style={{ fontSize: 12 }}>{outcome.message}</p>
           </div>
         )}
 
         {/* Rejected feedback */}
         {outcome?.kind === "rejected" && (
-          <div className="rounded-xl bg-coral/8 border border-coral/20 px-4 py-3 text-sm">
-            <p className="font-semibold text-coral mb-1">{outcome.message}</p>
+          <div
+            className="px-4 py-3"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+            }}
+          >
+            <p className="c-kicker mb-1" style={{ fontSize: 11, letterSpacing: "0.12em" }}>{outcome.message}</p>
             {outcome.supported && outcome.supported.length > 0 && (
-              <p className="text-coral/70 text-xs">
+              <p style={{ fontSize: 11, opacity: 0.8 }}>
                 Currently supported cities: {outcome.supported.join(", ")}.
               </p>
             )}
@@ -222,10 +255,14 @@ function ClaimYourCityInner() {
 
         {/* CTA */}
         <div className="pt-2 space-y-3">
-          <Button type="submit" fullWidth size="lg" loading={loading}>
-            Claim {cityLabel}
-          </Button>
-          <p className="text-center text-[11px] text-txt-secondary/60 leading-relaxed">
+          <button
+            type="submit"
+            disabled={loading}
+            className="c-btn c-btn-primary w-full press disabled:opacity-50"
+          >
+            {loading ? "CLAIMING…" : `CLAIM ${cityLabel.toUpperCase()}`}
+          </button>
+          <p className="text-center c-meta" style={{ fontSize: 11, opacity: 0.6 }}>
             Used only to verify your city. Never sold or shared.
           </p>
         </div>
@@ -235,9 +272,10 @@ function ClaimYourCityInner() {
       <div className="pt-4 text-center">
         <Link
           href="/"
-          className="text-sm text-txt-secondary hover:text-white transition-colors"
+          className="c-kicker press"
+          style={{ color: "var(--ink-strong)", opacity: 0.6, fontSize: 11, letterSpacing: "0.14em" }}
         >
-          Skip for now
+          SKIP FOR NOW
         </Link>
       </div>
     </div>

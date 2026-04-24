@@ -26,33 +26,50 @@ export default async function NewReelPage() {
 
   return (
     <div className="animate-fade-in pb-safe min-h-screen">
-      <div className="flex items-center gap-3 px-5 pt-4 pb-5 border-b border-border-subtle">
+      <div
+        className="flex items-center gap-3 px-5 pt-4 pb-5"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/reels"
-          className="w-9 h-9 rounded-full bg-white/[0.06] flex items-center justify-center text-white press"
+          className="w-9 h-9 rounded-full flex items-center justify-center press"
+          style={{
+            background: "var(--paper-soft)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--ink-strong)",
+          }}
           aria-label="Back"
         >
           <Icon name="back" size={16} />
         </Link>
-        <h1 className="font-heading font-bold text-lg">New Reel</h1>
+        <h1 className="c-card-t" style={{ fontSize: 18, color: "var(--ink-strong)" }}>New Reel</h1>
       </div>
 
       <div className="px-5 py-5">
         {!isVerified ? (
-          <div className="rounded-2xl border border-coral/30 bg-coral/[0.08] p-5 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-coral/20 flex items-center justify-center">
-              <Icon name="warning" size={20} className="text-coral" />
+          <div
+            className="p-5 text-center"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <div
+              className="w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center"
+              style={{
+                background: "var(--gold-c)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <Icon name="warning" size={20} style={{ color: "var(--ink-strong)" }} />
             </div>
-            <h2 className="font-heading font-bold text-base mb-1">
+            <h2 className="c-card-t mb-1" style={{ fontSize: 16, color: "var(--ink-strong)" }}>
               Verification required
             </h2>
-            <p className="text-sm text-white/60 mb-4">
+            <p className="c-body mb-4" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
               Your account needs to be verified before posting reels.
             </p>
-            <Link
-              href="/settings"
-              className="inline-block px-4 py-2 rounded-full bg-gold text-midnight font-bold text-sm press"
-            >
+            <Link href="/settings" className="c-btn c-btn-primary c-btn-sm inline-block">
               Verify account
             </Link>
           </div>

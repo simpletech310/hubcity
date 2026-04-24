@@ -66,7 +66,11 @@ export default async function GalleryItemDetailPage({
       {item.image_urls?.length > 1 && (
         <div className="flex gap-2 px-5 mb-5 overflow-x-auto scrollbar-hide">
           {item.image_urls.map((url: string, i: number) => (
-            <div key={i} className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border-subtle">
+            <div
+              key={i}
+              className="w-16 h-16 overflow-hidden shrink-0"
+              style={{ border: "2px solid var(--rule-strong-c)" }}
+            >
               <img src={url} alt="" className="w-full h-full object-cover" />
             </div>
           ))}

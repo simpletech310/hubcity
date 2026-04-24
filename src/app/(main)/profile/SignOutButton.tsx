@@ -20,9 +20,9 @@ export default function SignOutButton() {
     <button
       onClick={handleSignOut}
       disabled={loading}
-      className="w-full py-3 rounded-2xl border border-coral/20 text-coral text-sm font-semibold press hover:bg-coral/5 transition-colors disabled:opacity-50"
+      className="w-full c-btn c-btn-outline press disabled:opacity-50"
     >
-      {loading ? "Signing out…" : "Sign Out"}
+      {loading ? "SIGNING OUT…" : "SIGN OUT"}
     </button>
   );
 }

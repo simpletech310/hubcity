@@ -21,7 +21,8 @@ export default async function FoodToursPage() {
       <div className="px-5 pt-4 mb-5">
         <Link
           href="/food"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+          className="inline-flex items-center gap-1.5 press mb-3 c-kicker"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -35,8 +36,8 @@ export default async function FoodToursPage() {
           </svg>
           Food
         </Link>
-        <h1 className="font-heading text-2xl font-bold mb-1">Food Tours</h1>
-        <p className="text-sm text-txt-secondary">
+        <h1 className="c-hero mb-1" style={{ fontSize: "1.75rem", color: "var(--ink-strong)" }}>Food Tours</h1>
+        <p className="c-body" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
           Curated culinary journeys through Compton
         </p>
       </div>
@@ -48,10 +49,16 @@ export default async function FoodToursPage() {
             <TourCard key={tour.id} tour={tour} />
           ))
         ) : (
-          <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="globe" size={28} /></span>
-            <p className="text-sm font-medium mb-1">No tours yet</p>
-            <p className="text-xs text-txt-secondary">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="globe" size={28} /></span>
+            <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>No tours yet</p>
+            <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
               Food tours are coming soon. Check back later!
             </p>
           </div>

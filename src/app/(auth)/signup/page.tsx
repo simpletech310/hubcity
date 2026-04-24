@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 
 export default function SignupPage() {
@@ -42,20 +41,31 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="max-w-[430px] mx-auto min-h-dvh bg-midnight flex flex-col items-center justify-center px-6">
+    <div className="max-w-[430px] mx-auto min-h-dvh flex flex-col items-center justify-center px-6 culture-surface">
       {/* Logo */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 bg-gradient-to-br from-gold to-gold-light rounded-xl flex items-center justify-center font-heading font-extrabold text-xl text-midnight">
+        <div
+          className="w-12 h-12 flex items-center justify-center c-hero"
+          style={{
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            fontSize: 22,
+          }}
+        >
           K
         </div>
-        <span className="font-heading font-bold text-2xl tracking-tight">
-          K<span className="text-gold">nect</span>
+        <span className="c-hero" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
+          Knect
         </span>
       </div>
 
-      <h1 className="font-heading text-2xl font-bold mb-2">Join Culture</h1>
-      <p className="text-txt-secondary text-sm mb-8">
-        Connect with your Compton community
+      <p className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>§ JOIN</p>
+      <h1 className="c-hero mt-1 mb-1" style={{ fontSize: 36, color: "var(--ink-strong)" }}>
+        Join Culture.
+      </h1>
+      <p className="c-serif-it mb-8" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
+        Connect with your Compton community.
       </p>
 
       <form onSubmit={handleSignup} className="w-full space-y-4">
@@ -85,19 +95,32 @@ export default function SignupPage() {
         />
 
         {error && (
-          <p className="text-sm text-coral bg-coral/10 rounded-lg px-3 py-2">
+          <div
+            className="px-4 py-3 c-kicker"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 12,
+              letterSpacing: "0.12em",
+            }}
+          >
             {error}
-          </p>
+          </div>
         )}
 
-        <Button type="submit" fullWidth loading={loading}>
-          Create Account
-        </Button>
+        <button
+          type="submit"
+          disabled={loading}
+          className="c-btn c-btn-primary w-full press disabled:opacity-50"
+        >
+          {loading ? "CREATING ACCOUNT…" : "CREATE ACCOUNT"}
+        </button>
       </form>
 
-      <p className="text-sm text-txt-secondary mt-8">
+      <p className="c-serif-it mt-8" style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.7 }}>
         Already have an account?{" "}
-        <Link href="/login" className="text-gold font-medium">
+        <Link href="/login" className="font-medium" style={{ color: "var(--ink-strong)", textDecoration: "underline" }}>
           Sign In
         </Link>
       </p>

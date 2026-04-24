@@ -30,7 +30,7 @@ export default function ShareButton({ url }: { url: string }) {
   return (
     <button
       onClick={handleShare}
-      className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl glass-card-elevated border border-border-subtle text-txt-secondary font-semibold text-[13px] press hover:border-white/20 transition-colors"
+      className="c-btn c-btn-outline flex-1"
     >
       <Icon name="share" size={14} />
       {copied ? "Copied!" : "Share"}

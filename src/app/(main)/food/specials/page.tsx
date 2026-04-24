@@ -47,7 +47,8 @@ export default function SpecialsPage() {
       <div className="px-5 pt-4 mb-5">
         <Link
           href="/food"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press mb-3"
+          className="inline-flex items-center gap-1.5 press mb-3 c-kicker"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -61,10 +62,10 @@ export default function SpecialsPage() {
           </svg>
           Food
         </Link>
-        <h1 className="font-heading text-2xl font-bold mb-1">
+        <h1 className="c-hero mb-1" style={{ fontSize: "1.75rem", color: "var(--ink-strong)" }}>
           Today&apos;s Specials
         </h1>
-        <p className="text-sm text-txt-secondary">
+        <p className="c-body" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}>
           Limited-time deals from local restaurants
         </p>
       </div>
@@ -74,11 +75,15 @@ export default function SpecialsPage() {
         <div className="flex gap-2 px-5 mb-5 overflow-x-auto scrollbar-hide pb-1">
           <button
             onClick={() => setFilterBiz("all")}
-            className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all press ${
-              filterBiz === "all"
-                ? "bg-gold text-midnight"
-                : "bg-white/[0.06] text-txt-secondary border border-border-subtle"
-            }`}
+            className="shrink-0 px-3.5 py-2 transition-all press"
+            style={{
+              background: filterBiz === "all" ? "var(--gold-c)" : "var(--paper)",
+              color: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              fontFamily: "var(--font-archivo-narrow), sans-serif",
+              fontSize: 12,
+              fontWeight: filterBiz === "all" ? 800 : 600,
+            }}
           >
             All
           </button>
@@ -86,11 +91,15 @@ export default function SpecialsPage() {
             <button
               key={id}
               onClick={() => setFilterBiz(id)}
-              className={`shrink-0 px-3.5 py-2 rounded-full text-xs font-semibold transition-all press ${
-                filterBiz === id
-                  ? "bg-gold text-midnight"
-                  : "bg-white/[0.06] text-txt-secondary border border-border-subtle"
-              }`}
+              className="shrink-0 px-3.5 py-2 transition-all press"
+              style={{
+                background: filterBiz === id ? "var(--gold-c)" : "var(--paper)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                fontFamily: "var(--font-archivo-narrow), sans-serif",
+                fontSize: 12,
+                fontWeight: filterBiz === id ? 800 : 600,
+              }}
             >
               {name}
             </button>
@@ -103,10 +112,16 @@ export default function SpecialsPage() {
         {loading ? (
           [1, 2, 3].map((i) => <div key={i} className="skeleton h-28" />)
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="tag" size={28} /></span>
-            <p className="text-sm font-medium mb-1">No active specials</p>
-            <p className="text-xs text-txt-secondary">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="tag" size={28} /></span>
+            <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>No active specials</p>
+            <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
               Check back soon for new deals
             </p>
           </div>
@@ -130,23 +145,26 @@ export default function SpecialsPage() {
               <Card key={special.id} hover>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-txt-secondary font-medium mb-0.5">
+                    <p className="c-meta mb-0.5" style={{ fontSize: 10 }}>
                       {bizName}
                     </p>
-                    <h3 className="font-heading font-bold text-sm mb-1">
+                    <h3 className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                       {special.title}
                     </h3>
                     {special.description && (
-                      <p className="text-[11px] text-txt-secondary mb-2 line-clamp-2">
+                      <p className="c-body mb-2 line-clamp-2" style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.7 }}>
                         {special.description}
                       </p>
                     )}
                     <div className="flex items-center gap-3">
                       <div className="flex items-baseline gap-2">
-                        <span className="text-txt-secondary text-xs line-through">
+                        <span className="c-body line-through" style={{ fontSize: 12, opacity: 0.5, color: "var(--ink-strong)" }}>
                           ${(special.original_price / 100).toFixed(2)}
                         </span>
-                        <span className="font-heading font-bold text-gold text-lg">
+                        <span
+                          className="c-card-t"
+                          style={{ fontSize: 18, color: "var(--ink-strong)" }}
+                        >
                           ${(special.special_price / 100).toFixed(2)}
                         </span>
                       </div>
@@ -156,7 +174,7 @@ export default function SpecialsPage() {
                   {bizSlug && (
                     <Link
                       href={`/business/${bizSlug}`}
-                      className="shrink-0 bg-gold/10 text-gold text-[10px] font-semibold px-3 py-1.5 rounded-full press"
+                      className="c-btn c-btn-outline c-btn-sm shrink-0"
                     >
                       View
                     </Link>

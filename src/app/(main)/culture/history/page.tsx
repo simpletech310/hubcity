@@ -33,7 +33,13 @@ export default async function HistoryPage() {
         imageUrl="/images/art/IMG_2785.jpg"
       />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -42,13 +48,13 @@ export default async function HistoryPage() {
       {/* Timeline */}
       <section className="px-5">
         <div className="text-center mb-10">
-          <span className="text-xs font-semibold text-gold uppercase tracking-widest">
+          <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>
             {firstYear} — {lastYear}
           </span>
-          <h2 className="font-display text-2xl text-white mt-2">
+          <h2 className="c-hero mt-2" style={{ color: "var(--ink-strong)", fontSize: "2rem" }}>
             A City of Firsts
           </h2>
-          <p className="text-sm text-txt-secondary mt-2 max-w-sm mx-auto">
+          <p className="c-body mt-2 max-w-sm mx-auto" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             Generations of resilience, creativity, and cultural impact that
             changed the world.
           </p>
@@ -56,7 +62,7 @@ export default async function HistoryPage() {
         {timelineItems.length > 0 ? (
           <TimelineView items={timelineItems} />
         ) : (
-          <p className="text-center text-sm text-white/40 py-12">
+          <p className="text-center py-12 c-serif-it" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.6 }}>
             We&apos;re still gathering {cityName}&apos;s history. Check back soon.
           </p>
         )}
@@ -64,18 +70,21 @@ export default async function HistoryPage() {
 
       {/* CTA */}
       <section className="px-5">
-        <div className="rounded-2xl bg-gradient-to-r from-gold/10 to-gold/5 border border-gold/20 p-6 text-center">
-          <h3 className="font-display text-xl text-white">
+        <div
+          className="p-6 text-center"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <h3 className="c-hero" style={{ fontSize: "1.5rem", color: "var(--ink-strong)" }}>
             Help tell the story
           </h3>
-          <p className="text-txt-secondary text-sm mt-2 max-w-md mx-auto">
+          <p className="c-body mt-2 max-w-md mx-auto" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             Know a piece of {cityName} history that should be here? Share it
             with the Museum to help preserve the culture.
           </p>
-          <a
-            href="/culture/discussions"
-            className="inline-block mt-4 px-6 py-2.5 bg-gold text-midnight font-semibold rounded-full text-sm hover:bg-gold/90 transition-colors"
-          >
+          <a href="/culture/discussions" className="c-btn c-btn-primary c-btn-sm inline-block mt-4">
             Start a Discussion
           </a>
         </div>

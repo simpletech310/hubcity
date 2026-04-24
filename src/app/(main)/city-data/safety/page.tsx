@@ -89,42 +89,49 @@ export default async function SafetyPage() {
 
         {/* Resolution Stats */}
         <div className="mb-8 grid grid-cols-3 gap-4">
-          <div className="rounded-2xl bg-royal p-5 text-center">
-            <p className="text-3xl font-bold text-gold">{totalIssues}</p>
-            <p className="text-sm text-white/60">Total Issues</p>
+          <div className="c-frame p-5 text-center" style={{ background: "var(--paper-warm)" }}>
+            <p className="c-hero" style={{ fontSize: 32, color: "var(--gold-c)" }}>{totalIssues}</p>
+            <p className="c-body text-sm">Total Issues</p>
           </div>
-          <div className="rounded-2xl bg-royal p-5 text-center">
-            <p className="text-3xl font-bold text-emerald-400">{totalResolved}</p>
-            <p className="text-sm text-white/60">Resolved</p>
+          <div className="c-frame p-5 text-center" style={{ background: "var(--paper-warm)" }}>
+            <p className="c-hero" style={{ fontSize: 32, color: "var(--ink-strong)" }}>{totalResolved}</p>
+            <p className="c-body text-sm">Resolved</p>
           </div>
-          <div className="rounded-2xl bg-royal p-5 text-center">
-            <p className="text-3xl font-bold text-gold">{resolutionRate}%</p>
-            <p className="text-sm text-white/60">Resolution Rate</p>
+          <div className="c-frame p-5 text-center" style={{ background: "var(--paper-warm)" }}>
+            <p className="c-hero" style={{ fontSize: 32, color: "var(--gold-c)" }}>{resolutionRate}%</p>
+            <p className="c-body text-sm">Resolution Rate</p>
           </div>
         </div>
 
         {/* By District */}
         {districtStats.length > 0 ? (
           <div className="mb-8">
-            <h2 className="mb-4 text-xl font-semibold text-gold">Issues by District</h2>
+            <h2 className="c-card-t mb-4" style={{ color: "var(--gold-c)" }}>Issues by District</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {districtStats.map((d) => (
-                <div key={d.district} className="rounded-2xl bg-royal p-4">
+                <div key={d.district} className="c-frame p-4" style={{ background: "var(--paper)" }}>
                   <div className="mb-2 flex items-center justify-between">
-                    <h3 className="font-semibold">
+                    <h3 className="c-card-t">
                       {d.district === 0 ? "Unassigned" : `District ${d.district}`}
                     </h3>
-                    <span className="text-sm text-white/50">{d.total} issues</span>
+                    <span className="c-meta text-sm">{d.total} issues</span>
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-2 overflow-hidden"
+                    style={{
+                      background: "var(--paper-soft)",
+                      border: "1.5px solid var(--rule-strong-c)",
+                    }}
+                  >
                     <div
-                      className="h-full rounded-full bg-emerald-400 transition-all"
+                      className="h-full transition-all"
                       style={{
                         width: d.total > 0 ? `${(d.resolved / d.total) * 100}%` : "0%",
+                        background: "var(--gold-c)",
                       }}
                     />
                   </div>
-                  <div className="mt-1 flex justify-between text-xs text-white/50">
+                  <div className="mt-1 flex justify-between c-meta" style={{ fontSize: 11 }}>
                     <span>{d.open} open</span>
                     <span>{d.resolved} resolved</span>
                   </div>
@@ -133,38 +140,39 @@ export default async function SafetyPage() {
             </div>
           </div>
         ) : (
-          <div className="mb-8 rounded-2xl bg-royal/50 p-8 text-center">
-            <p className="text-white/50">No issue data available yet.</p>
-            <p className="mt-1 text-sm text-white/30">
+          <div className="mb-8 c-frame p-8 text-center" style={{ background: "var(--paper-warm)" }}>
+            <p className="c-body">No issue data available yet.</p>
+            <p className="c-meta mt-1 text-sm">
               Community-reported issues will appear here as they are submitted.
             </p>
           </div>
         )}
 
         {/* Emergency Contacts */}
-        <h2 className="mb-4 text-xl font-semibold text-gold">Emergency Contacts</h2>
+        <h2 className="c-card-t mb-4" style={{ color: "var(--gold-c)" }}>Emergency Contacts</h2>
         <div className="mb-8 grid gap-3 sm:grid-cols-2">
           {EMERGENCY_CONTACTS.map((contact) => (
-            <div key={contact.label} className="rounded-2xl bg-royal p-4">
-              <h3 className="font-semibold">{contact.label}</h3>
+            <div key={contact.label} className="c-frame p-4" style={{ background: "var(--paper)" }}>
+              <h3 className="c-card-t">{contact.label}</h3>
               <a
                 href={`tel:${contact.number.replace(/[^\d]/g, "")}`}
-                className="text-lg font-bold text-gold hover:underline"
+                className="text-lg font-bold hover:underline"
+                style={{ color: "var(--gold-c)" }}
               >
                 {contact.number}
               </a>
-              <p className="text-sm text-white/50">{contact.description}</p>
+              <p className="c-body text-sm">{contact.description}</p>
             </div>
           ))}
         </div>
 
         {/* Community Watch */}
-        <div className="rounded-2xl bg-royal/50 p-6 text-center">
-          <h3 className="mb-2 text-lg font-semibold">Community Watch Groups</h3>
-          <p className="text-sm text-white/60">
+        <div className="c-frame p-6 text-center" style={{ background: "var(--paper-warm)" }}>
+          <h3 className="c-card-t mb-2 text-lg">Community Watch Groups</h3>
+          <p className="c-body text-sm">
             Interested in joining or starting a neighborhood watch?
           </p>
-          <p className="mt-2 text-sm text-white/40">
+          <p className="c-meta mt-2 text-sm">
             Contact the Compton Station Community Relations office at (310) 605-6500.
           </p>
         </div>

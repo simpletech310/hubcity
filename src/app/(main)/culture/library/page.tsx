@@ -44,7 +44,13 @@ export default function LibraryPage() {
         imageUrl="/images/art/IMG_2792.JPG"
       />
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div
+        className="sticky top-0 z-30"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -66,7 +72,7 @@ export default function LibraryPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-2xl" />
+            <div key={i} className="skeleton h-24" />
           ))}
         </div>
       ) : items.length > 0 ? (
@@ -76,10 +82,16 @@ export default function LibraryPage() {
           ))}
         </section>
       ) : (
-        <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3"><Icon name="book" size={28} /></span>
-          <p className="text-sm font-medium mb-1">Library coming soon</p>
-          <p className="text-xs text-txt-secondary">
+        <div
+          className="text-center py-16 px-5 mx-5"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <span className="block mb-3" style={{ color: "var(--ink-strong)" }}><Icon name="book" size={28} /></span>
+          <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>Library coming soon</p>
+          <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
             Essential books and reading about Compton are being catalogued.
           </p>
         </div>

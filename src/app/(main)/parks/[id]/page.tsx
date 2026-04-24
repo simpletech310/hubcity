@@ -119,7 +119,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
 
         {/* Back button overlay */}
         <div className="absolute top-4 left-4 z-10">
-          <Link href="/parks" className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center press">
+          <Link href="/parks" className="w-8 h-8 rounded-full flex items-center justify-center press" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
             <Icon name="back" size={16} className="text-white" />
           </Link>
         </div>
@@ -152,11 +152,9 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {/* Quick Action Buttons */}
         <div className="grid grid-cols-3 gap-2">
           {park.phone && (
-            <a href={`tel:${(park.phone as string).replace(/[^0-9]/g, "")}`} className="flex flex-col items-center gap-1.5 rounded-xl bg-emerald/8 border border-emerald/15 p-3 press">
-              <div className="w-8 h-8 rounded-lg bg-emerald/15 flex items-center justify-center">
-                <Icon name="phone" size={16} className="text-emerald" />
-              </div>
-              <span className="text-[10px] text-emerald font-medium">Call</span>
+            <a href={`tel:${(park.phone as string).replace(/[^0-9]/g, "")}`} className="c-btn c-btn-outline c-btn-sm flex-col gap-1.5 p-3 press">
+              <Icon name="phone" size={16} />
+              <span>Call</span>
             </a>
           )}
           {park.latitude && park.longitude && (
@@ -164,19 +162,15 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
               href={`https://www.google.com/maps/dir/?api=1&destination=${park.latitude},${park.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex flex-col items-center gap-1.5 rounded-xl bg-cyan/8 border border-cyan/15 p-3 press"
+              className="c-btn c-btn-outline c-btn-sm flex-col gap-1.5 p-3 press"
             >
-              <div className="w-8 h-8 rounded-lg bg-cyan/15 flex items-center justify-center">
-                <Icon name="navigation" size={16} className="text-cyan" />
-              </div>
-              <span className="text-[10px] text-cyan font-medium">Directions</span>
+              <Icon name="navigation" size={16} />
+              <span>Directions</span>
             </a>
           )}
-          <Link href="/parks/programs" className="flex flex-col items-center gap-1.5 rounded-xl bg-gold/8 border border-gold/15 p-3 press">
-            <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <Icon name="calendar" size={16} className="text-gold" />
-            </div>
-            <span className="text-[10px] text-gold font-medium">Programs</span>
+          <Link href="/parks/programs" className="c-btn c-btn-primary c-btn-sm flex-col gap-1.5 p-3 press">
+            <Icon name="calendar" size={16} />
+            <span>Programs</span>
           </Link>
         </div>
 
@@ -184,8 +178,8 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {park.description && (
           <div>
             <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">About This Park</p>
-            <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4">
-              <p className="text-[13px] text-black/70 leading-relaxed">{park.description}</p>
+            <div className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+              <p className="c-body">{park.description}</p>
             </div>
           </div>
         )}
@@ -196,7 +190,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
             <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">What You Can Do Here</p>
             <div className="grid grid-cols-2 gap-2">
               {hasBBQ && (
-                <div className="rounded-xl bg-gradient-to-br from-orange-500/8 to-orange-500/3 border border-orange-500/15 p-3.5">
+                <div className="p-3.5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Icon name="bbq" size={16} className="text-orange-400" />
                     <span className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>BBQ & Cookout</span>
@@ -205,7 +199,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                 </div>
               )}
               {hasPool && (
-                <div className="rounded-xl bg-gradient-to-br from-cyan/8 to-cyan/3 border border-cyan/15 p-3.5">
+                <div className="p-3.5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Icon name="swimming" size={16} className="text-cyan" />
                     <span className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Swimming</span>
@@ -214,7 +208,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                 </div>
               )}
               {hasSports && (
-                <div className="rounded-xl bg-gradient-to-br from-emerald/8 to-emerald/3 border border-emerald/15 p-3.5">
+                <div className="p-3.5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Icon name="basketball" size={16} className="text-emerald" />
                     <span className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Sports</span>
@@ -223,7 +217,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                 </div>
               )}
               {hasKids && (
-                <div className="rounded-xl bg-gradient-to-br from-pink/8 to-pink/3 border border-pink/15 p-3.5">
+                <div className="p-3.5" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Icon name="baby" size={16} className="text-pink" />
                     <span className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Kids Play</span>
@@ -239,12 +233,15 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {hoursEntries.length > 0 && (
           <div>
             <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">Park Hours</p>
-            <div className="glass-card-elevated rounded-2xl p-4">
+            <div className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="space-y-3">
                 {hoursEntries.map((h) => (
                   <div key={h.label} className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-lg bg-emerald/10 flex items-center justify-center">
+                      <div
+                        className="w-7 h-7 flex items-center justify-center"
+                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                      >
                         <Icon name="clock" size={13} className="text-emerald" />
                       </div>
                       <span className="text-[12px] text-black/70">{h.label}</span>
@@ -253,7 +250,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                   </div>
                 ))}
               </div>
-              <div className="mt-3 pt-3 border-t border-white/[0.04]">
+              <div className="mt-3 pt-3" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
                 <p className="text-[10px] text-black/40 leading-relaxed">Hours may vary on holidays. Call ahead to confirm.</p>
               </div>
             </div>
@@ -275,9 +272,13 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                 return (
                   <div
                     key={amenity}
-                    className="flex items-center gap-3 rounded-xl bg-white/[0.02] border border-white/[0.04] px-4 py-3"
+                    className="flex items-center gap-3 px-4 py-3"
+                    style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                   >
-                    <div className="w-9 h-9 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0">
+                    <div
+                      className="w-9 h-9 flex items-center justify-center shrink-0"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                    >
                       <Icon name={detail.icon} size={18} className={detail.color} />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -303,9 +304,12 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
             </div>
             <div className="space-y-2">
               {programs.map((program) => (
-                <div key={program.id} className="glass-card-elevated rounded-2xl p-4">
+                <div key={program.id} className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
+                    <div
+                      className="w-10 h-10 flex items-center justify-center shrink-0"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                    >
                       <Icon name="star" size={18} className="text-gold" />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -345,9 +349,12 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
             <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">Upcoming Events</p>
             <div className="space-y-2">
               {events.map((event) => (
-                <div key={event.id} className="glass-card-elevated rounded-2xl p-4">
+                <div key={event.id} className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-gold/10 border border-gold/15 flex flex-col items-center justify-center shrink-0">
+                    <div
+                      className="w-11 h-11 flex flex-col items-center justify-center shrink-0"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                    >
                       <span className="text-[14px] font-heading font-bold text-gold leading-none">
                         {new Date(event.start_date).getDate()}
                       </span>
@@ -376,7 +383,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {park.latitude && park.longitude && (
           <div>
             <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">Location</p>
-            <div className="rounded-2xl overflow-hidden border border-white/[0.06]">
+            <div className="overflow-hidden" style={{ border: "2px solid var(--rule-strong-c)" }}>
               <iframe
                 title={`Map of ${park.name}`}
                 src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY || ""}&q=${park.latitude},${park.longitude}&zoom=15`}
@@ -389,7 +396,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
               href={`https://www.google.com/maps/dir/?api=1&destination=${park.latitude},${park.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-2 flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.08] rounded-xl py-2.5 press"
+              className="c-btn c-btn-outline c-btn-sm mt-2 w-full press"
             >
               <Icon name="navigation" size={14} className="text-black/60" />
               <span className="text-[12px] font-semibold text-black/60">Get Directions</span>
@@ -400,7 +407,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {/* Park Tips */}
         <div>
           <p className="text-[10px] text-black/50 font-semibold uppercase tracking-wider mb-3">Good to Know</p>
-          <div className="rounded-2xl bg-white/[0.02] border border-white/[0.04] p-4 space-y-3">
+          <div className="p-4 space-y-3" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
             {[
               { text: "Picnic shelters can be reserved for groups and events", icon: "calendar" as IconName },
               ...(hasBBQ ? [{ text: "BBQ grills are first-come, first-served. Bring your own charcoal", icon: "bbq" as IconName }] : []),
@@ -409,7 +416,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
               { text: "Dogs must be on leash at all times", icon: "alert" as IconName },
             ].map((tip) => (
               <div key={tip.text} className="flex items-start gap-2.5">
-                <div className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center shrink-0 mt-0.5">
+                <div className="w-6 h-6 flex items-center justify-center shrink-0 mt-0.5" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                   <Icon name={tip.icon} size={11} className="text-black/40" />
                 </div>
                 <p className="text-[11px] text-black/50 leading-relaxed">{tip.text}</p>
@@ -419,8 +426,11 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         </div>
 
         {/* Contact Footer */}
-        <div className="rounded-2xl bg-gradient-to-br from-emerald/6 to-emerald/2 border border-emerald/10 p-5 text-center">
-          <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center mx-auto mb-3">
+        <div className="p-5 text-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+          <div
+            className="w-10 h-10 flex items-center justify-center mx-auto mb-3"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
             <Icon name="tree" size={20} className="text-emerald" />
           </div>
           <p className="font-heading text-[14px] font-bold text-white mb-1">{park.name}</p>

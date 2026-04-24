@@ -159,26 +159,30 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
   return (
     <div className="px-5 mb-6">
       <div
-        className={`rounded-2xl border overflow-hidden transition-all duration-300 ${
-          expanded
-            ? "bg-card border-gold/20"
-            : "bg-gradient-to-r from-gold/8 via-gold/4 to-hc-purple/8 border-gold/15 cursor-pointer"
-        }`}
+        className="overflow-hidden transition-all duration-300"
+        style={{
+          background: expanded ? "var(--paper)" : "var(--paper-warm)",
+          border: "2px solid var(--rule-strong-c)",
+          cursor: expanded ? "default" : "pointer",
+        }}
       >
         {/* Header — always visible */}
         <button
           onClick={() => setExpanded(!expanded)}
           className="w-full p-4 flex items-center gap-3.5 press text-left"
         >
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-gold/20 to-hc-purple/10 flex items-center justify-center shrink-0 animate-float">
-            <Icon name="sparkle" size={24} className="text-gold" />
+          <div
+            className="w-12 h-12 flex items-center justify-center shrink-0"
+            style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <Icon name="sparkle" size={24} style={{ color: "var(--ink-strong)" }} />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <p className="font-heading font-bold text-sm">AI Resource Assistant</p>
+              <p className="c-card-t" style={{ fontSize: 14, color: "var(--ink-strong)" }}>AI Resource Assistant</p>
               <Badge label="AI" variant="gold" shine />
             </div>
-            <p className="text-[11px] text-txt-secondary">
+            <p className="c-meta">
               {expanded ? "Tell me what you need help with" : "Describe your situation — I'll find the right programs"}
             </p>
           </div>
@@ -188,7 +192,8 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
             fill="none"
             stroke="currentColor"
             strokeWidth="2"
-            className={`text-gold shrink-0 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            className={`shrink-0 transition-transform duration-300 ${expanded ? "rotate-180" : ""}`}
+            style={{ color: "var(--ink-strong)" }}
             strokeLinecap="round"
           >
             <path d="M4 6l4 4 4-4" />
@@ -209,8 +214,11 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
               }}
               className="mb-4"
             >
-              <div className="flex items-center gap-2 bg-surface border border-border-subtle rounded-xl px-3 py-2.5 focus-within:border-gold/30 transition-all">
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary shrink-0">
+              <div
+                className="flex items-center gap-2 px-3 py-2.5 transition-all"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0" style={{ color: "var(--ink-strong)" }}>
                   <circle cx="7" cy="7" r="4" />
                   <path d="M10 10l4 4" />
                 </svg>
@@ -220,12 +228,14 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="e.g. I need help with rent..."
-                  className="flex-1 bg-transparent text-sm text-white placeholder:text-txt-secondary/50 outline-none"
+                  className="flex-1 bg-transparent text-sm outline-none"
+                  style={{ color: "var(--ink-strong)" }}
                 />
                 <button
                   type="submit"
                   disabled={!query.trim() || loading}
-                  className="w-8 h-8 rounded-lg bg-gradient-to-r from-gold to-gold-light flex items-center justify-center text-midnight disabled:opacity-30 press shrink-0"
+                  className="w-8 h-8 flex items-center justify-center disabled:opacity-30 press shrink-0"
+                  style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                 >
                   {loading ? (
                     <svg className="animate-spin h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
@@ -245,12 +255,12 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
             {loading && (
               <div className="space-y-2 animate-pulse py-2">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-gold animate-bounce" />
-                  <span className="text-[11px] text-gold font-medium">Searching resources for you...</span>
+                  <div className="w-2 h-2 rounded-full animate-bounce" style={{ background: "var(--gold-c)" }} />
+                  <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>Searching resources for you...</span>
                 </div>
-                <div className="h-3 bg-white/5 rounded w-full" />
-                <div className="h-3 bg-white/5 rounded w-4/5" />
-                <div className="h-3 bg-white/5 rounded w-3/5" />
+                <div className="h-3 w-full" style={{ background: "var(--paper-soft)" }} />
+                <div className="h-3 w-4/5" style={{ background: "var(--paper-soft)" }} />
+                <div className="h-3 w-3/5" style={{ background: "var(--paper-soft)" }} />
               </div>
             )}
 
@@ -260,8 +270,8 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                 <div className="flex items-center gap-2 mb-2">
                   <Badge label="AI Recommendation" variant="gold" shine />
                 </div>
-                <div className="bg-surface rounded-xl p-3.5 mb-3">
-                  <p className="text-[12px] text-txt-secondary leading-relaxed whitespace-pre-wrap">
+                <div className="p-3.5 mb-3" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+                  <p className="c-body whitespace-pre-wrap">
                     {response}
                   </p>
                 </div>
@@ -269,18 +279,24 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                 {/* Matched Resources */}
                 {matchedResources.length > 0 && (
                   <div className="space-y-2 mb-3">
-                    <p className="text-[10px] text-txt-secondary font-semibold uppercase tracking-wider">
+                    <p className="c-kicker">
                       Matching Resources
                     </p>
                     {matchedResources.map((r) => (
                       <Link key={r.id} href={`/resources/${r.id}`}>
-                        <div className="flex items-center gap-3 bg-surface rounded-xl p-3 press hover:bg-elevated transition-colors">
-                          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: `${categoryColors[r.category] || "#F2A900"}15` }}>
-                            <Icon name={categoryIcons[r.category] || "document"} size={16} className="text-white/70" />
+                        <div
+                          className="flex items-center gap-3 p-3 press transition-colors"
+                          style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+                        >
+                          <div
+                            className="w-8 h-8 flex items-center justify-center shrink-0"
+                            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                          >
+                            <Icon name={categoryIcons[r.category] || "document"} size={16} style={{ color: "var(--ink-strong)" }} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[12px] font-bold truncate">{r.name}</p>
-                            <p className="text-[10px] text-txt-secondary truncate">{r.organization}</p>
+                            <p className="c-card-t truncate" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{r.name}</p>
+                            <p className="c-meta truncate">{r.organization}</p>
                           </div>
                           <Badge
                             label={statusConfig[r.status]?.label ?? r.status}
@@ -305,10 +321,11 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                   <button
                     key={prompt.text}
                     onClick={() => handleQuickPrompt(prompt.text)}
-                    className="flex items-center gap-2 bg-surface rounded-xl px-3 py-2.5 text-left press hover:bg-elevated transition-colors"
+                    className="flex items-center gap-2 px-3 py-2.5 text-left press transition-colors"
+                    style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                   >
-                    <Icon name={prompt.icon} size={16} className="text-white/70 shrink-0" />
-                    <span className="text-[11px] text-txt-secondary leading-tight">{prompt.text}</span>
+                    <Icon name={prompt.icon} size={16} style={{ color: "var(--ink-strong)" }} className="shrink-0" />
+                    <span className="c-meta leading-tight">{prompt.text}</span>
                   </button>
                 ))}
               </div>
@@ -397,25 +414,28 @@ export default function ResourcesPage() {
       </header>
 
       {/* ── Quick Stats ── */}
-      <div className="px-5 -mt-1 mb-5">
-        <div className="grid grid-cols-3 gap-2.5">
-          {[
-            { label: "Resources", value: resources.length, color: "#F2A900" },
-            { label: "Open Now", value: openCount, color: "#22C55E" },
-            { label: "Free", value: freeCount, color: "#06B6D4" },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl glass-card border border-border-subtle glass-inner-light p-3 text-center relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: stat.color }} />
-              <p className="font-heading font-bold text-lg leading-none mb-0.5" style={{ color: stat.color }}>
-                {stat.value}
-              </p>
-              <p className="text-[9px] text-txt-secondary font-semibold uppercase tracking-wider">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+      <div
+        className="grid grid-cols-3 mb-6"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        {[
+          { label: "RESOURCES", value: resources.length, gold: true },
+          { label: "OPEN", value: openCount },
+          { label: "FREE", value: freeCount },
+        ].map((stat, i) => (
+          <div
+            key={stat.label}
+            className="text-center"
+            style={{
+              padding: "14px 10px",
+              borderRight: i < 2 ? "2px solid var(--rule-strong-c)" : "none",
+              background: stat.gold ? "var(--gold-c)" : "var(--paper)",
+            }}
+          >
+            <div className="c-display c-tabnum" style={{ fontSize: 22, lineHeight: 1 }}>{stat.value}</div>
+            <div className="c-kicker mt-1.5" style={{ fontSize: 9 }}>{stat.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* ── AI Resource Assistant ── */}
@@ -423,8 +443,11 @@ export default function ResourcesPage() {
 
       {/* ── Search ── */}
       <div className="px-5 mb-4">
-        <div className="flex items-center gap-3 bg-surface border border-border-subtle rounded-2xl px-4 py-3 focus-within:border-gold/30 transition-all">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary shrink-0">
+        <div
+          className="flex items-center gap-3 px-4 py-3 transition-all"
+          style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="shrink-0" style={{ color: "var(--ink-strong)" }}>
             <circle cx="8" cy="8" r="5" />
             <path d="M12 12l4 4" />
           </svg>
@@ -433,10 +456,11 @@ export default function ResourcesPage() {
             placeholder="Search resources..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm text-white placeholder:text-txt-secondary/60 w-full outline-none"
+            className="bg-transparent text-sm w-full outline-none"
+            style={{ color: "var(--ink-strong)" }}
           />
           {search && (
-            <button onClick={() => setSearch("")} className="text-txt-secondary hover:text-white press">
+            <button onClick={() => setSearch("")} className="press" style={{ color: "var(--ink-strong)" }}>
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M4 4l8 8M12 4l-8 8" />
               </svg>
@@ -461,7 +485,7 @@ export default function ResourcesPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton h-32 rounded-2xl" />
+            <div key={i} className="skeleton h-32" style={{ border: "2px solid var(--rule-strong-c)" }} />
           ))}
         </div>
       ) : (
@@ -473,7 +497,7 @@ export default function ResourcesPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № 01
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   Browse by Need
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -486,15 +510,19 @@ export default function ResourcesPage() {
                     <button
                       key={cat.value}
                       onClick={() => setActiveCategory(cat.value)}
-                      className="group rounded-xl panel-editorial p-3 flex flex-col items-center gap-2 press hover:border-gold/30 transition-colors relative"
+                      className="group p-3 flex flex-col items-center gap-2 press transition-colors relative"
+                      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                     >
-                      <div className="w-10 h-10 rounded-lg border border-gold/15 bg-ink flex items-center justify-center group-hover:border-gold/40 transition-colors">
-                        <Icon name={cat.icon} size={18} className="text-gold" />
+                      <div
+                        className="w-10 h-10 flex items-center justify-center transition-colors"
+                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                      >
+                        <Icon name={cat.icon} size={18} style={{ color: "var(--ink-strong)" }} />
                       </div>
-                      <p className="text-[10px] font-bold uppercase tracking-editorial-tight text-ivory/90">
+                      <p className="c-kicker" style={{ color: "var(--ink-strong)" }}>
                         {cat.label}
                       </p>
-                      <p className="text-[9px] text-gold/70 font-semibold tabular-nums">
+                      <p className="c-kicker tabular-nums" style={{ fontSize: 9 }}>
                         {count}
                       </p>
                     </button>
@@ -511,7 +539,7 @@ export default function ResourcesPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № 02
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   Act Now
                 </span>
                 <Tag tone="coral" size="xs">
@@ -535,7 +563,7 @@ export default function ResourcesPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № 03
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   {activeCategory === "all" ? "Available Now" : categories.find((c) => c.value === activeCategory)?.label}
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -558,7 +586,7 @@ export default function ResourcesPage() {
                 <span className="font-display text-gold text-[22px] leading-none tabular-nums">
                   № 04
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.65 }}>
                   Coming Soon &amp; More
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
@@ -577,17 +605,20 @@ export default function ResourcesPage() {
           {/* ── Empty State ── */}
           {filtered.length === 0 && (
             <div className="px-5 text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
-                <Icon name="search" size={28} className="text-white/30" />
+              <div
+                className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="search" size={28} style={{ color: "var(--ink-strong)" }} />
               </div>
-              <p className="text-sm font-bold mb-1">No resources found</p>
-              <p className="text-xs text-txt-secondary mb-4">Try a different search or category</p>
+              <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No resources found</p>
+              <p className="c-meta mb-4">Try a different search or category</p>
               <button
                 onClick={() => {
                   setSearch("");
                   setActiveCategory("all");
                 }}
-                className="text-xs text-gold font-semibold press"
+                className="c-btn c-btn-outline c-btn-sm press"
               >
                 Clear filters
               </button>
@@ -596,18 +627,24 @@ export default function ResourcesPage() {
 
           {/* ── Need Help CTA ── */}
           <div className="px-5 mt-4 mb-4">
-            <div className="rounded-2xl panel-editorial p-5 relative overflow-hidden">
+            <div
+              className="p-5 relative overflow-hidden"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+            >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
-                  <Icon name="phone" size={22} className="text-gold" />
+                <div
+                  className="w-12 h-12 flex items-center justify-center shrink-0"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                >
+                  <Icon name="phone" size={22} style={{ color: "var(--ink-strong)" }} />
                 </div>
                 <div className="flex-1">
-                  <p className="font-display text-[17px] leading-tight text-white">Need immediate help?</p>
-                  <p className="text-[11px] text-ivory/60 mt-0.5">Call 211 for free community referrals, 24/7.</p>
+                  <p className="c-card-t" style={{ fontSize: 17, color: "var(--ink-strong)" }}>Need immediate help?</p>
+                  <p className="c-meta mt-0.5">Call 211 for free community referrals, 24/7.</p>
                 </div>
                 <a
                   href="tel:211"
-                  className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[11px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press"
+                  className="c-btn c-btn-primary c-btn-sm shrink-0 press"
                 >
                   Call 211
                 </a>
@@ -647,27 +684,32 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
   return (
     <Link
       href={`/resources/${r.id}`}
-      className={`group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden relative ${
-        urgent ? "border-coral/25" : ""
-      }`}
+      className="group block press transition-colors overflow-hidden relative"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
     >
-      {/* Urgent gets a thin coral rail; everything else gets a gold hairline */}
+      {/* Urgent gets a thin gold rail */}
       {urgent && (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-coral" />
+        <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: "var(--gold-c)" }} />
       )}
 
       <div className="flex items-stretch">
-        {/* Ink side panel with gold icon — no more rainbow category color */}
-        <div className="w-[92px] shrink-0 relative bg-ink border-r border-white/[0.06] flex items-center justify-center">
+        {/* Paper side panel with ink icon */}
+        <div
+          className="w-[92px] shrink-0 relative flex items-center justify-center"
+          style={{ background: "var(--paper-warm)", borderRight: "2px solid var(--rule-strong-c)" }}
+        >
           {r.image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={r.image_url} alt={r.name} className="w-full h-full object-cover" />
           ) : (
             <div className="flex flex-col items-center gap-2 py-2">
-              <div className="w-12 h-12 rounded-xl border border-gold/20 bg-black/40 flex items-center justify-center">
-                <Icon name={iconName} size={22} className="text-gold" />
+              <div
+                className="w-12 h-12 flex items-center justify-center"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name={iconName} size={22} style={{ color: "var(--ink-strong)" }} />
               </div>
-              <span className="text-[8px] font-bold uppercase tracking-editorial-tight text-gold/70">
+              <span className="c-kicker" style={{ fontSize: 8, color: "var(--ink-strong)" }}>
                 {r.category}
               </span>
             </div>
@@ -680,17 +722,17 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
 
         {/* Content */}
         <div className="flex-1 min-w-0 p-3.5">
-          <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
+          <h3 className="c-card-t line-clamp-1" style={{ fontSize: 17, color: "var(--ink-strong)" }}>
             {r.name}
           </h3>
           {r.organization && (
-            <p className="text-[11px] text-ivory/55 font-medium truncate mt-0.5">
+            <p className="c-meta truncate mt-0.5">
               {r.organization}
             </p>
           )}
 
           {r.description && (
-            <p className="text-[11px] text-ivory/50 leading-relaxed mt-1.5 line-clamp-2">
+            <p className="c-body mt-1.5 line-clamp-2">
               {r.description}
             </p>
           )}
@@ -700,7 +742,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
             <Tag tone="gold" size="xs">{r.category}</Tag>
             {r.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
             {r.eligibility && (
-              <span className="text-[9px] font-semibold uppercase tracking-editorial-tight text-ivory/50 bg-white/[0.03] border border-white/[0.06] rounded-full px-2 py-0.5 truncate max-w-[120px]">
+              <span className="c-badge-ink inline-flex px-2 py-0.5 truncate max-w-[120px]" style={{ fontSize: 9 }}>
                 {r.eligibility}
               </span>
             )}
@@ -759,12 +801,12 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
 
             <span className="ml-auto shrink-0">
               {r.accepts_applications && r.status === "open" ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
+                <span className="c-badge-gold inline-flex items-center gap-1 px-2.5 py-1">
                   Apply
                   <Icon name="arrow-right-thin" size={11} />
                 </span>
               ) : (
-                <Icon name="arrow-right-thin" size={14} className="text-gold/60 group-hover:text-gold transition-colors" />
+                <Icon name="arrow-right-thin" size={14} style={{ color: "var(--ink-strong)" }} />
               )}
             </span>
           </div>

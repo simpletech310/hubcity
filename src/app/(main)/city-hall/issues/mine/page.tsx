@@ -94,10 +94,7 @@ export default function MyReportedIssuesPage() {
               <p className="text-xs text-txt-secondary mt-1">
                 See a problem in Compton? Report it and track its progress here.
               </p>
-              <Link
-                href="/city-hall/issues/new"
-                className="inline-block mt-4 px-4 py-2 bg-gold text-black text-sm font-bold rounded-xl press"
-              >
+              <Link href="/city-hall/issues/new" className="c-btn c-btn-primary c-btn-sm mt-4">
                 Report an Issue
               </Link>
             </div>
