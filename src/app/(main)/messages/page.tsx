@@ -5,7 +5,7 @@ import { Masthead, SectionKicker } from "@/components/ui/editorial";
 
 export const metadata: Metadata = {
   title: "Inbox | Culture",
-  description: "Your direct messages with creators and neighbors.",
+  description: "Your direct messages with creators and community members.",
 };
 
 type Participant = {
@@ -71,7 +71,7 @@ export default async function MessagesPage() {
           <span className="text-5xl block mb-3">{"\u{1F4AC}"}</span>
           <p className="text-sm font-medium mb-1">Sign in to see your messages</p>
           <p className="text-xs text-txt-secondary mb-4">
-            Chat with creators, neighbors, and local businesses.
+            Chat with creators, community members, and independents.
           </p>
           <Link
             href="/login?next=/messages"

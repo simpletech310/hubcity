@@ -41,6 +41,10 @@
     "seed-cusd.ts",
     "download-heritage.py",
     "scripts/local/**",
-    "supabase/functions/**"
+    "supabase/functions/**",
+    "check-*.ts",
+    "debug-*.ts",
+    "feature-*.ts",
+    "fix-*.ts"
   ]
 }

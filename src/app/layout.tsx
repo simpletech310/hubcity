@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     template: "%s · Culture",
   },
   description:
-    "The editorial field guide to your city. Discover local businesses, events, creators, and the culture that moves your neighborhood.",
+    "The editorial field guide to your scene. Discover independents, events, creators, and the culture that moves your community.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

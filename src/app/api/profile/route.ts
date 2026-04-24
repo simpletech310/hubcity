@@ -44,7 +44,7 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const allowedFields = ["display_name", "bio", "handle", "avatar_url"];
+    const allowedFields = ["display_name", "bio", "handle", "avatar_url", "cover_url", "website_url", "social_links", "profile_tags"];
     const updates: Record<string, unknown> = {};
 
     for (const field of allowedFields) {
@@ -111,6 +111,30 @@ export async function PATCH(request: Request) {
         );
       }
       updates.bio = bio || null;
+    }
+
+    // Validate website_url
+    if (updates.website_url !== undefined) {
+      const url = String(updates.website_url || "").trim();
+      if (url && !url.startsWith("http://") && !url.startsWith("https://")) {
+        return NextResponse.json(
+          { error: "Website URL must start with http:// or https://" },
+          { status: 400 }
+        );
+      }
+      updates.website_url = url || null;
+    }
+
+    // Validate profile_tags
+    if (updates.profile_tags !== undefined) {
+      const tags = updates.profile_tags;
+      if (!Array.isArray(tags) || tags.length > 5) {
+        return NextResponse.json(
+          { error: "profile_tags must be an array of up to 5 tags" },
+          { status: 400 }
+        );
+      }
+      updates.profile_tags = tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
     }
 
     const { data: profile, error } = await supabase

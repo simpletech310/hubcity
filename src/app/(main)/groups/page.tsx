@@ -22,6 +22,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   other: "handshake",
 };
 
+// Display labels for category chips — keeps data keys stable
+const CATEGORY_LABELS: Record<string, string> = {
+  all: "All",
+  neighborhood: "Scene",
+  interest: "Interest",
+  school: "School",
+  faith: "Faith",
+  sports: "Sports",
+  business: "Business",
+  other: "Other",
+};
+
 const CATEGORIES = [
   "all", "neighborhood", "interest", "school", "faith", "sports", "business",
 ];
@@ -180,7 +192,7 @@ export default function GroupsPage() {
                 {CATEGORIES.filter((c) => c !== "all").map((c) => (
                   <Chip
                     key={c}
-                    label={c}
+                    label={CATEGORY_LABELS[c] ?? c}
                     iconName={(CATEGORY_ICONS[c] || "handshake") as IconName}
                     active={newCategory === c}
                     onClick={() => setNewCategory(c)}
@@ -229,7 +241,7 @@ export default function GroupsPage() {
           {CATEGORIES.map((c) => (
             <Chip
               key={c}
-              label={c === "all" ? "All" : c}
+              label={CATEGORY_LABELS[c] ?? c}
               iconName={c !== "all" ? (CATEGORY_ICONS[c] || "handshake") as IconName : undefined}
               active={category === c}
               onClick={() => setCategory(c)}

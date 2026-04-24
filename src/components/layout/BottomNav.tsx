@@ -18,11 +18,11 @@ const BASE_SERVICES: ServiceItem[] = [
   { href: "/business", label: "Business", iconName: "briefcase" },
   { href: "/health", label: "Health", iconName: "heart-pulse" },
   { href: "/culture", label: "Culture", iconName: "palette" },
-  { href: "/jobs", label: "Jobs", iconName: "briefcase" },
-  { href: "/groups", label: "Groups", iconName: "users" },
+  { href: "/jobs", label: "Opportunities", iconName: "briefcase" },
+  { href: "/groups", label: "Scenes", iconName: "users" },
   { href: "/people", label: "Explore", iconName: "sparkle" },
   { href: "/creators", label: "Discover", iconName: "film" },
-  { href: "/resources", label: "Resources", iconName: "book" },
+  { href: "/resources", label: "Community", iconName: "book" },
   { href: "/live", label: "Culture TV", iconName: "film" },
 ];
 
@@ -30,11 +30,11 @@ const BASE_SERVICES: ServiceItem[] = [
  * home address. Hidden for anonymous and unverified users; the middleware
  * also guards direct navigation. */
 const VERIFIED_ONLY_SERVICES: ServiceItem[] = [
-  { href: "/district", label: "District", iconName: "grid" },
-  { href: "/officials", label: "Officials", iconName: "gavel" },
-  { href: "/city-hall", label: "City Hall", iconName: "landmark" },
-  { href: "/schools", label: "Schools", iconName: "graduation" },
-  { href: "/parks", label: "Parks", iconName: "tree" },
+  // { href: "/district", label: "District", iconName: "grid" },      // hidden — civic feature flag
+  // { href: "/officials", label: "Officials", iconName: "gavel" },   // hidden — civic nav
+  // { href: "/city-hall", label: "City Hall", iconName: "landmark" }, // hidden — civic nav
+  // { href: "/schools", label: "Schools", iconName: "graduation" },  // hidden — civic nav
+  // { href: "/parks", label: "Parks", iconName: "tree" },            // hidden — civic nav
 ];
 
 /* ── Nav tab icons ── */
@@ -216,10 +216,10 @@ export default function BottomNav({
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-semibold text-white leading-snug">
-                    Unlock your city
+                    Claim your city
                   </p>
                   <p className="text-[11px] text-white/60 leading-snug">
-                    Verify your address to see district, council, schools, and more.
+                    Verify your address to unlock your local scene and more.
                   </p>
                 </div>
                 <Link

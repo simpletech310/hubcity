@@ -1,13 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { redirect } from "next/navigation";
+import { isEnabled, CIVIC_ROUTE_PREFIXES } from "@/lib/feature-flags";
 
 export type AccessMode = "anonymous" | "unverified" | "verified";
 
 /**
  * Sections a user can access. "Base" sections are always visible (filtered to
- * the active city). "Overlay" sections require a verified home city and only
- * show for the user's home city.
+ * the active city). "Overlay" sections are community perks visible to verified
+ * users in their home city. Civic sections are hidden when civic_enabled=false.
  */
 export type Section =
   // Base
@@ -21,13 +22,14 @@ export type Section =
   | "groups"
   | "people"
   | "hubtv"
-  // Verified-only overlays
-  | "district"
-  | "council"
-  | "trustee"
+  // Community benefit overlays (verified users, home city only)
   | "resident_discounts"
   | "resident_job_priority"
   | "verified_groups"
+  // Civic sections (gated behind civic_enabled feature flag)
+  | "district"
+  | "council"
+  | "trustee"
   | "district_programs"
   | "civic_reporting";
 
@@ -44,24 +46,39 @@ const BASE_SECTIONS: ReadonlySet<Section> = new Set([
   "hubtv",
 ]);
 
-const OVERLAY_SECTIONS: ReadonlySet<Section> = new Set([
-  "district",
-  "council",
-  "trustee",
+/** Community perk overlays — require verified + home city match. */
+const COMMUNITY_OVERLAY_SECTIONS: ReadonlySet<Section> = new Set([
   "resident_discounts",
   "resident_job_priority",
   "verified_groups",
+]);
+
+/** Civic sections — additionally gated behind the civic_enabled feature flag. */
+const CIVIC_SECTIONS: ReadonlySet<Section> = new Set([
+  "district",
+  "council",
+  "trustee",
   "district_programs",
   "civic_reporting",
 ]);
 
-/** Middleware checks this prefix list. Keep in sync with OVERLAY_SECTIONS. */
+/**
+ * Kept for backwards-compat: any code that imported OVERLAY_SECTIONS still
+ * gets a valid set. It now covers only the community benefit overlays.
+ * @deprecated Prefer COMMUNITY_OVERLAY_SECTIONS or CIVIC_SECTIONS directly.
+ */
+export const OVERLAY_SECTIONS: ReadonlySet<Section> = COMMUNITY_OVERLAY_SECTIONS;
+
+/**
+ * Routes requiring verified membership (community perk routes only).
+ * Civic routes are handled separately via CIVIC_ROUTE_PREFIXES + feature flag.
+ */
 export const VERIFIED_ONLY_PREFIXES: ReadonlyArray<string> = [
-  "/district",
-  "/council",
-  "/trustee",
   "/resident-discounts",
 ];
+
+// Re-export so consumers can import from one place if preferred.
+export { CIVIC_ROUTE_PREFIXES };
 
 export type Access = {
   mode: AccessMode;
@@ -116,9 +133,10 @@ export async function getAccess(): Promise<Access> {
  * Can the user see a given section in a given city?
  *
  * Rules:
- * - Base sections: always visible (filtered to the city in question).
- * - Overlay sections: only visible to verified users AND only for their
- *   home city.
+ * - Base sections: always visible.
+ * - Community overlay sections: verified users in their home city only.
+ * - Civic sections: hidden entirely when civic_enabled=false; when enabled,
+ *   also require verified + home city match.
  */
 export function canSee(
   section: Section,
@@ -127,33 +145,45 @@ export function canSee(
   homeCityId: string | null
 ): boolean {
   if (BASE_SECTIONS.has(section)) return true;
-  if (!OVERLAY_SECTIONS.has(section)) return false;
-  if (mode !== "verified") return false;
-  if (!cityId) return false;
-  return cityId === homeCityId;
+
+  if (CIVIC_SECTIONS.has(section)) {
+    if (!isEnabled("civic_enabled")) return false;
+    // When civic is enabled, treat same as verified overlay
+    if (mode !== "verified") return false;
+    if (!cityId) return false;
+    return cityId === homeCityId;
+  }
+
+  if (COMMUNITY_OVERLAY_SECTIONS.has(section)) {
+    if (mode !== "verified") return false;
+    if (!cityId) return false;
+    return cityId === homeCityId;
+  }
+
+  return false;
 }
 
 /**
- * API-route guard. Returns null if the caller is a verified resident,
+ * API-route guard. Returns null if the caller is a verified member,
  * otherwise a NextResponse to short-circuit the request with 403.
  */
 export async function requireVerified(): Promise<NextResponse | null> {
   const { mode } = await getAccess();
   if (mode === "verified") return null;
   return NextResponse.json(
-    { error: "Verified residency required" },
+    { error: "Verified membership required" },
     { status: 403 }
   );
 }
 
 /**
- * Server-component guard. Call from within a server component / server action
- * to redirect unverified users to /verify-address, preserving the target path
- * as a `next` query param. Never returns if the user is not verified.
+ * Server-component guard. Redirects unverified users to /claim-your-city,
+ * preserving the target path as a `next` query param.
+ * Never returns if the user is not verified.
  */
 export async function requireVerifiedServerRedirect(nextPath: string): Promise<void> {
   const { mode } = await getAccess();
   if (mode === "verified") return;
-  const target = `/verify-address?next=${encodeURIComponent(nextPath)}`;
+  const target = `/claim-your-city?next=${encodeURIComponent(nextPath)}`;
   redirect(target);
 }

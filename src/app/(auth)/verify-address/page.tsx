@@ -80,7 +80,7 @@ export default function VerifyAddressPage() {
         Verify Your Address
       </h1>
       <p className="text-txt-secondary text-sm text-center mb-8">
-        Help us connect you with your district and neighborhood resources
+        Help us connect you with your local scene and community resources
       </p>
 
       <form onSubmit={handleVerify} className="w-full space-y-4">

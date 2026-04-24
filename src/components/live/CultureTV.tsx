@@ -54,7 +54,7 @@ const NATIONAL_CHANNEL_FILTERS: { label: string; value: ChannelType | "all" }[] 
   { label: "Business", value: "business" },
   { label: "Tech", value: "tech" },
   { label: "Learn", value: "education" },
-  { label: "Civic", value: "civic" },
+  { label: "Community", value: "civic" },
   { label: "Music", value: "music" },
   { label: "Faith", value: "faith" },
   { label: "Sports", value: "sports" },
@@ -81,7 +81,7 @@ const TYPE_BADGE: Record<ChannelType, { label: string; variant: TypeBadgeVariant
   business: { label: "Business", variant: "gold" },
   tech: { label: "Tech", variant: "cyan" },
   education: { label: "Learn", variant: "blue" },
-  civic: { label: "Civic", variant: "cyan" },
+  civic: { label: "Community", variant: "cyan" },
   music: { label: "Music", variant: "purple" },
   faith: { label: "Faith", variant: "gold" },
   sports: { label: "Sports", variant: "coral" },
@@ -767,7 +767,7 @@ export default function CultureTV({
                   🌉 Compton <span className="text-gold">Local</span>
                 </h2>
                 <p className="text-[12px] text-warm-gray mt-0.5">
-                  Channels for verified Compton residents
+                  Channels for verified Compton members
                 </p>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
@@ -790,8 +790,8 @@ export default function CultureTV({
                       Compton Local — locked
                     </h3>
                     <p className="text-[12px] text-txt-secondary leading-relaxed">
-                      Verify your Compton address to unlock school, city, and neighborhood channels
-                      made for residents.
+                      Verify your Compton address to unlock school, city, and local scene channels
+                      made for members.
                     </p>
                     <p className="mt-2 text-[11px] text-gold font-semibold">Verify address →</p>
                   </div>
@@ -881,7 +881,7 @@ export default function CultureTV({
                   </div>
                   <div>
                     <h3 className="font-heading font-bold text-[16px] text-white">Get On The Air</h3>
-                    <p className="text-[11px] text-gold font-semibold">Your city. Your story. Your channel.</p>
+                    <p className="text-[11px] text-gold font-semibold">Your scene. Your story. Your channel.</p>
                   </div>
                 </div>
                 <p className="text-[13px] text-white/60 leading-relaxed mb-4">

@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ChamberUpdatesWidget from "@/components/dashboard/ChamberUpdatesWidget";
+import OnboardingProgress from "@/components/dashboard/OnboardingProgress";
 import type { Order, Booking, StripeAccount, GrantApplication, Resource, BusinessType } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 
@@ -71,7 +72,16 @@ export default async function DashboardOverview() {
   const isResourceManager = userRole === "city_official" || userRole === "admin";
 
   // ── Business owner data ─────────────────────────────────
-  let business: { id: string; name: string; rating_avg: number; rating_count: number; business_type: BusinessType | null } | null = null;
+  let business: {
+    id: string;
+    name: string;
+    rating_avg: number;
+    rating_count: number;
+    business_type: BusinessType | null;
+    logo_url: string | null;
+    stripe_account_id: string | null;
+    is_published: boolean;
+  } | null = null;
   let todayCount = 0;
   let bookingCount = 0;
   let monthRevenue = 0;
@@ -84,11 +94,12 @@ export default async function DashboardOverview() {
   let orders: (Order & { customer: { display_name: string } | null })[] = [];
   let recentBookings: (Booking & { customer: { display_name: string } | null })[] = [];
   let stripe: StripeAccount | null = null;
+  let serviceCount = 0;
 
   if (isBusinessOwner) {
     const { data: biz } = await supabase
       .from("businesses")
-      .select("id, name, rating_avg, rating_count, business_type")
+      .select("id, name, rating_avg, rating_count, business_type, logo_url, stripe_account_id, is_published")
       .eq("owner_id", user.id)
       .single();
 
@@ -102,7 +113,7 @@ export default async function DashboardOverview() {
         1
       ).toISOString();
 
-      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount, allOrdersCount, uniqueCustomers, menuItems, allBookingsCount, bookingsToday, recentBookingsData, monthlyBookings] =
+      const [ordersToday, pendingBookings, monthlyOrders, recentOrders, stripeAccount, allOrdersCount, uniqueCustomers, menuItems, allBookingsCount, bookingsToday, recentBookingsData, monthlyBookings, servicesResult] =
         await Promise.all([
           supabase
             .from("orders")
@@ -163,6 +174,10 @@ export default async function DashboardOverview() {
             .eq("business_id", business.id)
             .gte("created_at", monthStart)
             .in("status", ["confirmed", "completed"]),
+          supabase
+            .from("services")
+            .select("id", { count: "exact", head: true })
+            .eq("business_id", business.id),
         ]);
 
       todayCount = ordersToday.count ?? 0;
@@ -178,6 +193,7 @@ export default async function DashboardOverview() {
       totalOrders = allOrdersCount.count ?? 0;
       totalCustomers = new Set((uniqueCustomers.data ?? []).map((o: { customer_id: string }) => o.customer_id)).size;
       menuItemCount = menuItems.count ?? 0;
+      serviceCount = servicesResult.count ?? 0;
       totalBookings = allBookingsCount.count ?? 0;
       todayBookingCount = bookingsToday.count ?? 0;
       recentBookings = (recentBookingsData.data ?? []) as (Booking & {
@@ -238,6 +254,20 @@ export default async function DashboardOverview() {
 
   return (
     <div className="px-4 py-5 space-y-5">
+      {/* ── Onboarding Progress (business owners not yet fully set up) ── */}
+      {isBusinessOwner && business && !business.is_published && (
+        <OnboardingProgress
+          businessId={business.id}
+          steps={{
+            hasName: !!business.name,
+            hasPhoto: !!business.logo_url,
+            hasMenu: menuItemCount > 0 || serviceCount > 0,
+            hasStripe: !!business.stripe_account_id || !!(stripe?.onboarding_complete),
+            isLive: business.is_published,
+          }}
+        />
+      )}
+
       {/* ── Business Owner Stats ─────────────────────────── */}
       {isBusinessOwner && business && (
         <>

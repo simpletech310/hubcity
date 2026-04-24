@@ -29,6 +29,16 @@ const CATEGORY_BADGE: Record<string, "gold" | "emerald" | "cyan" | "purple" | "c
   faith: "pink", sports: "emerald", business: "gold", other: "coral",
 };
 
+const CATEGORY_LABELS: Record<string, string> = {
+  neighborhood: "Scene",
+  interest: "Interest",
+  school: "School",
+  faith: "Faith",
+  sports: "Sports",
+  business: "Business",
+  other: "Other",
+};
+
 interface GroupHeaderProps {
   group: GroupInfo;
   isMember: boolean;
@@ -109,7 +119,7 @@ export default function GroupHeader({ group, isMember, myRole, joining, onJoin, 
 
         {/* Badges */}
         <div className="flex flex-wrap items-center gap-2 mt-3">
-          <Badge label={group.category} variant={CATEGORY_BADGE[group.category] || "gold"} />
+          <Badge label={CATEGORY_LABELS[group.category] ?? group.category} variant={CATEGORY_BADGE[group.category] || "gold"} />
           <Badge label={group.is_public ? "Public" : "Private"} variant={group.is_public ? "emerald" : "coral"} />
           <span className="text-[10px] text-txt-secondary">Created {formatCreatedDate(group.created_at)}</span>
           {group.creator && (

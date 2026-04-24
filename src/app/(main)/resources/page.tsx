@@ -395,7 +395,7 @@ export default function ResourcesPage() {
           <div className="mt-3 flex items-center gap-3">
             <span className="block h-[2px] w-8 bg-gold" />
             <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-              Grants, programs & services for {activeCity?.name ?? "local"} residents
+              Grants, programs & services for {activeCity?.name ?? "local"} members
             </span>
           </div>
         </div>

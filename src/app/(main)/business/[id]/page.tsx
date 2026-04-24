@@ -206,6 +206,21 @@ export default async function BusinessDetailPage({
   const isRetail = biz.category === "retail";
   const profileUrl = `${SITE_DOMAIN}/business/${biz.slug || biz.id}`;
 
+  // Fetch other active locations for multi-city presence
+  const { data: otherLocationsRaw } = await supabase
+    .from("business_locations")
+    .select("city:cities(name, slug)")
+    .eq("business_id", biz.id)
+    .eq("is_active", true)
+    .neq("is_primary", true)
+    .limit(5);
+  type OtherLocation = { city: { name: string; slug: string } | null };
+  const otherLocations: OtherLocation[] = (otherLocationsRaw ?? []) as unknown as OtherLocation[];
+  // Only include rows that have a linked city
+  const otherCities = otherLocations
+    .map((l) => l.city)
+    .filter((c): c is { name: string; slug: string } => c !== null);
+
   // Fetch menu items
   const { data: menuItems } = await supabase
     .from("menu_items")
@@ -447,6 +462,24 @@ export default async function BusinessDetailPage({
           {cityName} · {todayLine}
         </span>
       </div>
+
+      {/* ── Multi-city presence ── */}
+      {otherCities.length > 0 && (
+        <div className="px-5 mt-4 flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/50 font-semibold shrink-0">
+            Also in
+          </span>
+          {otherCities.map((city) => (
+            <Link
+              key={city.slug}
+              href={`/${city.slug}`}
+              className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-[11px] font-medium text-ivory/70 hover:text-ivory hover:border-gold/30 transition-colors"
+            >
+              {city.name}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* ── City Badges ── */}
       {biz.badges && biz.badges.length > 0 && (

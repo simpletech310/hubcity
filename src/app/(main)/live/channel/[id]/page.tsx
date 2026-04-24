@@ -15,7 +15,7 @@ export default async function ChannelDetailPage({
 
   const { data: byId } = await supabase
     .from("channels")
-    .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
+    .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role, verification_status)")
     .eq("id", id)
     .single();
 
@@ -24,7 +24,7 @@ export default async function ChannelDetailPage({
   } else {
     const { data: bySlug } = await supabase
       .from("channels")
-      .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
+      .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role, verification_status)")
       .eq("slug", id)
       .single();
     channel = (bySlug as Channel) || null;
@@ -89,6 +89,19 @@ export default async function ChannelDetailPage({
     isFollowing = !!follow;
   }
 
+  // Fetch creator's Stripe account id for tips
+  let stripeAccountId: string | null = null;
+  if (channel.owner_id) {
+    const { data: stripeAccount } = await supabase
+      .from("creator_stripe_accounts")
+      .select("stripe_account_id, charges_enabled")
+      .eq("creator_id", channel.owner_id)
+      .maybeSingle();
+    if (stripeAccount?.charges_enabled && stripeAccount.stripe_account_id) {
+      stripeAccountId = stripeAccount.stripe_account_id;
+    }
+  }
+
   return (
     <ChannelPage
       channel={channel}
@@ -97,6 +110,7 @@ export default async function ChannelDetailPage({
       timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
       isFollowing={isFollowing}
       userId={user?.id || null}
+      stripeAccountId={stripeAccountId}
     />
   );
 }

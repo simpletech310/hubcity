@@ -1297,6 +1297,22 @@ export interface CityIssue {
   reporter?: Profile;
 }
 
+// ── Business Locations ────────────────────────────────
+export interface BusinessLocation {
+  id: string;
+  business_id: string;
+  owner_id: string;
+  name: string;
+  address: string | null;
+  city_id: string | null;
+  phone: string | null;
+  hours: Record<string, { open: string; close: string }>;
+  is_primary: boolean;
+  is_active: boolean;
+  created_at: string;
+  city?: { name: string; slug: string } | null;
+}
+
 // ── Business Reviews ─────────────────────────────────
 export interface BusinessReview {
   id: string;

@@ -37,11 +37,17 @@ export async function POST(request: Request) {
     }
 
     const ext = file.name.split(".").pop() || "jpg";
-    const path = `avatars/${user.id}/${Date.now()}.${ext}`;
+
+    // Support both avatar and cover uploads via ?type= query param
+    const url = new URL(request.url);
+    const uploadType = url.searchParams.get("type") === "cover" ? "cover" : "avatar";
+
+    const bucket = uploadType === "cover" ? "profile-covers" : "profile-avatars";
+    const path = `${uploadType}s/${user.id}/${Date.now()}.${ext}`;
 
     // Upload to Supabase storage
     const { error: uploadError } = await supabase.storage
-      .from("post-images")
+      .from(bucket)
       .upload(path, file, {
         cacheControl: "3600",
         upsert: true,
@@ -50,20 +56,22 @@ export async function POST(request: Request) {
     if (uploadError) throw uploadError;
 
     const { data: urlData } = supabase.storage
-      .from("post-images")
+      .from(bucket)
       .getPublicUrl(path);
 
-    const avatarUrl = urlData.publicUrl;
+    const fileUrl = urlData.publicUrl;
 
-    // Update profile
+    // Update the correct profile field
+    const updateField = uploadType === "cover" ? "cover_url" : "avatar_url";
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ avatar_url: avatarUrl })
+      .update({ [updateField]: fileUrl })
       .eq("id", user.id);
 
     if (updateError) throw updateError;
 
-    return NextResponse.json({ avatar_url: avatarUrl });
+    // Return both field names so callers can use either
+    return NextResponse.json({ avatar_url: fileUrl, cover_url: fileUrl, url: fileUrl });
   } catch (error) {
     console.error("Avatar upload error:", error);
     return NextResponse.json(

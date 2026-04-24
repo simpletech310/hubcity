@@ -37,7 +37,7 @@ export default function ProfileActionButtons({
     return (
       <div className="mt-4 flex items-center gap-3">
         <a
-          href="/profile"
+          href="/profile/edit"
           className="flex-1 py-2.5 rounded-xl bg-transparent border border-gold/40 text-gold font-semibold text-sm press hover:bg-gold/10 transition-colors text-center"
         >
           Edit profile

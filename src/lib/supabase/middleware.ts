@@ -1,9 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { VERIFIED_ONLY_PREFIXES } from "@/lib/access";
+import { isEnabled, CIVIC_ROUTE_PREFIXES } from "@/lib/feature-flags";
 
 // Routes that require authentication
-const PROTECTED_ROUTES = ["/profile", "/admin", "/verify-address"];
+const PROTECTED_ROUTES = ["/profile", "/admin", "/dashboard", "/claim-your-city"];
 
 function isProtectedRoute(pathname: string): boolean {
   return PROTECTED_ROUTES.some((route) => pathname.startsWith(route));
@@ -11,6 +12,10 @@ function isProtectedRoute(pathname: string): boolean {
 
 function isVerifiedOnlyRoute(pathname: string): boolean {
   return VERIFIED_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+function isCivicRoute(pathname: string): boolean {
+  return CIVIC_ROUTE_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 export async function updateSession(request: NextRequest) {
@@ -22,6 +27,23 @@ export async function updateSession(request: NextRequest) {
   // If Supabase isn't configured, pass through
   if (!url || !url.startsWith("http") || !key || key === "your-supabase-anon-key") {
     return supabaseResponse;
+  }
+
+  const pathname = request.nextUrl.pathname;
+
+  // Redirect legacy /verify-address → /claim-your-city (307 temporary)
+  if (pathname.startsWith("/verify-address")) {
+    const redirectUrl = request.nextUrl.clone();
+    const next = request.nextUrl.searchParams.get("next");
+    redirectUrl.pathname = "/claim-your-city";
+    redirectUrl.search = "";
+    if (next) redirectUrl.searchParams.set("next", next);
+    return NextResponse.redirect(redirectUrl, { status: 307 });
+  }
+
+  // Block civic routes when civic_enabled flag is off → 404
+  if (!isEnabled("civic_enabled") && isCivicRoute(pathname)) {
+    return new NextResponse(null, { status: 404 });
   }
 
   const supabase = createServerClient(url, key, {
@@ -45,15 +67,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const pathname = request.nextUrl.pathname;
   const isAuthRoute =
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAdminRoute = pathname.startsWith("/admin");
-  const isVerifyRoute = pathname.startsWith("/verify-address");
   const isVerifiedOnly = isVerifiedOnlyRoute(pathname);
 
-  // Unauthenticated access to verified-only routes → send to login, then
-  // onward to /verify-address after sign-in.
+  // Unauthenticated access to protected or verified-only routes → login
   if (!user && !isAuthRoute && (isProtectedRoute(pathname) || isVerifiedOnly)) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
@@ -70,8 +89,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Check profile for verification and role (authenticated users on protected
-  // or verified-only routes).
+  // Check profile for role and suspension (authenticated users on protected routes).
   if (user && (isProtectedRoute(pathname) || isVerifiedOnly)) {
     try {
       const { data: profile, error: profileError } = await supabase
@@ -82,8 +100,6 @@ export async function updateSession(request: NextRequest) {
 
       if (profileError) {
         console.error("Middleware Profile Fetch Error:", profileError);
-        // Fallback: allow the request to proceed if the query fails due to schema issues
-        // Unless it's a critical path like /admin or a verified-only overlay.
         if (isAdminRoute || isVerifiedOnly) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/";
@@ -91,38 +107,16 @@ export async function updateSession(request: NextRequest) {
         }
       }
 
-      // Skip verification check if profile doesn't exist yet (new user) or if there was an error
       if (profile) {
-        // Suspended users can only see a suspended page or log out
+        // Suspended users can only see the suspended page or log out
         if (profile.is_suspended && !pathname.startsWith("/suspended")) {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/suspended";
           return NextResponse.redirect(redirectUrl);
         }
 
-        const isUnverified = profile.verification_status === "unverified";
-
-        // Verified-only overlay routes: unverified users get bounced to
-        // /verify-address with a next= hint so we can return them after.
-        if (isUnverified && isVerifiedOnly) {
-          const redirectUrl = request.nextUrl.clone();
-          redirectUrl.pathname = "/verify-address";
-          redirectUrl.searchParams.set("next", pathname);
-          return NextResponse.redirect(redirectUrl);
-        }
-
-        if (isUnverified && !isVerifyRoute && !isAdminRoute && isProtectedRoute(pathname)) {
-          const redirectUrl = request.nextUrl.clone();
-          redirectUrl.pathname = "/verify-address";
-          return NextResponse.redirect(redirectUrl);
-        }
-
-        if (
-          isAdminRoute &&
-          profile.role !== "admin" &&
-          profile.role !== "city_official" &&
-          profile.role !== "city_ambassador"
-        ) {
+        // Admin route: only admin role allowed (city_official / city_ambassador deferred)
+        if (isAdminRoute && profile.role !== "admin") {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/";
           return NextResponse.redirect(redirectUrl);

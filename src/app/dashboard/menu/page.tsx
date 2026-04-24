@@ -2,9 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import type { MenuItem } from "@/types/database";
-import MenuAvailabilityToggle from "./MenuAvailabilityToggle";
+import MenuAvailabilityToggle, { EightySixBadge } from "./MenuAvailabilityToggle";
 import MenuItemDeleteButton from "./MenuItemDeleteButton";
 
 function formatCents(cents: number) {
@@ -87,7 +86,7 @@ export default async function DashboardMenuPage() {
               </h2>
               <div className="space-y-2">
                 {grouped[category].map((item) => (
-                  <Card key={item.id} hover>
+                  <Card key={item.id} hover className={!item.is_available ? "opacity-60" : ""}>
                     <Link
                       href={`/dashboard/menu/${item.id}/edit`}
                       className="flex items-center gap-3"
@@ -114,12 +113,10 @@ export default async function DashboardMenuPage() {
 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium truncate">
+                          <p className={`text-sm font-medium truncate ${!item.is_available ? "line-through text-txt-secondary" : ""}`}>
                             {item.name}
                           </p>
-                          {!item.is_available && (
-                            <Badge label="Unavailable" variant="coral" size="sm" />
-                          )}
+                          <EightySixBadge itemId={item.id} isAvailable={item.is_available} />
                         </div>
                         {item.description && (
                           <p className="text-xs text-txt-secondary mt-0.5 line-clamp-1">

@@ -98,7 +98,7 @@ const SUGGESTIONS = [
   "Community events",
   "Youth programs",
   "Local schools",
-  "Local businesses",
+  "Independents near me",
 ];
 
 const RECENT_KEY = "knect_recent_searches";

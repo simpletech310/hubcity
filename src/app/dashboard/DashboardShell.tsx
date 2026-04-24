@@ -82,6 +82,14 @@ function SpecialsIcon() {
   );
 }
 
+function AdsIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+    </svg>
+  );
+}
+
 function JobsIcon() {
   return (
     <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -155,6 +163,61 @@ function SettingsIcon() {
   );
 }
 
+function HomeIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 22V12h6v10" />
+    </svg>
+  );
+}
+
+function InboxIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M22 12h-6l-2 3H10l-2-3H2" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" />
+    </svg>
+  );
+}
+
+function ContentIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <rect x="3" y="3" width="7" height="7" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="14" y="3" width="7" height="7" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="14" y="14" width="7" height="7" strokeLinecap="round" strokeLinejoin="round" />
+      <rect x="3" y="14" width="7" height="7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function LiveIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.24 7.76a6 6 0 010 8.49m-8.48-.01a6 6 0 010-8.49m11.31-2.82a10 10 0 010 14.14m-14.14 0a10 10 0 010-14.14" />
+    </svg>
+  );
+}
+
+function EarningsIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="10" strokeLinecap="round" strokeLinejoin="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m-4-4h8" />
+    </svg>
+  );
+}
+
+function CollabsIcon() {
+  return (
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+    </svg>
+  );
+}
+
 function HamburgerIcon() {
   return (
     <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -184,17 +247,18 @@ export default function DashboardShell({
 }) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const isResourceManager = userRole === "city_official" || userRole === "admin" || userRole === "resource_provider";
+  const isResourceManager = userRole === "resource_provider" || userRole === "admin";
   const isChamberAdmin = userRole === "chamber_admin" || userRole === "admin";
   const isBusinessOwner = userRole === "business_owner";
-  const canPostJobs = ["business_owner", "admin", "city_official", "city_ambassador"].includes(userRole);
+  const isCreator = userRole === "content_creator" || userRole === "admin";
+  const canPostJobs = ["business_owner", "admin"].includes(userRole);
 
   // Build flat tabs list (used for active tab detection)
   const allTabs: TabDef[] = useMemo(() => {
     const t: TabDef[] = [];
     const bizType = business?.business_type;
 
-    t.push({ href: "/dashboard", label: "Overview", icon: <OverviewIcon /> });
+    t.push({ href: "/dashboard", label: "Home", icon: <HomeIcon /> });
 
     if (business) {
       if (bizType === "food") {
@@ -202,7 +266,7 @@ export default function DashboardShell({
         t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
         t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
         if (business.is_mobile_vendor || business.business_sub_type === "food_truck" || business.business_sub_type === "cart") {
-          t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+          t.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
         }
       } else if (bizType === "retail") {
         t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
@@ -216,9 +280,13 @@ export default function DashboardShell({
         t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
         t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
         if (business.is_mobile_vendor) {
-          t.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+          t.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
         }
       }
+      // Locations (multi-city) — available to all business types
+      t.push({ href: "/dashboard/locations", label: "Locations", icon: <LocationIcon /> });
+      t.push({ href: "/dashboard/inbox", label: "Inbox", icon: <InboxIcon /> });
+      t.push({ href: "/dashboard/ads", label: "Ads", icon: <AdsIcon /> });
       t.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
       t.push({ href: "/dashboard/payouts", label: "Payouts", icon: <PayoutsIcon /> });
     }
@@ -228,10 +296,11 @@ export default function DashboardShell({
     }
 
     if (isResourceManager) {
+      t.push({ href: "/dashboard/applications", label: "Intake", icon: <ApplicationsIcon /> });
+      t.push({ href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> });
+      t.push({ href: "/dashboard/inbox", label: "Inbox", icon: <InboxIcon /> });
       t.push({ href: "/dashboard/polls", label: "Polls", icon: <PollsIcon /> });
       t.push({ href: "/dashboard/surveys", label: "Surveys", icon: <ApplicationsIcon /> });
-      t.push({ href: "/dashboard/applications", label: "Apps", icon: <ResourcesIcon /> });
-      t.push({ href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> });
     }
 
     if (isBusinessOwner) {
@@ -240,12 +309,22 @@ export default function DashboardShell({
 
     if (isChamberAdmin) {
       t.push({ href: "/dashboard/chamber", label: "Chamber Admin", icon: <ChamberIcon /> });
+      t.push({ href: "/dashboard/polls", label: "Updates", icon: <PollsIcon /> });
+      t.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
+    }
+
+    if (isCreator && !business) {
+      t.push({ href: "/dashboard/creator/content", label: "Content", icon: <ContentIcon /> });
+      t.push({ href: "/dashboard/creator/live", label: "Live", icon: <LiveIcon /> });
+      t.push({ href: "/dashboard/creator/collabs", label: "Collabs", icon: <CollabsIcon /> });
+      t.push({ href: "/dashboard/creator/earnings", label: "Earnings", icon: <EarningsIcon /> });
+      t.push({ href: "/dashboard/creator/audience", label: "Audience", icon: <CustomersIcon /> });
     }
 
     t.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
 
     return t;
-  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, canPostJobs]);
+  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, isCreator, canPostJobs]);
 
   // Build grouped sections for the drawer
   const sections: TabSection[] = useMemo(() => {
@@ -283,6 +362,7 @@ export default function DashboardShell({
       } else if (bizType !== "service") {
         marketingTabs.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
       }
+      marketingTabs.push({ href: "/dashboard/ads", label: "Ads", icon: <AdsIcon /> });
       marketingTabs.push({ href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> });
       if (marketingTabs.length > 0) {
         s.push({ title: "Marketing", tabs: marketingTabs });
@@ -303,7 +383,10 @@ export default function DashboardShell({
       manageTabs.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
     }
     if (business && (business.is_mobile_vendor || business.business_sub_type === "food_truck" || business.business_sub_type === "cart")) {
-      manageTabs.push({ href: "/dashboard/location", label: "Location", icon: <LocationIcon /> });
+      manageTabs.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
+    }
+    if (business) {
+      manageTabs.push({ href: "/dashboard/locations", label: "Locations", icon: <LocationIcon /> });
     }
     if (manageTabs.length > 0) {
       s.push({ title: "Manage", tabs: manageTabs });
@@ -348,14 +431,15 @@ export default function DashboardShell({
   // Settings tab (always at bottom, separate from sections)
   const settingsTab: TabDef = { href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> };
 
-  // Bottom tab bar — core 3-4 tabs always visible
+  // Bottom tab bar — core 3-4 tabs always visible (max 4, More button is always rendered separately)
   const bottomTabs: TabDef[] = useMemo(() => {
     const bizType = business?.business_type;
-    const tabs: TabDef[] = [
-      { href: "/dashboard", label: "Overview", icon: <OverviewIcon /> },
-    ];
 
+    // Business owner
     if (business) {
+      const tabs: TabDef[] = [
+        { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+      ];
       if (bizType === "food" || bizType === "retail") {
         tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
         tabs.push({ href: "/dashboard/menu", label: bizType === "retail" ? "Catalog" : "Menu", icon: <MenuIcon /> });
@@ -363,22 +447,52 @@ export default function DashboardShell({
         tabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
       } else {
         tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        tabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+        tabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
       }
+      tabs.push({ href: "/dashboard/inbox", label: "Inbox", icon: <InboxIcon /> });
+      return tabs;
     }
 
-    if (canPostJobs && !business) {
+    // Resource provider
+    if (isResourceManager) {
+      return [
+        { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+        { href: "/dashboard/applications", label: "Intake", icon: <ApplicationsIcon /> },
+        { href: "/dashboard/resources", label: "Resources", icon: <ResourcesIcon /> },
+        { href: "/dashboard/inbox", label: "Inbox", icon: <InboxIcon /> },
+      ];
+    }
+
+    // Chamber admin
+    if (isChamberAdmin) {
+      return [
+        { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+        { href: "/dashboard/chamber", label: "Members", icon: <ChamberIcon /> },
+        { href: "/dashboard/polls", label: "Updates", icon: <PollsIcon /> },
+        { href: "/dashboard/analytics", label: "Analytics", icon: <AnalyticsIcon /> },
+      ];
+    }
+
+    // Creator
+    if (isCreator) {
+      return [
+        { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+        { href: "/dashboard/creator/content", label: "Content", icon: <ContentIcon /> },
+        { href: "/dashboard/creator/collabs", label: "Collabs", icon: <CollabsIcon /> },
+        { href: "/dashboard/creator/earnings", label: "Earnings", icon: <EarningsIcon /> },
+      ];
+    }
+
+    // Default
+    const tabs: TabDef[] = [
+      { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
+    ];
+    if (canPostJobs) {
       tabs.push({ href: "/dashboard/jobs", label: "Jobs", icon: <JobsIcon /> });
     }
-
-    if (isBusinessOwner) {
-      tabs.push({ href: "/dashboard/chamber-hub", label: "Chamber", icon: <ChamberIcon /> });
-    }
-
     tabs.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
-
     return tabs;
-  }, [business, canPostJobs, isBusinessOwner]);
+  }, [business, isResourceManager, isChamberAdmin, isCreator, canPostJobs]);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -436,7 +550,15 @@ export default function DashboardShell({
     };
   }, [drawerOpen]);
 
-  const headerTitle = business ? business.name : isChamberAdmin ? "Chamber of Commerce" : isResourceManager ? "Resource Manager" : "Dashboard";
+  const headerTitle = business
+    ? business.name
+    : isChamberAdmin
+    ? "Chamber Hub"
+    : isResourceManager
+    ? "Community Hub"
+    : userRole === "content_creator"
+    ? "Creator Studio"
+    : "Dashboard";
 
   return (
     <div className="max-w-[430px] mx-auto min-h-dvh relative bg-midnight">

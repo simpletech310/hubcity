@@ -5,31 +5,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import SearchModal from "@/components/search/SearchModal";
-import CityPicker from "@/components/city/CityPicker";
+import CitySelector from "@/components/CitySelector";
 import Wordmark from "@/components/layout/Wordmark";
 
 /* ── Section title mappings — magazine-section names, not functional labels ── */
 const pageTitles: Record<string, string> = {
   "/pulse": "The Feed",
   "/live": "Culture TV",
-  "/business": "Commerce",
+  "/business": "Scene",
   "/events": "Events",
-  "/resources": "Support",
+  "/resources": "Community",
   "/profile": "Profile",
   "/notifications": "Notifications",
   "/messages": "Inbox",
   "/food": "Eat",
-  "/city-hall": "City Hall",
+  // "/city-hall": "City Hall",   // hidden — civic nav
   "/health": "Health",
-  "/schools": "Schools",
+  // "/schools": "Schools",       // hidden — civic nav
   "/culture": "Heritage",
-  "/parks": "Parks",
-  "/jobs": "Work",
+  // "/parks": "Parks",           // hidden — civic nav
+  "/jobs": "Opportunities",
   "/people": "Explore",
   "/creators": "Discover",
-  "/district": "District",
-  "/city-data": "City Data",
-  "/groups": "Community",
+  // "/district": "District",     // hidden — civic feature flag
+  // "/city-data": "City Data",   // hidden — civic nav
+  "/groups": "Scenes",
   "/dashboard": "Dashboard",
   "/admin": "Admin",
   "/settings": "Settings",
@@ -168,7 +168,7 @@ export default function Header() {
                 <h1 className="font-display text-[17px] leading-none tracking-tight text-white truncate">
                   {title}
                 </h1>
-                <CityPicker variant="header" />
+                <CitySelector />
               </div>
             </div>
           ) : (
@@ -180,7 +180,7 @@ export default function Header() {
               >
                 <Wordmark variant="full" size={26} />
               </Link>
-              <CityPicker variant="header" />
+              <CitySelector />
             </div>
           )}
 

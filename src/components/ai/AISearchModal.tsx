@@ -214,7 +214,7 @@ export default function AISearchModal({ isOpen, onClose }: AISearchModalProps) {
 
               <div className="mt-8 text-center">
                 <p className="text-[10px] text-txt-secondary/50 leading-relaxed">
-                  Culture AI searches local businesses, events, and resources in {cityName}.
+                  Culture AI searches independents, events, and resources in {cityName}.
                   <br />
                   Results are based on community data.
                 </p>

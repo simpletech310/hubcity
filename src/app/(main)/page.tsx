@@ -7,6 +7,8 @@ import Icon from "@/components/ui/Icon";
 import AISearchButton from "@/components/home/AISearchButton";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
 import { Masthead } from "@/components/ui/editorial";
+import TrendingStrip from "@/components/TrendingStrip";
+import type { TrendingReel, TrendingEvent } from "@/components/TrendingStrip";
 import { createClient } from "@/lib/supabase/server";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import { getFeaturedArt } from "@/lib/art-spotlight";
@@ -93,6 +95,8 @@ export default async function HomePage() {
     { data: foodVendors },
     { data: upcomingStreams },
     { data: recentPodcasts },
+    { data: trendingReelsRaw },
+    { data: trendingEventsRaw },
   ] = await Promise.all([
     supabase.auth.getUser(),
     scopeToCity(
@@ -168,7 +172,141 @@ export default async function HomePage() {
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(4)
       .returns<RecentPodcast[]>(),
+    // Trending reels — sorted by engagement
+    supabase
+      .from("reels")
+      .select(
+        "id, caption, poster_url, like_count, created_at, author:profiles!reels_author_id_fkey(display_name, handle)",
+      )
+      .eq("is_published", true)
+      .order("like_count", { ascending: false })
+      .limit(8)
+      .returns<TrendingReel[]>(),
+    // Trending events — future only, sorted by rsvp_count
+    scopeToCity(
+      supabase
+        .from("events")
+        .select(
+          "id, title, cover_image_url, starts_at, city_id, cities(name)",
+        )
+        .gte("starts_at", nowIso),
+    )
+      .order("rsvp_count", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .returns<TrendingEvent[]>(),
   ]);
+
+  // ── Personalization data (logged-in only, all errors are non-fatal) ──────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let profileData: { interests?: string[] | null; city_id?: string | null } | null = null;
+  let followedIds: string[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let interestBusinesses: any[] = [];
+
+  if (user) {
+    // Fetch profile interests/city_id and followed creators in parallel
+    const [profileResult, followsResult] = await Promise.all([
+      (async () => {
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return await (supabase
+            .from("profiles")
+            .select("interests, city_id")
+            .eq("id", user.id)
+            .single() as any);
+        } catch {
+          return { data: null };
+        }
+      })(),
+      (async () => {
+        try {
+          return await supabase
+            .from("user_follows")
+            .select("followed_id")
+            .eq("follower_id", user.id)
+            .limit(100);
+        } catch {
+          return { data: null };
+        }
+      })(),
+    ]);
+
+    profileData = (profileResult as { data: { interests?: string[] | null; city_id?: string | null } | null }).data ?? null;
+    const rawFollows = (followsResult as { data: { followed_id: string }[] | null }).data;
+    followedIds = rawFollows?.map((f) => f.followed_id) ?? [];
+  }
+
+  // Merge feed: if the user follows creators, prepend their posts
+  let mergedPosts: Post[] = recentPosts ? [...recentPosts] as Post[] : [];
+  if (followedIds.length > 0) {
+    try {
+      const { data: followedPosts } = await scopeToCity(
+        supabase
+          .from("posts")
+          .select(
+            "*, author:profiles!posts_author_id_fkey(id, display_name, handle, avatar_url, role, verification_status)",
+          )
+          .in("author_id", followedIds)
+          .eq("is_published", true),
+      )
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (followedPosts && followedPosts.length > 0) {
+        const seenIds = new Set(followedPosts.map((p: Post) => p.id));
+        const generalRemainder = (recentPosts ?? []).filter(
+          (p) => !seenIds.has(p.id),
+        );
+        mergedPosts = [...(followedPosts as Post[]), ...(generalRemainder as Post[])];
+      }
+    } catch {
+      // Keep unmerged posts on error
+    }
+  }
+
+  // Interest-based business recommendations
+  const userInterests: string[] = (profileData?.interests as string[] | null) ?? [];
+  if (userInterests.length > 0) {
+    try {
+      // Map common interest labels to business category values (fuzzy)
+      const interestCategoryMap: Record<string, string[]> = {
+        food: ["restaurant", "other"],
+        music: ["entertainment", "other"],
+        fashion: ["retail", "beauty"],
+        beauty: ["beauty", "health"],
+        health: ["health", "services"],
+        arts: ["entertainment", "other"],
+        sports: ["health", "services"],
+        shopping: ["retail", "other"],
+        services: ["services", "other"],
+      };
+      const primaryInterest = userInterests[0].toLowerCase();
+      const matchedCategories =
+        interestCategoryMap[primaryInterest] ??
+        interestCategoryMap[
+          Object.keys(interestCategoryMap).find((k) =>
+            primaryInterest.includes(k),
+          ) ?? ""
+        ] ??
+        [];
+
+      if (matchedCategories.length > 0) {
+        const { data: intBiz } = await scopeToCity(
+          supabase
+            .from("businesses")
+            .select("id, name, slug, category, image_urls, rating_avg")
+            .eq("is_published", true)
+            .in("category", matchedCategories),
+        )
+          .order("rating_avg", { ascending: false })
+          .limit(4);
+        interestBusinesses = intBiz ?? [];
+      }
+    } catch {
+      interestBusinesses = [];
+    }
+  }
 
   const cityName = activeCity?.name ?? "your city";
   let displayName = cityName;
@@ -183,7 +321,7 @@ export default async function HomePage() {
     }
   }
 
-  const pulsePosts: Post[] = (recentPosts ?? []) as Post[];
+  const pulsePosts: Post[] = mergedPosts;
   const greeting = getGreeting();
   const featuredArt = cityId ? await getFeaturedArt(cityId) : null;
   const hasLive = Boolean(liveStreams && liveStreams.length > 0);
@@ -220,6 +358,9 @@ export default async function HomePage() {
     .slice(0, 4);
   const displayPosts =
     mediaPosts.length >= 2 ? mediaPosts : pulsePosts.slice(0, 4);
+
+  const trendingReels: TrendingReel[] = trendingReelsRaw ?? [];
+  const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
 
   return (
     <div className="animate-fade-in space-y-6">
@@ -298,7 +439,12 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* -- 4. Critical Alerts (safety floor) -- */}
+      {/* -- 4. Trending Strip — reels + events by engagement -- */}
+      {(trendingReels.length > 0 || trendingEvents.length > 0) && (
+        <TrendingStrip reels={trendingReels} events={trendingEvents} />
+      )}
+
+      {/* -- 5. Critical Alerts (safety floor) -- */}
       {criticalAlerts && criticalAlerts.length > 0 && (
         <section className="px-5">
           <div className="flex flex-col gap-2">
@@ -330,10 +476,10 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 5. Live Now -- */}
+      {/* -- 6. Live Now -- */}
       {hasLive && <LiveNowBanner streams={liveStreams!} />}
 
-      {/* -- 6. Upcoming Events -- */}
+      {/* -- 7. Upcoming Events -- */}
       {events && events.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
@@ -408,7 +554,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 7. Eat in Compton -- */}
+      {/* -- 8. Eat in Compton -- */}
       {foodVendors && foodVendors.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
@@ -479,7 +625,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 8. New Shows (upcoming streams + fresh podcasts) -- */}
+      {/* -- 9. New Shows (upcoming streams + fresh podcasts) -- */}
       {showItems.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
@@ -548,7 +694,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 9. From Creators (media-first pulse) -- */}
+      {/* -- 10. From Creators (media-first pulse) -- */}
       {displayPosts.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
@@ -558,6 +704,17 @@ export default async function HomePage() {
               subtitle="Fresh posts from your community"
             />
           </div>
+          {/* "For You" indicator — only shown when the feed is personalized */}
+          {followedIds.length > 0 && (
+            <div className="px-5 pt-1 pb-0 flex items-center gap-2">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+                For You
+              </span>
+              <span className="text-[10px] text-white/30">
+                · Based on who you follow
+              </span>
+            </div>
+          )}
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
             {displayPosts.map((post) => {
               const badge = post.author?.role
@@ -646,7 +803,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 10. Local Favorites (Businesses) -- */}
+      {/* -- 11. Local Favorites (Businesses) -- */}
       {featuredBusinesses.length > 0 && (
         <section className="space-y-3">
           <div className="px-5">
@@ -713,7 +870,69 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* -- 11. Footer CTA -- */}
+      {/* -- 11b. Interest-based businesses -- */}
+      {userInterests.length > 0 && interestBusinesses.length > 0 && (
+        <section className="space-y-2">
+          <p className="px-5 text-[10px] text-white/40 uppercase tracking-[0.18em]">
+            Because you like {userInterests[0]}
+          </p>
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 px-5">
+            {interestBusinesses.map(
+              (biz: {
+                id: string;
+                name: string;
+                slug: string;
+                category: string;
+                image_urls: string[] | null;
+                rating_avg: number | null;
+              }) => (
+                <Link
+                  key={biz.id}
+                  href={`/business/${biz.slug}`}
+                  className="shrink-0 w-[180px] press"
+                >
+                  <div className="glass-card-elevated rounded-2xl overflow-hidden">
+                    <div className="relative h-[130px] bg-royal">
+                      {biz.image_urls?.[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={biz.image_urls[0]}
+                          alt={biz.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Icon
+                            name="store"
+                            size={28}
+                            className="text-white/20"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-2.5">
+                      <h3 className="text-[12px] font-bold truncate">
+                        {biz.name}
+                      </h3>
+                      <div className="flex items-center gap-1 mt-1">
+                        <Icon name="star" size={10} className="text-gold" />
+                        <span className="text-[10px] text-warm-gray">
+                          {Number(biz.rating_avg || 0).toFixed(1)}
+                        </span>
+                        <span className="text-[9px] text-white/30 uppercase tracking-wider ml-1 truncate">
+                          {biz.category}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ),
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* -- 12. Footer CTA -- */}
       <section className="px-5 pb-6">
         <Link
           href="/district"

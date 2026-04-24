@@ -276,7 +276,7 @@ export default async function ProfilePage() {
           {/* Member since */}
           {memberSince && (
             <p className="text-[10px] text-txt-secondary/60 mb-3">
-              Compton resident since {memberSince}
+              Compton member since {memberSince}
             </p>
           )}
 
@@ -641,9 +641,9 @@ export default async function ProfilePage() {
           {([
             { label: "Find Resources", icon: "search" as IconName, desc: "AI-powered matching", href: "/resources", color: "#22C55E" },
             { label: "Browse Events", icon: "calendar" as IconName, desc: `${rsvpCount ?? 0} RSVPs`, href: "/events", color: "#3B82F6" },
-            { label: "Local Businesses", icon: "store" as IconName, desc: "Deals & specials", href: "/business", color: "#F2A900" },
-            { label: "City Pulse", icon: "pulse" as IconName, desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
-            { label: "City Hall", icon: "landmark" as IconName, desc: "Services & permits", href: "/city-hall", color: "#06B6D4" },
+            { label: "Independents", icon: "store" as IconName, desc: "Deals & specials", href: "/business", color: "#F2A900" },
+            { label: "The Pulse", icon: "pulse" as IconName, desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
+            { label: "Community", icon: "landmark" as IconName, desc: "Resources & support", href: "/resources", color: "#06B6D4" },
             { label: "Food & Dining", icon: "utensils" as IconName, desc: "Order & explore", href: "/food", color: "#FF6B6B" },
           ]).map((action) => (
             <Link key={action.label} href={action.href}>

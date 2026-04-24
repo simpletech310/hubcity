@@ -16,11 +16,15 @@ const navItems: { href: string; label: string; iconName: IconName }[] = [
   { href: "/admin/issues", label: "City Issues", iconName: "wrench" },
   { href: "/admin/creators", label: "Creators", iconName: "film" },
   { href: "/admin/reports", label: "Reports", iconName: "flag" },
+  { href: "/admin/moderation", label: "Moderation", iconName: "shield" },
   { href: "/admin/data", label: "Data & Insights", iconName: "trending" },
+  { href: "/admin/revenue", label: "Revenue", iconName: "dollar" },
   { href: "/admin/city-metrics", label: "City Metrics", iconName: "globe" },
   { href: "/admin/users", label: "Users", iconName: "users" },
   { href: "/admin/podcasts", label: "Podcasts", iconName: "podcast" },
   { href: "/admin/import", label: "Data Import", iconName: "upload" },
+  { href: "/admin/cities", label: "Cities", iconName: "globe" },
+  { href: "/admin/seeding", label: "City Seeding", iconName: "globe" },
   { href: "/admin/notifications", label: "Notifications", iconName: "bell" },
 ];
 

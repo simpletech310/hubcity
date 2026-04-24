@@ -7,6 +7,7 @@ import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import StreamCard from "./StreamCard";
 import ChannelSubscribeButton from "./ChannelSubscribeButton";
+import TipJar from "@/components/TipJar";
 import type {
   Channel,
   ChannelVideo,
@@ -87,6 +88,7 @@ interface ChannelPageProps {
   timeBlocks: TimeBlock[];
   isFollowing: boolean;
   userId: string | null;
+  stripeAccountId: string | null;
 }
 
 export default function ChannelPage({
@@ -96,6 +98,7 @@ export default function ChannelPage({
   timeBlocks,
   isFollowing: initialFollowing,
   userId,
+  stripeAccountId,
 }: ChannelPageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("videos");
@@ -180,6 +183,15 @@ export default function ChannelPage({
               <span className="text-[11px] text-txt-secondary">
                 {followerCount} followers
               </span>
+              {channel.owner?.verification_status === "verified" && (
+                <span className="flex items-center gap-1 text-[10px] font-semibold text-gold">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                  Verified Creator
+                </span>
+              )}
             </div>
             {channel.description && (
               <p className="text-[11px] text-white/40 line-clamp-2 mt-1.5">{channel.description}</p>
@@ -201,6 +213,17 @@ export default function ChannelPage({
               {following ? "Following" : "Follow"}
             </button>
             <ChannelSubscribeButton channel={channel} userId={userId} />
+          </div>
+        )}
+
+        {/* Tip Jar */}
+        {stripeAccountId && (
+          <div className="mt-3">
+            <TipJar
+              channelId={channel.id}
+              channelName={channel.name}
+              stripeAccountId={stripeAccountId}
+            />
           </div>
         )}
       </div>

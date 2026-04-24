@@ -375,7 +375,7 @@ export default function PulseFeed({
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ─── City Pulse Bar ─── */}
+      {/* ─── The Pulse Bar ─── */}
       <div className="pt-4">
         <CityPulseBar trafficAlertCount={trafficAlertCount} />
       </div>
