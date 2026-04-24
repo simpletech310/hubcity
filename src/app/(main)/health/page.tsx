@@ -321,37 +321,23 @@ export default function HealthPage() {
   const emergencyCount = resources.filter(r => r.is_emergency).length;
 
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* ─── Editorial Hero ─── */}
-      <div className="relative h-64 overflow-hidden">
-        <Image src="/images/generated/health-hero.png" alt="Health & Wellness" fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/85 to-ink" />
-        <div
-          className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
-          }}
-        />
-
-        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-              VOL · 01 · ISSUE HEALTH
-            </span>
-            <span className="block w-1 h-1 rounded-full bg-gold/60" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-              {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
-            </span>
-          </div>
-          <h1 className="masthead text-white text-[44px]">HEALTH.</h1>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="block h-[2px] w-8 bg-gold" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-              Care, fitness & resources for {activeCity?.name ?? "your city"}
-            </span>
-          </div>
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE HEALTH · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Health.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Care, fitness &amp; resources for {activeCity?.name ?? "your city"}.
+        </p>
       </div>
 
       {/* ─── Stats Strip ─── */}

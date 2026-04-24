@@ -73,21 +73,23 @@ export default async function ParksPage({
   const parksList = parks ?? [];
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28">
-      {/* Hero Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald/10 via-midnight to-midnight" />
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald/40 to-transparent" />
-        <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-emerald/5 blur-3xl" />
-        <div className="relative z-10 px-5 pt-6 pb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="w-8 h-8 rounded-lg bg-emerald/15 flex items-center justify-center">
-              <Icon name="tree" size={18} className="text-emerald" />
-            </div>
-            <h1 className="font-heading text-[20px] font-bold text-white">Parks & Recreation</h1>
-          </div>
-          <p className="text-[12px] text-white/40 ml-10">Green spaces and community programs in Compton</p>
+    <div className="culture-surface min-h-dvh pb-28">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE GREEN · COMPTON
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Parks.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Green spaces and community programs across the city.
+        </p>
       </div>
 
       <div className="px-5 space-y-5">

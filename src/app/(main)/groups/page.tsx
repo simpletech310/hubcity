@@ -137,25 +137,23 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="animate-fade-in pb-24">
-      {/* Editorial Masthead */}
-      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-            VOL · 01 · ISSUE COMMUNITY
-          </span>
-          <span className="block w-1 h-1 rounded-full bg-gold/60" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-            {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
-          </span>
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
+      <header
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE SCENES · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
-        <h1 className="masthead text-white text-[44px]">COMMUNITY.</h1>
-        <div className="mt-3 flex items-center gap-3">
-          <span className="block h-[2px] w-8 bg-gold" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-            Neighbors, interests, and the people organizing it
-          </span>
-        </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Scenes.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Neighbors, interests, and the people organizing it.
+        </p>
       </header>
 
       {/* Create CTA - only for officials */}

@@ -340,31 +340,30 @@ export default function BusinessPage() {
   }, [businesses]);
 
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* ── Editorial Masthead ─────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b border-white/[0.08] panel-editorial">
-        <div className="absolute inset-0 pattern-dots opacity-15" />
-        <div className="relative z-10 px-5 pt-6 pb-6">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-              VOL · 01 · ISSUE COMMERCE
-            </span>
-            <span className="block w-1 h-1 rounded-full bg-gold/60" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-              {selectedCities.length === 1
-                ? cities.find((c) => c.slug === selectedCities[0])?.name?.toUpperCase() || "ALL"
-                : "EVERYWHERE"}
-            </span>
-          </div>
-
-          <h1 className="masthead text-white text-[44px]">COMMERCE.</h1>
-          <div className="mt-3 mb-5 flex items-center gap-3">
-            <span className="block h-[2px] w-8 bg-gold" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-              {selectedCities.length === 1
-                ? `Shops, services & makers in ${cities.find((c) => c.slug === selectedCities[0])?.name || "your city"}`
-                : "Every city, every category"}
-            </span>
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE COMMERCE · {selectedCities.length === 1
+            ? (cities.find((c) => c.slug === selectedCities[0])?.name?.toUpperCase() || "ALL")
+            : "EVERYWHERE"}
+        </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Commerce.
+        </h1>
+        <p className="c-serif-it mt-2 mb-4" style={{ fontSize: 13 }}>
+          {selectedCities.length === 1
+            ? `Shops, services & makers in ${cities.find((c) => c.slug === selectedCities[0])?.name || "your city"}.`
+            : "Every city, every category."}
+        </p>
+        <div className="hidden">
+        <div className="flex items-center gap-3 mb-4">
+            <span />
           </div>
 
           {/* Quick Action Pills — editorial gold/ink, no per-category tints */}

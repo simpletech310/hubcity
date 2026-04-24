@@ -79,28 +79,23 @@ export default function PodcastsPage() {
   }, [activeChannel]);
 
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* ── Hero ── */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gold/8 via-deep to-hc-purple/8 pattern-dots" />
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/50 to-transparent" />
-
-        <div className="relative z-10 px-5 pt-6 pb-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-gold/15 flex items-center justify-center">
-              <Icon name="podcast" size={18} className="text-gold" />
-            </div>
-            <p className="text-[10px] text-gold font-bold uppercase tracking-[0.2em]">
-              Culture Media
-            </p>
-          </div>
-          <h1 className="font-heading text-[26px] font-bold leading-tight mb-1.5">
-            Podcasts
-          </h1>
-          <p className="font-display italic text-sm text-txt-secondary">
-            Voices of Compton — stories, news & conversations
-          </p>
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § CULTURE MEDIA · LISTEN · COMPTON
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Podcasts.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Voices of Compton — stories, news &amp; conversations.
+        </p>
       </div>
 
       {/* ── Quick Stats ── */}
