@@ -87,6 +87,7 @@ export interface Profile {
   display_name: string;
   handle: string | null;
   avatar_url: string | null;
+  cover_url: string | null;
   bio: string | null;
   role: UserRole;
   address_line1: string | null;
@@ -97,6 +98,14 @@ export interface Profile {
   district: number | null;
   verification_status: VerificationStatus;
   profile_tags: string[];
+  /**
+   * Map of social handles/URLs keyed by provider.
+   * Known keys: instagram, twitter, x, facebook, tiktok, youtube.
+   * Values are typically usernames (without @) — the profile UI wraps them
+   * with the correct URL prefix at render time.
+   */
+  social_links: Record<string, string> | null;
+  website_url: string | null;
   push_subscription: Record<string, unknown> | null;
   language: string;
   notification_prefs: {
@@ -108,6 +117,7 @@ export interface Profile {
   is_creator: boolean;
   creator_approved_at: string | null;
   creator_tier: CreatorTier | null;
+  city_id: string | null;
   created_at: string;
   updated_at: string;
 }

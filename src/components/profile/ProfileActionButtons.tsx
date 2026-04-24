@@ -21,11 +21,19 @@ export default function ProfileActionButtons({
   isSignedIn,
   isOwner,
   initialFollowing,
+  primaryCta,
 }: {
   targetUserId: string;
   isSignedIn: boolean;
   isOwner: boolean;
   initialFollowing: boolean;
+  /**
+   * Optional role-driven primary CTA rendered ABOVE the Follow/Message row.
+   * Used by the profile hero to surface "View Business" / "See Resources"
+   * deep links for business and resource-provider profiles. Follow + Message
+   * still render below as secondary actions.
+   */
+  primaryCta?: { label: string; href: string };
 }) {
   const router = useRouter();
   const [following, setFollowing] = useState(initialFollowing);
@@ -97,7 +105,15 @@ export default function ProfileActionButtons({
   }
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 space-y-2.5">
+      {primaryCta && (
+        <a
+          href={primaryCta.href}
+          className="block w-full py-2.5 rounded-xl text-center text-sm font-bold bg-gold text-midnight hover:bg-gold-light transition-colors press"
+        >
+          {primaryCta.label}
+        </a>
+      )}
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -106,7 +122,9 @@ export default function ProfileActionButtons({
           className={`flex-1 py-2.5 rounded-xl text-sm font-bold press transition-colors disabled:opacity-60 ${
             following
               ? "bg-transparent border border-gold/40 text-gold hover:bg-gold/10"
-              : "bg-gold text-midnight hover:bg-gold-light"
+              : primaryCta
+                ? "bg-white/[0.04] border border-gold/30 text-gold hover:bg-gold/10"
+                : "bg-gold text-midnight hover:bg-gold-light"
           }`}
         >
           {following ? "Following" : "Follow"}
@@ -120,9 +138,7 @@ export default function ProfileActionButtons({
           {opening ? "Opening…" : "Message"}
         </button>
       </div>
-      {error && (
-        <p className="mt-2 text-[11px] text-coral">{error}</p>
-      )}
+      {error && <p className="text-[11px] text-coral">{error}</p>}
     </div>
   );
 }
