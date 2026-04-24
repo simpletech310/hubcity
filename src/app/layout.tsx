@@ -1,24 +1,65 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, Inter, DM_Serif_Display } from "next/font/google";
+import {
+  Space_Grotesk,
+  Inter,
+  DM_Serif_Display,
+  Anton,
+  Archivo,
+  Archivo_Narrow,
+  Fraunces,
+  DM_Mono,
+} from "next/font/google";
 import PWARegister from "@/components/PWARegister";
 import "./globals.css";
 
+// Legacy type stack — still used by un-migrated screens.
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-heading",
   display: "swap",
 });
-
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
 });
-
 const dmSerifDisplay = DM_Serif_Display({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
+  display: "swap",
+});
+
+// Culture blockprint type stack — used by .culture-surface and c-* utilities.
+const anton = Anton({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-anton",
+  display: "swap",
+});
+const archivo = Archivo({
+  weight: ["400", "600", "700", "800", "900"],
+  subsets: ["latin"],
+  variable: "--font-archivo",
+  display: "swap",
+});
+const archivoNarrow = Archivo_Narrow({
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-archivo-narrow",
+  display: "swap",
+});
+const fraunces = Fraunces({
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+const dmMono = DM_Mono({
+  weight: ["400", "500"],
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
   display: "swap",
 });
 
@@ -39,7 +80,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0A0A0A",
+  themeColor: "#EDE6D6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -54,7 +95,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${inter.variable} ${dmSerifDisplay.variable}`}
+      className={[
+        spaceGrotesk.variable,
+        inter.variable,
+        dmSerifDisplay.variable,
+        anton.variable,
+        archivo.variable,
+        archivoNarrow.variable,
+        fraunces.variable,
+        dmMono.variable,
+      ].join(" ")}
     >
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />

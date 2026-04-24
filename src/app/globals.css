@@ -808,3 +808,173 @@ img {
   letter-spacing: 0.28em;
   color: rgba(245, 240, 230, 0.55);
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   CULTURE · BLOCKPRINT SYSTEM (paper + ink + gold · newspaper aesthetic)
+   Opt-in via the .culture-surface class + culture-* utilities below.
+   Legacy dark-canvas styles remain for un-migrated screens.
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Paper palette ─────────────────────────────────── */
+  --paper: #EDE6D6;
+  --paper-soft: #E4DBC6;
+  --paper-warm: #F5EFE0;
+  --ink-strong: #1a1512;
+  --ink-soft: #3d332c;
+  --ink-mute: rgba(26, 21, 18, 0.6);
+  --ink-faint: rgba(26, 21, 18, 0.35);
+  --rule-c: rgba(26, 21, 18, 0.15);
+  --rule-strong-c: #1a1512;
+
+  /* ── Printed accents ───────────────────────────────── */
+  --gold-c: #F2A900;
+  --gold-soft-c: #FFCF4A;
+  --gold-deep-c: #C48800;
+  --red-c: #D84A3F;
+  --green-c: #3B8C5A;
+  --blue-c: #2B4B8E;
+
+  /* ── Culture type scale (tuned to fit on 375px) ─────── */
+  --f-display: 72px; --f-display-lh: 0.82;
+  --f-hero: 40px;    --f-hero-lh: 0.88;
+  --f-title: 28px;   --f-title-lh: 0.94;
+  --f-card: 18px;    --f-card-lh: 1.05;
+  --f-body-c: 14px;  --f-body-c-lh: 1.5;
+  --f-kicker: 10px;  --f-kicker-lh: 1.2;
+  --f-meta: 11px;
+
+  /* ── Spacing tokens ─────────────────────────────────── */
+  --cs-1: 4px;  --cs-2: 8px;  --cs-3: 12px; --cs-4: 16px;
+  --cs-5: 20px; --cs-6: 24px; --cs-7: 32px; --cs-8: 40px;
+  --gutter: 18px;
+
+  /* ── Rule weights (NOT 1px borders — printed feel) ──── */
+  --rw-hair:   1px;
+  --rw-base:   2px;
+  --rw-strong: 3px;
+}
+
+/* Dark-ink inversion — used on Reels + Composer surfaces. */
+.culture-surface.dark-mode,
+.culture-dark {
+  --paper: #0F0D0B;
+  --paper-soft: #1a1612;
+  --paper-warm: #1F1A15;
+  --ink-strong: #F3EEDC;
+  --ink-soft: #D4CBB3;
+  --ink-mute: rgba(243, 238, 220, 0.6);
+  --ink-faint: rgba(243, 238, 220, 0.3);
+  --rule-c: rgba(243, 238, 220, 0.18);
+  --rule-strong-c: #F3EEDC;
+}
+
+/* ── Screen shell ───────────────────────────────────── */
+.culture-surface {
+  background: var(--paper);
+  color: var(--ink-strong);
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Type utilities ─────────────────────────────────── */
+.c-display  { font-family: var(--font-anton), "Anton", Impact, sans-serif; font-weight: 400; font-size: var(--f-display); line-height: var(--f-display-lh); letter-spacing: -0.015em; text-transform: uppercase; color: var(--ink-strong); }
+.c-hero     { font-family: var(--font-anton), "Anton", Impact, sans-serif; font-weight: 400; font-size: var(--f-hero);    line-height: var(--f-hero-lh);    letter-spacing: -0.012em; text-transform: uppercase; color: var(--ink-strong); }
+.c-title    { font-family: var(--font-anton), "Anton", Impact, sans-serif; font-weight: 400; font-size: var(--f-title);   line-height: var(--f-title-lh);   letter-spacing: -0.008em; text-transform: uppercase; color: var(--ink-strong); }
+.c-card-t   { font-family: var(--font-archivo-narrow), var(--font-archivo), sans-serif; font-weight: 800; font-size: var(--f-card); line-height: var(--f-card-lh); letter-spacing: 0.005em; text-transform: uppercase; color: var(--ink-strong); }
+.c-serif-it { font-family: var(--font-fraunces), Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: -0.005em; color: var(--ink-soft); }
+.c-kicker   { font-family: var(--font-dm-mono), monospace; font-weight: 500; font-size: var(--f-kicker); line-height: var(--f-kicker-lh); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-strong); }
+.c-meta     { font-family: var(--font-dm-mono), monospace; font-weight: 500; font-size: var(--f-meta);   letter-spacing: 0.06em; color: var(--ink-mute); }
+.c-body     { font-family: var(--font-body), "Inter", sans-serif; font-size: var(--f-body-c);  line-height: var(--f-body-c-lh); color: var(--ink-soft); }
+.c-body-sm  { font-family: var(--font-body), "Inter", sans-serif; font-size: 13px; line-height: 1.45; color: var(--ink-soft); }
+.c-ui       { font-family: var(--font-archivo), "Archivo", sans-serif; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* ── Rules / borders (the paper's grid) ─────────────── */
+.c-rule         { border-top: var(--rw-base)   solid var(--rule-strong-c); }
+.c-rule-hair    { border-top: var(--rw-hair)   solid var(--rule-c); }
+.c-rule-strong  { border-top: var(--rw-strong) solid var(--rule-strong-c); }
+.c-rule-gold    { border-top: var(--rw-strong) solid var(--gold-c); }
+
+/* ── Chips ──────────────────────────────────────────── */
+.c-chip {
+  flex-shrink: 0; padding: 7px 12px; border: var(--rw-base) solid var(--rule-strong-c);
+  background: transparent; color: var(--ink-strong);
+  font-family: var(--font-archivo), "Archivo", sans-serif; font-weight: 800; font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+}
+.c-chip.active { background: var(--rule-strong-c); color: var(--paper); }
+.c-chip.gold   { background: var(--gold-c); color: var(--ink-strong); border-color: var(--ink-strong); }
+
+/* ── Blocks (inverted ink/gold slabs) ───────────────── */
+.c-ink-block   { background: var(--rule-strong-c); color: var(--paper); }
+.c-gold-block  { background: var(--gold-c);         color: var(--ink-strong); }
+
+/* ── Buttons ────────────────────────────────────────── */
+.c-btn {
+  padding: 14px 18px; font-family: var(--font-archivo), "Archivo", sans-serif; font-weight: 900; font-size: 13px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; cursor: pointer;
+}
+.c-btn-primary { background: var(--ink-strong); color: var(--gold-c); }
+.c-btn-accent  { background: var(--gold-c);      color: var(--ink-strong); }
+.c-btn-outline { background: transparent; color: var(--ink-strong); border: var(--rw-base) solid var(--ink-strong); }
+.c-btn-sm      { padding: 8px 12px; font-size: 10px; }
+
+/* ── Badges ─────────────────────────────────────────── */
+.c-badge {
+  display: inline-block; padding: 3px 8px;
+  font-family: var(--font-archivo), "Archivo", sans-serif; font-weight: 900; font-size: 9px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+.c-badge-gold { background: var(--gold-c); color: var(--ink-strong); }
+.c-badge-ink  { background: var(--ink-strong); color: var(--gold-c); }
+.c-badge-live { background: var(--red-c); color: #fff; }
+.c-badge-ok   { background: var(--green-c); color: #fff; }
+
+/* ── Marquee / ticker ───────────────────────────────── */
+@keyframes c-ticker { from { transform: translateX(0); } to { transform: translateX(-33.333%); } }
+.c-ticker-track { display: inline-flex; animation: c-ticker 36s linear infinite; white-space: nowrap; will-change: transform; }
+
+@keyframes c-live-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+.c-live-dot { animation: c-live-blink 1.4s ease-in-out infinite; }
+
+/* ── Image frame utility ────────────────────────────── */
+.c-frame { border: var(--rw-base) solid var(--rule-strong-c); overflow: hidden; }
+.c-frame-strong { border: var(--rw-strong) solid var(--rule-strong-c); overflow: hidden; }
+
+/* ── Paper placeholder (scribbled-paper feel when no image) ─ */
+.c-ph {
+  background: repeating-linear-gradient(135deg, #d9d0bd 0 8px, #e3dac6 8px 16px);
+}
+
+/* ── Ticket perforation ─────────────────────────────── */
+.c-perf { position: relative; height: 20px; background: inherit; }
+.c-perf::before, .c-perf::after {
+  content: ''; position: absolute; top: 3px; width: 16px; height: 16px;
+  border-radius: 16px; background: var(--paper);
+}
+.c-perf::before { left: -8px; }
+.c-perf::after  { right: -8px; }
+.c-perf-line {
+  position: absolute; left: 16px; right: 16px; top: 10px;
+  border-top: 1.5px dashed rgba(242,169,0,0.5);
+}
+
+/* ── Dropcap (editorial lead-in) ─────────────────────── */
+.c-dropcap::first-letter {
+  font-family: var(--font-anton), "Anton", Impact, sans-serif;
+  font-size: 58px;
+  line-height: 0.82;
+  float: left;
+  padding-right: 10px;
+  padding-top: 4px;
+  color: var(--ink-strong);
+}
+
+/* ── Tabular nums for stats / kickers ──────────────── */
+.c-tabnum { font-variant-numeric: tabular-nums; }
+
+/* ── Utility: pure no-scroll ────────────────────────── */
+.c-noscroll::-webkit-scrollbar { display: none; }
+.c-noscroll { scrollbar-width: none; }
