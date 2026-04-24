@@ -3,7 +3,6 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Badge from "@/components/ui/Badge";
 
@@ -199,18 +198,26 @@ export default function ProfileEditForm({ profile }: Props) {
       <div className="flex items-center gap-3 px-5 pt-4 mb-5">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="flex items-center gap-1.5 press c-kicker"
+          style={{ color: "var(--ink-strong)", fontSize: 11, letterSpacing: "0.14em" }}
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M10 12L6 8l4-4" />
           </svg>
-          Back
+          BACK
         </button>
       </div>
 
       <div className="px-5">
-        <h1 className="font-heading text-2xl font-bold mb-1">Edit Profile</h1>
-        <p className="text-sm text-txt-secondary mb-6">Update your profile information</p>
+        <h1 className="c-hero mb-1" style={{ fontSize: 32, color: "var(--ink-strong)" }}>
+          Edit Profile
+        </h1>
+        <p
+          className="c-serif-it mb-6"
+          style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.7 }}
+        >
+          Update your profile information
+        </p>
 
         {/* Avatar Upload */}
         <div className="flex flex-col items-center mb-6">
@@ -221,26 +228,51 @@ export default function ProfileEditForm({ profile }: Props) {
                 alt="Profile photo"
                 width={100}
                 height={100}
-                className="w-[100px] h-[100px] rounded-full object-cover ring-4 ring-midnight shadow-lg shadow-gold/20"
+                className="w-[100px] h-[100px] rounded-full object-cover"
+                style={{ border: "3px solid var(--rule-strong-c)" }}
               />
             ) : (
-              <div className="w-[100px] h-[100px] rounded-full bg-gradient-to-br from-gold to-gold-light flex items-center justify-center text-midnight font-heading font-bold text-3xl ring-4 ring-midnight shadow-lg shadow-gold/20">
+              <div
+                className="w-[100px] h-[100px] rounded-full flex items-center justify-center c-hero"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "3px solid var(--rule-strong-c)",
+                  fontSize: 36,
+                  lineHeight: 1,
+                }}
+              >
                 {initials}
               </div>
             )}
-            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <div
+              className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+              style={{ background: "rgba(10,10,10,0.6)" }}
+            >
               {uploading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div
+                  className="w-6 h-6 rounded-full animate-spin"
+                  style={{
+                    border: "2px solid rgba(245,239,224,0.3)",
+                    borderTopColor: "var(--paper)",
+                  }}
+                />
               ) : (
-                <svg width="24" height="24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round">
+                <svg width="24" height="24" fill="none" stroke="var(--paper)" strokeWidth="2" strokeLinecap="round">
                   <path d="M12 16V8m0 0l-3 3m3-3l3 3" />
                   <path d="M20 16v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2" />
                 </svg>
               )}
             </div>
             {profile.verification_status === "verified" && (
-              <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald flex items-center justify-center ring-2 ring-midnight">
-                <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round">
+              <div
+                className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <svg width="14" height="14" fill="none" stroke="var(--ink-strong)" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M3 7l3 3 5-5" />
                 </svg>
               </div>
@@ -255,39 +287,72 @@ export default function ProfileEditForm({ profile }: Props) {
             className="hidden"
           />
 
-          <p className="text-xs text-txt-secondary mt-3">
-            {uploading ? "Uploading..." : "Tap to change photo"}
+          <p
+            className="c-kicker mt-3"
+            style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.6, letterSpacing: "0.14em" }}
+          >
+            {uploading ? "UPLOADING…" : "TAP TO CHANGE PHOTO"}
           </p>
           <div className="flex gap-1.5 mt-2">
-            <Badge label={profile.role.replace("_", " ")} variant="purple" />
+            <Badge label={profile.role.replace("_", " ")} variant="gold" />
             {profile.district && (
-              <Badge label={`District ${profile.district}`} variant="cyan" />
+              <Badge label={`District ${profile.district}`} variant="gold" />
             )}
           </div>
         </div>
 
         {/* Cover photo — 3:1 aspect banner */}
-        <div className="relative w-full aspect-[3/1] rounded-2xl overflow-hidden bg-white/[0.04] border border-white/[0.08] mb-8">
+        <div
+          className="relative w-full aspect-[3/1] overflow-hidden mb-8"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
           {coverPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={coverPreview} alt="Cover" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-              <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/30">
+              <svg
+                width="24"
+                height="24"
+                fill="none"
+                stroke="var(--ink-strong)"
+                strokeOpacity="0.35"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="M3 15l4-4 3 3 4-5 7 6" />
                 <circle cx="8.5" cy="9.5" r="1.5" />
               </svg>
-              <p className="text-xs text-white/30">Add cover photo</p>
+              <p
+                className="c-kicker"
+                style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.4, letterSpacing: "0.14em" }}
+              >
+                ADD COVER PHOTO
+              </p>
             </div>
           )}
           <button
             type="button"
             onClick={handleCoverClick}
             disabled={coverUploading}
-            className="absolute inset-0 hover:bg-black/20 transition flex items-center justify-center"
+            className="absolute inset-0 transition flex items-center justify-center group"
           >
-            <span className="px-3 py-1.5 rounded-full bg-black/60 text-xs text-white font-medium">
-              {coverUploading ? "Uploading..." : coverPreview ? "Change cover" : "Add cover"}
+            <span
+              className="px-3 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity c-kicker"
+              style={{
+                background: "var(--ink-strong)",
+                color: "var(--gold-c)",
+                border: "2px solid var(--gold-c)",
+                fontSize: 10,
+                letterSpacing: "0.14em",
+              }}
+            >
+              {coverUploading ? "UPLOADING…" : coverPreview ? "CHANGE COVER" : "ADD COVER"}
             </span>
           </button>
         </div>
@@ -320,21 +385,46 @@ export default function ProfileEditForm({ profile }: Props) {
           />
 
           <div>
-            <label className="block text-sm font-medium text-txt-secondary mb-1.5">Bio</label>
+            <label
+              className="block c-kicker mb-1.5"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+            >
+              BIO
+            </label>
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               maxLength={300}
-              className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 min-h-[100px] resize-none transition-colors"
+              className="w-full px-4 py-3 focus:outline-none min-h-[100px] resize-none transition-colors"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 14,
+                fontFamily: "var(--font-fraunces), serif",
+              }}
               placeholder="Tell people about yourself or your role..."
             />
-            <p className="text-right text-[10px] text-txt-secondary mt-1">{bio.length}/300</p>
+            <p
+              className="text-right mt-1 c-kicker"
+              style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.5, letterSpacing: "0.1em" }}
+            >
+              {bio.length}/300
+            </p>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-txt-secondary mb-1">Tags</label>
-            <p className="text-xs text-white/40 mb-2">
+            <label
+              className="block c-kicker mb-1"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+            >
+              TAGS
+            </label>
+            <p
+              className="c-serif-it mb-2"
+              style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.6 }}
+            >
               Add up to 5 tags that describe your content (e.g. music, food, fashion)
             </p>
             {tags.length > 0 && (
@@ -342,13 +432,21 @@ export default function ProfileEditForm({ profile }: Props) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-medium"
+                    className="flex items-center gap-1 px-2.5 py-1 c-kicker"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                      fontSize: 10,
+                      letterSpacing: "0.12em",
+                    }}
                   >
-                    #{tag}
+                    #{tag.toUpperCase()}
                     <button
                       type="button"
                       onClick={() => removeTag(tag)}
-                      className="ml-0.5 text-gold/60 hover:text-gold leading-none"
+                      className="ml-0.5 leading-none"
+                      style={{ color: "var(--ink-strong)", opacity: 0.7 }}
                     >
                       ✕
                     </button>
@@ -369,14 +467,21 @@ export default function ProfileEditForm({ profile }: Props) {
                     }
                   }}
                   placeholder="Add a tag..."
-                  className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-colors"
+                  className="flex-1 px-4 py-2.5 focus:outline-none transition-colors"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                    color: "var(--ink-strong)",
+                    fontSize: 14,
+                    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => addTag(tagInput)}
-                  className="px-4 py-2.5 rounded-xl bg-white/5 border border-border-subtle text-sm text-txt-secondary hover:text-white hover:bg-white/10 transition-colors font-medium"
+                  className="c-btn c-btn-outline press"
                 >
-                  Add
+                  ADD
                 </button>
               </div>
             )}
@@ -384,7 +489,12 @@ export default function ProfileEditForm({ profile }: Props) {
 
           {/* Social Links */}
           <div className="space-y-4">
-            <label className="block text-sm font-medium text-txt-secondary">Social Links</label>
+            <label
+              className="block c-kicker"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+            >
+              SOCIAL LINKS
+            </label>
 
             <Input
               label="Website"
@@ -421,14 +531,34 @@ export default function ProfileEditForm({ profile }: Props) {
 
         {/* Error / Success */}
         {error && (
-          <Card className="mt-4 border-coral/20 bg-coral/5">
-            <p className="text-sm text-coral">{error}</p>
-          </Card>
+          <div
+            className="mt-4 px-4 py-3"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 13,
+              fontFamily: "var(--font-archivo-narrow), sans-serif",
+              fontWeight: 700,
+              letterSpacing: "0.04em",
+            }}
+          >
+            {error}
+          </div>
         )}
         {success && (
-          <Card className="mt-4 border-emerald/20 bg-emerald/5">
-            <p className="text-sm text-emerald">Profile updated successfully!</p>
-          </Card>
+          <div
+            className="mt-4 px-4 py-3 c-kicker"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 12,
+              letterSpacing: "0.14em",
+            }}
+          >
+            PROFILE UPDATED SUCCESSFULLY
+          </div>
         )}
 
         {/* Save Button */}
@@ -436,15 +566,15 @@ export default function ProfileEditForm({ profile }: Props) {
           <button
             onClick={handleSave}
             disabled={saving || uploading || coverUploading}
-            className="flex-1 bg-gold text-midnight font-bold text-sm py-3.5 rounded-xl press hover:bg-gold-light transition-colors disabled:opacity-50"
+            className="flex-1 c-btn c-btn-primary press disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save Changes"}
+            {saving ? "SAVING…" : "SAVE CHANGES"}
           </button>
           <button
             onClick={() => router.back()}
-            className="px-6 py-3.5 rounded-xl bg-white/5 text-txt-secondary font-medium text-sm press hover:bg-white/10 transition-colors"
+            className="c-btn c-btn-outline press"
           >
-            Cancel
+            CANCEL
           </button>
         </div>
       </div>

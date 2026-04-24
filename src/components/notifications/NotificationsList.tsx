@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Chip from "@/components/ui/Chip";
 import type { Notification, NotificationType } from "@/types/database";
@@ -19,16 +18,18 @@ const typeIcons: Record<string, string> = {
   message: "\u{1F4AC}",
 };
 
-const typeBadgeVariant: Record<string, "purple" | "gold" | "cyan" | "blue" | "emerald" | "coral" | "pink"> = {
-  event: "purple",
+// Culture sweep: all badges collapse to gold on ink borders. The type label
+// itself carries the meaning — no need for rainbow tone variants.
+const typeBadgeVariant: Record<string, "gold"> = {
+  event: "gold",
   resource: "gold",
-  district: "cyan",
-  system: "blue",
-  business: "emerald",
-  order: "coral",
-  booking: "pink",
+  district: "gold",
+  system: "gold",
+  business: "gold",
+  order: "gold",
+  booking: "gold",
   application: "gold",
-  message: "purple",
+  message: "gold",
 };
 
 const filters: { label: string; value: string }[] = [
@@ -129,25 +130,52 @@ export default function NotificationsList({ notifications: initial, userId }: Pr
     <div className="animate-fade-in">
       <div className="px-5 pt-4 mb-4">
         <div className="flex items-center justify-between mb-1">
-          <h1 className="font-heading text-2xl font-bold">Notifications</h1>
+          <h1 className="c-hero" style={{ fontSize: 32, color: "var(--ink-strong)" }}>
+            Notifications
+          </h1>
           {unreadCount > 0 && (
             <button
               onClick={markAllRead}
-              className="text-xs text-gold font-semibold press hover:opacity-80 transition-opacity"
+              className="c-kicker press hover:opacity-80 transition-opacity"
+              style={{
+                fontSize: 10,
+                color: "var(--ink-strong)",
+                letterSpacing: "0.14em",
+                background: "var(--gold-c)",
+                border: "2px solid var(--rule-strong-c)",
+                padding: "4px 10px",
+              }}
             >
-              Mark all read
+              MARK ALL READ
             </button>
           )}
         </div>
-        <p className="text-sm text-txt-secondary">Stay in the loop</p>
+        <p
+          className="c-serif-it"
+          style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.7 }}
+        >
+          Stay in the loop
+        </p>
       </div>
 
       {/* Unread count */}
       {unreadCount > 0 && (
         <div className="px-5 mb-4">
-          <div className="flex items-center gap-2 bg-gold/10 rounded-full px-4 py-2 border border-gold/20 w-fit">
-            <div className="w-2 h-2 rounded-full bg-gold pulse-gold" />
-            <span className="text-xs font-semibold text-gold">{unreadCount} new</span>
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 c-kicker w-fit"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 10,
+              letterSpacing: "0.14em",
+            }}
+          >
+            <div
+              className="pulse-gold"
+              style={{ width: 6, height: 6, background: "var(--gold-c)" }}
+            />
+            <span>{unreadCount} NEW</span>
           </div>
         </div>
       )}
@@ -164,60 +192,91 @@ export default function NotificationsList({ notifications: initial, userId }: Pr
         ))}
       </div>
 
-      {/* Notification List */}
-      <div className="px-5 space-y-2 stagger">
-        {filtered.map((notif) => (
-          <div key={notif.id} onClick={() => handleClick(notif)} className="cursor-pointer">
-            <Card
-              hover
-              className={`transition-all ${
-                notif.is_read ? "opacity-60" : "border-gold/15"
-              }`}
-            >
-              <div className="flex gap-3">
-                <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${
-                    notif.is_read
-                      ? "bg-white/[0.03]"
-                      : "bg-gradient-to-br from-white/[0.08] to-white/[0.02]"
-                  } border border-border-subtle`}
-                >
-                  {typeIcons[notif.type] || "\u{1F514}"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <h3 className="text-[13px] font-bold truncate">
-                      {notif.title}
-                    </h3>
-                    {!notif.is_read && (
-                      <div className="w-2 h-2 rounded-full bg-gold shrink-0" />
-                    )}
-                  </div>
-                  {notif.body && (
-                    <p className="text-[11px] text-txt-secondary leading-relaxed mb-1.5">
-                      {notif.body}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      label={notif.type}
-                      variant={typeBadgeVariant[notif.type] ?? "blue"}
+      {/* Notification List — 2px ink row dividers, no cards */}
+      <div className="px-5 stagger">
+        {filtered.map((notif, i) => (
+          <div
+            key={notif.id}
+            onClick={() => handleClick(notif)}
+            className="cursor-pointer py-3 press"
+            style={{
+              borderTop: i === 0 ? "2px solid var(--rule-strong-c)" : undefined,
+              borderBottom: "2px solid var(--rule-strong-c)",
+              opacity: notif.is_read ? 0.55 : 1,
+              transition: "opacity 150ms",
+            }}
+          >
+            <div className="flex gap-3">
+              <div
+                className="w-10 h-10 flex items-center justify-center text-lg shrink-0"
+                style={{
+                  background: notif.is_read ? "var(--paper)" : "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                {typeIcons[notif.type] || "\u{1F514}"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <h3
+                    className="c-card-t truncate"
+                    style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                  >
+                    {notif.title}
+                  </h3>
+                  {!notif.is_read && (
+                    <div
+                      className="shrink-0"
+                      style={{ width: 6, height: 6, background: "var(--gold-c)" }}
                     />
-                    <span className="text-[10px] text-txt-secondary">
-                      {timeAgo(notif.created_at)}
-                    </span>
-                  </div>
+                  )}
+                </div>
+                {notif.body && (
+                  <p
+                    className="c-body mb-1.5"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.75, lineHeight: 1.45 }}
+                  >
+                    {notif.body}
+                  </p>
+                )}
+                <div className="flex items-center gap-2">
+                  <Badge
+                    label={notif.type}
+                    variant={typeBadgeVariant[notif.type] ?? "gold"}
+                  />
+                  <span
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.55, letterSpacing: "0.1em" }}
+                  >
+                    {timeAgo(notif.created_at).toUpperCase()}
+                  </span>
                 </div>
               </div>
-            </Card>
+            </div>
           </div>
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-16">
+          <div
+            className="text-center py-12 px-5 mt-4"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             <span className="text-5xl block mb-3">{"\u{1F514}"}</span>
-            <p className="text-sm font-medium mb-1">No notifications</p>
-            <p className="text-xs text-txt-secondary">You&apos;re all caught up!</p>
+            <p
+              className="c-serif-it mb-1"
+              style={{ fontSize: 14, color: "var(--ink-strong)" }}
+            >
+              No notifications
+            </p>
+            <p
+              className="c-kicker"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.55, letterSpacing: "0.14em" }}
+            >
+              YOU&apos;RE ALL CAUGHT UP
+            </p>
           </div>
         )}
       </div>

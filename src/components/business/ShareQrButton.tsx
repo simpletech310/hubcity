@@ -33,7 +33,8 @@ export default function ShareQrButton({
     QRCode.toDataURL(url, {
       margin: 1,
       width: 320,
-      color: { dark: "#0A0A0A", light: "#FFFFFF" },
+      // Ink on paper — matches the Culture press-pass treatment.
+      color: { dark: "#0A0A0A", light: "#F5EFE0" },
     })
       .then((data) => {
         if (!cancelled) setQrDataUrl(data);
@@ -75,40 +76,78 @@ export default function ShareQrButton({
       <button
         type="button"
         onClick={handleShare}
-        className="flex flex-col items-center gap-1.5 rounded-xl bg-card border border-border-subtle py-3 press hover:border-gold/20 transition-colors w-full"
+        className="flex flex-col items-center gap-1.5 py-3 press w-full"
+        style={{
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
-        <Icon name="share" size={18} style={{ color: accentColor || "#F2A900" }} />
-        <span className="text-[9px] font-semibold text-txt-secondary uppercase tracking-wider">
-          Share
+        <Icon name="share" size={18} style={{ color: accentColor || "var(--gold-c)" }} />
+        <span
+          className="c-kicker"
+          style={{ fontSize: 9, letterSpacing: "0.16em", color: "var(--ink-strong)" }}
+        >
+          SHARE
         </span>
       </button>
 
       <Modal isOpen={shareOpen} onClose={() => setShareOpen(false)} title="Share this business" size="sm">
         <div className="space-y-4">
-          <div className="rounded-xl bg-white p-4 flex items-center justify-center">
+          <div
+            className="p-4 flex items-center justify-center"
+            style={{
+              background: "var(--paper)",
+              border: "3px solid var(--rule-strong-c)",
+            }}
+          >
             {qrDataUrl ? (
               // QR is already a PNG data URL — img tag is fine here.
               // eslint-disable-next-line @next/next/no-img-element
               <img src={qrDataUrl} alt="QR code" className="w-56 h-56" />
             ) : (
               <div className="w-56 h-56 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                <div
+                  className="w-8 h-8 rounded-full animate-spin"
+                  style={{
+                    border: "2px solid var(--gold-c)",
+                    borderTopColor: "transparent",
+                  }}
+                />
               </div>
             )}
           </div>
 
-          <p className="text-xs text-txt-secondary text-center">
+          <p
+            className="c-serif-it text-center"
+            style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.75 }}
+          >
             Scan with a phone camera to open the page.
           </p>
 
-          <div className="flex items-center gap-2 bg-white/5 border border-border-subtle rounded-xl p-2.5">
-            <span className="text-xs text-white truncate flex-1 font-mono">{url}</span>
+          <div
+            className="flex items-center gap-2 p-2.5"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span
+              className="truncate flex-1"
+              style={{
+                fontSize: 11,
+                color: "var(--ink-strong)",
+                fontFamily: "var(--font-dm-mono), monospace",
+                letterSpacing: "0.04em",
+              }}
+            >
+              {url}
+            </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-gold to-gold-light text-midnight text-xs font-semibold press"
+              className="c-btn c-btn-primary c-btn-sm press"
             >
-              {copied ? "Copied" : "Copy"}
+              {copied ? "COPIED" : "COPY"}
             </button>
           </div>
         </div>

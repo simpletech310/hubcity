@@ -69,15 +69,23 @@ export default async function MessagesPage() {
         />
         <div className="text-center py-16 px-5">
           <span className="text-5xl block mb-3">{"\u{1F4AC}"}</span>
-          <p className="text-sm font-medium mb-1">Sign in to see your messages</p>
-          <p className="text-xs text-txt-secondary mb-4">
-            Chat with creators, community members, and independents.
+          <p
+            className="c-serif-it mb-1"
+            style={{ fontSize: 14, color: "var(--ink-strong)" }}
+          >
+            Sign in to see your messages
+          </p>
+          <p
+            className="c-kicker mb-4"
+            style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.6, letterSpacing: "0.14em" }}
+          >
+            CHAT WITH CREATORS, COMMUNITY MEMBERS, AND INDEPENDENTS
           </p>
           <Link
             href="/login?next=/messages"
-            className="inline-block bg-gold text-midnight px-6 py-2.5 rounded-full text-sm font-bold press hover:bg-gold-light transition-colors"
+            className="inline-block c-btn c-btn-primary press"
           >
-            Sign in
+            SIGN IN
           </Link>
         </div>
       </div>
@@ -122,14 +130,22 @@ export default async function MessagesPage() {
       {rows.length === 0 ? (
         <div className="text-center py-16 px-5">
           <span className="text-5xl block mb-3">{"\u{1F4EC}"}</span>
-          <p className="text-sm font-medium mb-1">No messages yet</p>
-          <p className="text-xs text-txt-secondary">
-            Start a chat from any creator&apos;s profile.
+          <p
+            className="c-serif-it mb-1"
+            style={{ fontSize: 14, color: "var(--ink-strong)" }}
+          >
+            No messages yet
+          </p>
+          <p
+            className="c-kicker"
+            style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.55, letterSpacing: "0.14em" }}
+          >
+            START A CHAT FROM ANY CREATOR&apos;S PROFILE
           </p>
         </div>
       ) : (
-        <div className="px-5 pt-5 space-y-3 stagger">
-          {rows.map((row) => {
+        <div className="px-5 pt-5 stagger">
+          {rows.map((row, i) => {
             const name = row.other?.display_name || row.other?.handle || "Unknown";
             const handle = row.other?.handle ? `@${row.other.handle}` : null;
             const href = `/messages/${row.id}`;
@@ -137,12 +153,22 @@ export default async function MessagesPage() {
               <Link
                 key={row.id}
                 href={href}
-                className="group block rounded-2xl panel-editorial p-4 press hover:border-gold/30 transition-colors"
+                className="group block py-4 press"
+                style={{
+                  borderTop: i === 0 ? "2px solid var(--rule-strong-c)" : undefined,
+                  borderBottom: "2px solid var(--rule-strong-c)",
+                }}
               >
                 <div className="flex items-center gap-3">
-                  {/* Avatar with gold ring on hover */}
+                  {/* Avatar */}
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white/[0.04] border border-white/[0.08] ring-0 ring-gold/0 group-hover:ring-2 group-hover:ring-gold/60 transition-all flex items-center justify-center">
+                    <div
+                      className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
+                      style={{
+                        background: "var(--gold-c)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
                       {row.other?.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -151,13 +177,24 @@ export default async function MessagesPage() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-[13px] font-bold text-ivory/80">
+                        <span
+                          className="c-card-t"
+                          style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                        >
                           {initials(name)}
                         </span>
                       )}
                     </div>
                     {row.unread && (
-                      <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full bg-gold border-2 border-ink" />
+                      <span
+                        className="absolute -top-0.5 -right-0.5 rounded-full"
+                        style={{
+                          width: 12,
+                          height: 12,
+                          background: "var(--ink-strong)",
+                          border: "2px solid var(--gold-c)",
+                        }}
+                      />
                     )}
                   </div>
 
@@ -165,22 +202,36 @@ export default async function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-2 mb-0.5">
                       <h3
-                        className="font-display text-[17px] leading-tight text-white truncate"
-                        style={{ fontFamily: 'var(--font-dm-serif), "DM Serif Display", serif' }}
+                        className="c-card-t truncate"
+                        style={{ fontSize: 15, color: "var(--ink-strong)", lineHeight: 1.15 }}
                       >
                         {name}
                       </h3>
                       {handle && (
-                        <span className="text-[11px] text-ivory/40 truncate">{handle}</span>
+                        <span
+                          className="truncate c-kicker"
+                          style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.5, letterSpacing: "0.08em" }}
+                        >
+                          {handle}
+                        </span>
                       )}
                     </div>
                     <p
-                      className={`text-[13px] truncate ${
-                        row.unread ? "text-ivory" : "text-ivory/60"
-                      }`}
+                      className="c-body truncate"
+                      style={{
+                        fontSize: 13,
+                        color: "var(--ink-strong)",
+                        opacity: row.unread ? 1 : 0.6,
+                        fontWeight: row.unread ? 600 : 400,
+                      }}
                     >
                       {row.last_message_preview || (
-                        <span className="italic text-ivory/40">No messages yet</span>
+                        <span
+                          className="c-serif-it"
+                          style={{ opacity: 0.45 }}
+                        >
+                          No messages yet
+                        </span>
                       )}
                     </p>
                   </div>
@@ -190,7 +241,11 @@ export default async function MessagesPage() {
                     <SectionKicker tone={row.unread ? "gold" : "muted"}>
                       <span className="tabular-nums">{timeAgo(row.last_message_at)}</span>
                     </SectionKicker>
-                    {row.unread && <span className="w-2 h-2 rounded-full bg-gold" />}
+                    {row.unread && (
+                      <span
+                        style={{ width: 6, height: 6, background: "var(--gold-c)" }}
+                      />
+                    )}
                   </div>
                 </div>
               </Link>
