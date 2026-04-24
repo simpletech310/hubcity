@@ -45,6 +45,12 @@
     "check-*.ts",
     "debug-*.ts",
     "feature-*.ts",
-    "fix-*.ts"
+    "fix-*.ts",
+    "grab-*.ts",
+    "list-*.ts",
+    "recent-*.ts",
+    "seed-*.ts",
+    "seed-*.mjs",
+    "test-*.ts"
   ]
 }
