@@ -9,7 +9,6 @@ import {
   HeroBlock,
   EditorialNumber,
   SectionKicker,
-  EditorialCard,
   Tag,
   IssueDivider,
 } from "@/components/ui/editorial";
@@ -89,7 +88,8 @@ export default async function HealthResourceDetailPage({
       <div className="px-5 pt-4 mb-3">
         <Link
           href="/health"
-          className="inline-flex items-center gap-1.5 text-gold text-[11px] font-bold uppercase tracking-editorial press"
+          className="c-kicker inline-flex items-center gap-1.5 press"
+          style={{ fontSize: 11, color: "var(--ink-strong)", letterSpacing: "0.14em" }}
         >
           <svg
             width="14"
@@ -101,7 +101,7 @@ export default async function HealthResourceDetailPage({
           >
             <path d="M10 12L6 8l4-4" />
           </svg>
-          Back to Health
+          BACK TO HEALTH
         </Link>
       </div>
 
@@ -117,12 +117,18 @@ export default async function HealthResourceDetailPage({
                 )}
                 {res.is_free && <Tag tone="emerald" size="sm">Free</Tag>}
               </div>
-              <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[26ch]">
+              <h1
+                className="c-hero max-w-[26ch]"
+                style={{ fontSize: 48, lineHeight: 0.92, letterSpacing: "-0.02em", color: "var(--paper)" }}
+              >
                 {res.name}
               </h1>
-              <div className="mt-5 h-px w-16 bg-gold" />
+              <div className="mt-5 h-[3px] w-16" style={{ background: "var(--gold-c)" }} />
               {res.organization && (
-                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-black/70">
+                <p
+                  className="c-kicker mt-4"
+                  style={{ fontSize: 11, color: "var(--paper)", opacity: 0.75, letterSpacing: "0.14em" }}
+                >
                   {res.organization}
                 </p>
               )}
@@ -130,11 +136,25 @@ export default async function HealthResourceDetailPage({
           </HeroBlock>
         </div>
       ) : (
-        <section className="mx-5 mt-2 panel-editorial rounded-3xl border border-gold/20 px-6 py-10 relative overflow-hidden">
-          <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-gold/60 via-gold/25 to-transparent" />
+        <section
+          className="mx-5 mt-2 px-6 py-10 relative overflow-hidden"
+          style={{
+            background: "var(--ink-strong)",
+            border: "3px solid var(--rule-strong-c)",
+          }}
+        >
+          {/* Gold foil bar top */}
+          <div className="absolute inset-x-0 top-0" style={{ height: 4, background: "var(--gold-c)" }} />
           <div className="flex items-start gap-4">
-            <div className="w-20 h-20 rounded-2xl bg-gold/10 border border-gold/25 flex items-center justify-center shrink-0">
-              <Icon name={icon} size={40} className="text-gold" />
+            <div
+              className="w-20 h-20 flex items-center justify-center shrink-0"
+              style={{
+                background: "var(--gold-c)",
+                color: "var(--ink-strong)",
+                border: "3px solid var(--paper)",
+              }}
+            >
+              <Icon name={icon} size={40} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 mb-3">
@@ -142,12 +162,18 @@ export default async function HealthResourceDetailPage({
                 {res.is_emergency && <Tag tone="coral" size="xs">Emergency</Tag>}
                 {res.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
               </div>
-              <h1 className="font-display text-[34px] sm:text-[42px] leading-[0.98] tracking-tight text-ivory">
+              <h1
+                className="c-hero"
+                style={{ fontSize: 40, lineHeight: 0.96, letterSpacing: "-0.02em", color: "var(--paper)" }}
+              >
                 {res.name}
               </h1>
-              <div className="mt-4 h-px w-14 bg-gold" />
+              <div className="mt-4 h-[3px] w-14" style={{ background: "var(--gold-c)" }} />
               {res.organization && (
-                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-black/70">
+                <p
+                  className="c-kicker mt-3"
+                  style={{ fontSize: 11, color: "var(--paper)", opacity: 0.75, letterSpacing: "0.14em" }}
+                >
                   {res.organization}
                 </p>
               )}
@@ -162,12 +188,18 @@ export default async function HealthResourceDetailPage({
         <SectionKicker tone="gold">
           {categoryLabel} · {city.toUpperCase()}
         </SectionKicker>
-        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
         <span
-          className={
-            "text-[10px] uppercase tracking-editorial-tight whitespace-nowrap " +
-            (res.is_emergency ? "text-coral" : "text-emerald")
-          }
+          className="flex-1 self-center"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        />
+        <span
+          className="c-kicker whitespace-nowrap"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            color: res.is_emergency ? "#E03C3C" : "var(--ink-strong)",
+            fontWeight: 700,
+          }}
         >
           {statusLabel}
         </span>
@@ -195,8 +227,11 @@ export default async function HealthResourceDetailPage({
             <EditorialNumber n={1} size="md" />
             <SectionKicker tone="muted">About</SectionKicker>
           </div>
-          <div className="rule-hairline mb-5" />
-          <p className="text-[14px] text-black/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
+          <div style={{ borderTop: "2px solid var(--rule-strong-c)" }} className="mb-5" />
+          <p
+            className="c-body first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:leading-none"
+            style={{ fontSize: 14, color: "var(--ink-strong)" }}
+          >
             {res.description}
           </p>
         </section>
@@ -208,20 +243,40 @@ export default async function HealthResourceDetailPage({
           <EditorialNumber n={2} size="md" />
           <SectionKicker tone="muted">Contact</SectionKicker>
         </div>
-        <div className="rule-hairline mb-5" />
+        <div style={{ borderTop: "2px solid var(--rule-strong-c)" }} className="mb-5" />
 
-        <EditorialCard variant="ink" border="gold" className="p-5">
+        <div
+          className="p-5 relative overflow-hidden"
+          style={{
+            background: "var(--ink-strong)",
+            border: "3px solid var(--rule-strong-c)",
+          }}
+        >
+          <div style={{ height: 4, background: "var(--gold-c)", marginTop: -20, marginLeft: -20, marginRight: -20, marginBottom: 20 }} />
           <div className="space-y-4">
             {res.phone && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Icon name="phone" size={18} className="text-gold" />
+                <div
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--paper)",
+                  }}
+                >
+                  <Icon name="phone" size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Phone</p>
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--paper)", opacity: 0.6, letterSpacing: "0.14em" }}
+                  >
+                    PHONE
+                  </p>
                   <a
                     href={`tel:${res.phone}`}
-                    className="font-display text-[18px] text-gold leading-tight block mt-0.5"
+                    className="c-card-t block mt-0.5"
+                    style={{ fontSize: 18, color: "var(--gold-c)" }}
                   >
                     {res.phone}
                   </a>
@@ -231,22 +286,35 @@ export default async function HealthResourceDetailPage({
 
             {res.address && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Icon name="pin" size={18} className="text-gold" />
+                <div
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--paper)",
+                  }}
+                >
+                  <Icon name="pin" size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Address</p>
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--paper)", opacity: 0.6, letterSpacing: "0.14em" }}
+                  >
+                    ADDRESS
+                  </p>
                   {mapsUrl ? (
                     <a
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[14px] text-black/85 leading-snug block mt-0.5 hover:text-gold transition-colors"
+                      className="block mt-0.5"
+                      style={{ fontSize: 14, color: "var(--paper)", opacity: 0.9 }}
                     >
                       {res.address}
                     </a>
                   ) : (
-                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">{res.address}</p>
+                    <p className="mt-0.5" style={{ fontSize: 14, color: "var(--paper)", opacity: 0.9 }}>{res.address}</p>
                   )}
                 </div>
               </div>
@@ -254,16 +322,29 @@ export default async function HealthResourceDetailPage({
 
             {res.website && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Icon name="globe" size={18} className="text-gold" />
+                <div
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--paper)",
+                  }}
+                >
+                  <Icon name="globe" size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Website</p>
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--paper)", opacity: 0.6, letterSpacing: "0.14em" }}
+                  >
+                    WEBSITE
+                  </p>
                   <a
                     href={res.website.startsWith("http") ? res.website : `https://${res.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[14px] text-gold font-medium truncate block mt-0.5"
+                    className="truncate block mt-0.5"
+                    style={{ fontSize: 14, color: "var(--gold-c)", fontWeight: 500 }}
                   >
                     {res.website}
                   </a>
@@ -273,17 +354,29 @@ export default async function HealthResourceDetailPage({
 
             {hoursString && (
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0">
-                  <Icon name="clock" size={18} className="text-gold" />
+                <div
+                  className="w-10 h-10 flex items-center justify-center shrink-0"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--paper)",
+                  }}
+                >
+                  <Icon name="clock" size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Hours</p>
-                  <p className="text-[14px] text-black/85 leading-snug mt-0.5">{hoursString}</p>
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--paper)", opacity: 0.6, letterSpacing: "0.14em" }}
+                  >
+                    HOURS
+                  </p>
+                  <p className="mt-0.5" style={{ fontSize: 14, color: "var(--paper)", opacity: 0.9 }}>{hoursString}</p>
                 </div>
               </div>
             )}
           </div>
-        </EditorialCard>
+        </div>
       </section>
 
       {/* ── № 03 · Languages ── */}
@@ -293,7 +386,7 @@ export default async function HealthResourceDetailPage({
             <EditorialNumber n={3} size="md" />
             <SectionKicker tone="muted">Languages</SectionKicker>
           </div>
-          <div className="rule-hairline mb-5" />
+          <div style={{ borderTop: "2px solid var(--rule-strong-c)" }} className="mb-5" />
           <div className="flex flex-wrap gap-2">
             {res.languages.map((lang) => (
               <Tag key={lang} tone="default" size="sm">
@@ -314,7 +407,7 @@ export default async function HealthResourceDetailPage({
               href={mapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 bg-gold text-midnight px-5 py-3.5 rounded-full text-[13px] font-bold uppercase tracking-editorial-tight press hover:bg-gold-light transition-colors"
+              className="c-btn c-btn-primary w-full press flex items-center justify-center gap-2"
             >
               <svg
                 width="16"
@@ -329,15 +422,15 @@ export default async function HealthResourceDetailPage({
                 <path d="M1 6s2-3 8-3 8 3 8 3" />
                 <circle cx="9" cy="9" r="3" />
               </svg>
-              Get Directions
+              GET DIRECTIONS
             </a>
           )}
           {res.phone && (
             <a
               href={`tel:${res.phone}`}
-              className="flex items-center justify-center gap-2 bg-transparent text-ivory px-5 py-3.5 rounded-full text-[13px] font-bold uppercase tracking-editorial-tight press hover:bg-gold/5 transition-colors border border-gold/25"
+              className="c-btn c-btn-outline w-full press flex items-center justify-center gap-2"
             >
-              <Icon name="phone" size={14} className="text-gold" /> Call Now
+              <Icon name="phone" size={14} /> CALL NOW
             </a>
           )}
         </div>

@@ -1,9 +1,13 @@
 import Link from "next/link";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
+import type { IconName } from "@/components/ui/Icon";
 
-const crisisHotlines = [
+const crisisHotlines: {
+  name: string;
+  number: string;
+  description: string;
+  icon: IconName;
+}[] = [
   {
     name: "Suicide & Crisis Lifeline",
     number: "988",
@@ -77,16 +81,17 @@ const mentalHealthResources = [
 
 export default function EmergencyPage() {
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* Back Button */}
       <div className="px-5 pt-4 mb-3">
         <Link
           href="/health"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="c-kicker inline-flex items-center gap-1.5 press"
+          style={{ fontSize: 11, color: "var(--ink-strong)", letterSpacing: "0.14em" }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -94,185 +99,316 @@ export default function EmergencyPage() {
           >
             <path d="M10 12L6 8l4-4" />
           </svg>
-          Health Directory
+          HEALTH DIRECTORY
         </Link>
       </div>
 
-      <div className="px-5">
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="font-heading text-2xl font-bold mb-1">Emergency Resources</h1>
-          <p className="text-sm text-txt-secondary">
-            Immediate help when you need it most
-          </p>
+      <div
+        className="px-[18px] pt-2 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE EMERGENCY
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 48, lineHeight: 0.9, letterSpacing: "-0.02em" }}
+        >
+          Emergency.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Immediate help when you need it most.
+        </p>
+      </div>
 
+      <div className="px-5 mt-5">
         {/* Big 911 Button */}
         <a
           href="tel:911"
-          className="block mb-6 rounded-2xl bg-gradient-to-br from-red-600 to-red-800 p-6 text-center relative overflow-hidden press"
+          className="block mb-6 p-6 text-center relative overflow-hidden press"
+          style={{
+            background: "var(--ink-strong)",
+            border: "3px solid var(--rule-strong-c)",
+          }}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" />
-          <div className="relative">
-            <span className="text-5xl block mb-3"><Icon name="alert" size={28} /></span>
-            <p className="text-3xl font-display font-bold text-white mb-1">
-              Call 911
-            </p>
-            <p className="text-sm text-white/80">
-              For life-threatening emergencies
-            </p>
-            <div className="mt-4 inline-flex items-center gap-2 bg-white/20 rounded-full px-5 py-2.5">
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" />
-              </svg>
-              <span className="text-white font-bold text-sm">Tap to Call</span>
-            </div>
+          <div style={{ height: 4, background: "var(--gold-c)", marginTop: -24, marginLeft: -24, marginRight: -24, marginBottom: 16 }} />
+          <div
+            className="mx-auto w-14 h-14 flex items-center justify-center mb-3"
+            style={{
+              background: "var(--gold-c)",
+              color: "var(--ink-strong)",
+              border: "3px solid var(--paper)",
+            }}
+          >
+            <Icon name="alert" size={28} />
+          </div>
+          <p
+            className="c-hero"
+            style={{ fontSize: 44, lineHeight: 0.95, color: "var(--paper)" }}
+          >
+            CALL 911
+          </p>
+          <p
+            className="c-serif-it mt-2"
+            style={{ fontSize: 13, color: "var(--paper)", opacity: 0.8 }}
+          >
+            For life-threatening emergencies.
+          </p>
+          <div
+            className="mt-4 inline-flex items-center gap-2 c-btn c-btn-sm"
+            style={{
+              background: "var(--gold-c)",
+              color: "var(--ink-strong)",
+              border: "2px solid var(--paper)",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            >
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" />
+            </svg>
+            TAP TO CALL
           </div>
         </a>
 
         {/* Crisis Hotlines */}
         <div className="mb-6">
-          <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span><Icon name="phone" size={16} /></span> Crisis Hotlines
-          </h2>
+          <div className="flex items-baseline gap-3 mb-3">
+            <span
+              className="c-hero tabular-nums"
+              style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+            >
+              № 01
+            </span>
+            <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+              CRISIS HOTLINES
+            </span>
+            <span
+              className="ml-auto flex-1 self-center"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            />
+          </div>
           <div className="space-y-2.5">
             {crisisHotlines.map((hotline) => (
-              <Card key={hotline.name} hover>
+              <div
+                key={hotline.name}
+                className="p-3"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center text-lg shrink-0 border border-border-subtle">
-                    {hotline.icon}
+                  <div
+                    className="w-11 h-11 flex items-center justify-center shrink-0"
+                    style={{
+                      background: "var(--ink-strong)",
+                      color: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    <Icon name={hotline.icon} size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[13px] mb-0.5">{hotline.name}</p>
-                    <p className="text-[11px] text-txt-secondary">
-                      {hotline.description}
-                    </p>
+                    <p className="c-card-t" style={{ fontSize: 13 }}>{hotline.name}</p>
+                    <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>{hotline.description}</p>
                   </div>
                   {hotline.number.startsWith("Text") ? (
-                    <div className="shrink-0">
-                      <Badge label="Text" variant="cyan" size="md" />
-                    </div>
+                    <span
+                      className="c-badge-ink c-kicker shrink-0"
+                      style={{ fontSize: 10, padding: "4px 10px", letterSpacing: "0.14em" }}
+                    >
+                      TEXT
+                    </span>
                   ) : (
                     <a
                       href={`tel:${hotline.number.replace(/[^0-9]/g, "")}`}
-                      className="shrink-0 bg-gold/15 text-gold border border-gold/20 rounded-full px-3 py-1.5 text-[11px] font-bold press"
+                      className="c-badge-gold c-kicker shrink-0 press"
+                      style={{ fontSize: 11, padding: "5px 10px", letterSpacing: "0.08em" }}
                     >
                       {hotline.number}
                     </a>
                   )}
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
 
         {/* Nearest Hospitals */}
         <div className="mb-6">
-          <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span>•</span> Nearest Hospitals
-          </h2>
+          <div className="flex items-baseline gap-3 mb-3">
+            <span
+              className="c-hero tabular-nums"
+              style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+            >
+              № 02
+            </span>
+            <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+              NEAREST HOSPITALS
+            </span>
+            <span
+              className="ml-auto flex-1 self-center"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            />
+          </div>
           <div className="space-y-2.5">
             {nearbyHospitals.map((hospital) => (
-              <Card key={hospital.name}>
+              <div
+                key={hospital.name}
+                className="p-4"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 <div className="mb-2.5">
-                  <h3 className="font-heading font-bold text-[13px] mb-0.5">
-                    {hospital.name}
-                  </h3>
-                  <Badge label={hospital.note} variant="purple" />
+                  <h3 className="c-card-t" style={{ fontSize: 14 }}>{hospital.name}</h3>
+                  <p
+                    className="c-kicker mt-1"
+                    style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+                  >
+                    {hospital.note.toUpperCase()}
+                  </p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(hospital.address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-[12px] text-gold font-medium"
+                    className="flex items-center gap-2"
+                    style={{ fontSize: 12, color: "var(--ink-strong)" }}
                   >
-                    <span><Icon name="pin" size={16} /></span>
+                    <Icon name="pin" size={14} style={{ color: "var(--gold-c)" }} />
                     {hospital.address}
                   </a>
                   <a
                     href={`tel:${hospital.phone.replace(/[^0-9]/g, "")}`}
-                    className="flex items-center gap-2 text-[12px] text-gold font-medium"
+                    className="flex items-center gap-2"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", fontWeight: 500 }}
                   >
-                    <span><Icon name="phone" size={16} /></span>
+                    <Icon name="phone" size={14} style={{ color: "var(--gold-c)" }} />
                     {hospital.phone}
                   </a>
                 </div>
-                <div className="mt-3 pt-3 border-t border-border-subtle flex gap-2">
+                <div
+                  className="mt-3 pt-3 flex gap-2"
+                  style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+                >
                   <a
                     href={`tel:${hospital.phone.replace(/[^0-9]/g, "")}`}
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-gold text-midnight py-2 rounded-full text-xs font-bold press"
+                    className="c-btn c-btn-primary c-btn-sm flex-1 press text-center"
                   >
-                    Call
+                    CALL
                   </a>
                   <a
                     href={`https://maps.google.com/?q=${encodeURIComponent(hospital.address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 bg-white/10 text-white py-2 rounded-full text-xs font-medium press border border-white/10"
+                    className="c-btn c-btn-outline c-btn-sm flex-1 press text-center"
                   >
-                    Directions
+                    DIRECTIONS
                   </a>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
 
         {/* Mental Health Crisis */}
         <div className="mb-6">
-          <h2 className="font-heading font-bold text-lg mb-3 flex items-center gap-2">
-            <span><Icon name="lightbulb" size={16} /></span> Mental Health Crisis
-          </h2>
+          <div className="flex items-baseline gap-3 mb-3">
+            <span
+              className="c-hero tabular-nums"
+              style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+            >
+              № 03
+            </span>
+            <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+              MENTAL HEALTH CRISIS
+            </span>
+            <span
+              className="ml-auto flex-1 self-center"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            />
+          </div>
           <div className="space-y-2.5">
             {mentalHealthResources.map((resource) => (
-              <Card key={resource.name} hover>
+              <div
+                key={resource.name}
+                className="p-3"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 <div className="flex items-center gap-3">
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-[13px] mb-0.5">{resource.name}</p>
-                    <p className="text-[11px] text-txt-secondary">
-                      {resource.description}
-                    </p>
+                    <p className="c-card-t" style={{ fontSize: 13 }}>{resource.name}</p>
+                    <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>{resource.description}</p>
                   </div>
                   <a
                     href={`tel:${resource.number.replace(/[^0-9]/g, "")}`}
-                    className="shrink-0 bg-hc-purple/15 text-gold border border-gold/20 rounded-full px-3 py-1.5 text-[11px] font-bold press"
+                    className="c-badge-gold c-kicker shrink-0 press"
+                    style={{ fontSize: 11, padding: "5px 10px", letterSpacing: "0.08em" }}
                   >
                     {resource.number}
                   </a>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
 
         {/* Link back to full directory */}
         <div className="mb-6">
-          <Link href="/health">
-            <Card
-              glow
-              className="border-gold/15 text-center py-5 relative overflow-hidden"
+          <Link href="/health" className="block press">
+            <div
+              className="text-center py-6 px-5 relative overflow-hidden"
+              style={{
+                background: "var(--ink-strong)",
+                border: "3px solid var(--rule-strong-c)",
+              }}
             >
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
-              <span className="text-3xl block mb-2"><Icon name="heart-pulse" size={28} /></span>
-              <h3 className="font-heading font-bold text-base mb-1">
-                Full Health Directory
+              <div style={{ height: 4, background: "var(--gold-c)", marginTop: -24, marginLeft: -20, marginRight: -20, marginBottom: 16 }} />
+              <div
+                className="mx-auto w-12 h-12 flex items-center justify-center mb-3"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--paper)",
+                }}
+              >
+                <Icon name="heart-pulse" size={24} />
+              </div>
+              <h3
+                className="c-hero"
+                style={{ fontSize: 22, lineHeight: 1, color: "var(--paper)" }}
+              >
+                Full Health Directory.
               </h3>
-              <p className="text-[12px] text-txt-secondary mb-3 max-w-[260px] mx-auto">
-                Browse clinics, dental, mental health, pharmacy, and more
-                healthcare resources in Compton.
+              <p
+                className="c-serif-it mt-2 mb-4 max-w-[260px] mx-auto"
+                style={{ fontSize: 12, color: "var(--paper)", opacity: 0.8 }}
+              >
+                Browse clinics, dental, mental health, pharmacy, and more healthcare resources in Compton.
               </p>
-              <span className="inline-flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-full text-xs font-bold">
-                Browse All Health Resources
+              <span
+                className="c-btn c-btn-sm inline-flex"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--paper)",
+                }}
+              >
+                BROWSE ALL HEALTH RESOURCES
               </span>
-            </Card>
+            </div>
           </Link>
         </div>
       </div>

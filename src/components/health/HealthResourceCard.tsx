@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { HealthResource } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import Tag from "@/components/ui/editorial/Tag";
 
 const categoryIcons: Record<string, IconName> = {
   clinic: "stethoscope",
@@ -39,9 +38,8 @@ interface HealthResourceCardProps {
 }
 
 /**
- * Editorial listing card — ink panel, hairline gold border, DM Serif name,
- * compact meta tags. The whole card is the link; only the category icon on
- * the left breaks the grid to add a subtle gold ghost border.
+ * Editorial listing card — paper surface, 2px ink frame, DM-serif name,
+ * gold/ink badges. Phone row separated by a 2px ink rule.
  */
 export default function HealthResourceCard({ resource }: HealthResourceCardProps) {
   const iconName = categoryIcons[resource.category] ?? "heart-pulse";
@@ -49,29 +47,49 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
   return (
     <Link
       href={`/health/${resource.slug}`}
-      className="group block relative rounded-2xl panel-editorial hover:border-gold/30 transition-colors press"
+      className="group block relative press"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
     >
       <div className="p-4">
-        {/* Top row: icon + name + emergency dot */}
+        {/* Top row: icon + name + emergency badge */}
         <div className="flex items-start gap-3">
-          <div className="w-12 h-12 rounded-xl border border-gold/15 bg-ink flex items-center justify-center shrink-0">
-            <Icon name={iconName} size={20} className="text-gold" />
+          <div
+            className="w-12 h-12 flex items-center justify-center shrink-0"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <Icon name={iconName} size={20} />
           </div>
 
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors line-clamp-1">
+              <h3
+                className="c-card-t line-clamp-1"
+                style={{ fontSize: 15 }}
+              >
                 {resource.name}
               </h3>
               {resource.is_emergency && (
-                <span className="shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-editorial-tight text-coral bg-coral/10 border border-coral/30 rounded-full px-2 py-0.5">
-                  <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
+                <span
+                  className="c-badge-live shrink-0 inline-flex items-center gap-1"
+                  style={{ fontSize: 9, letterSpacing: "0.12em", padding: "2px 6px" }}
+                >
+                  <span
+                    className="rounded-full animate-pulse"
+                    style={{ width: 4, height: 4, background: "#fff" }}
+                  />
                   911
                 </span>
               )}
             </div>
             {resource.organization && (
-              <p className="text-[11px] text-ivory/55 font-medium mt-0.5 line-clamp-1">
+              <p className="c-meta mt-0.5 line-clamp-1" style={{ fontSize: 11 }}>
                 {resource.organization}
               </p>
             )}
@@ -80,24 +98,52 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
 
         {/* Meta chip row */}
         <div className="flex flex-wrap gap-1.5 mt-3">
-          <Tag tone="gold" size="xs">
+          <span
+            className="c-badge-gold c-kicker"
+            style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}
+          >
             {categoryLabels[resource.category] ?? resource.category}
-          </Tag>
+          </span>
           {resource.is_free && (
-            <Tag tone="emerald" size="xs">Free</Tag>
+            <span
+              className="c-badge-ok c-kicker"
+              style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}
+            >
+              FREE
+            </span>
           )}
           {resource.accepts_medi_cal && (
-            <Tag tone="cyan" size="xs">Medi-Cal</Tag>
+            <span
+              className="c-badge-ink c-kicker"
+              style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}
+            >
+              MEDI-CAL
+            </span>
           )}
           {resource.accepts_uninsured && (
-            <Tag tone="default" size="xs">Uninsured OK</Tag>
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 9,
+                padding: "3px 8px",
+                letterSpacing: "0.12em",
+                background: "transparent",
+                color: "var(--ink-strong)",
+                border: "1.5px solid var(--rule-strong-c)",
+              }}
+            >
+              UNINSURED OK
+            </span>
           )}
         </div>
 
         {/* Address */}
         {resource.address && (
-          <div className="mt-3 flex items-center gap-1.5 text-[11px] text-ivory/55">
-            <Icon name="pin" size={12} className="text-gold/60 shrink-0" />
+          <div
+            className="mt-3 flex items-center gap-1.5"
+            style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.75 }}
+          >
+            <Icon name="pin" size={12} style={{ color: "var(--gold-c)" }} />
             <span className="line-clamp-1">{resource.address}</span>
           </div>
         )}
@@ -105,18 +151,24 @@ export default function HealthResourceCard({ resource }: HealthResourceCardProps
         {/* Divider + phone */}
         {resource.phone && (
           <>
-            <div className="mt-3 rule-hairline" />
+            <div
+              className="mt-3"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            />
             <div className="mt-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Icon name="phone" size={13} className="text-gold" />
-                <span className="text-[12px] text-gold font-semibold tabular-nums">
+                <Icon name="phone" size={13} style={{ color: "var(--gold-c)" }} />
+                <span
+                  className="c-card-t tabular-nums"
+                  style={{ fontSize: 12, color: "var(--ink-strong)" }}
+                >
                   {resource.phone}
                 </span>
               </div>
               <Icon
                 name="arrow-right-thin"
                 size={14}
-                className="text-gold/70 group-hover:text-gold transition-colors"
+                style={{ color: "var(--ink-strong)" }}
               />
             </div>
           </>

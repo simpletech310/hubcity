@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import EmergencyBanner from "@/components/health/EmergencyBanner";
 import Icon from "@/components/ui/Icon";
@@ -26,12 +25,6 @@ const categories: { label: string; value: HealthCategory | "all"; icon: IconName
   { label: "Senior", value: "senior_care", icon: "elder", color: "#D97706" },
   { label: "Insurance", value: "insurance_help", icon: "document", color: "#6366F1" },
 ];
-
-const categoryColors: Record<string, string> = {
-  clinic: "#3B82F6", hospital: "#EF4444", mental_health: "#8B5CF6", dental: "#06B6D4",
-  vision: "#22C55E", pharmacy: "#EC4899", emergency: "#EF4444", substance_abuse: "#22C55E",
-  prenatal: "#F472B6", pediatric: "#60A5FA", senior_care: "#D97706", insurance_help: "#6366F1",
-};
 
 const categoryLabels: Record<string, string> = {
   clinic: "Clinic", hospital: "Hospital", mental_health: "Mental Health", dental: "Dental",
@@ -159,67 +152,92 @@ const wellnessTips: { tip: string; icon: IconName; color: string }[] = [
 
 // ─── Components ────────────────────────────────────
 function HealthResourceCard({ resource }: { resource: HealthResource }) {
-  const color = categoryColors[resource.category] || "#3B82F6";
+  const iconName = categories.find(c => c.value === resource.category)?.icon || "first-aid";
   return (
     <Link href={`/health/${resource.slug}`} className="block press">
       <div
-        className="bg-card rounded-2xl border border-border-subtle overflow-hidden transition-all hover:border-white/10"
-        style={{ borderLeftWidth: 3, borderLeftColor: color }}
+        className="overflow-hidden"
+        style={{
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
         <div className="p-4">
           <div className="flex items-start justify-between mb-2">
             <div className="flex items-start gap-3 flex-1 min-w-0">
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${color}12` }}
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
-                <Icon name={categories.find(c => c.value === resource.category)?.icon || "first-aid"} size={18} />
+                <Icon name={iconName} size={18} />
               </div>
               <div className="min-w-0">
-                <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">{resource.name}</h3>
+                <h3 className="c-card-t line-clamp-1" style={{ fontSize: 13 }}>{resource.name}</h3>
                 {resource.organization && (
-                  <p className="text-[11px] text-white/40">{resource.organization}</p>
+                  <p className="c-meta mt-0.5" style={{ fontSize: 11 }}>{resource.organization}</p>
                 )}
               </div>
             </div>
             {resource.is_emergency && (
-              <span className="inline-flex items-center gap-1 bg-coral/15 border border-coral/20 rounded-full px-2 py-0.5 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-                <span className="text-[9px] font-semibold text-coral uppercase">ER</span>
+              <span
+                className="c-badge-live shrink-0 inline-flex items-center gap-1 c-kicker"
+                style={{ fontSize: 9, padding: "3px 6px", letterSpacing: "0.12em" }}
+              >
+                <span className="rounded-full animate-pulse" style={{ width: 4, height: 4, background: "#fff" }} />
+                ER
               </span>
             )}
           </div>
 
           {resource.address && (
-            <p className="text-[11px] text-white/30 mb-2 line-clamp-1">{resource.address}</p>
+            <p className="line-clamp-1 mb-2" style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.6 }}>{resource.address}</p>
           )}
 
           <div className="flex items-center justify-between">
             <div className="flex flex-wrap gap-1.5">
-              <span className="text-[9px] font-semibold rounded-full px-2 py-0.5" style={{ background: `${color}12`, color }}>
+              <span className="c-badge-gold c-kicker" style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}>
                 {categoryLabels[resource.category] || resource.category}
               </span>
               {resource.is_free && (
-                <span className="text-[9px] font-semibold text-emerald bg-emerald/10 rounded-full px-2 py-0.5">Free</span>
+                <span className="c-badge-ok c-kicker" style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}>FREE</span>
               )}
               {resource.accepts_medi_cal && (
-                <span className="text-[9px] font-semibold text-cyan bg-cyan/10 rounded-full px-2 py-0.5">Medi-Cal</span>
+                <span className="c-badge-ink c-kicker" style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.12em" }}>MEDI-CAL</span>
               )}
               {resource.accepts_uninsured && (
-                <span className="text-[9px] font-semibold text-gold bg-gold/10 rounded-full px-2 py-0.5">Uninsured OK</span>
+                <span
+                  className="c-kicker"
+                  style={{
+                    fontSize: 9,
+                    padding: "3px 8px",
+                    letterSpacing: "0.12em",
+                    background: "transparent",
+                    color: "var(--ink-strong)",
+                    border: "1.5px solid var(--rule-strong-c)",
+                  }}
+                >
+                  UNINSURED OK
+                </span>
               )}
             </div>
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/15 shrink-0" strokeLinecap="round">
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--ink-strong)", opacity: 0.5 }} className="shrink-0" strokeLinecap="round">
               <path d="M5 3l4 4-4 4" />
             </svg>
           </div>
 
           {resource.phone && (
-            <div className="flex items-center gap-1.5 mt-2.5 pt-2.5 border-t border-white/[0.04]">
-              <svg width="10" height="10" fill="none" stroke="#F2A900" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div
+              className="flex items-center gap-1.5 mt-2.5 pt-2.5"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            >
+              <svg width="10" height="10" fill="none" stroke="var(--gold-c)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07" />
               </svg>
-              <p className="text-[11px] text-gold font-semibold">{resource.phone}</p>
+              <p className="c-card-t tabular-nums" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{resource.phone}</p>
             </div>
           )}
         </div>
@@ -341,17 +359,33 @@ export default function HealthPage() {
       </div>
 
       {/* ─── Stats Strip ─── */}
-      <div className="px-5 -mt-3 mb-5 relative z-10">
-        <div className="grid grid-cols-4 gap-2">
+      <div className="px-5 mt-5 mb-5 relative z-10">
+        <div
+          className="grid grid-cols-4"
+          style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+        >
           {[
             { label: "Resources", value: resources.length.toString() },
             { label: "Free", value: freeCount.toString() },
             { label: "Events", value: (upcomingHealthEvents.length + dbEvents.length).toString() },
             { label: "Emergency", value: emergencyCount.toString() },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
-              <p className="font-display text-[20px] leading-none text-gold tabular-nums">{stat.value}</p>
-              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">{stat.label}</p>
+          ].map((stat, idx) => (
+            <div
+              key={stat.label}
+              className="p-2.5 text-center"
+              style={{
+                borderLeft: idx === 0 ? "none" : "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <p
+                className="c-hero tabular-nums"
+                style={{ fontSize: 22, lineHeight: 1, color: "var(--ink-strong)" }}
+              >
+                {stat.value}
+              </p>
+              <p className="c-kicker mt-1.5" style={{ fontSize: 9, opacity: 0.7 }}>
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>
@@ -365,13 +399,31 @@ export default function HealthPage() {
         {(() => {
           const tip = wellnessTips[new Date().getDay() % wellnessTips.length];
           return (
-            <div className="rounded-2xl panel-editorial p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0">
-                <Icon name={tip.icon} size={18} className="text-gold" />
+            <div
+              className="p-4 flex items-center gap-3"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div
+                className="w-10 h-10 flex items-center justify-center shrink-0"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name={tip.icon} size={18} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] text-gold uppercase tracking-editorial font-bold mb-0.5">Daily Wellness Tip</p>
-                <p className="text-[12px] text-ivory/70 leading-relaxed">{tip.tip}</p>
+                <p
+                  className="c-kicker"
+                  style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.16em" }}
+                >
+                  DAILY WELLNESS TIP
+                </p>
+                <p className="c-body mt-1" style={{ fontSize: 12 }}>{tip.tip}</p>
               </div>
             </div>
           );
@@ -382,40 +434,62 @@ export default function HealthPage() {
       <section className="mb-6">
         <div className="px-5 mb-3">
           <div className="flex items-baseline gap-3">
-            <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+            <span
+              className="c-hero tabular-nums"
+              style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+            >
               № 01
             </span>
-            <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-              Community Fitness
+            <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+              COMMUNITY FITNESS
             </span>
-            <span className="ml-auto rule-hairline flex-1 self-center" />
+            <span
+              className="ml-auto flex-1 self-center"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            />
           </div>
-          <p className="text-[11px] text-ivory/40 mt-1">Free weekly activities for everyone</p>
+          <p className="c-serif-it mt-1" style={{ fontSize: 11 }}>Free weekly activities for everyone.</p>
         </div>
         <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
           {wellnessActivities.map((activity) => (
             <div
               key={activity.name}
-              className="shrink-0 w-[240px] rounded-2xl panel-editorial overflow-hidden press hover:border-gold/30 transition-colors"
+              className="shrink-0 w-[240px] overflow-hidden press"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
               <div className="p-4 h-full">
                 <div className="flex items-center gap-2.5 mb-2">
-                  <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0">
-                    <Icon name={activity.icon} size={18} className="text-gold" />
+                  <div
+                    className="w-10 h-10 flex items-center justify-center shrink-0"
+                    style={{
+                      background: "var(--ink-strong)",
+                      color: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    <Icon name={activity.icon} size={18} />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="font-display text-[16px] leading-tight text-white truncate">{activity.name}</h3>
-                    <p className="text-[10px] font-bold uppercase tracking-editorial-tight text-gold/80 truncate">{activity.tagline}</p>
+                    <h3 className="c-card-t truncate" style={{ fontSize: 14 }}>{activity.name}</h3>
+                    <p
+                      className="c-kicker truncate"
+                      style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+                    >
+                      {activity.tagline.toUpperCase()}
+                    </p>
                   </div>
                 </div>
-                <p className="text-[11px] text-ivory/55 leading-relaxed mb-3 line-clamp-2">{activity.description}</p>
-                <div className="flex items-center gap-3 text-[10px] text-ivory/50">
-                  <span className="flex items-center gap-1">
-                    <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold"><circle cx="5" cy="5" r="4"/><path d="M5 3v2l1.5 1"/></svg>
+                <p className="c-body mb-3 line-clamp-2" style={{ fontSize: 11 }}>{activity.description}</p>
+                <div className="flex items-center gap-3">
+                  <span className="c-meta flex items-center gap-1" style={{ fontSize: 10 }}>
+                    <svg width="10" height="10" fill="none" stroke="var(--gold-c)" strokeWidth="2" strokeLinecap="round"><circle cx="5" cy="5" r="4"/><path d="M5 3v2l1.5 1"/></svg>
                     {activity.schedule}
                   </span>
                 </div>
-                <p className="text-[10px] text-ivory/40 mt-1">{activity.location}</p>
+                <p className="c-meta mt-1" style={{ fontSize: 10, opacity: 0.7 }}>{activity.location}</p>
               </div>
             </div>
           ))}
@@ -427,16 +501,25 @@ export default function HealthPage() {
         <div className="flex items-start justify-between mb-3 gap-3">
           <div className="min-w-0">
             <div className="flex items-baseline gap-3">
-              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+              <span
+                className="c-hero tabular-nums"
+                style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+              >
                 № 02
               </span>
-              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-                Health Events
+              <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+                HEALTH EVENTS
               </span>
             </div>
-            <p className="text-[11px] text-ivory/40 mt-1">Blood drives, fairs, runs &amp; more</p>
+            <p className="c-serif-it mt-1" style={{ fontSize: 11 }}>Blood drives, fairs, runs &amp; more.</p>
           </div>
-          <Link href="/events" className="shrink-0 text-[10px] font-bold tracking-editorial-tight uppercase text-gold press">All Events →</Link>
+          <Link
+            href="/events"
+            className="c-kicker shrink-0 press"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+          >
+            ALL EVENTS →
+          </Link>
         </div>
 
         <div className="space-y-2.5 stagger">
@@ -445,25 +528,45 @@ export default function HealthPage() {
             return (
               <div
                 key={event.id}
-                className="rounded-2xl panel-editorial overflow-hidden transition-colors hover:border-gold/25"
+                className="overflow-hidden"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
                 <div className="p-4">
                   <div className="flex items-start gap-3">
                     {/* Editorial date block */}
-                    <div className="w-12 h-14 rounded-xl border border-gold/20 flex flex-col items-center justify-center shrink-0 bg-ink">
-                      <p className="text-[9px] font-bold uppercase tracking-editorial-tight leading-none text-gold">{month}</p>
-                      <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">{day}</p>
+                    <div
+                      className="w-12 h-14 flex flex-col items-center justify-center shrink-0"
+                      style={{
+                        background: "var(--ink-strong)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      <p
+                        className="c-kicker"
+                        style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em", lineHeight: 1 }}
+                      >
+                        {month.toUpperCase()}
+                      </p>
+                      <p
+                        className="c-hero tabular-nums mt-1"
+                        style={{ fontSize: 20, lineHeight: 1, color: "var(--paper)" }}
+                      >
+                        {day}
+                      </p>
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <Icon name={event.icon} size={14} className="text-gold" />
-                        <h3 className="font-display text-[16px] leading-tight text-white truncate">{event.title}</h3>
+                        <Icon name={event.icon} size={14} style={{ color: "var(--gold-c)" }} />
+                        <h3 className="c-card-t truncate" style={{ fontSize: 14 }}>{event.title}</h3>
                       </div>
-                      <p className="text-[11px] text-ivory/55 line-clamp-2 mb-2">{event.description}</p>
-                      <div className="flex items-center gap-3 text-[10px] text-ivory/40">
-                        <span>{event.time}</span>
-                        <span>{event.location}</span>
+                      <p className="c-body line-clamp-2 mb-2" style={{ fontSize: 11 }}>{event.description}</p>
+                      <div className="flex items-center gap-3">
+                        <span className="c-meta" style={{ fontSize: 10 }}>{event.time}</span>
+                        <span className="c-meta" style={{ fontSize: 10, opacity: 0.7 }}>{event.location}</span>
                       </div>
                     </div>
                   </div>
@@ -477,15 +580,39 @@ export default function HealthPage() {
             const { month, day } = formatEventDate(event.start_date);
             return (
               <Link key={event.id} href={`/events/${event.id}`} className="block press">
-                <div className="rounded-2xl panel-editorial p-4 hover:border-gold/30 transition-colors">
+                <div
+                  className="p-4"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-14 rounded-xl border border-gold/20 flex flex-col items-center justify-center shrink-0 bg-ink">
-                      <p className="text-[9px] text-gold font-bold uppercase tracking-editorial-tight leading-none">{month}</p>
-                      <p className="font-display text-[20px] leading-none mt-1 text-white tabular-nums">{day}</p>
+                    <div
+                      className="w-12 h-14 flex flex-col items-center justify-center shrink-0"
+                      style={{
+                        background: "var(--ink-strong)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      <p
+                        className="c-kicker"
+                        style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em", lineHeight: 1 }}
+                      >
+                        {month.toUpperCase()}
+                      </p>
+                      <p
+                        className="c-hero tabular-nums mt-1"
+                        style={{ fontSize: 20, lineHeight: 1, color: "var(--paper)" }}
+                      >
+                        {day}
+                      </p>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-display text-[16px] leading-tight text-white truncate">{event.title}</p>
-                      {event.location_name && <p className="text-[11px] text-ivory/45 truncate mt-0.5">{event.location_name}</p>}
+                      <p className="c-card-t truncate" style={{ fontSize: 14 }}>{event.title}</p>
+                      {event.location_name && (
+                        <p className="c-meta truncate mt-0.5" style={{ fontSize: 11 }}>{event.location_name}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -498,32 +625,62 @@ export default function HealthPage() {
       {/* ─── Outdoor Fitness Spots ─── */}
       <section className="px-5 mb-6">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+          <span
+            className="c-hero tabular-nums"
+            style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+          >
             № 03
           </span>
-          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-            Outdoor Fitness Spots
+          <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+            OUTDOOR FITNESS SPOTS
           </span>
-          <span className="ml-auto rule-hairline flex-1 self-center" />
+          <span
+            className="ml-auto flex-1 self-center"
+            style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           {fitnessSpots.map((spot) => (
             <div
               key={spot.name}
-              className="rounded-xl panel-editorial p-3.5 press hover:border-gold/30 transition-colors"
+              className="p-3.5 press"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-9 h-9 rounded-lg border border-gold/20 bg-ink flex items-center justify-center">
-                  <Icon name={spot.icon} size={16} className="text-gold" />
+                <div
+                  className="w-9 h-9 flex items-center justify-center"
+                  style={{
+                    background: "var(--ink-strong)",
+                    color: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <Icon name={spot.icon} size={16} />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-display text-[14px] leading-tight text-white truncate">{spot.name}</p>
-                  <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">{spot.type}</p>
+                  <p className="c-card-t truncate" style={{ fontSize: 13 }}>{spot.name}</p>
+                  <p className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>{spot.type.toUpperCase()}</p>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1">
                 {spot.features.map((f) => (
-                  <span key={f} className="text-[9px] font-semibold uppercase tracking-editorial-tight bg-white/[0.03] text-ivory/55 rounded-full px-2 py-0.5 border border-white/[0.06]">{f}</span>
+                  <span
+                    key={f}
+                    className="c-kicker"
+                    style={{
+                      fontSize: 9,
+                      padding: "2px 7px",
+                      letterSpacing: "0.12em",
+                      background: "transparent",
+                      color: "var(--ink-strong)",
+                      border: "1.5px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    {f.toUpperCase()}
+                  </span>
                 ))}
               </div>
             </div>
@@ -531,21 +688,39 @@ export default function HealthPage() {
         </div>
       </section>
 
-      <div className="divider-subtle mx-5 mb-6" />
+      <div
+        className="mx-5 mb-6"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      />
 
       {/* ─── Search ─── */}
       <div className="px-5 mb-4">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+          <span
+            className="c-hero tabular-nums"
+            style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+          >
             № 04
           </span>
-          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-            Find Healthcare
+          <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+            FIND HEALTHCARE
           </span>
-          <span className="ml-auto rule-hairline flex-1 self-center" />
+          <span
+            className="ml-auto flex-1 self-center"
+            style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+          />
         </div>
         <div className="relative">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25" strokeLinecap="round">
+          <svg
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2"
+            style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+            strokeLinecap="round"
+          >
             <circle cx="8" cy="8" r="6" />
             <path d="M13 13l3 3" />
           </svg>
@@ -554,10 +729,19 @@ export default function HealthPage() {
             placeholder="Search clinics, hospitals, services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border border-border-subtle rounded-xl pl-11 pr-10 py-3 text-sm text-txt-primary placeholder:text-white/20 focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full pl-11 pr-10 py-3 text-sm focus:outline-none transition-colors"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           />
           {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors">
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors"
+              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+            >
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l8 8M12 4l-8 8" /></svg>
             </button>
           )}
@@ -573,15 +757,17 @@ export default function HealthPage() {
               <button
                 key={cat.value}
                 onClick={() => setActiveCategory(isActive ? "all" : cat.value as HealthCategory | "all")}
-                className="flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-semibold transition-all press"
+                className="flex items-center gap-1.5 shrink-0 px-3.5 py-2 c-kicker press transition-colors"
                 style={{
-                  background: isActive ? `${cat.color}20` : "rgba(255,255,255,0.04)",
-                  color: isActive ? cat.color : "rgba(255,255,255,0.4)",
-                  border: `1px solid ${isActive ? `${cat.color}30` : "rgba(255,255,255,0.06)"}`,
+                  fontSize: 10,
+                  letterSpacing: "0.12em",
+                  background: isActive ? "var(--ink-strong)" : "var(--paper)",
+                  color: isActive ? "var(--gold-c)" : "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
                 }}
               >
                 <Icon name={cat.icon} size={14} />
-                {cat.label}
+                {cat.label.toUpperCase()}
               </button>
             );
           })}
@@ -591,19 +777,21 @@ export default function HealthPage() {
       {/* ─── Filter Badges ─── */}
       <div className="flex gap-2 px-5 mb-5">
         {([
-          { label: "Free Services", value: "free" as FilterTag, color: "#22C55E" },
-          { label: "Accepts Medi-Cal", value: "medicaid" as FilterTag, color: "#06B6D4" },
+          { label: "Free Services", value: "free" as FilterTag },
+          { label: "Accepts Medi-Cal", value: "medicaid" as FilterTag },
         ]).map((badge) => {
           const isActive = activeFilters.has(badge.value);
           return (
             <button
               key={badge.value}
               onClick={() => toggleFilter(badge.value)}
-              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all press"
+              className="flex items-center gap-1.5 px-3 py-1.5 c-kicker press transition-colors"
               style={{
-                background: isActive ? `${badge.color}20` : "rgba(255,255,255,0.04)",
-                color: isActive ? badge.color : "rgba(255,255,255,0.35)",
-                border: `1px solid ${isActive ? `${badge.color}30` : "rgba(255,255,255,0.06)"}`,
+                fontSize: 10,
+                letterSpacing: "0.12em",
+                background: isActive ? "var(--gold-c)" : "var(--paper)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
               }}
             >
               {isActive && (
@@ -611,7 +799,7 @@ export default function HealthPage() {
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
               )}
-              {badge.label}
+              {badge.label.toUpperCase()}
             </button>
           );
         })}
@@ -619,14 +807,15 @@ export default function HealthPage() {
 
       {/* ─── Results Header ─── */}
       <div className="flex items-center justify-between px-5 mb-3">
-        <span className="text-[11px] text-white/30">{filteredResources.length} healthcare resources</span>
+        <span className="c-meta" style={{ fontSize: 11 }}>
+          {filteredResources.length} HEALTHCARE RESOURCES
+        </span>
         {activeCategory !== "all" && (
           <button
             onClick={() => setActiveCategory("all")}
-            className="flex items-center gap-1 bg-gold/10 rounded-full px-2.5 py-1 border border-gold/20 press"
+            className="c-btn c-btn-sm c-btn-outline press"
           >
-            <span className="text-[10px] font-medium text-gold">Clear</span>
-            <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gold" strokeLinecap="round"><path d="M3 3l4 4M7 3l-4 4" /></svg>
+            CLEAR
           </button>
         )}
       </div>
@@ -635,7 +824,11 @@ export default function HealthPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-28 rounded-2xl" />
+            <div
+              key={i}
+              className="skeleton h-28"
+              style={{ border: "2px solid var(--rule-strong-c)" }}
+            />
           ))}
         </div>
       ) : (
@@ -646,11 +839,18 @@ export default function HealthPage() {
             ))}
             {filteredResources.length === 0 && (
               <div className="text-center py-16">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+                <div
+                  className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                  style={{
+                    background: "var(--ink-strong)",
+                    color: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   <Icon name="first-aid" size={30} />
                 </div>
-                <p className="text-sm font-semibold mb-1">No health resources found</p>
-                <p className="text-xs text-white/30">Try a different category or search</p>
+                <p className="c-card-t mb-1" style={{ fontSize: 14 }}>No health resources found</p>
+                <p className="c-meta" style={{ fontSize: 11 }}>Try a different category or search.</p>
               </div>
             )}
           </div>
@@ -659,37 +859,63 @@ export default function HealthPage() {
 
       {/* ─── Mental Health CTA ─── */}
       <section className="px-5 mb-6">
-        <div className="relative overflow-hidden rounded-2xl panel-editorial border-gold/25 p-5">
-          <div
-            className="absolute inset-0 opacity-[0.05] mix-blend-overlay pointer-events-none"
-            style={{
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
-            }}
-          />
-          <div className="relative">
-            <div className="w-10 h-10 rounded-xl border border-gold/25 bg-ink flex items-center justify-center mb-3">
-              <Icon name="brain" size={20} className="text-gold" />
+        <div
+          className="relative overflow-hidden"
+          style={{
+            background: "var(--ink-strong)",
+            border: "3px solid var(--rule-strong-c)",
+          }}
+        >
+          {/* Gold foil bar top */}
+          <div style={{ height: 4, background: "var(--gold-c)" }} />
+          <div className="p-5">
+            <div
+              className="w-10 h-10 flex items-center justify-center mb-3"
+              style={{
+                background: "var(--gold-c)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--paper)",
+              }}
+            >
+              <Icon name="brain" size={20} />
             </div>
-            <h3 className="font-display text-[22px] leading-tight text-white mb-1">Mental Health Matters</h3>
-            <p className="text-[12px] text-ivory/55 leading-relaxed mb-4 max-w-md">
+            <h3
+              className="c-hero mb-1"
+              style={{ fontSize: 24, lineHeight: 1, color: "var(--paper)" }}
+            >
+              Mental Health Matters.
+            </h3>
+            <p
+              className="c-serif-it mb-4 max-w-md"
+              style={{ fontSize: 13, color: "var(--paper)", opacity: 0.8 }}
+            >
               It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all {activeCity?.name ?? "local"} residents.
             </p>
             <div className="flex gap-2">
               <a
                 href="tel:988"
-                className="inline-flex items-center gap-2 bg-gold text-midnight rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press"
+                className="c-btn c-btn-sm press inline-flex items-center gap-2"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--paper)",
+                }}
               >
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07" />
                 </svg>
-                Call 988
+                CALL 988
               </a>
               <button
                 onClick={() => { setActiveCategory("mental_health"); }}
-                className="inline-flex items-center gap-2 bg-transparent text-white rounded-full px-4 py-2.5 text-[11px] font-bold uppercase tracking-editorial-tight press border border-gold/30 hover:bg-gold/10 transition-colors"
+                className="c-btn c-btn-sm press inline-flex items-center gap-2"
+                style={{
+                  background: "transparent",
+                  color: "var(--paper)",
+                  border: "2px solid var(--paper)",
+                }}
               >
-                Find Help
+                FIND HELP
               </button>
             </div>
           </div>
@@ -699,13 +925,19 @@ export default function HealthPage() {
       {/* ─── Know Your Numbers ─── */}
       <section className="px-5 mb-6">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+          <span
+            className="c-hero tabular-nums"
+            style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+          >
             № 05
           </span>
-          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-            Know Your Numbers
+          <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+            KNOW YOUR NUMBERS
           </span>
-          <span className="ml-auto rule-hairline flex-1 self-center" />
+          <span
+            className="ml-auto flex-1 self-center"
+            style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+          />
         </div>
         <div className="grid grid-cols-2 gap-2.5">
           {[
@@ -714,13 +946,32 @@ export default function HealthPage() {
             { label: "BMI", target: "18.5 - 24.9", icon: "chart" as IconName },
             { label: "Cholesterol", target: "< 200 mg/dL", icon: "stethoscope" as IconName },
           ].map((item) => (
-            <div key={item.label} className="rounded-xl panel-editorial p-3 text-center">
-              <div className="mx-auto w-9 h-9 rounded-lg border border-gold/20 bg-ink flex items-center justify-center mb-2">
-                <Icon name={item.icon} size={16} className="text-gold" />
+            <div
+              key={item.label}
+              className="p-3 text-center"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div
+                className="mx-auto w-9 h-9 flex items-center justify-center mb-2"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name={item.icon} size={16} />
               </div>
-              <p className="text-[10px] font-semibold uppercase tracking-editorial-tight text-ivory/55">{item.label}</p>
-              <p className="font-display text-[16px] leading-tight text-gold mt-1 tabular-nums">{item.target}</p>
-              <p className="text-[9px] text-ivory/35 mt-1 uppercase tracking-editorial-tight">Healthy Range</p>
+              <p className="c-kicker" style={{ fontSize: 10, opacity: 0.75 }}>{item.label.toUpperCase()}</p>
+              <p
+                className="c-hero tabular-nums mt-1"
+                style={{ fontSize: 18, lineHeight: 1, color: "var(--ink-strong)" }}
+              >
+                {item.target}
+              </p>
+              <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.55 }}>HEALTHY RANGE</p>
             </div>
           ))}
         </div>
@@ -729,13 +980,19 @@ export default function HealthPage() {
       {/* ─── Health Hotlines ─── */}
       <section className="px-5 mb-8">
         <div className="flex items-baseline gap-3 mb-3">
-          <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+          <span
+            className="c-hero tabular-nums"
+            style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+          >
             № 06
           </span>
-          <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
-            Health Hotlines
+          <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+            HEALTH HOTLINES
           </span>
-          <span className="ml-auto rule-hairline flex-1 self-center" />
+          <span
+            className="ml-auto flex-1 self-center"
+            style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+          />
         </div>
         <div className="space-y-2">
           {[
@@ -747,18 +1004,39 @@ export default function HealthPage() {
             <a
               key={line.name}
               href={`tel:${line.number.replace(/-/g, "")}`}
-              className="flex items-center gap-3 rounded-xl panel-editorial p-3 press hover:border-gold/30 transition-colors"
+              className="flex items-center gap-3 p-3 press"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
-              <div className="w-8 h-8 rounded-full border border-coral/25 bg-coral/10 flex items-center justify-center shrink-0">
-                <svg width="14" height="14" fill="none" stroke="currentColor" className="text-coral" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" />
                 </svg>
               </div>
-              <div className="flex-1">
-                <p className="font-display text-[14px] leading-tight text-white">{line.name}</p>
-                <p className="text-[11px] font-bold text-gold tabular-nums">{line.number}</p>
+              <div className="flex-1 min-w-0">
+                <p className="c-card-t" style={{ fontSize: 13 }}>{line.name}</p>
+                <p
+                  className="c-card-t tabular-nums mt-0.5"
+                  style={{ fontSize: 12, color: "var(--gold-c)" }}
+                >
+                  {line.number}
+                </p>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-editorial-tight text-ivory/35">24/7</span>
+              <span
+                className="c-badge-gold c-kicker"
+                style={{ fontSize: 9, padding: "3px 8px", letterSpacing: "0.14em" }}
+              >
+                24/7
+              </span>
             </a>
           ))}
         </div>
