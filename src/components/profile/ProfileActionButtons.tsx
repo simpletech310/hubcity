@@ -4,17 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * Follow + Message action pair shown on /user/[handle]. Two buttons:
- *
- *  - Follow / Following — POST or DELETE /api/follows. Optimistic toggle so
- *    the count flickers immediately. The page's follower-count number is
- *    server-rendered, so we kick a `router.refresh()` after success to pick
- *    up the trigger-bumped value without a full reload.
- *
- *  - Message — POST /api/conversations to find-or-create a 1:1 thread, then
- *    push to /messages/[id].
- *
- * If the visitor isn't signed in, both buttons send them to /login first.
+ * Follow + Message action pair shown on /user/[handle] — Culture blockprint.
+ * Primary button = ink bg / gold text (c-btn-primary). Secondary = bordered
+ * outline (c-btn-outline).
  */
 export default function ProfileActionButtons({
   targetUserId,
@@ -27,12 +19,6 @@ export default function ProfileActionButtons({
   isSignedIn: boolean;
   isOwner: boolean;
   initialFollowing: boolean;
-  /**
-   * Optional role-driven primary CTA rendered ABOVE the Follow/Message row.
-   * Used by the profile hero to surface "View Business" / "See Resources"
-   * deep links for business and resource-provider profiles. Follow + Message
-   * still render below as secondary actions.
-   */
   primaryCta?: { label: string; href: string };
 }) {
   const router = useRouter();
@@ -41,20 +27,32 @@ export default function ProfileActionButtons({
   const [opening, setOpening] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const primaryBase: React.CSSProperties = {
+    background: "var(--ink-strong)",
+    color: "var(--gold-c)",
+    padding: "13px 0",
+    textAlign: "center",
+    flex: 1,
+  };
+  const outlineBase: React.CSSProperties = {
+    border: "2px solid var(--ink-strong)",
+    color: "var(--ink-strong)",
+    background: "var(--paper)",
+    padding: "11px 0",
+    textAlign: "center",
+    flex: 1,
+  };
+  const btnClass =
+    "c-ui press transition-colors disabled:opacity-60";
+
   if (isOwner) {
     return (
-      <div className="mt-4 flex items-center gap-3">
-        <a
-          href="/profile/edit"
-          className="flex-1 py-2.5 rounded-xl bg-transparent border border-gold/40 text-gold font-semibold text-sm press hover:bg-gold/10 transition-colors text-center"
-        >
-          Edit profile
+      <div className="flex items-center gap-[10px]">
+        <a href="/profile/edit" className={btnClass} style={primaryBase}>
+          EDIT PROFILE
         </a>
-        <a
-          href="/messages"
-          className="flex-1 py-2.5 rounded-xl bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors text-center"
-        >
-          Inbox
+        <a href="/messages" className={btnClass} style={outlineBase}>
+          INBOX
         </a>
       </div>
     );
@@ -68,7 +66,7 @@ export default function ProfileActionButtons({
     if (!isSignedIn) return requireSignIn(window.location.pathname);
     setError(null);
     const next = !following;
-    setFollowing(next); // optimistic
+    setFollowing(next);
     startTransition(async () => {
       const res = await fetch("/api/follows", {
         method: next ? "POST" : "DELETE",
@@ -104,41 +102,49 @@ export default function ProfileActionButtons({
     }
   }
 
+  // Follow button surface — primary ink when not following AND no external
+  // primary CTA; otherwise outline so the hierarchy reads correctly.
+  const followStyle: React.CSSProperties = following
+    ? outlineBase
+    : primaryCta
+      ? outlineBase
+      : primaryBase;
+
   return (
-    <div className="mt-4 space-y-2.5">
+    <div className="space-y-[10px]">
       {primaryCta && (
-        <a
-          href={primaryCta.href}
-          className="block w-full py-2.5 rounded-xl text-center text-sm font-bold bg-gold text-midnight hover:bg-gold-light transition-colors press"
-        >
-          {primaryCta.label}
+        <a href={primaryCta.href} className={btnClass} style={primaryBase}>
+          {primaryCta.label.toUpperCase()}
         </a>
       )}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-[10px]">
         <button
           type="button"
           disabled={pending}
           onClick={toggleFollow}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-bold press transition-colors disabled:opacity-60 ${
-            following
-              ? "bg-transparent border border-gold/40 text-gold hover:bg-gold/10"
-              : primaryCta
-                ? "bg-white/[0.04] border border-gold/30 text-gold hover:bg-gold/10"
-                : "bg-gold text-midnight hover:bg-gold-light"
-          }`}
+          className={btnClass}
+          style={followStyle}
         >
-          {following ? "Following" : "Follow"}
+          {following ? "FOLLOWING" : "FOLLOW"}
         </button>
         <button
           type="button"
           disabled={opening}
           onClick={openDM}
-          className="flex-1 py-2.5 rounded-xl bg-transparent border border-gold/40 text-gold font-semibold text-sm press hover:bg-gold/10 transition-colors disabled:opacity-60"
+          className={btnClass}
+          style={outlineBase}
         >
-          {opening ? "Opening…" : "Message"}
+          {opening ? "OPENING…" : "MESSAGE"}
         </button>
       </div>
-      {error && <p className="text-[11px] text-coral">{error}</p>}
+      {error && (
+        <p
+          className="c-kicker"
+          style={{ color: "var(--red-c)", fontSize: 10 }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }

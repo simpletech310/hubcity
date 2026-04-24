@@ -5,14 +5,6 @@ import type { Metadata } from "next";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import SaveButton from "@/components/ui/SaveButton";
-import {
-  EditorialNumber,
-  SectionKicker,
-  SnapCarousel,
-  EditorialCard,
-  Tag,
-  IssueDivider,
-} from "@/components/ui/editorial";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessReview } from "@/types/database";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
@@ -352,11 +344,19 @@ export default async function BusinessDetailPage({
 
   const categoryLabel = (biz.category || "local").toUpperCase();
   const cityName = biz.city?.name || "Compton";
-  const todayLine = new Date().toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+
+  // Primary CTA — order / book / call / visit — chosen by business type
+  const primaryCta: { label: string; href: string } | null = biz.accepts_bookings
+    ? { label: "BOOK", href: `/business/${biz.slug || biz.id}/book` }
+    : biz.accepts_orders
+      ? { label: isRetail ? "SHOP" : "ORDER", href: `/business/${biz.slug || biz.id}/order` }
+      : biz.phone
+        ? { label: "CALL", href: `tel:${biz.phone}` }
+        : biz.website
+          ? { label: "VISIT", href: biz.website.startsWith("http") ? biz.website : `https://${biz.website}` }
+          : biz.address
+            ? { label: "DIRECTIONS", href: `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` }
+            : null;
 
   return (
     <article className="culture-surface animate-fade-in pb-safe min-h-dvh">
@@ -367,114 +367,178 @@ export default async function BusinessDetailPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* ── Cover ── */}
-      <div className="relative">
-        {/* HeroGallery is an existing component; we keep it but wrap the
-            overlay content so it matches the editorial treatment. */}
+      {/* ── Hero · full-bleed 4:3 with bordered nav squares ── */}
+      <div className="relative" style={{ aspectRatio: "4 / 3", background: "var(--ink-strong)" }}>
         <HeroGallery
           images={heroImages}
           alt={biz.name}
           fallback={<div className={`w-full h-full ${artClass} pattern-dots`} />}
         />
 
-        {/* Duotone + paper overlay so the hero feels like HeroBlock even
-            though the carousel owns the img element. */}
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,rgba(0,0,0,0)_0%,rgba(0,0,0,0.5)_100%)]" />
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/70 via-black/20 to-transparent" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-t from-black via-black/80 to-transparent" />
-
-        {/* Crop-mark ticks — editorial hero signature */}
-        <svg width="22" height="22" className="absolute top-4 left-4 text-gold/70 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <path d="M2 8 V2 H8" />
-        </svg>
-        <svg width="22" height="22" className="absolute top-4 right-4 text-gold/70 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <path d="M14 2 H20 V8" />
-        </svg>
-        <svg width="22" height="22" className="absolute bottom-4 left-4 text-gold/50 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <path d="M2 14 V20 H8" />
-        </svg>
-        <svg width="22" height="22" className="absolute bottom-4 right-4 text-gold/50 pointer-events-none z-10" fill="none" stroke="currentColor" strokeWidth="1.2">
-          <path d="M20 14 V20 H14" />
-        </svg>
-
-        {/* Back button */}
-        <div className="absolute top-4 left-12 z-20">
+        {/* Back button — 36x36 bordered ink square */}
+        <div className="absolute top-4 left-4 z-20">
           <Link
             href={biz.category === "restaurant" ? "/food" : "/business"}
-            className="w-9 h-9 rounded-full bg-black/50 backdrop-blur-sm border border-white/10 flex items-center justify-center press"
+            className="flex items-center justify-center press"
+            style={{
+              width: 36,
+              height: 36,
+              background: "var(--ink-strong)",
+              color: "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+            }}
+            aria-label="Back"
           >
-            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ivory">
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M11 13L7 9l4-4" />
             </svg>
           </Link>
         </div>
 
-        {/* Save button */}
-        <div className="absolute top-4 right-12 z-20">
-          <SaveButton itemType="business" itemId={biz.id} />
-        </div>
-
-        {/* Rating pill (gold-only) */}
-        {biz.rating_avg > 0 && (
-          <div className="absolute top-16 left-5 z-10 bg-black/50 backdrop-blur-sm border border-gold/25 rounded-full px-3 py-1 flex items-center gap-1.5">
-            <Icon name="star" size={12} className="text-gold" />
-            <span className="text-[11px] font-bold text-ivory tabular-nums">{Number(biz.rating_avg).toFixed(1)}</span>
-            <span className="text-[9px] text-ivory/60">({biz.rating_count})</span>
+        {/* Share + Save — top right */}
+        <div className="absolute top-4 right-4 z-20 flex gap-2">
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 36,
+              height: 36,
+              background: "var(--ink-strong)",
+              color: "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+            }}
+          >
+            <ShareQrButton
+              url={profileUrl}
+              title={biz.name}
+              text={biz.description ?? undefined}
+              accentColor="#F2A900"
+            />
           </div>
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: 36,
+              height: 36,
+              background: "var(--ink-strong)",
+              color: "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+            }}
+          >
+            <SaveButton itemType="business" itemId={biz.id} />
+          </div>
+        </div>
+      </div>
+
+      {/* ── Gold block header strip ── */}
+      <div
+        className="c-gold-block"
+        style={{
+          padding: "12px 18px",
+          borderTop: "3px solid var(--rule-strong-c)",
+          borderBottom: "3px solid var(--rule-strong-c)",
+        }}
+      >
+        <div className="c-kicker" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span>§ {categoryLabel}</span>
+          <OpenNowBadge hours={biz.hours} />
+        </div>
+      </div>
+
+      {/* ── Name · tagline · stats ── */}
+      <div style={{ padding: "22px 18px 18px" }}>
+        <h1 className="c-hero" style={{ fontSize: 58, lineHeight: 0.82 }}>
+          {biz.name}
+        </h1>
+        {biz.description && (
+          <p className="c-serif-it" style={{ fontSize: 14, lineHeight: 1.5, marginTop: 16 }}>
+            {biz.description}
+          </p>
         )}
 
-        {/* Bottom content — kicker, title, gold rule, meta */}
-        <div className="absolute inset-x-0 bottom-0 px-6 pb-7 z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
-            <OpenNowBadge hours={biz.hours} />
-            {biz.district && (
-              <Tag tone="default" size="sm">District {biz.district}</Tag>
-            )}
-          </div>
-
-          <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[24ch]">
-            {biz.name}
-          </h1>
-
-          <div className="mt-5 h-px w-16 bg-gold" />
-
-          <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
-            <span className="text-ivory">{categoryLabel}</span>
-            <span className="text-ivory/40">·</span>
-            <span>{cityName}</span>
-            {biz.address && (
-              <>
-                <span className="text-ivory/40">·</span>
-                <span className="truncate max-w-[22ch]">{biz.address}</span>
-              </>
-            )}
-          </div>
+        <div
+          style={{
+            marginTop: 18,
+            display: "flex",
+            gap: 14,
+            flexWrap: "wrap",
+            alignItems: "center",
+          }}
+          className="c-meta"
+        >
+          {biz.rating_avg > 0 && (
+            <span
+              className="c-badge-gold"
+              style={{
+                padding: "4px 8px",
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              {Number(biz.rating_avg).toFixed(1)} · {biz.rating_count}
+            </span>
+          )}
+          <span>{categoryLabel}</span>
+          <span>{cityName.toUpperCase()}</span>
+          {biz.district && <span>DIST {biz.district}</span>}
         </div>
       </div>
 
-      {/* ── Byline Strip ── */}
-      <div className="px-5 mt-6 flex items-baseline gap-4">
-        <EditorialNumber n={1} size="sm" />
-        <SectionKicker tone="gold">Feature · {categoryLabel}</SectionKicker>
-        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
-        <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 whitespace-nowrap">
-          {cityName} · {todayLine}
-        </span>
-      </div>
-
-      {/* ── Multi-city presence ── */}
-      {otherCities.length > 0 && (
-        <div className="px-5 mt-4 flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/50 font-semibold shrink-0">
-            Also in
-          </span>
-          {otherCities.map((city) => (
-            <Link
-              key={city.slug}
-              href={`/${city.slug}`}
-              className="px-2.5 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-[11px] font-medium text-ivory/70 hover:text-ivory hover:border-gold/30 transition-colors"
+      {/* ── Primary CTA + icon action squares ── */}
+      {primaryCta && (
+        <div style={{ padding: "0 18px 22px", display: "flex", gap: 10 }}>
+          <Link
+            href={primaryCta.href}
+            {...(primaryCta.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            className="c-btn c-btn-primary press"
+            style={{ flex: 1, textAlign: "center", padding: "14px 0", fontSize: 13 }}
+          >
+            {primaryCta.label}
+            {biz.min_order > 0 && biz.accepts_orders ? ` · $${(biz.min_order / 100).toFixed(0)}+` : ""}
+          </Link>
+          {biz.phone && primaryCta.label !== "CALL" && (
+            <a
+              href={`tel:${biz.phone}`}
+              className="c-btn-outline flex items-center justify-center press"
+              style={{ width: 52, height: 48 }}
+              aria-label="Call"
             >
+              <Icon name="phone" size={18} />
+            </a>
+          )}
+          {biz.address && primaryCta.label !== "DIRECTIONS" && (
+            <a
+              href={`https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="c-btn-outline flex items-center justify-center press"
+              style={{ width: 52, height: 48 }}
+              aria-label="Directions"
+            >
+              <Icon name="navigation" size={18} />
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* ── Also in: {city} chips ── */}
+      {otherCities.length > 0 && (
+        <div
+          style={{
+            padding: "0 18px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexWrap: "wrap",
+          }}
+        >
+          <span className="c-kicker" style={{ fontSize: 10 }}>ALSO IN</span>
+          {otherCities.map((city) => (
+            <Link key={city.slug} href={`/${city.slug}`} className="c-chip">
               {city.name}
             </Link>
           ))}
@@ -483,17 +547,22 @@ export default async function BusinessDetailPage({
 
       {/* ── City Badges ── */}
       {biz.badges && biz.badges.length > 0 && (
-        <div className="px-5 mt-6">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        <div style={{ padding: "0 18px 18px" }}>
+          <div className="c-noscroll" style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 2 }}>
             {biz.badges.map((badge) => (
               <div
                 key={badge}
-                className="shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-full bg-gold/5 border border-gold/25"
+                className="c-badge-gold"
+                style={{
+                  flexShrink: 0,
+                  padding: "6px 10px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
               >
-                <Icon name={badgeIcons[badge] || "tag"} size={14} className="text-gold" />
-                <span className="text-[10px] uppercase tracking-editorial-tight font-bold text-gold whitespace-nowrap">
-                  {formatBadgeLabel(badge)}
-                </span>
+                <Icon name={badgeIcons[badge] || "tag"} size={12} />
+                <span className="c-ui" style={{ fontSize: 10 }}>{formatBadgeLabel(badge)}</span>
               </div>
             ))}
           </div>
@@ -502,130 +571,143 @@ export default async function BusinessDetailPage({
 
       {/* ── Chain / Ads-Only Notice ── */}
       {biz.account_type === "ads_only" && (
-        <div className="px-5 mt-4">
-          <EditorialCard variant="ink" border="subtle" className="px-4 py-3">
-            <div className="flex items-center gap-2.5">
-              <Icon name="globe" size={16} className="text-ivory/60 shrink-0" />
-              <div>
-                <p className="text-[11px] font-semibold text-ivory/70 uppercase tracking-editorial-tight">National Chain</p>
-                <p className="text-[10px] text-ivory/50 mt-0.5">Visit their website or app for ordering &amp; reservations</p>
-              </div>
+        <div style={{ padding: "0 18px 18px" }}>
+          <div className="c-frame" style={{ padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+            <Icon name="globe" size={16} style={{ color: "var(--ink-mute)", flexShrink: 0 }} />
+            <div>
+              <p className="c-kicker" style={{ fontSize: 10 }}>NATIONAL CHAIN</p>
+              <p className="c-body-sm" style={{ marginTop: 2 }}>
+                Visit their website or app for ordering &amp; reservations
+              </p>
             </div>
-          </EditorialCard>
+          </div>
         </div>
       )}
 
-      {/* ── Body — Magazine Column (About) ── */}
-      {biz.description && (
-        <section className="px-5 mt-8 max-w-[68ch]">
-          <p className="font-display text-[22px] leading-snug text-ivory first-letter:font-display first-letter:text-[56px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
-            {biz.description}
-          </p>
-        </section>
-      )}
-
-      {/* ── Pull quote — the story tagline ── */}
+      {/* ── Pull quote · story ── */}
       {biz.story && (
-        <aside className="px-5 mt-8 max-w-[68ch]">
-          <div className="border-l-2 border-gold pl-5 py-2">
-            <p className="font-display text-[24px] leading-snug text-ivory/90 whitespace-pre-line line-clamp-4">
+        <aside style={{ padding: "8px 18px 22px" }}>
+          <div style={{ borderLeft: "3px solid var(--gold-c)", paddingLeft: 18, paddingTop: 4, paddingBottom: 4 }}>
+            <p className="c-serif-it" style={{ fontSize: 20, lineHeight: 1.35, color: "var(--ink-strong)" }}>
               &ldquo;{biz.story}&rdquo;
             </p>
-            <p className="mt-2 text-[10px] uppercase tracking-editorial text-gold">
-              {biz.name} · {cityName}
+            <p className="c-kicker" style={{ fontSize: 10, marginTop: 10, color: "var(--gold-c)" }}>
+              § {biz.name.toUpperCase()} · {cityName.toUpperCase()}
             </p>
           </div>
         </aside>
       )}
 
-      {/* ── Action Strip ── */}
-      <section className="sticky top-0 z-20 bg-midnight/85 backdrop-blur-md border-b border-gold/10 mt-6">
-        <div className="px-5 py-3">
-          <div className="grid grid-cols-4 gap-2">
-            {([
-              { label: "Call", iconName: "phone" as IconName, href: biz.phone ? `tel:${biz.phone}` : undefined },
-              { label: "Directions", iconName: "navigation" as IconName, href: biz.address ? `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` : undefined },
-              { label: "Website", iconName: "globe" as IconName, href: biz.website ? (biz.website.startsWith("http") ? biz.website : `https://${biz.website}`) : undefined },
-            ]).map((action) => {
-              const isExternal = action.href?.startsWith("http");
-              if (!action.href) {
-                return (
-                  <button
-                    key={action.label}
-                    type="button"
-                    disabled
-                    className="flex flex-col items-center gap-1.5 rounded-xl border border-gold/15 bg-transparent py-3 opacity-40 cursor-not-allowed"
-                  >
-                    <Icon name={action.iconName} size={18} className="text-gold" />
-                    <span className="text-[9px] font-semibold text-ivory/60 uppercase tracking-editorial-tight">{action.label}</span>
-                  </button>
-                );
-              }
-              return (
-                <a
-                  key={action.label}
-                  href={action.href}
-                  {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className="flex flex-col items-center gap-1.5 rounded-xl border border-gold/25 bg-transparent py-3 press hover:bg-gold/5 transition-colors"
-                >
-                  <Icon name={action.iconName} size={18} className="text-gold" />
-                  <span className="text-[9px] font-semibold text-ivory/70 uppercase tracking-editorial-tight">{action.label}</span>
-                </a>
-              );
-            })}
-            <ShareQrButton
-              url={profileUrl}
-              title={biz.name}
-              text={biz.description ?? undefined}
-              accentColor="#F2A900"
-            />
+      {/* ── Tab strip (WORK · SERVICES · REVIEWS · HOURS) ── */}
+      <div style={{ padding: "0 18px", borderTop: "3px solid var(--rule-strong-c)" }}>
+        <div style={{ display: "flex" }}>
+          {[
+            { label: "WORK", active: true },
+            { label: "SERVICES", active: false },
+            { label: "REVIEWS", active: false },
+            { label: "HOURS", active: false },
+          ].map((t) => (
+            <div
+              key={t.label}
+              className="c-ui"
+              style={{
+                padding: "12px 14px",
+                fontSize: 11,
+                borderBottom: t.active ? "4px solid var(--rule-strong-c)" : "none",
+                color: t.active ? "var(--ink-strong)" : "var(--ink-mute)",
+              }}
+            >
+              {t.label}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── WORK · 3-col photo grid with 2px ink borders ── */}
+      {heroImages.length > 1 && (
+        <div style={{ padding: "14px 18px 24px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6 }}>
+            {heroImages.slice(0, 6).map((src, i) => (
+              <div key={i} className="c-frame" style={{ aspectRatio: "1 / 1", position: "relative" }}>
+                <Image
+                  src={src}
+                  alt={`${biz.name} ${i + 1}`}
+                  fill
+                  sizes="(max-width: 768px) 33vw, 200px"
+                  className="object-cover"
+                />
+              </div>
+            ))}
           </div>
         </div>
-      </section>
+      )}
 
-      {/* ── Section 01 · Info ── */}
-      <section className="px-5 mt-10">
-        <div className="mb-4 flex items-baseline gap-3">
-          <EditorialNumber n={1} size="md" />
-          <SectionKicker tone="muted">The Essentials</SectionKicker>
-        </div>
-        <div className="rule-hairline mb-5" />
+      {/* ── Section · Essentials (address / phone / today / website) ── */}
+      <section style={{ padding: "0 18px 24px" }}>
+        <div className="c-kicker" style={{ marginBottom: 8 }}>§ THE ESSENTIALS</div>
+        <div className="c-rule" style={{ marginBottom: 14 }} />
 
-        <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
+        <div className="c-frame">
           {/* Address */}
-          <div className="p-4 flex items-center gap-3.5 border-b border-white/[0.05]">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
-              <Icon name="pin" size={18} className="text-gold" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Address</p>
-              <p className="font-heading text-sm font-bold text-ivory truncate mt-0.5">{biz.address}</p>
-              {biz.district && <p className="text-[11px] text-ivory/70 mt-0.5">District {biz.district}</p>}
+          <div
+            style={{
+              padding: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              borderBottom: "1px solid var(--rule-c)",
+            }}
+          >
+            <Icon name="pin" size={18} style={{ color: "var(--gold-c)", flexShrink: 0 }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="c-kicker" style={{ fontSize: 9 }}>ADDRESS</p>
+              <p className="c-card-t" style={{ fontSize: 14, marginTop: 2 }}>{biz.address}</p>
+              {biz.district && (
+                <p className="c-meta" style={{ fontSize: 11, marginTop: 2 }}>DISTRICT {biz.district}</p>
+              )}
             </div>
           </div>
 
           {biz.phone && (
-            <a href={`tel:${biz.phone}`} className="p-4 flex items-center gap-3.5 border-b border-white/[0.05] press">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
-                <Icon name="phone" size={18} className="text-gold" />
-              </div>
+            <a
+              href={`tel:${biz.phone}`}
+              className="press"
+              style={{
+                padding: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                borderBottom: "1px solid var(--rule-c)",
+              }}
+            >
+              <Icon name="phone" size={18} style={{ color: "var(--gold-c)", flexShrink: 0 }} />
               <div>
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Phone</p>
-                <p className="font-heading text-sm font-bold text-gold mt-0.5">{biz.phone}</p>
+                <p className="c-kicker" style={{ fontSize: 9 }}>PHONE</p>
+                <p className="c-card-t" style={{ fontSize: 14, marginTop: 2, color: "var(--gold-c)" }}>
+                  {biz.phone}
+                </p>
               </div>
             </a>
           )}
 
           {todayHours && (
-            <div className="p-4 flex items-center gap-3.5 border-b border-white/[0.05]">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
-                <Icon name="clock" size={18} className="text-gold" />
-              </div>
+            <div
+              style={{
+                padding: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                borderBottom: "1px solid var(--rule-c)",
+              }}
+            >
+              <Icon name="clock" size={18} style={{ color: "var(--gold-c)", flexShrink: 0 }} />
               <div>
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Today</p>
-                <p className="font-heading text-sm font-bold mt-0.5">
-                  <span className="text-gold">Open</span>
-                  <span className="text-ivory/70 font-normal"> · {typeof todayHours === "string" ? todayHours : `${todayHours.open} — ${todayHours.close}`}</span>
+                <p className="c-kicker" style={{ fontSize: 9 }}>TODAY</p>
+                <p className="c-card-t" style={{ fontSize: 14, marginTop: 2 }}>
+                  <span style={{ color: "var(--gold-c)" }}>Open</span>
+                  <span className="c-meta" style={{ fontSize: 13, marginLeft: 6 }}>
+                    {typeof todayHours === "string" ? todayHours : `${todayHours.open} — ${todayHours.close}`}
+                  </span>
                 </p>
               </div>
             </div>
@@ -636,137 +718,164 @@ export default async function BusinessDetailPage({
               href={biz.website.startsWith("http") ? biz.website : `https://${biz.website}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-4 flex items-center gap-3.5 press"
+              className="press"
+              style={{ padding: 14, display: "flex", alignItems: "center", gap: 12 }}
             >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-gold/10 border border-gold/20">
-                <Icon name="globe" size={18} className="text-gold" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Website</p>
-                <p className="font-heading text-sm font-bold text-gold truncate mt-0.5">{biz.website}</p>
+              <Icon name="globe" size={18} style={{ color: "var(--gold-c)", flexShrink: 0 }} />
+              <div style={{ minWidth: 0 }}>
+                <p className="c-kicker" style={{ fontSize: 9 }}>WEBSITE</p>
+                <p className="c-card-t" style={{ fontSize: 14, marginTop: 2, color: "var(--gold-c)" }}>
+                  {biz.website}
+                </p>
               </div>
             </a>
           )}
-        </EditorialCard>
+        </div>
       </section>
 
-      {/* ── Section 02 · Services (bookable) ── */}
+      {/* ── Services · dark ink slab with service rows ── */}
       {biz.accepts_bookings && services.length > 0 && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={2} size="md" />
-            <SectionKicker tone="muted">Services</SectionKicker>
-            <span className="ml-auto text-[10px] uppercase tracking-editorial-tight text-ivory/55">
-              {services.length} available
-            </span>
-          </div>
-          <div className="rule-hairline mb-5" />
-
-          <div className="space-y-2.5">
+        <section className="c-ink-block" style={{ padding: "24px 18px 28px" }}>
+          <div className="c-kicker" style={{ color: "var(--gold-c)" }}>§ THE CHAIR</div>
+          <h2 className="c-hero" style={{ fontSize: 34, marginTop: 6, color: "var(--paper)" }}>
+            WHAT WE DO.
+          </h2>
+          <div style={{ marginTop: 12 }}>
             {services.map((svc) => (
-              <EditorialCard key={svc.id} variant="ink" border="subtle" className="p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-display text-[18px] text-ivory leading-tight truncate">{svc.name}</p>
-                    {svc.description && (
-                      <p className="text-[11px] text-ivory/70 mt-1 line-clamp-1">{svc.description}</p>
-                    )}
-                    <p className="mt-2 text-[10px] uppercase tracking-editorial-tight text-ivory/55 flex items-center gap-1.5">
-                      <Icon name="clock" size={12} className="text-gold" /> {svc.duration} min
-                    </p>
+              <div
+                key={svc.id}
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 12,
+                  padding: "14px 0",
+                  borderTop: "1px solid rgba(243,238,220,0.18)",
+                }}
+              >
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="c-card-t" style={{ fontSize: 17, color: "var(--paper)" }}>
+                    {svc.name}
                   </div>
-                  <div className="shrink-0 text-right">
-                    <p className="font-display text-[22px] text-gold leading-none">
-                      ${(svc.price / 100).toFixed(2)}
-                    </p>
+                  {svc.description && (
+                    <div
+                      className="c-body-sm"
+                      style={{ color: "rgba(243,238,220,0.75)", marginTop: 4 }}
+                    >
+                      {svc.description}
+                    </div>
+                  )}
+                  <div
+                    className="c-kicker"
+                    style={{ fontSize: 9, marginTop: 4, color: "rgba(243,238,220,0.65)" }}
+                  >
+                    {svc.duration} MIN
                   </div>
                 </div>
-              </EditorialCard>
+                <div
+                  style={{
+                    fontFamily: "var(--font-anton), Anton, Impact, sans-serif",
+                    fontSize: 22,
+                    color: "var(--gold-c)",
+                  }}
+                >
+                  ${(svc.price / 100).toFixed(0)}
+                </div>
+              </div>
             ))}
           </div>
-
           <Link
             href={`/business/${biz.slug || biz.id}/book`}
-            className="block mt-4 rounded-2xl bg-gold text-midnight p-4 press"
+            className="c-btn c-btn-accent press"
+            style={{ display: "block", marginTop: 18, textAlign: "center", padding: "14px 0" }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-heading font-bold text-base leading-none">Book Appointment</p>
-                <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
-                  Select a service and time
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
-                  <path d="M5 10h10M12 6l4 4-4 4" />
-                </svg>
-              </div>
-            </div>
+            BOOK APPOINTMENT
           </Link>
         </section>
       )}
 
       {biz.accepts_bookings && services.length === 0 && (
-        <section className="px-5 mt-10">
+        <section style={{ padding: "0 18px 24px" }}>
           <Link
             href={`/business/${biz.slug || biz.id}/book`}
-            className="block rounded-2xl border border-gold/25 bg-transparent p-4 press hover:bg-gold/5 transition-colors"
+            className="c-btn c-btn-outline press"
+            style={{ display: "block", textAlign: "center", padding: "14px 0" }}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-heading font-bold text-base text-ivory leading-none">Book Appointment</p>
-                <p className="text-ivory/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
-                  Check availability and book
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-xl bg-gold/10 border border-gold/20 flex items-center justify-center">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gold">
-                  <path d="M5 10h10M12 6l4 4-4 4" />
-                </svg>
-              </div>
-            </div>
+            CHECK AVAILABILITY · BOOK
           </Link>
         </section>
       )}
 
-      {/* ── Section 03 · Meet the Owner ── */}
+      {/* ── Meet the Owner ── */}
       {owner && owner.handle && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={3} size="md" />
-            <SectionKicker tone="muted">Meet the Owner</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
+        <section style={{ padding: "0 18px 24px" }}>
+          <div className="c-kicker" style={{ marginBottom: 8 }}>§ MEET THE OWNER</div>
+          <div className="c-rule" style={{ marginBottom: 14 }} />
 
           <Link href={`/user/${owner.handle}`} className="block press">
-            <EditorialCard variant="glass" border="gold" className="p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl overflow-hidden shrink-0 border border-gold/25 bg-ink">
+            <div className="c-frame" style={{ padding: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  className="c-frame"
+                  style={{
+                    width: 56,
+                    height: 56,
+                    flexShrink: 0,
+                    background: "var(--ink-strong)",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
                   {owner.avatar_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={owner.avatar_url} alt={owner.display_name} className="w-full h-full object-cover" />
+                    <img
+                      src={owner.avatar_url}
+                      alt={owner.display_name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gold font-display text-lg">
-                      {owner.display_name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()}
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ color: "var(--gold-c)", fontFamily: "var(--font-anton), sans-serif", fontSize: 20 }}
+                    >
+                      {owner.display_name
+                        .split(" ")
+                        .map((w) => w[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase()}
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <p className="font-display text-[20px] text-ivory leading-tight truncate">{owner.display_name}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <p className="c-card-t" style={{ fontSize: 18 }}>{owner.display_name}</p>
                     {owner.verification_status === "verified" && (
-                      <Icon name="verified" size={12} className="text-gold" />
+                      <Icon name="verified" size={12} style={{ color: "var(--gold-c)" }} />
                     )}
                   </div>
                   {owner.handle && (
-                    <p className="text-[11px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5">@{owner.handle}</p>
+                    <p className="c-kicker" style={{ fontSize: 10, marginTop: 2 }}>@{owner.handle}</p>
                   )}
                   {owner.bio && (
-                    <p className="text-[12px] text-ivory/70 mt-1.5 line-clamp-2">{owner.bio}</p>
+                    <p
+                      className="c-body-sm"
+                      style={{
+                        marginTop: 6,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {owner.bio}
+                    </p>
                   )}
                 </div>
-                <div className="shrink-0 text-[10px] uppercase tracking-editorial-tight text-gold flex items-center gap-1">
-                  View
+                <div
+                  className="c-kicker"
+                  style={{ fontSize: 10, color: "var(--gold-c)", display: "flex", alignItems: "center", gap: 4 }}
+                >
+                  VIEW
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M5 3l4 4-4 4" />
                   </svg>
@@ -774,23 +883,58 @@ export default async function BusinessDetailPage({
               </div>
 
               {(ownerRecentPosts.length > 0 || ownerRecentEvents.length > 0) && (
-                <div className="mt-4 pt-4 border-t border-gold/10 grid grid-cols-3 gap-2">
+                <div
+                  style={{
+                    marginTop: 16,
+                    paddingTop: 14,
+                    borderTop: "1px solid var(--rule-c)",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: 6,
+                  }}
+                >
                   {ownerRecentPosts.slice(0, 3).map((p) => (
                     <div
                       key={p.id}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-ink border border-white/[0.06]"
+                      className="c-frame"
+                      style={{ position: "relative", aspectRatio: "1 / 1", background: "var(--ink-strong)" }}
                     >
                       {p.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={p.image_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full p-1.5 flex items-center text-[9px] text-ivory/70 leading-snug">
-                          <span className="line-clamp-4">{p.body}</span>
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            padding: 6,
+                            color: "var(--paper)",
+                            fontSize: 9,
+                            lineHeight: 1.3,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 6,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {p.body}
                         </div>
                       )}
                       {p.media_type === "video" && (
-                        <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center">
-                          <svg width="8" height="8" viewBox="0 0 24 24" fill="white">
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: 4,
+                            right: 4,
+                            width: 14,
+                            height: 14,
+                            background: "var(--ink-strong)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <svg width="8" height="8" viewBox="0 0 24 24" fill="var(--paper)">
                             <polygon points="6,4 20,12 6,20" />
                           </svg>
                         </div>
@@ -800,227 +944,312 @@ export default async function BusinessDetailPage({
                   {ownerRecentEvents.slice(0, 3 - ownerRecentPosts.slice(0, 3).length).map((e) => (
                     <div
                       key={e.id}
-                      className="relative aspect-square rounded-lg overflow-hidden bg-ink border border-gold/15"
+                      className="c-frame"
+                      style={{ position: "relative", aspectRatio: "1 / 1", background: "var(--ink-strong)" }}
                     >
                       {e.image_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={e.image_url} alt={e.title} className="w-full h-full object-cover opacity-80" />
+                        <img
+                          src={e.image_url}
+                          alt={e.title}
+                          className="w-full h-full object-cover"
+                          style={{ opacity: 0.8 }}
+                        />
                       ) : null}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      <div className="absolute bottom-1 left-1.5 right-1.5">
-                        <p className="text-[8px] uppercase tracking-editorial-tight font-bold text-gold">Event</p>
-                        <p className="text-[10px] font-bold text-ivory line-clamp-2 leading-tight">{e.title}</p>
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          background: "linear-gradient(0deg, var(--ink-strong) 0%, transparent 70%)",
+                        }}
+                      />
+                      <div style={{ position: "absolute", bottom: 4, left: 6, right: 6 }}>
+                        <p className="c-kicker" style={{ fontSize: 8, color: "var(--gold-c)" }}>EVENT</p>
+                        <p
+                          className="c-card-t"
+                          style={{
+                            fontSize: 10,
+                            color: "var(--paper)",
+                            marginTop: 2,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {e.title}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
               )}
-            </EditorialCard>
+            </div>
           </Link>
         </section>
       )}
 
-      {/* ── Section 04 · Deals / Coupons ── */}
+      {/* ── Deals / Coupons ── */}
       {promotions && promotions.length > 0 && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={4} size="md" />
-            <SectionKicker tone="muted">{isRetail ? "Deals" : "Coupons"}</SectionKicker>
+        <section style={{ padding: "0 18px 24px" }}>
+          <div className="c-kicker" style={{ marginBottom: 8 }}>
+            § {isRetail ? "DEALS" : "COUPONS"}
           </div>
-          <div className="rule-hairline mb-5" />
+          <div className="c-rule" style={{ marginBottom: 14 }} />
 
-          <div className="space-y-2.5">
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {promotions.map((promo) => (
-              <EditorialCard key={promo.id} variant="ink" border="gold" className="p-4">
-                <div className="flex items-start gap-3">
-                  <Icon name="tag" size={16} className="text-gold shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-display text-[18px] text-ivory leading-tight">{promo.title}</p>
+              <div key={promo.id} className="c-frame" style={{ padding: 14 }}>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <Icon name="tag" size={16} style={{ color: "var(--gold-c)", flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p className="c-card-t" style={{ fontSize: 16 }}>{promo.title}</p>
                     {promo.description && (
-                      <p className="text-[11px] text-ivory/70 mt-1 line-clamp-2">{promo.description}</p>
+                      <p
+                        className="c-body-sm"
+                        style={{
+                          marginTop: 4,
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {promo.description}
+                      </p>
                     )}
-                    <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, flexWrap: "wrap" }}>
                       {promo.promo_code && (
-                        <Tag tone="gold" size="xs">Code: {promo.promo_code}</Tag>
+                        <span className="c-badge-gold" style={{ padding: "4px 8px", fontSize: 10 }}>
+                          CODE: {promo.promo_code}
+                        </span>
                       )}
                       {promo.discount_percent && (
-                        <Tag tone="gold" size="xs">{promo.discount_percent}% Off</Tag>
+                        <span className="c-badge-gold" style={{ padding: "4px 8px", fontSize: 10 }}>
+                          {promo.discount_percent}% OFF
+                        </span>
                       )}
                       {promo.discount_amount && (
-                        <Tag tone="gold" size="xs">
-                          ${(promo.discount_amount / 100).toFixed(2)} Off
-                        </Tag>
+                        <span className="c-badge-gold" style={{ padding: "4px 8px", fontSize: 10 }}>
+                          ${(promo.discount_amount / 100).toFixed(2)} OFF
+                        </span>
                       )}
+                      <button
+                        type="button"
+                        className="c-btn c-btn-primary c-btn-sm"
+                        style={{ marginLeft: "auto" }}
+                      >
+                        CLAIM
+                      </button>
                     </div>
                   </div>
                 </div>
-              </EditorialCard>
+              </div>
             ))}
           </div>
         </section>
       )}
 
-      {/* ── Section 05 · Menu / Products (rail) ── */}
+      {/* ── Menu / Products · horizontal rail ── */}
       {menuItems && menuItems.length > 0 && (
-        <div className="mt-10">
-          <SnapCarousel
-            number={5}
-            kicker={isRetail ? "Products" : "Menu"}
-            seeAllHref={`/business/${biz.slug || biz.id}/order`}
-            seeAllLabel={isRetail ? "All products →" : "Full menu →"}
+        <section style={{ padding: "0 0 24px" }}>
+          <div
+            style={{
+              padding: "0 18px 10px",
+              display: "flex",
+              alignItems: "baseline",
+              justifyContent: "space-between",
+            }}
+          >
+            <div className="c-kicker">§ {isRetail ? "PRODUCTS" : "MENU"}</div>
+            <Link
+              href={`/business/${biz.slug || biz.id}/order`}
+              className="c-kicker"
+              style={{ fontSize: 10, color: "var(--gold-c)" }}
+            >
+              {isRetail ? "ALL PRODUCTS →" : "FULL MENU →"}
+            </Link>
+          </div>
+          <div className="c-rule" style={{ margin: "0 18px 14px" }} />
+
+          <div
+            className="c-noscroll"
+            style={{
+              display: "flex",
+              gap: 10,
+              overflowX: "auto",
+              padding: "0 18px 4px",
+              scrollSnapType: "x mandatory",
+            }}
           >
             {menuItems.map((item) => (
               <Link
                 key={item.id}
                 href={`/business/${biz.slug || biz.id}/order`}
-                className="snap-start shrink-0 w-[160px] press"
+                className="press"
+                style={{ flex: "0 0 160px", scrollSnapAlign: "start" }}
               >
-                <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
-                  <div className="relative aspect-square bg-ink">
+                <div className="c-frame" style={{ background: "var(--paper)" }}>
+                  <div style={{ position: "relative", aspectRatio: "1 / 1", background: "var(--ink-strong)" }}>
                     {item.image_url ? (
                       <Image src={item.image_url} alt={item.name} fill className="object-cover" />
                     ) : (
                       <div className={`w-full h-full ${artClass} pattern-dots`} />
                     )}
                     {(item.mux_playback_id || item.video_url) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: 6,
+                          right: 6,
+                          width: 18,
+                          height: 18,
+                          background: "var(--ink-strong)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="var(--paper)">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>
                     )}
                     {item.is_digital && (
-                      <div className="absolute bottom-2 left-2">
-                        <Tag tone="gold" size="xs">Digital</Tag>
+                      <div style={{ position: "absolute", bottom: 6, left: 6 }}>
+                        <span className="c-badge-gold" style={{ padding: "3px 6px", fontSize: 9 }}>DIGITAL</span>
                       </div>
                     )}
                   </div>
-                  <div className="p-3">
-                    <p className="font-heading text-[12px] font-bold text-ivory truncate">{item.name}</p>
+                  <div style={{ padding: 10 }}>
+                    <p className="c-card-t" style={{ fontSize: 12 }}>{item.name}</p>
                     {item.category && (
-                      <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5 truncate">
-                        {item.category}
-                      </p>
+                      <p className="c-kicker" style={{ fontSize: 9, marginTop: 2 }}>{item.category}</p>
                     )}
-                    <p className="font-display text-[16px] text-gold leading-none mt-1.5">
+                    <p
+                      style={{
+                        fontFamily: "var(--font-anton), Anton, sans-serif",
+                        fontSize: 16,
+                        color: "var(--gold-c)",
+                        marginTop: 6,
+                        lineHeight: 1,
+                      }}
+                    >
                       ${(item.price / 100).toFixed(2)}
                     </p>
                   </div>
-                </EditorialCard>
+                </div>
               </Link>
             ))}
-          </SnapCarousel>
+          </div>
 
           {biz.accepts_orders && (
-            <div className="px-5 mt-4">
+            <div style={{ padding: "14px 18px 0" }}>
               <Link
                 href={`/business/${biz.slug || biz.id}/order`}
-                className="block rounded-2xl bg-gold text-midnight p-4 press"
+                className="c-btn c-btn-accent press"
+                style={{ display: "block", textAlign: "center", padding: "14px 0" }}
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-heading font-bold text-base leading-none">
-                      {isRetail ? "Shop Now" : "Order Now"}
-                    </p>
-                    <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
-                      {isRetail
-                        ? "Browse all products"
-                        : biz.delivery_enabled
-                          ? "Delivery & pickup available"
-                          : "Pickup available"}
-                    </p>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-midnight/10 flex items-center justify-center">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
-                      <path d="M5 10h10M12 6l4 4-4 4" />
-                    </svg>
-                  </div>
-                </div>
+                {isRetail ? "SHOP NOW" : "ORDER NOW"}
+                {biz.delivery_enabled && !isRetail ? " · DELIVERY & PICKUP" : ""}
               </Link>
             </div>
           )}
-        </div>
+        </section>
       )}
 
-      {/* ── Section 06 · Featured Reviews ── */}
+      {/* ── Featured Reviews · no cards, rules between ── */}
       {typedFeatured.length > 0 && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={6} size="md" />
-            <SectionKicker tone="muted">Featured Reviews</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
+        <section style={{ padding: "0 18px 24px" }}>
+          <div className="c-kicker" style={{ marginBottom: 8 }}>§ FEATURED REVIEWS</div>
+          <div className="c-rule" style={{ marginBottom: 6 }} />
 
-          <div className="space-y-3">
+          <div>
             {typedFeatured.map((rev) => (
-              <EditorialCard key={rev.id} variant="ink" border="subtle" className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-full bg-gold/10 border border-gold/20 flex items-center justify-center shrink-0 overflow-hidden">
+              <div
+                key={rev.id}
+                style={{ padding: "16px 0", borderTop: "2px solid var(--rule-strong-c)" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div
+                      className="c-frame"
+                      style={{
+                        width: 36,
+                        height: 36,
+                        flexShrink: 0,
+                        overflow: "hidden",
+                        background: "var(--paper-soft)",
+                      }}
+                    >
                       {rev.reviewer?.avatar_url ? (
                         <Image
                           src={rev.reviewer.avatar_url}
                           alt={rev.reviewer.display_name || ""}
                           width={36}
                           height={36}
-                          className="w-9 h-9 object-cover"
+                          className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className="text-gold text-xs font-bold">
+                        <div
+                          className="w-full h-full flex items-center justify-center"
+                          style={{ color: "var(--gold-c)", fontWeight: 700, fontSize: 14 }}
+                        >
                           {(rev.reviewer?.display_name || "A")[0].toUpperCase()}
-                        </span>
+                        </div>
                       )}
                     </div>
                     <div>
-                      <p className="font-heading text-sm font-bold text-ivory leading-tight">
-                        {rev.reviewer?.display_name || "Anonymous"}
+                      <p className="c-kicker" style={{ fontSize: 11 }}>
+                        {rev.reviewer?.display_name || "ANONYMOUS"}
                       </p>
-                      <p className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 mt-0.5">
-                        {new Date(rev.created_at).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
+                      <p className="c-kicker" style={{ fontSize: 9, marginTop: 2, color: "var(--ink-mute)" }}>
+                        {new Date(rev.created_at)
+                          .toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                          .toUpperCase()}
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-0.5">
+                  <div style={{ display: "flex", gap: 2 }}>
                     {[1, 2, 3, 4, 5].map((star) => (
                       <Icon
                         key={star}
                         name="star"
                         size={13}
-                        className={star <= rev.rating ? "text-gold" : "text-ivory/15"}
+                        style={{ color: star <= rev.rating ? "var(--gold-c)" : "var(--ink-mute)" }}
                       />
                     ))}
                   </div>
                 </div>
                 {rev.body && (
-                  <p className="font-display text-[16px] text-ivory/85 leading-snug">
+                  <p className="c-serif-it" style={{ fontSize: 16, lineHeight: 1.4, color: "var(--ink-strong)" }}>
                     &ldquo;{rev.body}&rdquo;
                   </p>
                 )}
-              </EditorialCard>
+              </div>
             ))}
           </div>
         </section>
       )}
 
       {/* ── All Reviews (interactive) ── */}
-      <div className="mt-10">
+      <div style={{ padding: "0 0 24px" }}>
         <ReviewSection businessId={biz.id} />
       </div>
 
-      {/* ── Hours ── */}
+      {/* ── Hours · ink block ── */}
       {biz.hours && Object.keys(biz.hours).length > 0 && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={7} size="md" />
-            <SectionKicker tone="muted">Hours</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
+        <section className="c-ink-block" style={{ padding: "24px 18px 28px" }}>
+          <div className="c-kicker" style={{ color: "var(--gold-c)" }}>§ HOURS</div>
+          <h2 className="c-hero" style={{ fontSize: 30, marginTop: 6, color: "var(--paper)" }}>
+            WHEN WE&apos;RE OPEN.
+          </h2>
 
-          <EditorialCard variant="ink" border="subtle" className="overflow-hidden">
+          <div style={{ marginTop: 14 }}>
             {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => {
               const hours = biz.hours?.[day];
               if (!hours) return null;
@@ -1029,54 +1258,61 @@ export default async function BusinessDetailPage({
               return (
                 <div
                   key={day}
-                  className={`px-4 py-3 flex items-center justify-between text-sm border-b border-white/[0.05] last:border-0 ${
-                    isToday ? "bg-gold/[0.05]" : ""
-                  }`}
+                  style={{
+                    display: "flex",
+                    alignItems: "baseline",
+                    justifyContent: "space-between",
+                    padding: "12px 0",
+                    borderTop: "1px solid rgba(243,238,220,0.18)",
+                  }}
                 >
-                  <div className="flex items-center gap-2">
-                    {isToday && <div className="w-1.5 h-1.5 rounded-full bg-gold" />}
-                    <span className={
-                      isToday
-                        ? "font-heading font-bold text-gold uppercase tracking-editorial-tight text-[11px]"
-                        : "text-ivory/70 uppercase tracking-editorial-tight text-[11px]"
-                    }>
-                      {dayFullNames[day]}
-                    </span>
-                  </div>
-                  <span className={
-                    isToday
-                      ? "font-heading font-bold text-ivory text-[12px]"
-                      : "text-ivory/70 text-[12px]"
-                  }>
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 11,
+                      color: isToday ? "var(--gold-c)" : "rgba(243,238,220,0.75)",
+                    }}
+                  >
+                    {isToday ? "● " : ""}
+                    {dayFullNames[day].toUpperCase()}
+                  </span>
+                  <span
+                    className="c-meta"
+                    style={{
+                      fontSize: 12,
+                      color: isToday ? "var(--paper)" : "rgba(243,238,220,0.75)",
+                    }}
+                  >
                     {hoursStr}
                   </span>
                 </div>
               );
             })}
-          </EditorialCard>
+          </div>
         </section>
       )}
 
-      {/* ── END divider ── */}
-      <IssueDivider label="END" />
+      {/* ── Related rail · Also in the Issue ── */}
+      <section style={{ padding: "24px 0 40px" }}>
+        <div className="c-kicker" style={{ padding: "0 18px 10px" }}>§ ALSO IN THE ISSUE</div>
+        <div className="c-rule" style={{ margin: "0 18px 14px" }} />
 
-      {/* ── Related rail ── */}
-      <SnapCarousel
-        number={8}
-        kicker="Also in the Issue"
-        seeAllHref={biz.category === "restaurant" ? "/food" : "/business"}
-        seeAllLabel="All listings →"
-        className="pb-10"
-      >
-        <div className="snap-start shrink-0 w-[240px]">
-          <EditorialCard variant="ink" border="subtle" className="p-5 h-[140px] flex flex-col justify-between">
-            <SectionKicker tone="gold">Browse</SectionKicker>
-            <p className="font-display text-[18px] text-ivory leading-tight">
+        <div style={{ padding: "0 18px" }}>
+          <Link
+            href={biz.category === "restaurant" ? "/food" : "/business"}
+            className="c-frame press block"
+            style={{ padding: 18, display: "block" }}
+          >
+            <p className="c-kicker" style={{ color: "var(--gold-c)" }}>§ BROWSE</p>
+            <p className="c-card-t" style={{ fontSize: 18, marginTop: 6 }}>
               Discover more {categoryLabel.toLowerCase()} places in {cityName}.
             </p>
-          </EditorialCard>
+            <p className="c-kicker" style={{ fontSize: 10, marginTop: 10, color: "var(--gold-c)" }}>
+              ALL LISTINGS →
+            </p>
+          </Link>
         </div>
-      </SnapCarousel>
+      </section>
     </article>
   );
 }

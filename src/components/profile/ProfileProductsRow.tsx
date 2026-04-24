@@ -12,10 +12,8 @@ interface ProductItem {
 
 interface ProfileProductsRowProps {
   products: ProductItem[];
-  /** Used to build the "see all" link: /business/[slug or id]. */
   businessSlug: string | null;
   businessId: string;
-  /** Override the row title (defaults to "Products"). */
   title?: string;
 }
 
@@ -32,12 +30,21 @@ export default function ProfileProductsRow({
 
   return (
     <div>
-      <div className="px-5 mb-3 flex items-center justify-between">
-        <h2 className="font-heading font-semibold text-sm text-white/50 uppercase tracking-wider flex items-center gap-2">
-          <Icon name="shopping" size={16} className="text-emerald" /> {title}
-        </h2>
-        <Link href={shopHref} className="text-[11px] text-gold font-semibold press">
-          Shop all
+      <div
+        className="px-5 mb-3 flex items-end justify-between pb-2"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <div>
+          <div className="c-kicker" style={{ color: "var(--ink-mute)" }}>
+            § {title.toUpperCase()}
+          </div>
+        </div>
+        <Link
+          href={shopHref}
+          className="c-kicker press"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          SHOP ALL →
         </Link>
       </div>
 
@@ -47,30 +54,47 @@ export default function ProfileProductsRow({
             <Link
               key={p.id}
               href={orderHref}
-              className="snap-start shrink-0 w-[150px] group press"
+              className="snap-start shrink-0 w-[150px] group press block"
             >
-              <div className="relative aspect-square rounded-xl overflow-hidden bg-white/[0.05] border border-white/[0.05]">
+              <div
+                className="relative aspect-square c-frame overflow-hidden"
+                style={{ background: "var(--paper)" }}
+              >
                 {p.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={p.image_url}
                     alt={p.name}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white/20">
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ color: "var(--ink-mute)" }}
+                  >
                     <Icon name="shopping" size={22} />
                   </div>
                 )}
               </div>
-              <div className="pt-2 px-0.5">
-                <p className="text-[12px] font-semibold text-white line-clamp-1">{p.name}</p>
-                <p className="text-[11px] font-bold text-gold">
+              <div className="pt-2">
+                <p
+                  className="c-card-t line-clamp-1"
+                  style={{ fontSize: 13 }}
+                >
+                  {p.name}
+                </p>
+                <p
+                  className="c-display c-tabnum mt-1"
+                  style={{ fontSize: 18, color: "var(--ink-strong)" }}
+                >
                   ${(p.price / 100).toFixed(2)}
                 </p>
                 {p.category && (
-                  <p className="text-[10px] text-white/40 line-clamp-1 mt-0.5">
-                    {p.category}
+                  <p
+                    className="c-kicker line-clamp-1 mt-0.5"
+                    style={{ fontSize: 9, color: "var(--ink-mute)" }}
+                  >
+                    {p.category.toUpperCase()}
                   </p>
                 )}
               </div>

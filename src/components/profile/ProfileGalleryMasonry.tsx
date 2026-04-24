@@ -13,11 +13,14 @@ interface ProfileGalleryMasonryProps {
   accentColor: string;
 }
 
+/**
+ * Culture blockprint masonry: CSS columns with 2px gaps. Every tile is a
+ * `c-frame` (2px ink border). Uploader is a dashed ink frame tile.
+ */
 export default function ProfileGalleryMasonry({
   images: initial,
   ownerName,
   isOwner,
-  accentColor,
 }: ProfileGalleryMasonryProps) {
   const router = useRouter();
   const [images, setImages] = useState(initial);
@@ -55,7 +58,6 @@ export default function ProfileGalleryMasonry({
         const body = (await res.json().catch(() => ({}))) as { error?: string };
         throw new Error(body.error ?? "Upload failed");
       }
-      // Refresh server data so we get canonical rows (display_order, created_at)
       router.refresh();
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : "Upload failed");
@@ -73,7 +75,7 @@ export default function ProfileGalleryMasonry({
       if (!res.ok) throw new Error("Delete failed");
       setImages((curr) => curr.filter((img) => img.id !== id));
     } catch {
-      // swallow — keep list; server toast can be added later
+      // swallow
     } finally {
       setDeletingId(null);
     }
@@ -84,27 +86,44 @@ export default function ProfileGalleryMasonry({
 
   return (
     <div>
-      {/* Masonry (CSS columns) */}
-      <div className="columns-2 gap-2 [column-fill:_balance]">
+      <div
+        className="columns-2 [column-fill:_balance]"
+        style={{ columnGap: 8 }}
+      >
         {isOwner && (
-          <label className="mb-2 break-inside-avoid block cursor-pointer group">
+          <label
+            className="mb-2 break-inside-avoid block cursor-pointer group"
+          >
             <div
-              className="relative rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1.5 py-10 transition-colors"
+              className="relative flex flex-col items-center justify-center gap-2 py-10"
               style={{
-                borderColor: `${accentColor}40`,
-                background: `${accentColor}08`,
+                border: "2px dashed var(--rule-strong-c)",
+                background: "var(--paper)",
               }}
             >
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{ background: `${accentColor}20` }}
+                className="flex items-center justify-center c-frame"
+                style={{
+                  width: 40,
+                  height: 40,
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                }}
               >
-                <Icon name="plus" size={18} style={{ color: accentColor }} />
+                <Icon name="plus" size={18} />
               </div>
-              <p className="text-[11px] font-semibold" style={{ color: accentColor }}>
-                {uploading ? "Uploading…" : "Add photos"}
+              <p
+                className="c-kicker"
+                style={{ color: "var(--ink-strong)" }}
+              >
+                {uploading ? "UPLOADING…" : "ADD PHOTOS"}
               </p>
-              <p className="text-[9px] text-white/40">JPEG / PNG / WebP · up to 10MB</p>
+              <p
+                className="c-meta"
+                style={{ color: "var(--ink-mute)" }}
+              >
+                JPEG / PNG / WEBP · UP TO 10MB
+              </p>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp,image/gif"
@@ -120,30 +139,25 @@ export default function ProfileGalleryMasonry({
         {images.map((img, i) => (
           <div
             key={img.id}
-            className="mb-2 break-inside-avoid rounded-xl overflow-hidden bg-white/5 relative group"
+            className="mb-2 break-inside-avoid c-frame overflow-hidden relative group"
+            style={{ background: "var(--paper)" }}
           >
             <button
               onClick={() => setLightboxIdx(i)}
               className="block w-full cursor-zoom-in"
               aria-label="Open image"
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={img.image_url}
                 alt={img.caption ?? `${ownerName} gallery ${i + 1}`}
                 loading="lazy"
-                className="w-full h-auto transition-transform duration-500 group-hover:scale-[1.02]"
+                className="w-full h-auto block"
                 style={
                   img.width && img.height
                     ? { aspectRatio: `${img.width} / ${img.height}` }
                     : undefined
                 }
-              />
-              {/* Subtle abstract tint on hover */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                style={{
-                  background: `linear-gradient(180deg, transparent 60%, ${accentColor}30 100%)`,
-                }}
               />
             </button>
 
@@ -152,7 +166,13 @@ export default function ProfileGalleryMasonry({
                 onClick={() => handleDelete(img.id)}
                 disabled={deletingId === img.id}
                 aria-label="Remove photo"
-                className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-black/80 disabled:opacity-30"
+                className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center disabled:opacity-30"
+                style={{
+                  width: 26,
+                  height: 26,
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                }}
               >
                 <Icon name="trash" size={12} />
               </button>
@@ -162,7 +182,12 @@ export default function ProfileGalleryMasonry({
       </div>
 
       {uploadError && (
-        <p className="text-xs text-coral mt-2">{uploadError}</p>
+        <p
+          className="c-kicker mt-2"
+          style={{ color: "var(--red-c)" }}
+        >
+          {uploadError}
+        </p>
       )}
 
       <Lightbox

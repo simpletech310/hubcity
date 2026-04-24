@@ -13,16 +13,8 @@ interface UserPostsGridProps {
 }
 
 /**
- * Instagram-style post grid + scrollable full-post viewer.
- *
- * Grid: 3-column aspect-square tiles for every post regardless of type.
- * Image posts show the image, video posts show image poster (or a dark
- * placeholder with a play icon), text-only posts show a colored card with
- * the first line of the body.
- *
- * Click any tile: opens a fullscreen overlay that renders every post as a
- * full PostCard, vertically stacked and scrollable. Scrolls the clicked
- * post into view on open so the user lands where they tapped.
+ * Culture blockprint post grid: 3-col framed cells with 2px gap. Reaction
+ * overlay becomes an inset ink-block bar pinned to the bottom of the tile.
  */
 export default function UserPostsGrid({
   posts,
@@ -33,7 +25,6 @@ export default function UserPostsGrid({
   const overlayRef = useRef<HTMLDivElement>(null);
   const postRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Scroll the clicked post into view when the overlay opens.
   useEffect(() => {
     if (openIndex == null) return;
     const target = postRefs.current[openIndex];
@@ -42,7 +33,6 @@ export default function UserPostsGrid({
     }
   }, [openIndex]);
 
-  // Escape key closes
   useEffect(() => {
     if (openIndex == null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -52,31 +42,52 @@ export default function UserPostsGrid({
     return () => window.removeEventListener("keydown", onKey);
   }, [openIndex]);
 
-  // Lock body scroll removal - we want them to scroll natively now.
-  
   if (posts.length === 0) {
     return (
-      <div className="text-center py-12 text-white/30 text-sm">No posts yet</div>
+      <div
+        className="text-center py-12 c-kicker"
+        style={{ color: "var(--ink-mute)" }}
+      >
+        § NO POSTS YET
+      </div>
     );
   }
 
   if (openIndex != null) {
     return (
       <div className="animate-in fade-in duration-300">
-        {/* Inline Navigation Header */}
-        <div className="flex items-center mb-4 sticky top-[60px] z-20 bg-deep/90 backdrop-blur-md py-2 -mx-4 px-4 border-b border-white/[0.04]">
+        <div
+          className="flex items-center mb-4 sticky top-[60px] z-20 py-2 -mx-4 px-4"
+          style={{
+            background: "var(--paper)",
+            borderBottom: "2px solid var(--rule-strong-c)",
+          }}
+        >
           <button
             onClick={() => setOpenIndex(null)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white text-xs font-semibold hover:border-white/20 transition-all border border-white/10 shadow-sm"
+            className="c-ui press inline-flex items-center gap-1.5"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              padding: "8px 12px",
+            }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
-            Grid View
+            GRID VIEW
           </button>
         </div>
 
-        {/* Stacked posts directly inline */}
         <div className="flex flex-col gap-3 pb-24">
           {posts.map((post, idx) => (
             <div
@@ -99,7 +110,10 @@ export default function UserPostsGrid({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-0.5 rounded-xl overflow-hidden animate-in fade-in duration-300">
+    <div
+      className="grid grid-cols-3 animate-in fade-in duration-300"
+      style={{ gap: 2 }}
+    >
       {posts.map((post, idx) => {
         const totalReactions = post.reaction_counts
           ? Object.values(post.reaction_counts).reduce(
@@ -108,7 +122,6 @@ export default function UserPostsGrid({
             )
           : 0;
         const isVideo = post.media_type === "video";
-        const isImage = post.media_type === "image" || (post.image_url && !isVideo);
         const tileImg = post.image_url ?? null;
 
         return (
@@ -116,12 +129,15 @@ export default function UserPostsGrid({
             key={post.id}
             onClick={() => {
               setOpenIndex(idx);
-              // Small delay to let the DOM swap render before scrolling
               setTimeout(() => {
-                postRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+                postRefs.current[idx]?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "center",
+                });
               }, 50);
             }}
-            className="relative aspect-square group overflow-hidden bg-white/[0.04] press"
+            className="relative aspect-square group overflow-hidden press c-frame"
+            style={{ background: "var(--paper)" }}
             aria-label="Open post"
           >
             {tileImg ? (
@@ -130,39 +146,67 @@ export default function UserPostsGrid({
                 alt="Post"
                 fill
                 sizes="(max-width: 430px) 33vw, 144px"
-                className="object-cover transition-opacity group-hover:opacity-80"
+                className="object-cover"
               />
             ) : isVideo && post.video_url ? (
-              <div className="absolute inset-0 bg-gradient-to-br from-black via-deep to-black flex items-center justify-center">
-                <Icon name="video" size={22} className="text-white/30" />
+              <div
+                className="absolute inset-0 flex items-center justify-center"
+                style={{ background: "var(--ink-strong)" }}
+              >
+                <Icon
+                  name="video"
+                  size={22}
+                  style={{ color: "var(--gold-c)" }}
+                />
               </div>
             ) : (
-              <div className="absolute inset-0 bg-gradient-to-br from-hc-purple/20 via-royal/30 to-midnight p-2 flex items-center">
-                <p className="text-[10px] text-white/70 line-clamp-5 leading-snug">
+              <div
+                className="absolute inset-0 p-2 flex items-center"
+                style={{ background: "var(--paper)" }}
+              >
+                <p
+                  className="c-serif-it line-clamp-5"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ink-soft)",
+                    lineHeight: 1.4,
+                  }}
+                >
                   {post.body || ""}
                 </p>
               </div>
             )}
 
             {isVideo && (
-              <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+              <div
+                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center"
+                style={{ background: "var(--ink-strong)" }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--gold-c)">
                   <polygon points="6,4 20,12 6,20" />
                 </svg>
               </div>
             )}
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2 pointer-events-none">
-              <div className="flex items-center gap-3 w-full">
-                <span className="text-[10px] text-white flex items-center gap-1">
-                  <Icon name="heart-pulse" size={10} className="text-white" />
-                  {totalReactions}
-                </span>
-                <span className="text-[10px] text-white flex items-center gap-1">
-                  <Icon name="chat" size={10} className="text-white" />
-                  {post.comment_count ?? 0}
-                </span>
-              </div>
+            {/* Inset ink-block reaction overlay on hover */}
+            <div
+              className="absolute left-0 right-0 bottom-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none flex items-center gap-3 px-2 py-1"
+              style={{ background: "var(--ink-strong)" }}
+            >
+              <span
+                className="c-meta flex items-center gap-1"
+                style={{ color: "var(--gold-c)", fontWeight: 700 }}
+              >
+                <Icon name="heart-pulse" size={10} />
+                {totalReactions}
+              </span>
+              <span
+                className="c-meta flex items-center gap-1"
+                style={{ color: "var(--gold-c)", fontWeight: 700 }}
+              >
+                <Icon name="chat" size={10} />
+                {post.comment_count ?? 0}
+              </span>
             </div>
           </button>
         );

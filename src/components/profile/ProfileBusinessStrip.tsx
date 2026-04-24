@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
-import Badge from "@/components/ui/Badge";
 
 interface BusinessSummary {
   id: string;
@@ -19,63 +18,99 @@ interface ProfileBusinessStripProps {
   business: BusinessSummary;
 }
 
+/**
+ * Culture blockprint business strip: 72×72 framed thumb, kicker "§ BUSINESS",
+ * Anton name, meta row (category · rating · ad), ink-block primary CTA.
+ */
 export default function ProfileBusinessStrip({ business }: ProfileBusinessStripProps) {
   const href = `/business/${business.slug || business.id}`;
   const cover = business.image_urls?.[0] ?? null;
   const isAd = business.account_type === "ads_only";
 
   return (
-    <div className="relative rounded-2xl overflow-hidden border border-white/[0.06] mb-4">
-      {/* Backdrop */}
-      <div className="absolute inset-0">
+    <div
+      className="mb-4 flex items-stretch gap-3 p-3"
+      style={{
+        border: "2px solid var(--rule-strong-c)",
+        background: "var(--paper)",
+      }}
+    >
+      <div
+        className="c-frame-strong shrink-0 overflow-hidden"
+        style={{ width: 72, height: 72 }}
+      >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover opacity-50" />
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={cover} alt={business.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-emerald/30 via-gold/20 to-midnight" />
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: "var(--ink-strong)", color: "var(--gold-c)" }}
+          >
+            <Icon name="store" size={22} />
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/55 to-black/80" />
       </div>
 
-      <div className="relative p-4 flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-white/15 bg-white/[0.06]">
-          {cover ? (
-            <img src={cover} alt={business.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-emerald">
-              <Icon name="store" size={20} />
-            </div>
+      <div className="flex-1 min-w-0 flex flex-col justify-center">
+        <div className="flex items-center gap-2">
+          <span className="c-kicker" style={{ color: "var(--ink-mute)" }}>
+            § BUSINESS
+          </span>
+          {business.is_verified && (
+            <span className="c-kicker" style={{ color: "var(--gold-c)" }}>
+              · VERIFIED
+            </span>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-white/50 font-semibold">
-              Business
-            </p>
-            {business.is_verified && (
-              <Icon name="verified" size={11} className="text-cyan" />
-            )}
-          </div>
-          <p className="text-[15px] font-heading font-bold truncate">{business.name}</p>
-          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-            {business.category && (
-              <Badge label={business.category} variant="emerald" />
-            )}
-            {isAd && <Badge label="Ad partner" variant="gold" />}
-            {business.rating_avg != null && business.rating_count != null && business.rating_count > 0 && (
-              <span className="text-[10px] text-white/60 flex items-center gap-0.5">
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="#F2A900"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                {business.rating_avg.toFixed(1)} ({business.rating_count})
+        <p
+          className="c-card-t truncate"
+          style={{ fontSize: 18, marginTop: 4 }}
+        >
+          {business.name}
+        </p>
+        <div
+          className="mt-1 flex items-center gap-3 flex-wrap c-meta"
+          style={{ color: "var(--ink-mute)" }}
+        >
+          {business.category && (
+            <span style={{ color: "var(--ink-soft)" }}>
+              {business.category.toUpperCase()}
+            </span>
+          )}
+          {business.rating_avg != null &&
+            business.rating_count != null &&
+            business.rating_count > 0 && (
+              <span
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  padding: "2px 6px",
+                  fontWeight: 700,
+                }}
+              >
+                ★ {business.rating_avg.toFixed(1)} · {business.rating_count}
               </span>
             )}
-          </div>
+          {isAd && (
+            <span style={{ color: "var(--gold-c)", fontWeight: 700 }}>
+              AD PARTNER
+            </span>
+          )}
         </div>
-        <Link
-          href={href}
-          className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold bg-emerald text-midnight press hover:bg-emerald/80 transition-colors"
-        >
-          View
-        </Link>
       </div>
+
+      <Link
+        href={href}
+        className="c-ui shrink-0 press self-center"
+        style={{
+          background: "var(--ink-strong)",
+          color: "var(--gold-c)",
+          padding: "10px 14px",
+        }}
+      >
+        VIEW
+      </Link>
     </div>
   );
 }

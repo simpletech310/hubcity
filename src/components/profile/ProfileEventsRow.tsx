@@ -15,7 +15,7 @@ function formatDate(dateStr: string) {
   };
 }
 
-export default function ProfileEventsRow({ events, accentColor }: ProfileEventsRowProps) {
+export default function ProfileEventsRow({ events }: ProfileEventsRowProps) {
   if (events.length === 0) return null;
 
   return (
@@ -27,48 +27,72 @@ export default function ProfileEventsRow({ events, accentColor }: ProfileEventsR
             <Link
               key={event.id}
               href={`/events/${event.slug || event.id}`}
-              className="snap-start shrink-0 w-[220px] group press"
+              className="snap-start shrink-0 w-[220px] group press block"
             >
-              <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-white/5">
+              <div
+                className="relative aspect-[4/3] c-frame overflow-hidden"
+                style={{ background: "var(--paper)" }}
+              >
                 {event.image_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={event.image_url}
                     alt={event.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div
                     className="w-full h-full flex items-center justify-center"
                     style={{
-                      background: `linear-gradient(135deg, ${accentColor}30, transparent)`,
+                      background: "var(--ink-strong)",
+                      color: "var(--gold-c)",
                     }}
                   >
-                    <Icon name="calendar" size={28} className="text-white/30" />
+                    <Icon name="calendar" size={28} />
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                {/* Date pill */}
+
+                {/* Date block — ink over month, paper over day */}
                 <div
-                  className="absolute top-2 left-2 rounded-lg overflow-hidden backdrop-blur-md"
-                  style={{ background: "rgba(10,10,10,0.75)" }}
+                  className="absolute top-2 left-2"
+                  style={{ border: "2px solid var(--ink-strong)" }}
                 >
                   <div
-                    className="px-2 py-0.5 text-[9px] font-bold text-center uppercase tracking-wider"
-                    style={{ background: `${accentColor}80`, color: "#0A0A0A" }}
+                    className="c-kicker text-center"
+                    style={{
+                      background: "var(--ink-strong)",
+                      color: "var(--gold-c)",
+                      padding: "2px 8px",
+                    }}
                   >
                     {month}
                   </div>
-                  <div className="px-2 py-0.5 text-center">
-                    <p className="text-[14px] font-heading font-bold leading-none">{day}</p>
+                  <div
+                    className="c-display c-tabnum text-center"
+                    style={{
+                      background: "var(--paper)",
+                      color: "var(--ink-strong)",
+                      padding: "2px 8px",
+                      fontSize: 18,
+                      lineHeight: 1,
+                    }}
+                  >
+                    {day}
                   </div>
                 </div>
               </div>
-              <div className="pt-2 px-0.5">
-                <p className="text-[13px] font-semibold text-white line-clamp-1">
+              <div className="pt-2">
+                <p
+                  className="c-card-t line-clamp-1"
+                  style={{ fontSize: 14 }}
+                >
                   {event.title}
                 </p>
                 {event.location_name && (
-                  <p className="text-[11px] text-white/50 line-clamp-1 mt-0.5 flex items-center gap-1">
+                  <p
+                    className="c-kicker line-clamp-1 mt-1 flex items-center gap-1"
+                    style={{ color: "var(--ink-mute)", fontSize: 9 }}
+                  >
                     <Icon name="pin" size={10} /> {event.location_name}
                   </p>
                 )}
