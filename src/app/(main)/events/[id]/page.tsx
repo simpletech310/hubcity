@@ -119,7 +119,7 @@ export default async function EventDetailPage({
   const timeLine = ev.start_time ? formatTime12h(ev.start_time) : "TBA";
 
   return (
-    <article className="animate-fade-in pb-safe bg-midnight">
+    <article className="culture-surface animate-fade-in pb-safe min-h-dvh">
       {/* ── Cover ── */}
       <div className="relative">
         <HeroBlock image={ev.image_url ?? null} aspect="3/2" alt={ev.title}>

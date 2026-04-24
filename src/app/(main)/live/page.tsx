@@ -146,21 +146,47 @@ export default async function LivePage() {
   );
 
   return (
-    <CultureTV
-      channels={(rawChannels as Channel[]) || []}
-      streams={(rawStreams as LiveStream[]) || []}
-      featuredVideos={(rawFeatured as ChannelVideo[]) || []}
-      recentVideos={(rawRecent as ChannelVideo[]) || []}
-      shows={(rawShows as Show[]) || []}
-      timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
-      liveSchedule={(rawSchedule as unknown as ScheduledBroadcast[]) || []}
-      ads={(rawAds as VideoAd[]) || []}
-      canStream={canStream}
-      userId={user?.id || null}
-      isVerified={isVerified}
-      followedChannelIds={followedChannelIds}
-      purchasedVideoIds={purchasedVideoIds}
-      relatedToLive={relatedToLive}
-    />
+    <div className="culture-surface min-h-dvh">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker">
+          § VOL.{new Date().getFullYear() % 100} · AIRWAVE ·{" "}
+          {new Date()
+            .toLocaleDateString("en-US", { weekday: "short" })
+            .toUpperCase()}
+        </div>
+        <h1
+          className="c-display mt-2"
+          style={{
+            fontSize: 72,
+            lineHeight: 0.82,
+            letterSpacing: "-0.02em",
+            fontStyle: "italic",
+            fontFamily: "var(--font-fraunces), Fraunces, serif",
+            fontWeight: 700,
+          }}
+        >
+          On Air.
+        </h1>
+      </div>
+      <CultureTV
+        channels={(rawChannels as Channel[]) || []}
+        streams={(rawStreams as LiveStream[]) || []}
+        featuredVideos={(rawFeatured as ChannelVideo[]) || []}
+        recentVideos={(rawRecent as ChannelVideo[]) || []}
+        shows={(rawShows as Show[]) || []}
+        timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
+        liveSchedule={(rawSchedule as unknown as ScheduledBroadcast[]) || []}
+        ads={(rawAds as VideoAd[]) || []}
+        canStream={canStream}
+        userId={user?.id || null}
+        isVerified={isVerified}
+        followedChannelIds={followedChannelIds}
+        purchasedVideoIds={purchasedVideoIds}
+        relatedToLive={relatedToLive}
+      />
+    </div>
   );
 }

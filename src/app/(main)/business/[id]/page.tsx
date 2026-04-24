@@ -359,7 +359,7 @@ export default async function BusinessDetailPage({
   });
 
   return (
-    <article className="animate-fade-in pb-safe bg-midnight">
+    <article className="culture-surface animate-fade-in pb-safe min-h-dvh">
       {/* SEO JSON-LD */}
       <script
         type="application/ld+json"

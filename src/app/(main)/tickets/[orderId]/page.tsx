@@ -200,7 +200,7 @@ export default function ETicketPage() {
   }
 
   return (
-    <div className="animate-fade-in pb-24 max-w-[430px] mx-auto">
+    <div className="culture-surface animate-fade-in pb-24 max-w-[430px] mx-auto min-h-dvh">
       {/* Header */}
       <div className="sticky top-0 z-10 bg-midnight/95 backdrop-blur-sm border-b border-border-subtle px-5 py-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="press">

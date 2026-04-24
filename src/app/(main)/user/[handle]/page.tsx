@@ -432,7 +432,7 @@ export default async function PublicProfilePage({
   const sectionIndex = (key: string) => numberedSections.indexOf(key) + 1;
 
   return (
-    <div className="animate-fade-in pb-24 bg-ink text-ivory">
+    <div className="culture-surface animate-fade-in pb-24 min-h-dvh">
       {/* --- HERO (cover + avatar + role chips + stats + CTAs + socials) --- */}
       <ProfileHero
         profile={profile}

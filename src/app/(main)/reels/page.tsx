@@ -7,7 +7,8 @@ import type { Reel } from "@/types/database";
 
 export const metadata = {
   title: "Reels | Culture",
-  description: "Watch short videos from Compton creators, businesses, and community.",
+  description:
+    "Watch short videos from Compton creators, businesses, and community.",
 };
 
 export default async function ReelsPage() {
@@ -15,24 +16,35 @@ export default async function ReelsPage() {
   const nowISO = new Date().toISOString();
   const activeCity = await getActiveCity();
 
+  const cityUpper = (activeCity?.name ?? "Everywhere").toUpperCase();
+
+  // Culture masthead (only visible alongside the empty state; hidden once
+  // ReelsViewer takes full-screen control with its own dark overlay).
   const Masthead = (
-    <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-          VOL · 01 · ISSUE REELS
-        </span>
-        <span className="block w-1 h-1 rounded-full bg-gold/60" />
-        <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-          {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
-        </span>
+    <header
+      className="culture-surface culture-dark px-[18px] pt-6 pb-5"
+      style={{ borderBottom: "3px solid var(--gold-c)" }}
+    >
+      <div className="c-kicker" style={{ color: "var(--gold-c)", opacity: 0.9 }}>
+        § ISSUE REELS · {cityUpper}
       </div>
-      <h1 className="masthead text-white text-[44px]">REELS.</h1>
-      <div className="mt-3 flex items-center gap-3">
-        <span className="block h-[2px] w-8 bg-gold" />
-        <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-          Short-form video from the culture.
-        </span>
-      </div>
+      <h1
+        className="c-display mt-2"
+        style={{
+          fontSize: 64,
+          lineHeight: 0.82,
+          letterSpacing: "-0.02em",
+          color: "var(--ink-strong)",
+        }}
+      >
+        REELS.
+      </h1>
+      <p
+        className="c-serif-it mt-2"
+        style={{ fontSize: 14, lineHeight: 1.4, color: "var(--ink-soft)" }}
+      >
+        Short-form video from the culture.
+      </p>
     </header>
   );
 
@@ -52,21 +64,42 @@ export default async function ReelsPage() {
     return (
       <>
         {Masthead}
-        <div className="fixed inset-0 bg-black z-40 flex flex-col items-center justify-center px-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
-            <Icon name="video" size={28} className="text-white/40" />
+        <div
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center px-8 text-center"
+          style={{ background: "#0F0D0B" }}
+        >
+          <div
+            className="w-16 h-16 flex items-center justify-center mb-4"
+            style={{ border: "2px solid #F3EEDC" }}
+          >
+            <Icon name="video" size={28} style={{ color: "#F3EEDC" }} />
           </div>
-          <h1 className="font-heading font-bold text-xl text-white mb-2">
-            No reels yet
-          </h1>
-          <p className="text-sm text-white/60 mb-6">
-            Be the first to post a reel. Up to 90 seconds of vertical video.
+          <div
+            className="c-kicker mb-2"
+            style={{ color: "var(--gold-c)" }}
+          >
+            § NO REELS YET
+          </div>
+          <h2
+            className="c-hero"
+            style={{ fontSize: 36, color: "#F3EEDC" }}
+          >
+            Be the
+            <br />
+            first one.
+          </h2>
+          <p
+            className="mt-3 c-body"
+            style={{ color: "rgba(243,238,220,0.7)", fontSize: 13 }}
+          >
+            Up to 90 seconds of vertical video.
           </p>
           <Link
             href="/reels/new"
-            className="px-5 py-2.5 rounded-full bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press"
+            className="c-btn c-btn-accent mt-5"
+            style={{ padding: "12px 18px" }}
           >
-            Post a reel
+            POST A REEL
           </Link>
         </div>
       </>

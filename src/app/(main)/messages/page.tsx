@@ -61,7 +61,7 @@ export default async function MessagesPage() {
   // notifications page pattern.
   if (!user) {
     return (
-      <div className="animate-fade-in pb-24">
+      <div className="culture-surface animate-fade-in pb-24 min-h-dvh">
         <Masthead
           volume="VOL · 01"
           headline="INBOX."
@@ -112,7 +112,7 @@ export default async function MessagesPage() {
   });
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface animate-fade-in pb-24 min-h-dvh">
       <Masthead
         volume="VOL · 01"
         headline="INBOX."

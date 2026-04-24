@@ -9,22 +9,48 @@ export default async function NotificationsPage() {
 
   if (!user) {
     return (
-      <div className="animate-fade-in">
-        <div className="px-5 pt-4 mb-4">
-          <h1 className="font-heading text-2xl font-bold mb-1">Notifications</h1>
-          <p className="text-sm text-txt-secondary">Stay in the loop</p>
+      <div className="culture-surface animate-fade-in min-h-dvh">
+        <div
+          className="px-[18px] pt-6 pb-4"
+          style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+        >
+          <div className="c-kicker">§ THE WIRE</div>
+          <h1
+            className="c-display mt-2"
+            style={{ fontSize: 56, lineHeight: 0.85 }}
+          >
+            DISPATCHES.
+          </h1>
+          <p
+            className="c-serif-it mt-2"
+            style={{ fontSize: 13 }}
+          >
+            Stay in the loop.
+          </p>
         </div>
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">{"\u{1F514}"}</span>
-          <p className="text-sm font-medium mb-1">Sign in to view notifications</p>
-          <p className="text-xs text-txt-secondary mb-4">
+          <div className="c-kicker mb-3" style={{ opacity: 0.5 }}>
+            § SIGN IN REQUIRED
+          </div>
+          <p className="c-card-t" style={{ fontSize: 16 }}>
+            Sign in to view notifications.
+          </p>
+          <p
+            className="mt-2"
+            style={{
+              fontFamily: "var(--font-body), Inter, sans-serif",
+              fontSize: 13,
+              color: "var(--ink-soft)",
+            }}
+          >
             Get updates on events, resources, and more in your community.
           </p>
           <a
             href="/login"
-            className="inline-block bg-gold text-midnight px-6 py-2.5 rounded-full text-sm font-bold hover:opacity-90 transition-opacity"
+            className="c-btn c-btn-accent inline-block mt-4"
+            style={{ padding: "12px 18px" }}
           >
-            Sign In
+            SIGN IN
           </a>
         </div>
       </div>
@@ -38,5 +64,9 @@ export default async function NotificationsPage() {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  return <NotificationsList notifications={notifications || []} userId={user.id} />;
+  return (
+    <div className="culture-surface min-h-dvh">
+      <NotificationsList notifications={notifications || []} userId={user.id} />
+    </div>
+  );
 }
