@@ -282,7 +282,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           className="c-kicker mt-2 inline-block"
           style={{ color: "var(--ink-strong)" }}
         >
-          ← BACK TO SCENES
+          ← BACK TO COMMUNITY
         </Link>
       </div>
     );

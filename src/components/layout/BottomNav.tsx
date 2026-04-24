@@ -19,7 +19,7 @@ const BASE_SERVICES: ServiceItem[] = [
   { href: "/health", label: "Health", iconName: "heart-pulse" },
   { href: "/culture", label: "Culture", iconName: "palette" },
   { href: "/jobs", label: "Opportunities", iconName: "briefcase" },
-  { href: "/groups", label: "Scenes", iconName: "users" },
+  { href: "/groups", label: "Community", iconName: "users" },
   { href: "/people", label: "Explore", iconName: "sparkle" },
   { href: "/creators", label: "Discover", iconName: "film" },
   { href: "/resources", label: "Community", iconName: "book" },

@@ -29,7 +29,7 @@ const pageTitles: Record<string, string> = {
   "/creators": "Discover",
   // "/district": "District",     // hidden — civic feature flag
   // "/city-data": "City Data",   // hidden — civic nav
-  "/groups": "Scenes",
+  "/groups": "Community",
   "/dashboard": "Dashboard",
   "/admin": "Admin",
   "/settings": "Settings",

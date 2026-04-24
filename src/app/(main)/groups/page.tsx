@@ -142,13 +142,13 @@ export default function GroupsPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE SCENES · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE COMMUNITY · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
           style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
         >
-          Scenes.
+          Community.
         </h1>
         <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
           Neighbors, interests, and the people organizing it.
@@ -243,7 +243,7 @@ export default function GroupsPage() {
           </svg>
           <input
             type="text"
-            placeholder="Search scenes…"
+            placeholder="Search communities…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-3 focus:outline-none"
@@ -294,7 +294,7 @@ export default function GroupsPage() {
           >
             <Icon name="handshake" size={28} className="mx-auto mb-3" style={{ color: "var(--ink-strong)", opacity: 0.45 }} />
             <p className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
-              NO SCENES FOUND
+              NO COMMUNITIES FOUND
             </p>
             <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
               {search.trim() ? "Try adjusting your search." : "Be the first to create one."}
