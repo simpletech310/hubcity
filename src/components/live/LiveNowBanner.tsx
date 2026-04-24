@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Badge from "@/components/ui/Badge";
 import dynamic from "next/dynamic";
 import Icon from "@/components/ui/Icon";
 
@@ -30,107 +29,128 @@ export default function LiveNowBanner({ streams }: LiveNowBannerProps) {
 
   return (
     <section className="px-5 mb-6">
-      {/* Header */}
+      {/* Header — kicker + LIVE badge on paper */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
-          <span className="font-heading font-bold text-sm">Live Now</span>
-          <Badge label={`${streams.length} LIVE`} variant="coral" shine />
+          <span
+            className="inline-flex items-center gap-1 px-2 c-kicker"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 10,
+              height: 22,
+              letterSpacing: "0.14em",
+            }}
+          >
+            <span
+              className="animate-pulse"
+              style={{
+                width: 6,
+                height: 6,
+                background: "var(--ink-strong)",
+                display: "inline-block",
+              }}
+            />
+            LIVE NOW · {streams.length}
+          </span>
         </div>
         <Link
           href="/live"
-          className="text-[11px] text-gold font-semibold press flex items-center gap-1"
+          className="c-kicker press inline-flex items-center gap-1"
+          style={{ color: "var(--gold-c)", fontSize: 10 }}
         >
-          All Streams
-          <svg
-            width="12"
-            height="12"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M4.5 2.5l3.5 3.5-3.5 3.5" />
-          </svg>
+          ALL STREAMS ↗
         </Link>
       </div>
 
-      {/* Stream cards */}
+      {/* Stream cards — printed list */}
       <div className="space-y-3">
         {streams.map((stream) => (
           <div key={stream.id}>
-            {/* Card */}
             <button
               onClick={() =>
                 setExpanded(expanded === stream.id ? null : stream.id)
               }
               className="w-full text-left"
             >
-              <div className="relative rounded-2xl overflow-hidden border border-coral/30 bg-gradient-to-r from-coral/10 via-card to-card hover:from-coral/15 transition-colors">
-                {/* Top accent */}
-                <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-coral via-pink to-transparent" />
-
+              <div
+                className="relative overflow-hidden"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 <div className="flex items-center gap-3 p-4">
-                  {/* Live indicator */}
-                  <div className="w-12 h-12 rounded-xl bg-coral/20 flex items-center justify-center shrink-0 relative">
+                  {/* Ink tile w/ play */}
+                  <div
+                    className="flex items-center justify-center shrink-0 relative"
+                    style={{
+                      width: 48,
+                      height: 48,
+                      background: "var(--ink-strong)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
                     <svg
                       width="20"
                       height="20"
                       viewBox="0 0 24 24"
                       fill="none"
-                      stroke="white"
+                      stroke="var(--gold-c)"
                       strokeWidth="2"
                       strokeLinecap="round"
+                      strokeLinejoin="round"
                     >
-                      <polygon points="23 7 16 12 23 17 23 7" />
-                      <rect
-                        x="1"
-                        y="5"
-                        width="15"
-                        height="14"
-                        rx="2"
-                        ry="2"
-                      />
+                      <polygon points="6 4 20 12 6 20 6 4" />
                     </svg>
-                    <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-coral animate-pulse border-2 border-card" />
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-heading font-bold text-[13px] truncate mb-0.5">
+                    <h3
+                      className="c-card-t truncate"
+                      style={{ fontSize: 14, color: "var(--ink-strong)" }}
+                    >
                       {stream.title}
                     </h3>
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        label={
-                          stream.category.charAt(0).toUpperCase() +
-                          stream.category.slice(1)
-                        }
-                        variant="coral"
-                      />
-                      <span className="text-[10px] text-txt-secondary">
-                        <Icon name="live" size={16} /> Broadcasting live
+                    <div className="flex items-center gap-2 mt-1">
+                      <span
+                        className="c-badge c-badge-ink"
+                        style={{ fontSize: 9 }}
+                      >
+                        {stream.category.toUpperCase()}
+                      </span>
+                      <span
+                        className="c-kicker inline-flex items-center gap-1"
+                        style={{ fontSize: 9, opacity: 0.65 }}
+                      >
+                        <Icon name="live" size={10} />
+                        BROADCASTING
                       </span>
                     </div>
                   </div>
 
-                  {/* Watch button */}
-                  <div className="shrink-0">
-                    <span className="px-3 py-1.5 rounded-full bg-coral text-white text-[11px] font-bold">
-                      {expanded === stream.id ? "Hide" : "Watch"}
-                    </span>
-                  </div>
+                  {/* Watch CTA */}
+                  <span
+                    className="c-btn c-btn-primary c-btn-sm shrink-0"
+                  >
+                    {expanded === stream.id ? "HIDE" : "WATCH"}
+                  </span>
                 </div>
               </div>
             </button>
 
-            {/* Expanded player */}
+            {/* Expanded player — keep dark, paper-framed */}
             {expanded === stream.id && stream.mux_playback_id && (
-              <div className="mt-2 rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40 animate-fade-in">
+              <div
+                className="mt-2 overflow-hidden animate-fade-in"
+                style={{ border: "2px solid var(--rule-strong-c)" }}
+              >
                 <MuxPlayer
                   playbackId={stream.mux_playback_id}
                   streamType="live"
                   autoPlay="muted"
-                  accentColor="#E84855"
+                  accentColor="#F2A900"
                   style={{ aspectRatio: "16/9", width: "100%" }}
                   metadata={{
                     video_title: stream.title,

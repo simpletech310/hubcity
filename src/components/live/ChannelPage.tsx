@@ -125,9 +125,9 @@ export default function ChannelPage({
   }, [userId, following, channel.id]);
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* ── Banner ──────────────────────────────────────── */}
-      <div className="relative h-44 overflow-hidden">
+      <div className="relative h-44 overflow-hidden" style={{ background: "var(--ink-strong)" }}>
         {channel.banner_url ? (
           <img
             src={channel.banner_url}
@@ -135,16 +135,29 @@ export default function ChannelPage({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-royal via-hc-purple/40 to-midnight" />
+          <div className="w-full h-full" style={{ background: "var(--ink-strong)" }} />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/40 to-transparent" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.45) 70%, var(--paper) 100%)",
+          }}
+        />
 
-        {/* Back button */}
+        {/* Back button — paper chip */}
         <button
           onClick={() => router.back()}
-          className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm border border-white/10 flex items-center justify-center text-white press hover:bg-black/60 transition-colors z-10"
+          className="absolute top-4 left-4 flex items-center justify-center press z-10"
+          style={{
+            width: 36,
+            height: 36,
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--ink-strong)",
+          }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
@@ -153,8 +166,14 @@ export default function ChannelPage({
       {/* ── Channel Info ────────────────────────────────── */}
       <div className="px-5 -mt-10 relative z-10 mb-5">
         <div className="flex items-end gap-4">
-          {/* Avatar */}
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden border-4 border-midnight shadow-lg shrink-0">
+          {/* Avatar — c-frame-strong on paper */}
+          <div
+            className="w-20 h-20 flex items-center justify-center overflow-hidden shrink-0"
+            style={{
+              background: "var(--gold-c)",
+              border: "3px solid var(--rule-strong-c)",
+            }}
+          >
             {channel.avatar_url ? (
               <img
                 src={channel.avatar_url}
@@ -162,39 +181,50 @@ export default function ChannelPage({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-gold font-heading font-bold text-2xl">
+              <span
+                className="c-hero"
+                style={{ fontSize: 28, lineHeight: 1, color: "var(--ink-strong)" }}
+              >
                 {channelInitials(channel.name)}
               </span>
             )}
           </div>
 
           <div className="flex-1 min-w-0 pb-1">
-            <h1 className="font-heading font-bold text-xl flex items-center gap-2">
+            <h1 className="c-hero flex items-center gap-2" style={{ fontSize: 26, lineHeight: 0.95 }}>
               <span className="truncate">{channel.name}</span>
               {channel.is_verified && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: "var(--gold-c)" }} className="shrink-0">
                   <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                 </svg>
               )}
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1.5">
               <Badge label={badge.label} variant={badge.variant} />
-              <span className="text-[11px] text-txt-secondary">
-                {followerCount} followers
+              <span className="c-kicker" style={{ fontSize: 10, opacity: 0.65 }}>
+                {followerCount} FOLLOWERS
               </span>
-              {channel.owner?.verification_status === "verified" && (
-                <span className="flex items-center gap-1 text-[10px] font-semibold text-gold">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                  </svg>
-                  Verified Creator
-                </span>
-              )}
             </div>
+            {channel.owner?.verification_status === "verified" && (
+              <span
+                className="c-kicker inline-flex items-center gap-1 mt-1"
+                style={{ fontSize: 9, color: "var(--gold-c)" }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                VERIFIED CREATOR
+              </span>
+            )}
             {channel.description && (
-              <p className="text-[11px] text-white/40 line-clamp-2 mt-1.5">{channel.description}</p>
+              <p
+                className="c-serif-it mt-2 line-clamp-2"
+                style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.85 }}
+              >
+                {channel.description}
+              </p>
             )}
           </div>
         </div>
@@ -204,13 +234,9 @@ export default function ChannelPage({
           <div className="mt-3 flex flex-col gap-2">
             <button
               onClick={handleFollow}
-              className={`w-full py-2.5 rounded-xl text-sm font-bold press transition-all ${
-                following
-                  ? "bg-gold/15 text-gold border border-gold/30"
-                  : "bg-gradient-to-r from-gold to-gold-light text-midnight"
-              }`}
+              className={following ? "c-btn c-btn-outline w-full press" : "c-btn c-btn-primary w-full press"}
             >
-              {following ? "Following" : "Follow"}
+              {following ? "FOLLOWING" : "FOLLOW"}
             </button>
             <ChannelSubscribeButton channel={channel} userId={userId} />
           </div>

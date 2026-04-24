@@ -1,24 +1,6 @@
 "use client";
 
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import type { LiveStream } from "@/types/database";
-
-const CATEGORY_BADGE: Record<string, { label: string; variant: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }> = {
-  government: { label: "Government", variant: "cyan" },
-  sports: { label: "Sports", variant: "emerald" },
-  culture: { label: "Culture", variant: "pink" },
-  education: { label: "Education", variant: "blue" },
-  community: { label: "Community", variant: "purple" },
-};
-
-const CATEGORY_GRADIENT: Record<string, string> = {
-  government: "from-cyan/20 to-blue-500/20",
-  sports: "from-emerald/20 to-green-500/20",
-  culture: "from-pink/20 to-coral/20",
-  education: "from-blue-400/20 to-indigo-500/20",
-  community: "from-purple-400/20 to-violet-500/20",
-};
 
 interface StreamCardProps {
   stream: LiveStream;
@@ -27,32 +9,41 @@ interface StreamCardProps {
 }
 
 export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps) {
-  const badge = CATEGORY_BADGE[stream.category] || CATEGORY_BADGE.community;
-  const gradient = CATEGORY_GRADIENT[stream.category] || CATEGORY_GRADIENT.community;
+  const categoryLabel = stream.category.toUpperCase();
 
   const scheduledDate = stream.scheduled_at
-    ? new Date(stream.scheduled_at).toLocaleDateString("en-US", {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
+    ? new Date(stream.scheduled_at)
+        .toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        })
+        .toUpperCase()
     : null;
 
   return (
-    <Card
-      hover={isLive}
-      className={isLive ? "border-coral/30 cursor-pointer" : ""}
+    <div
       onClick={isLive ? onWatch : undefined}
+      className={isLive ? "cursor-pointer press" : ""}
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        padding: 12,
+      }}
     >
       <div className="flex gap-3">
-        {/* Thumbnail / art */}
+        {/* Thumbnail — ink frame */}
         <div
-          className={`w-20 h-[60px] rounded-xl bg-gradient-to-br ${gradient} shrink-0 relative overflow-hidden flex items-center justify-center`}
+          className="w-20 h-[60px] shrink-0 relative overflow-hidden flex items-center justify-center"
+          style={{
+            background: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
         >
-          {/* Mux thumbnail background when playback ID exists */}
           {stream.mux_playback_id && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={`https://image.mux.com/${stream.mux_playback_id}/thumbnail.webp?width=160&height=120&time=5`}
               alt=""
@@ -61,25 +52,55 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
           )}
           {isLive ? (
             <>
-              <div className="absolute inset-0 bg-midnight/30" />
-              <div className="relative flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-coral/30 flex items-center justify-center animate-pulse">
-                  <svg width="14" height="16" viewBox="0 0 12 14" fill="white">
-                    <polygon points="0,0 12,7 0,14" />
-                  </svg>
-                </div>
+              <div className="absolute inset-0" style={{ background: "rgba(26,21,18,0.35)" }} />
+              <div
+                className="relative flex items-center justify-center animate-pulse"
+                style={{
+                  width: 32,
+                  height: 32,
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--paper)",
+                }}
+              >
+                <svg width="12" height="14" viewBox="0 0 12 14" fill="var(--ink-strong)">
+                  <polygon points="0,0 12,7 0,14" />
+                </svg>
               </div>
-              {/* Live dot */}
-              <div className="absolute top-1.5 right-1.5 flex items-center gap-1 bg-coral/90 rounded-full px-1.5 py-0.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[8px] text-white font-bold">LIVE</span>
+              {/* LIVE chip top-right */}
+              <div
+                className="absolute top-1 right-1 inline-flex items-center gap-1 px-1 c-kicker"
+                style={{
+                  background: "var(--paper)",
+                  border: "1.5px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                  fontSize: 8,
+                  height: 15,
+                }}
+              >
+                <span
+                  className="animate-pulse"
+                  style={{
+                    width: 4,
+                    height: 4,
+                    background: "var(--gold-c)",
+                    display: "inline-block",
+                  }}
+                />
+                LIVE
               </div>
             </>
           ) : (
             <>
-              {stream.mux_playback_id && <div className="absolute inset-0 bg-midnight/20" />}
-              <div className="relative w-8 h-8 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center">
-                <svg width="12" height="14" viewBox="0 0 12 14" fill="white" opacity={0.5}>
+              <div
+                className="relative flex items-center justify-center"
+                style={{
+                  width: 28,
+                  height: 28,
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <svg width="10" height="12" viewBox="0 0 12 14" fill="var(--ink-strong)">
                   <polygon points="0,0 12,7 0,14" />
                 </svg>
               </div>
@@ -89,25 +110,28 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-bold text-[13px] mb-1 line-clamp-1">
+          <h3
+            className="c-card-t line-clamp-1"
+            style={{ fontSize: 13, color: "var(--ink-strong)" }}
+          >
             {stream.title}
           </h3>
           {scheduledDate && (
-            <p className="text-[11px] text-txt-secondary mb-1.5">
-              {isLive ? "live Started " : "calendar "}
+            <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.65 }}>
+              {isLive ? "STARTED " : ""}
               {scheduledDate}
             </p>
           )}
-          <div className="flex items-center gap-2">
-            <Badge label={badge.label} variant={badge.variant} />
-            {isLive && (
-              <span className="text-[10px] text-coral font-semibold">
-                • Tap to watch
-              </span>
-            )}
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="c-badge c-badge-ink" style={{ fontSize: 9 }}>
+              {categoryLabel}
+            </span>
             {stream.creator?.display_name && (
-              <span className="text-[10px] text-txt-secondary truncate">
-                by {stream.creator.display_name}
+              <span
+                className="c-kicker truncate"
+                style={{ fontSize: 9, opacity: 0.55 }}
+              >
+                BY {stream.creator.display_name.toUpperCase()}
               </span>
             )}
           </div>
@@ -117,26 +141,28 @@ export default function StreamCard({ stream, isLive, onWatch }: StreamCardProps)
         {isLive ? (
           <button
             onClick={onWatch}
-            className="self-center px-3 py-1.5 rounded-full bg-coral/20 text-coral text-[11px] font-bold press hover:bg-coral/30 transition-colors shrink-0"
+            className="c-btn c-btn-primary c-btn-sm shrink-0 self-center"
           >
-            Watch
+            WATCH
           </button>
         ) : (
-          <div className="self-center w-8 h-8 rounded-full bg-white/[0.06] border border-border-subtle flex items-center justify-center text-txt-secondary shrink-0">
-            <svg
-              width="14"
-              height="14"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            >
+          <div
+            className="self-center flex items-center justify-center shrink-0"
+            style={{
+              width: 32,
+              height: 32,
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <circle cx="7" cy="7" r="6" />
               <path d="M7 4v3l2 1" />
             </svg>
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

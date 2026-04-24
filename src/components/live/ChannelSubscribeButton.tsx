@@ -45,9 +45,9 @@ export default function ChannelSubscribeButton({
     return (
       <a
         href="/profile/subscriptions"
-        className="block w-full py-2.5 rounded-xl text-sm font-bold text-center bg-emerald/15 text-emerald border border-emerald/30 press"
+        className="c-btn c-btn-outline block w-full text-center press"
       >
-        Subscribed · Manage
+        SUBSCRIBED · MANAGE
       </a>
     );
   }
@@ -75,13 +75,20 @@ export default function ChannelSubscribeButton({
       <button
         onClick={subscribe}
         disabled={loading}
-        className="w-full py-2.5 rounded-xl text-sm font-bold press transition-all bg-white/[0.06] border border-gold/30 text-gold hover:bg-gold/10 disabled:opacity-50"
+        className="c-btn c-btn-primary w-full press disabled:opacity-50"
       >
         {loading
-          ? "Opening checkout..."
-          : `Subscribe · ${fmt(channel.subscription_price_cents, channel.subscription_currency ?? "usd")}/mo`}
+          ? "OPENING CHECKOUT…"
+          : `SUBSCRIBE · ${fmt(channel.subscription_price_cents, channel.subscription_currency ?? "usd")}/MO`}
       </button>
-      {error && <p className="text-xs text-coral mt-2 text-center">{error}</p>}
+      {error && (
+        <p
+          className="c-serif-it mt-2 text-center"
+          style={{ fontSize: 11, color: "var(--ink-strong)" }}
+        >
+          {error}
+        </p>
+      )}
     </div>
   );
 }
