@@ -3,7 +3,6 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import StreamCard from "./StreamCard";
 import ChannelSubscribeButton from "./ChannelSubscribeButton";
@@ -257,32 +256,43 @@ export default function ChannelPage({
       {/* ── Live indicator ──────────────────────────────── */}
       {activeStreams.length > 0 && (
         <div className="px-5 mb-4">
-          <Card className="bg-gradient-to-r from-coral/15 to-pink/10 border-coral/30 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-coral via-pink to-transparent" />
+          <div
+            className="relative overflow-hidden p-4"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <div style={{ height: 3, background: "#E84855", marginTop: -16, marginLeft: -16, marginRight: -16, marginBottom: 12 }} />
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-coral animate-pulse shrink-0" />
-              <p className="text-sm font-bold text-coral">Live Now</p>
-              <Badge label="LIVE" variant="coral" shine />
+              <div className="w-3 h-3 rounded-full animate-pulse shrink-0" style={{ background: "#E84855" }} />
+              <p className="c-card-t" style={{ fontSize: 13, color: "#E84855" }}>LIVE NOW</p>
+              <span className="c-badge-live" style={{ fontSize: 9 }}>LIVE</span>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
       {/* ── Tab Navigation ──────────────────────────────── */}
-      <div className="flex gap-1 px-5 mb-5 border-b border-border-subtle pb-3">
+      <div
+        className="flex gap-0 px-5 mb-5 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2 text-center rounded-xl text-[13px] font-semibold transition-all press ${
+            className="flex-1 py-2 text-center c-card-t press"
+            style={
               activeTab === tab.id
-                ? "bg-gold/15 text-gold border border-gold/25"
-                : "text-txt-secondary hover:text-white border border-transparent"
-            }`}
+                ? { background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)", fontSize: 11, marginRight: -2 }
+                : { background: "transparent", color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)", fontSize: 11, marginRight: -2 }
+            }
           >
-            {tab.label}
+            {tab.label.toUpperCase()}
             {tab.id === "videos" && videos.length > 0 && (
-              <span className="ml-1 text-[10px] opacity-60">{videos.length}</span>
+              <span className="ml-1" style={{ fontSize: 10, opacity: 0.6 }}>{videos.length}</span>
             )}
           </button>
         ))}
@@ -293,13 +303,16 @@ export default function ChannelPage({
         <div className="animate-fade-in px-5">
           {videos.length === 0 ? (
             <div className="text-center py-10">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
+              <div
+                className="w-16 h-16 flex items-center justify-center mx-auto mb-3"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
               </div>
-              <p className="text-sm text-txt-secondary">No videos yet</p>
+              <p className="c-body">No videos yet</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -309,8 +322,12 @@ export default function ChannelPage({
                   href={`/live/watch/${video.id}`}
                   className="press group"
                 >
-                  <div className="relative rounded-xl overflow-hidden mb-2">
-                    <div className="aspect-video bg-gradient-to-br from-midnight to-deep flex items-center justify-center">
+                  {/* Thumbnail canvas stays dark — video preview surface */}
+                  <div
+                    className="relative overflow-hidden mb-2"
+                    style={{ border: "2px solid var(--rule-strong-c)" }}
+                  >
+                    <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
                       {video.thumbnail_url ? (
                         <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
                       ) : video.mux_playback_id ? (
@@ -320,32 +337,35 @@ export default function ChannelPage({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-white/20">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--paper)", opacity: 0.3 }}>
                           <polygon points="5 3 19 12 5 21 5 3" />
                         </svg>
                       )}
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="white" className="ml-0.5">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5" style={{ color: "var(--ink-strong)" }}>
                             <polygon points="5 3 19 12 5 21 5 3" />
                           </svg>
                         </div>
                       </div>
                       {video.duration && (
-                        <div className="absolute bottom-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">
+                        <div className="absolute bottom-1 right-1 px-1 py-0.5 c-kicker" style={{ fontSize: 9, background: "var(--paper)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}>
                           {formatDuration(video.duration)}
                         </div>
                       )}
                       {video.is_featured && (
                         <div className="absolute top-1 left-1">
-                          <Badge label="Featured" variant="gold" />
+                          <span className="c-badge-gold" style={{ fontSize: 9 }}>FEATURED</span>
                         </div>
                       )}
                     </div>
                   </div>
-                  <h3 className="font-heading font-bold text-[11px] line-clamp-2 mb-0.5">{video.title}</h3>
-                  <p className="text-[9px] text-txt-secondary">
-                    {formatViews(video.view_count)} views
+                  <h3 className="c-card-t line-clamp-2 mb-0.5" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{video.title}</h3>
+                  <p className="c-meta" style={{ fontSize: 9 }}>
+                    {formatViews(video.view_count)} VIEWS
                   </p>
                 </Link>
               ))}
@@ -359,9 +379,9 @@ export default function ChannelPage({
         <div className="animate-fade-in px-5">
           {activeStreams.length > 0 && (
             <div className="mb-6">
-              <h3 className="font-heading font-bold text-base mb-3 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-coral animate-pulse" />
-                Live Now
+              <h3 className="c-hero mb-3 flex items-center gap-2" style={{ fontSize: 20, color: "var(--ink-strong)" }}>
+                <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: "#E84855" }} />
+                LIVE NOW
               </h3>
               <div className="space-y-3">
                 {activeStreams.map((stream) => (
@@ -378,7 +398,7 @@ export default function ChannelPage({
 
           {upcomingStreams.length > 0 ? (
             <div>
-              <h3 className="font-heading font-bold text-base mb-3">Upcoming</h3>
+              <h3 className="c-hero mb-3" style={{ fontSize: 20, color: "var(--ink-strong)" }}>UPCOMING</h3>
               <div className="space-y-3">
                 {upcomingStreams.map((stream) => (
                   <StreamCard key={stream.id} stream={stream} />
@@ -387,13 +407,16 @@ export default function ChannelPage({
             </div>
           ) : activeStreams.length === 0 ? (
             <div className="text-center py-10">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
+              <div
+                className="w-16 h-16 flex items-center justify-center mx-auto mb-3"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
               </div>
-              <p className="text-sm text-txt-secondary">No streams scheduled</p>
+              <p className="c-body">No streams scheduled</p>
             </div>
           ) : null}
         </div>
@@ -404,71 +427,96 @@ export default function ChannelPage({
         <div className="animate-fade-in px-5 space-y-5">
           {/* Description */}
           {channel.description && (
-            <Card variant="glass">
-              <h3 className="font-heading font-bold text-sm mb-2 text-txt-secondary uppercase tracking-wider">
-                About
+            <div
+              className="p-4"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
+            >
+              <h3 className="c-kicker mb-2" style={{ fontSize: 10 }}>
+                § ABOUT
               </h3>
-              <p className="text-sm leading-relaxed">{channel.description}</p>
-            </Card>
+              <p className="c-body">{channel.description}</p>
+            </div>
           )}
 
           {/* Schedule */}
           {timeBlocks.length > 0 && (
             <div>
-              <h3 className="font-heading font-bold text-sm mb-3 text-txt-secondary uppercase tracking-wider">
-                Broadcast Schedule
+              <h3 className="c-kicker mb-3" style={{ fontSize: 10 }}>
+                § BROADCAST SCHEDULE
               </h3>
               <div className="space-y-2">
                 {timeBlocks.map((tb) => (
-                  <Card key={tb.id} className="border-gold/10">
+                  <div
+                    key={tb.id}
+                    className="p-3"
+                    style={{
+                      background: "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="w-12 text-center shrink-0">
-                        <p className="text-[11px] text-gold font-bold">
+                        <p className="c-card-t" style={{ fontSize: 11, color: "var(--gold-c)" }}>
                           {DAY_NAMES[tb.day_of_week]}
                         </p>
                       </div>
-                      <div className="w-px h-6 bg-border-subtle" />
+                      <div className="w-px h-6" style={{ background: "var(--rule-strong-c)", opacity: 0.3 }} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-semibold truncate">
+                        <p className="c-card-t truncate" style={{ fontSize: 12 }}>
                           {tb.title || "Scheduled Broadcast"}
                         </p>
-                        <p className="text-[10px] text-txt-secondary">
+                        <p className="c-meta">
                           {formatTimeBlock(tb.start_time)} &ndash; {formatTimeBlock(tb.end_time)}
                         </p>
                       </div>
                       {tb.is_recurring && (
-                        <span className="text-[9px] text-txt-secondary bg-white/[0.04] px-2 py-0.5 rounded-full">
-                          Weekly
+                        <span
+                          className="c-kicker px-2 py-0.5"
+                          style={{ fontSize: 9, background: "var(--gold-c)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}
+                        >
+                          WEEKLY
                         </span>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
           {/* Channel info */}
-          <Card variant="glass">
-            <h3 className="font-heading font-bold text-sm mb-2 text-txt-secondary uppercase tracking-wider">
-              Details
+          <div
+            className="p-4"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
+          >
+            <h3 className="c-kicker mb-3" style={{ fontSize: 10 }}>
+              § DETAILS
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-txt-secondary">Type</span>
+            <div className="space-y-2 c-body-sm">
+              <div className="flex justify-between" style={{ borderBottom: "1.5px solid var(--rule-strong-c)", paddingBottom: 6 }}>
+                <span className="c-meta">TYPE</span>
                 <Badge label={badge.label} variant={badge.variant} />
               </div>
-              <div className="flex justify-between">
-                <span className="text-txt-secondary">Followers</span>
-                <span className="tabular-nums">{followerCount}</span>
+              <div className="flex justify-between" style={{ borderBottom: "1.5px solid var(--rule-strong-c)", paddingBottom: 6 }}>
+                <span className="c-meta">FOLLOWERS</span>
+                <span className="tabular-nums c-card-t" style={{ fontSize: 12 }}>{followerCount}</span>
+              </div>
+              <div className="flex justify-between" style={{ borderBottom: "1.5px solid var(--rule-strong-c)", paddingBottom: 6 }}>
+                <span className="c-meta">VIDEOS</span>
+                <span className="tabular-nums c-card-t" style={{ fontSize: 12 }}>{videos.length}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-txt-secondary">Videos</span>
-                <span className="tabular-nums">{videos.length}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-txt-secondary">Joined</span>
-                <span>
+                <span className="c-meta">JOINED</span>
+                <span className="c-card-t" style={{ fontSize: 12 }}>
                   {new Date(channel.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     year: "numeric",
@@ -476,7 +524,7 @@ export default function ChannelPage({
                 </span>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>

@@ -65,22 +65,25 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
       <div className="flex items-center justify-between px-5 mb-3">
         <div className="flex items-center gap-2 min-w-0">
           <span
-            className="inline-block w-1.5 h-4 rounded-full shrink-0 transition-colors"
+            className="inline-block w-1.5 h-4 shrink-0 transition-colors"
             style={{ background: data.accent }}
           />
           <div className="min-w-0">
             <p
-              className="text-[10px] font-bold uppercase tracking-wider truncate transition-colors"
-              style={{ color: data.accent }}
+              className="c-kicker truncate transition-colors"
+              style={{ fontSize: 10, color: data.accent }}
             >
-              Because you&apos;re watching
+              BECAUSE YOU&apos;RE WATCHING
             </p>
-            <h3 className="font-heading font-bold text-[15px] leading-tight truncate">
+            <h3 className="c-card-t truncate" style={{ fontSize: 15 }}>
               {data.headline}
             </h3>
           </div>
         </div>
-        <span className="text-[10px] text-white/40 font-semibold shrink-0 tabular-nums">
+        <span
+          className="c-meta shrink-0 tabular-nums"
+          style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+        >
           {isLoading ? "…" : data.items.length}
         </span>
       </div>
@@ -94,23 +97,27 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
         <div className="flex gap-2.5 px-5 pb-1">
           {data.items.map((item) => {
             const icon = KIND_ICON[item.kind];
-            const chipTone = item.chip?.tone ?? "gold";
             return (
               <Link
                 key={item.id}
                 href={item.href}
-                className="shrink-0 w-[200px] rounded-2xl border border-white/[0.06] bg-card press group hover:border-white/[0.14] transition-colors overflow-hidden relative"
+                className="shrink-0 w-[200px] press group transition-colors overflow-hidden relative"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
-                {/* Accent strip */}
+                {/* Accent strip — gold foil bar */}
                 <div
-                  className="absolute top-0 left-0 right-0 h-[2px] opacity-60"
-                  style={{
-                    background: `linear-gradient(90deg, transparent, ${data.accent}, transparent)`,
-                  }}
+                  style={{ height: 3, background: data.accent }}
                 />
 
-                {/* Image or gradient placeholder */}
-                <div className="relative aspect-[4/3] w-full bg-white/[0.03] overflow-hidden">
+                {/* Image or gradient placeholder — image canvas stays dark */}
+                <div
+                  className="relative aspect-[4/3] w-full overflow-hidden"
+                  style={{ background: "var(--ink-strong)" }}
+                >
                   {item.image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -122,10 +129,10 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
                     <div
                       className="w-full h-full flex items-center justify-center"
                       style={{
-                        background: `linear-gradient(135deg, ${data.accent}22, transparent 70%)`,
+                        background: `linear-gradient(135deg, ${data.accent}33, transparent 70%)`,
                       }}
                     >
-                      <Icon name={icon} size={28} className="text-white/30" />
+                      <Icon name={icon} size={28} style={{ color: "var(--paper)", opacity: 0.4 }} />
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
@@ -133,21 +140,13 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
                   {/* Top-left chip */}
                   {item.chip && (
                     <span
-                      className={`absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider backdrop-blur-sm bg-black/50 text-white border ${
-                        chipTone === "coral"
-                          ? "border-coral/40"
-                          : chipTone === "emerald"
-                            ? "border-emerald/40"
-                            : chipTone === "cyan"
-                              ? "border-cyan/40"
-                              : chipTone === "purple"
-                                ? "border-gold/40"
-                                : chipTone === "blue"
-                                  ? "border-hc-blue/40"
-                                  : chipTone === "pink"
-                                    ? "border-pink/40"
-                                    : "border-gold/40"
-                      }`}
+                      className="absolute top-2 left-2 px-2 py-0.5 c-kicker"
+                      style={{
+                        fontSize: 9,
+                        background: "var(--ink-strong)",
+                        color: "var(--gold-c)",
+                        border: "1.5px solid var(--paper)",
+                      }}
                     >
                       {item.chip.label}
                     </span>
@@ -155,7 +154,15 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
 
                   {/* AD pill (top-right) */}
                   {item.isAd && (
-                    <span className="absolute top-2 right-2 px-1.5 py-0.5 text-[8px] font-bold bg-black/70 backdrop-blur-sm text-white/80 rounded tracking-wider">
+                    <span
+                      className="absolute top-2 right-2 px-1.5 py-0.5 c-kicker"
+                      style={{
+                        fontSize: 8,
+                        background: "var(--paper)",
+                        color: "var(--ink-strong)",
+                        border: "1.5px solid var(--rule-strong-c)",
+                      }}
+                    >
                       AD
                     </span>
                   )}
@@ -163,11 +170,11 @@ export default function RelatedToLive({ initialData, videoId }: RelatedToLivePro
 
                 {/* Text */}
                 <div className="p-2.5">
-                  <p className="font-heading font-bold text-[12px] text-white line-clamp-1">
+                  <p className="c-card-t line-clamp-1" style={{ fontSize: 12 }}>
                     {item.title}
                   </p>
                   {item.subtitle && (
-                    <p className="text-[10px] text-white/50 line-clamp-1 mt-0.5">
+                    <p className="c-meta line-clamp-1 mt-0.5">
                       {item.subtitle}
                     </p>
                   )}

@@ -56,7 +56,7 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
   // Character counter
   const charPercent = Math.min(body.length / 500, 1);
   const counterColor =
-    body.length > 480 ? "#FF6B6B" : body.length > 400 ? "#F2A900" : "rgba(255,255,255,0.3)";
+    body.length > 480 ? "#FF6B6B" : body.length > 400 ? "#F2A900" : "rgba(26,21,18,0.4)";
   const counterRadius = 8;
   const counterCircumference = 2 * Math.PI * counterRadius;
   const counterOffset = counterCircumference * (1 - charPercent);
@@ -197,23 +197,40 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      {/* Backdrop (stays dark — scrim) */}
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-[430px] bg-card border-t border-border-subtle rounded-t-2xl animate-slide-up">
+      <div
+        className="relative w-full max-w-[430px] animate-slide-up"
+        style={{
+          background: "var(--paper)",
+          borderTop: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div
+            className="w-10 h-1"
+            style={{ background: "var(--rule-strong-c)", opacity: 0.3, borderRadius: 999 }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-border-subtle">
-          <button onClick={handleClose} className="text-sm text-txt-secondary press">
-            Cancel
+        <div
+          className="flex items-center justify-between px-5 pb-3"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <button
+            onClick={handleClose}
+            className="c-meta press"
+            style={{ color: "var(--ink-strong)" }}
+          >
+            CANCEL
           </button>
-          <span className="text-sm font-heading font-bold text-gold">
-            New Post
+          <span className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
+            § NEW POST
           </span>
           <Button
             size="sm"
@@ -226,35 +243,59 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
         </div>
 
         {error && (
-          <div className="mx-5 mt-3 bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5 text-xs text-coral">
+          <div
+            className="mx-5 mt-3 px-4 py-2.5"
+            style={{
+              background: "rgba(232, 72, 85, 0.1)",
+              border: "2px solid #E84855",
+              color: "#E84855",
+              fontSize: 12,
+            }}
+          >
             {error}
           </div>
         )}
 
         {/* Author + Textarea */}
         <div className="flex gap-3 px-5 pt-4 relative">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-xs ring-2 ring-white/5 shrink-0">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 c-card-t"
+            style={{
+              background: "var(--gold-c)",
+              color: "var(--ink-strong)",
+              fontSize: 11,
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             {initials}
           </div>
           <div className="flex-1">
-            <p className="text-xs font-semibold mb-1">{userName}</p>
+            <p className="c-kicker mb-1" style={{ fontSize: 10 }}>{userName}</p>
             <textarea
               value={body}
               onChange={(e) => handleBodyChange(e.target.value)}
               placeholder="What's happening in Compton?"
-              className="w-full bg-transparent text-sm text-white placeholder:text-txt-secondary resize-none focus:outline-none min-h-[80px]"
+              className="w-full bg-transparent text-sm resize-none focus:outline-none min-h-[80px]"
+              style={{ color: "var(--ink-strong)" }}
               maxLength={500}
               autoFocus
             />
 
             {/* Hashtag suggestions */}
             {showSuggestions && (
-              <div className="absolute left-12 right-5 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 z-30">
+              <div
+                className="absolute left-12 right-5 py-1 z-30"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 {hashtagSuggestions.map((tag) => (
                   <button
                     key={tag}
                     onClick={() => insertHashtag(tag)}
-                    className="w-full text-left px-3 py-2 text-xs font-medium text-gold/80 hover:bg-white/5 press"
+                    className="w-full text-left px-3 py-2 c-meta press"
+                    style={{ color: "var(--ink-strong)" }}
                   >
                     #{tag}
                   </button>
@@ -264,9 +305,15 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           </div>
         </div>
 
-        {/* Image preview — larger, object-contain */}
+        {/* Image preview — media canvas stays dark for the image itself */}
         {imagePreview && (
-          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden bg-black/30">
+          <div
+            className="relative mx-5 mb-3 overflow-hidden"
+            style={{
+              background: "#000",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             <Image
               src={imagePreview}
               alt="Preview"
@@ -276,16 +323,19 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
             />
             {/* Upload progress bar */}
             {uploading && (
-              <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
-                <div className="h-full bg-gold animate-pulse rounded-full" style={{ width: "70%" }} />
+              <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <div className="h-full animate-pulse" style={{ width: "70%", background: "var(--gold-c)" }} />
               </div>
             )}
             {imageUrl && !uploading && (
-              <div className="absolute top-2 left-2 bg-emerald/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
+              <div
+                className="absolute top-2 left-2 px-2.5 py-1 flex items-center gap-1 c-badge-ok"
+                style={{ fontSize: 9 }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                <span className="text-[9px] text-emerald font-semibold">Ready</span>
+                <span style={{ fontSize: 9 }}>READY</span>
               </div>
             )}
             <button
@@ -293,7 +343,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
                 setImagePreview(null);
                 setImageUrl(null);
               }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white press"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white press"
+              style={{ background: "rgba(0,0,0,0.7)" }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -302,9 +353,15 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           </div>
         )}
 
-        {/* Video preview — larger */}
+        {/* Video preview — canvas stays dark for the video itself */}
         {videoPreview && (
-          <div className="relative mx-5 mb-3 rounded-xl overflow-hidden border border-border-subtle bg-black">
+          <div
+            className="relative mx-5 mb-3 overflow-hidden"
+            style={{
+              background: "#000",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             <video
               src={videoPreview}
               playsInline
@@ -315,16 +372,19 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
               style={{ width: "auto", height: "auto", maxWidth: "100%", maxHeight: "300px", margin: "0 auto", display: "block" }}
             />
             {uploading && (
-              <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden">
-                <div className="h-full bg-gold animate-pulse rounded-full" style={{ width: "60%" }} />
+              <div className="absolute top-0 left-0 right-0 h-1 overflow-hidden" style={{ background: "rgba(255,255,255,0.1)" }}>
+                <div className="h-full animate-pulse" style={{ width: "60%", background: "var(--gold-c)" }} />
               </div>
             )}
             {videoUrl && !uploading && (
-              <div className="absolute top-2 left-2 bg-emerald/20 backdrop-blur-sm rounded-full px-2.5 py-1 flex items-center gap-1">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="text-emerald">
+              <div
+                className="absolute top-2 left-2 px-2.5 py-1 flex items-center gap-1 c-badge-ok"
+                style={{ fontSize: 9 }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 6L9 17l-5-5" />
                 </svg>
-                <span className="text-[9px] text-emerald font-semibold">Ready</span>
+                <span style={{ fontSize: 9 }}>READY</span>
               </div>
             )}
             <button
@@ -332,7 +392,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
                 setVideoPreview(null);
                 setVideoUrl(null);
               }}
-              className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white press"
+              className="absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center text-white press"
+              style={{ background: "rgba(0,0,0,0.7)" }}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6L6 18M6 6l12 12" />
@@ -342,7 +403,10 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
         )}
 
         {/* Media bar + character counter */}
-        <div className="flex items-center gap-2 px-5 py-3 border-t border-border-subtle">
+        <div
+          className="flex items-center gap-2 px-5 py-3"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           <input
             ref={fileInputRef}
             type="file"
@@ -353,7 +417,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || submitting}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-cyan hover:bg-cyan/10 press transition-all disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 c-meta press transition-all disabled:opacity-40"
+            style={{ color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -372,7 +437,8 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
           <button
             onClick={() => videoInputRef.current?.click()}
             disabled={uploading || submitting || !!videoPreview}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs text-coral hover:bg-coral/10 press transition-all disabled:opacity-40"
+            className="flex items-center gap-1.5 px-3 py-2 c-meta press transition-all disabled:opacity-40"
+            style={{ color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="23 7 16 12 23 17 23 7" />
@@ -387,7 +453,7 @@ export default function ComposeModal({ isOpen, onClose, userId, userName }: Comp
               <circle
                 cx="11" cy="11" r={counterRadius}
                 fill="none"
-                stroke="rgba(255,255,255,0.08)"
+                stroke="rgba(26,21,18,0.12)"
                 strokeWidth="2"
               />
               <circle

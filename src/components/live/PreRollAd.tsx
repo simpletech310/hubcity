@@ -55,36 +55,55 @@ export default function PreRollAd({
 
   return (
     <div className="animate-fade-in">
-      {/* Back / context bar */}
+      {/* Back / context bar — printed kicker */}
       <div className="flex items-center gap-3 px-5 pt-4 mb-4">
         <div className="flex-1 min-w-0">
-          <p className="font-heading font-bold text-sm text-txt-secondary">
-            Your video will play after this ad
+          <p
+            className="c-kicker"
+            style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7, letterSpacing: "0.14em" }}
+          >
+            YOUR VIDEO WILL PLAY AFTER THIS AD
           </p>
         </div>
       </div>
 
-      {/* Ad player */}
+      {/* Ad player — hard-corner frame with gold foil bar */}
       <div className="px-5 mb-4">
-        <div className="relative rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40">
-          {/* Ad badge */}
-          <div className="absolute top-3 left-3 z-20">
-            <span className="px-2 py-1 rounded-md bg-black/70 backdrop-blur-sm text-[10px] font-bold text-gold tracking-wider uppercase border border-gold/30">
-              Ad
+        <div
+          className="relative overflow-hidden"
+          style={{ border: "2px solid var(--rule-strong-c)" }}
+        >
+          {/* Gold foil bar top — "SPONSORED BROADCAST" press banner */}
+          <div
+            className="flex items-center justify-between px-3 py-1.5"
+            style={{
+              background: "var(--gold-c)",
+              borderBottom: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <span
+              className="c-kicker"
+              style={{ fontSize: 10, color: "var(--ink-strong)", letterSpacing: "0.18em" }}
+            >
+              § AD · SPONSORED BROADCAST
             </span>
-          </div>
-
-          {/* Skip button */}
-          <div className="absolute top-3 right-3 z-20">
             {canSkip ? (
               <button
                 onClick={onSkip}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.15] backdrop-blur-sm border border-white/20 text-white text-[12px] font-semibold hover:bg-white/[0.25] transition-colors press"
+                className="flex items-center gap-1 c-kicker press"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--gold-c)",
+                  border: "2px solid var(--ink-strong)",
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                  padding: "3px 8px",
+                }}
               >
-                Skip Ad
+                SKIP AD
                 <svg
-                  width="12"
-                  height="12"
+                  width="10"
+                  height="10"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -97,8 +116,16 @@ export default function PreRollAd({
                 </svg>
               </button>
             ) : (
-              <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white/70 text-[12px] font-medium">
-                Skip in {skipCountdown}...
+              <span
+                className="c-kicker tabular-nums"
+                style={{
+                  color: "var(--ink-strong)",
+                  opacity: 0.7,
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                }}
+              >
+                SKIP IN {skipCountdown}
               </span>
             )}
           </div>
@@ -114,35 +141,48 @@ export default function PreRollAd({
             onEnded={onComplete}
           />
 
-          {/* CTA overlay at bottom */}
-          <div className="absolute bottom-0 inset-x-0 z-20 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 pt-10">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-[11px] text-white/60 mb-0.5">Sponsored</p>
-                <p className="text-[14px] font-heading font-bold text-white truncate">
-                  {businessName}
-                </p>
-              </div>
-              <Link
-                href={ctaUrl}
-                onClick={handleCtaClick}
-                className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gold text-midnight font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+          {/* CTA footer — ink body, gold CTA, hard corners */}
+          <div
+            className="flex items-center justify-between gap-3 px-4 py-3"
+            style={{
+              background: "var(--ink-strong)",
+              borderTop: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <div className="min-w-0">
+              <p
+                className="c-kicker"
+                style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.16em" }}
               >
-                {ctaText || "Shop Now"}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
+                SPONSORED
+              </p>
+              <p
+                className="c-card-t truncate"
+                style={{ fontSize: 14, color: "var(--paper)", marginTop: 2 }}
+              >
+                {businessName}
+              </p>
             </div>
+            <Link
+              href={ctaUrl}
+              onClick={handleCtaClick}
+              className="shrink-0 c-btn c-btn-primary c-btn-sm press"
+            >
+              {(ctaText || "Shop Now").toUpperCase()}
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ marginLeft: 6 }}
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
           </div>
         </div>
       </div>

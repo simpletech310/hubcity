@@ -65,7 +65,13 @@ export default function PaywallOverlay({
   }
 
   return (
-    <div className="aspect-video relative overflow-hidden rounded-2xl bg-gradient-to-br from-midnight to-deep border border-border-subtle">
+    <div
+      className="aspect-video relative overflow-hidden"
+      style={{
+        background: "var(--ink-strong)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
+    >
       {/* Blurred thumbnail backdrop */}
       {thumbnailUrl && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -75,18 +81,36 @@ export default function PaywallOverlay({
           className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-40"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-midnight via-midnight/85 to-midnight/40" />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(to top, var(--ink-strong) 0%, rgba(10,10,10,0.85) 50%, rgba(10,10,10,0.55) 100%)",
+        }}
+      />
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-5 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-gold/15 flex items-center justify-center mb-3">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gold">
+        <div
+          className="w-12 h-12 flex items-center justify-center mb-3"
+          style={{
+            background: "var(--gold-c)",
+            border: "2px solid var(--gold-c)",
+          }}
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--ink-strong)" strokeWidth="2.5">
             <rect x="3" y="11" width="18" height="11" rx="2" />
             <path d="M7 11V7a5 5 0 0110 0v4" />
           </svg>
         </div>
-        <h3 className="font-heading font-bold text-base mb-1">
-          {reason === "auth_required" ? "Sign in to watch" : "Premium video"}
+        <h3
+          className="c-hero mb-1"
+          style={{ fontSize: 22, color: "var(--paper)", lineHeight: 1 }}
+        >
+          {reason === "auth_required" ? "SIGN IN TO WATCH" : "PREMIUM VIDEO"}
         </h3>
-        <p className="text-[11px] text-txt-secondary mb-4 max-w-xs">
+        <p
+          className="c-serif-it mb-4 max-w-xs"
+          style={{ fontSize: 12, color: "var(--paper)", opacity: 0.75 }}
+        >
           {reason === "auth_required"
             ? "Create a free account, then choose how you want to access this video."
             : reason === "subscription_required"
@@ -95,7 +119,12 @@ export default function PaywallOverlay({
         </p>
 
         {error && (
-          <p className="text-[11px] text-coral mb-3">{error}</p>
+          <p
+            className="c-kicker mb-3"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+          >
+            {error.toUpperCase()}
+          </p>
         )}
 
         <div className="flex flex-col gap-2 w-full max-w-xs">

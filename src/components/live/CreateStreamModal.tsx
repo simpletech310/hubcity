@@ -10,12 +10,37 @@ interface CreateStreamModalProps {
 }
 
 const CATEGORIES = [
-  { value: "sports", label: "• Sports" },
-  { value: "government", label: "landmark Government" },
-  { value: "education", label: "book Education" },
-  { value: "culture", label: "palette Culture" },
-  { value: "community", label: "users Community" },
+  { value: "sports", label: "SPORTS" },
+  { value: "government", label: "GOVERNMENT" },
+  { value: "education", label: "EDUCATION" },
+  { value: "culture", label: "CULTURE" },
+  { value: "community", label: "COMMUNITY" },
 ];
+
+const inputStyle: React.CSSProperties = {
+  background: "var(--paper-warm)",
+  border: "2px solid var(--rule-strong-c)",
+  color: "var(--ink-strong)",
+  fontSize: 14,
+  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+};
+
+const monoValueStyle: React.CSSProperties = {
+  background: "var(--paper-warm)",
+  border: "2px solid var(--rule-strong-c)",
+  color: "var(--ink-strong)",
+  fontSize: 12,
+  fontFamily: "var(--font-dm-mono), monospace",
+  letterSpacing: "0.04em",
+};
+
+const labelClass = "c-kicker block mb-1.5";
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  color: "var(--ink-strong)",
+  opacity: 0.7,
+  letterSpacing: "0.14em",
+};
 
 export default function CreateStreamModal({
   isOpen,
@@ -99,36 +124,55 @@ export default function CreateStreamModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
+      {/* Backdrop — stays dark, no blur */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ background: "rgba(10,10,10,0.7)" }}
         onClick={handleClose}
       />
 
-      {/* Panel */}
-      <div className="relative w-full max-w-[430px] bg-card border-t border-border-subtle rounded-t-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+      {/* Panel — paper sheet, ink top rule, hard corners */}
+      <div
+        className="relative w-full max-w-[430px] animate-slide-up max-h-[85vh] overflow-y-auto"
+        style={{
+          background: "var(--paper)",
+          borderTop: "3px solid var(--rule-strong-c)",
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div
+            style={{ width: 40, height: 3, background: "var(--ink-strong)", opacity: 0.25 }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-border-subtle">
+        <div
+          className="flex items-center justify-between px-5 pb-3"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
           <button
             onClick={handleClose}
-            className="text-sm text-txt-secondary press"
+            className="c-kicker press"
+            style={{ fontSize: 11, color: "var(--ink-strong)", letterSpacing: "0.14em" }}
           >
-            {created ? "Done" : "Cancel"}
+            {created ? "DONE" : "CANCEL"}
           </button>
-          <span className="text-sm font-heading font-bold text-coral">
-            {created ? "Stream Ready!" : "New Stream"}
+          <span
+            className="c-kicker"
+            style={{
+              fontSize: 11,
+              color: "var(--ink-strong)",
+              letterSpacing: "0.16em",
+              background: created ? "var(--gold-c)" : "transparent",
+              padding: created ? "2px 10px" : 0,
+              border: created ? "2px solid var(--rule-strong-c)" : "none",
+            }}
+          >
+            {created ? "STREAM READY" : "NEW STREAM"}
           </span>
           {!created && (
-            <Button
-              size="sm"
-              onClick={handleSubmit}
-              loading={submitting}
-            >
+            <Button size="sm" onClick={handleSubmit} loading={submitting}>
               Create
             </Button>
           )}
@@ -136,7 +180,17 @@ export default function CreateStreamModal({
         </div>
 
         {error && (
-          <div className="mx-5 mt-3 bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5 text-xs text-coral">
+          <div
+            className="mx-5 mt-3 px-4 py-2.5"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontSize: 12,
+              fontFamily: "var(--font-archivo-narrow), sans-serif",
+              fontWeight: 700,
+            }}
+          >
             {error}
           </div>
         )}
@@ -144,75 +198,93 @@ export default function CreateStreamModal({
         {/* Created — show stream key */}
         {created ? (
           <div className="p-5 space-y-4">
-            <div className="rounded-xl bg-emerald/10 border border-emerald/20 p-4 text-center">
-              <p className="text-sm font-semibold text-emerald mb-1">
-                Stream Created!
+            <div
+              className="p-4 text-center"
+              style={{
+                background: "var(--gold-c)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <p
+                className="c-hero"
+                style={{ fontSize: 18, color: "var(--ink-strong)", lineHeight: 1 }}
+              >
+                STREAM CREATED
               </p>
-              <p className="text-[11px] text-txt-secondary">
+              <p
+                className="c-serif-it mt-1"
+                style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.8 }}
+              >
                 Use these credentials in OBS, Streamyard, or any RTMP app
               </p>
             </div>
 
             <div className="space-y-3">
               <div>
-                <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                  Stream Title
-                </label>
-                <div className="bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm">
+                <label className={labelClass} style={labelStyle}>STREAM TITLE</label>
+                <div className="px-4 py-3" style={inputStyle}>
                   {created.title}
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                  RTMP URL
-                </label>
+                <label className={labelClass} style={labelStyle}>RTMP URL</label>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-xs font-mono truncate">
+                  <div className="flex-1 px-4 py-3 truncate" style={monoValueStyle}>
                     {created.rtmp_url}
                   </div>
                   <button
                     onClick={() => handleCopy(created.rtmp_url, "rtmp")}
-                    className={`shrink-0 px-3 py-3 rounded-xl border text-xs font-semibold press transition-all ${
-                      copied === "rtmp"
-                        ? "bg-emerald/20 border-emerald/30 text-emerald"
-                        : "bg-white/5 border-border-subtle text-txt-secondary hover:text-white"
-                    }`}
+                    className="shrink-0 c-btn c-btn-sm press"
+                    style={{
+                      background: copied === "rtmp" ? "var(--gold-c)" : "var(--paper)",
+                      color: "var(--ink-strong)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
                   >
-                    {copied === "rtmp" ? "Copied!" : "Copy"}
+                    {copied === "rtmp" ? "COPIED" : "COPY"}
                   </button>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                  Stream Key
-                </label>
+                <label className={labelClass} style={labelStyle}>STREAM KEY</label>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-xs font-mono truncate">
+                  <div className="flex-1 px-4 py-3 truncate" style={monoValueStyle}>
                     {created.mux_stream_key}
                   </div>
                   <button
-                    onClick={() =>
-                      handleCopy(created.mux_stream_key, "key")
-                    }
-                    className={`shrink-0 px-3 py-3 rounded-xl border text-xs font-semibold press transition-all ${
-                      copied === "key"
-                        ? "bg-emerald/20 border-emerald/30 text-emerald"
-                        : "bg-white/5 border-border-subtle text-txt-secondary hover:text-white"
-                    }`}
+                    onClick={() => handleCopy(created.mux_stream_key, "key")}
+                    className="shrink-0 c-btn c-btn-sm press"
+                    style={{
+                      background: copied === "key" ? "var(--gold-c)" : "var(--paper)",
+                      color: "var(--ink-strong)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
                   >
-                    {copied === "key" ? "Copied!" : "Copy"}
+                    {copied === "key" ? "COPIED" : "COPY"}
                   </button>
                 </div>
               </div>
             </div>
 
-            <div className="rounded-xl bg-gold/10 border border-gold/20 p-4">
-              <p className="text-[11px] text-gold font-semibold mb-1">
-                How to go live:
+            <div
+              className="p-4"
+              style={{
+                background: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <p
+                className="c-kicker mb-1"
+                style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.16em" }}
+              >
+                HOW TO GO LIVE:
               </p>
-              <ol className="text-[11px] text-txt-secondary space-y-1 list-decimal list-inside">
+              <ol
+                className="space-y-1 list-decimal list-inside"
+                style={{ fontSize: 12, color: "var(--paper)", opacity: 0.85 }}
+              >
                 <li>Open OBS, Streamyard, or Larix Broadcaster</li>
                 <li>Paste the RTMP URL as the server</li>
                 <li>Paste the Stream Key</li>
@@ -225,15 +297,14 @@ export default function CreateStreamModal({
           <div className="p-5 space-y-4">
             {/* Title */}
             <div>
-              <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                Stream Title *
-              </label>
+              <label className={labelClass} style={labelStyle}>STREAM TITLE *</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Compton High vs Dominguez — Varsity Football"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-coral/40 transition-colors"
+                className="w-full px-4 py-3 focus:outline-none"
+                style={inputStyle}
                 maxLength={100}
                 autoFocus
               />
@@ -241,50 +312,53 @@ export default function CreateStreamModal({
 
             {/* Description */}
             <div>
-              <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                Description
-              </label>
+              <label className={labelClass} style={labelStyle}>DESCRIPTION</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What are we streaming?"
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-coral/40 transition-colors resize-none min-h-[60px]"
+                className="w-full px-4 py-3 focus:outline-none resize-none min-h-[60px]"
+                style={{ ...inputStyle, fontFamily: "var(--font-fraunces), serif" }}
                 maxLength={300}
               />
             </div>
 
             {/* Category */}
             <div>
-              <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                Category
-              </label>
+              <label className={labelClass} style={labelStyle}>CATEGORY</label>
               <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.value}
-                    onClick={() => setCategory(cat.value)}
-                    className={`px-3 py-2 rounded-xl text-xs font-medium press transition-all ${
-                      category === cat.value
-                        ? "bg-coral/20 text-coral border border-coral/30"
-                        : "bg-white/5 text-txt-secondary border border-border-subtle hover:border-white/20"
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
+                {CATEGORIES.map((cat) => {
+                  const selected = category === cat.value;
+                  return (
+                    <button
+                      key={cat.value}
+                      onClick={() => setCategory(cat.value)}
+                      className="press c-kicker"
+                      style={{
+                        background: selected ? "var(--gold-c)" : "var(--paper)",
+                        color: "var(--ink-strong)",
+                        border: "2px solid var(--rule-strong-c)",
+                        fontSize: 10,
+                        letterSpacing: "0.14em",
+                        padding: "6px 10px",
+                      }}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Scheduled time */}
             <div>
-              <label className="text-[11px] text-txt-secondary font-semibold uppercase tracking-wider block mb-1.5">
-                Scheduled Time (optional)
-              </label>
+              <label className={labelClass} style={labelStyle}>SCHEDULED TIME (OPTIONAL)</label>
               <input
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-coral/40 transition-colors"
+                className="w-full px-4 py-3 focus:outline-none"
+                style={inputStyle}
               />
             </div>
           </div>

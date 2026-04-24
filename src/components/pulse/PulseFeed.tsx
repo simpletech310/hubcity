@@ -390,7 +390,13 @@ export default function PulseFeed({
       {/* ─── Mode toggle: Discover / Following ─── */}
       {userId && (
         <div className="px-5 mt-4 mb-3 flex items-center gap-2">
-          <div className="inline-flex rounded-full panel-editorial p-0.5">
+          <div
+            className="inline-flex rounded-full p-0.5"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             <button
               onClick={() => setMode("discover")}
               className={`c-chip ${mode === "discover" ? "active gold" : ""} press`}

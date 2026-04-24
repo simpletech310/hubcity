@@ -348,7 +348,10 @@ export default function CultureTV({
           </div>
         </div>
         <div className="px-5 mb-4">
-          <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40">
+          <div
+            className="overflow-hidden"
+            style={{ border: "2px solid var(--rule-strong-c)" }}
+          >
             <MuxPlayer playbackId={playingVideo.mux_playback_id} streamType="on-demand" autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: playingVideo.title, viewer_user_id: userId || "anon" }} />
           </div>
         </div>
@@ -401,7 +404,10 @@ export default function CultureTV({
           {watchingStream.status === "active" && <Badge label="LIVE" variant="coral" shine />}
         </div>
         <div className="px-5 mb-4">
-          <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40">
+          <div
+            className="overflow-hidden"
+            style={{ border: "2px solid var(--rule-strong-c)" }}
+          >
             <MuxPlayer playbackId={watchingStream.mux_playback_id} streamType={watchingStream.status === "active" ? "live" : "on-demand"} autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: watchingStream.title, viewer_user_id: userId || "anon" }} />
           </div>
         </div>
@@ -424,11 +430,30 @@ export default function CultureTV({
           )}
           {watchingStream.description && <p className="text-sm text-txt-secondary">{watchingStream.description}</p>}
           {watchingStream.status === "active" && (
-            <div className="rounded-xl bg-coral/10 border border-coral/20 p-4 flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-coral animate-pulse shrink-0" />
+            <div
+              className="p-4 flex items-center gap-3"
+              style={{
+                background: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--gold-c)",
+              }}
+            >
+              <div
+                className="animate-pulse shrink-0"
+                style={{ width: 10, height: 10, background: "var(--gold-c)" }}
+              />
               <div>
-                <p className="text-sm font-semibold text-coral">Broadcasting Live</p>
-                <p className="text-[11px] text-txt-secondary">{watchingStream.viewer_count || 0} viewers tuned in</p>
+                <p
+                  className="c-kicker"
+                  style={{ fontSize: 12, color: "var(--gold-c)", letterSpacing: "0.16em" }}
+                >
+                  BROADCASTING LIVE
+                </p>
+                <p
+                  style={{ fontSize: 11, color: "var(--paper)", opacity: 0.7, marginTop: 2 }}
+                >
+                  {watchingStream.viewer_count || 0} viewers tuned in
+                </p>
               </div>
             </div>
           )}
@@ -439,21 +464,28 @@ export default function CultureTV({
 
   return (
     <div className="animate-fade-in">
-      <header className="relative px-5 pt-6 pb-6 border-b border-white/[0.08] panel-editorial">
+      <header
+        className="relative px-5 pt-6 pb-6"
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink-strong)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
         <div className="flex items-center gap-3 mb-4">
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
+          <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "var(--gold-c)" }}>
             VOL · 01 · ISSUE BROADCAST
           </span>
-          <span className="block w-1 h-1 rounded-full bg-gold/60" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
+          <span className="block w-1 h-1 rounded-full" style={{ background: "var(--gold-c)" }} />
+          <span className="c-kicker" style={{ fontSize: 10, opacity: 0.5 }}>
             EVERYWHERE
           </span>
         </div>
-        <h1 className="masthead text-white text-[44px]">CULTURE TV.</h1>
+        <h1 className="c-hero" style={{ fontSize: 44, lineHeight: 0.95 }}>CULTURE TV.</h1>
         <div className="mt-3 flex items-center gap-3">
-          <span className="block h-[2px] w-8 bg-gold" />
-          <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-            Live + on-demand from local creators.
+          <span className="block h-[2px] w-8" style={{ background: "var(--gold-c)" }} />
+          <span className="c-kicker" style={{ fontSize: 10, opacity: 0.7 }}>
+            LIVE + ON-DEMAND FROM LOCAL CREATORS.
           </span>
         </div>
       </header>
@@ -478,16 +510,22 @@ export default function CultureTV({
 
         <div className="relative z-10 px-5 pt-6 pb-8">
           {/* Brand tag */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30 mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-            <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">HUB CITY TV</span>
+          <div
+            className="inline-flex items-center gap-2 px-3 py-1.5 mb-5"
+            style={{ background: "var(--gold-c)", color: "var(--ink-strong)", border: "2px solid var(--ink-strong)" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#E84855" }} />
+            <span className="c-kicker" style={{ fontSize: 10 }}>HUB CITY TV</span>
           </div>
 
           {/* Live count indicator */}
           {activeStreams.length > 0 && (
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30 mb-4 ml-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-              <span className="font-heading text-[10px] font-bold text-coral tracking-wider">{activeStreams.length} LIVE NOW</span>
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 mb-4 ml-2"
+              style={{ background: "#E84855", color: "#fff", border: "2px solid var(--paper)" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              <span className="c-kicker" style={{ fontSize: 10 }}>{activeStreams.length} LIVE NOW</span>
             </div>
           )}
 
@@ -511,14 +549,17 @@ export default function CultureTV({
               <div className="flex gap-3 mt-5">
                 <button
                   onClick={() => playVideo(currentHero)}
-                  className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                  className="c-btn c-btn-accent flex items-center gap-2 press"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  Watch Now
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  WATCH NOW
                 </button>
-                <button className="flex items-center gap-2 bg-white/[0.08] border border-white/[0.15] text-white px-5 py-3 rounded-xl text-[14px] font-medium press hover:bg-white/[0.12] transition-colors backdrop-blur-sm">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-                  My List
+                <button
+                  className="c-btn c-btn-outline flex items-center gap-2 press"
+                  style={{ color: "var(--paper)", borderColor: "var(--paper)" }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                  MY LIST
                 </button>
               </div>
             </>
@@ -533,10 +574,10 @@ export default function CultureTV({
               <div className="flex gap-3 mt-5">
                 <button
                   onClick={() => setActiveTab("channels")}
-                  className="flex items-center gap-2 bg-gold text-midnight px-6 py-3 rounded-xl font-heading text-[14px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20"
+                  className="c-btn c-btn-accent flex items-center gap-2 press"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  Start Watching
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  START WATCHING
                 </button>
               </div>
             </>
@@ -562,21 +603,37 @@ export default function CultureTV({
       {/* ══════════════════════════════════════════════════════
           TAB NAVIGATION
           ══════════════════════════════════════════════════════ */}
-      <div className="flex gap-1 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
+      <div
+        className="flex gap-0 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1 pt-4"
+        style={{ background: "var(--paper)" }}
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-300 press shrink-0 ${
+            className="px-4 py-2 c-card-t whitespace-nowrap press shrink-0"
+            style={
               activeTab === tab.id
-                ? "bg-gold text-midnight shadow-lg shadow-gold/20"
-                : "bg-white/[0.06] text-txt-secondary hover:text-white hover:bg-white/[0.1] border border-border-subtle"
-            }`}
+                ? {
+                    background: "var(--ink-strong)",
+                    color: "var(--gold-c)",
+                    border: "2px solid var(--ink-strong)",
+                    fontSize: 11,
+                    marginRight: -2,
+                  }
+                : {
+                    background: "transparent",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    fontSize: 11,
+                    marginRight: -2,
+                  }
+            }
           >
             {tab.id === "live" && activeStreams.length > 0 && (
-              <span className="inline-block w-2 h-2 rounded-full bg-coral mr-1.5 animate-pulse" />
+              <span className="inline-block w-2 h-2 rounded-full mr-1.5 animate-pulse" style={{ background: "#E84855" }} />
             )}
-            {tab.label}
+            {tab.label.toUpperCase()}
           </button>
         ))}
       </div>
@@ -604,9 +661,9 @@ export default function CultureTV({
           {activeStreams.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center gap-2 px-5 mb-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-coral animate-pulse" />
-                <h2 className="font-heading font-bold text-[18px]">Live Now</h2>
-                <Badge label={`${activeStreams.length} LIVE`} variant="coral" shine />
+                <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#E84855" }} />
+                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>LIVE NOW</h2>
+                <span className="c-badge-live" style={{ fontSize: 9 }}>{activeStreams.length} LIVE</span>
               </div>
               <div className="px-5 space-y-3">
                 {activeStreams.map((stream) => (
@@ -620,17 +677,20 @@ export default function CultureTV({
           {trendingVideos.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-coral">
+                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#E84855" }}>
                     <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  Trending
+                  TRENDING
                 </h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {trendingVideos.map((video, i) => (
                   <button key={video.id} onClick={() => playVideo(video)} className="shrink-0 w-[200px] text-left press group">
-                    <div className="relative rounded-xl overflow-hidden mb-2">
+                    <div
+                      className="relative overflow-hidden mb-2"
+                      style={{ border: "2px solid var(--rule-strong-c)" }}
+                    >
                       <div className="aspect-video bg-gradient-to-br from-coral/15 via-midnight to-gold/10 flex items-center justify-center">
                         {video.mux_playback_id ? (
                           <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`} alt={video.title} className="w-full h-full object-cover" />
@@ -664,18 +724,27 @@ export default function CultureTV({
           {originals.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">
-                  <span className="text-gold">Culture</span> Originals
+                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  CULTURE <span style={{ color: "var(--gold-c)" }}>ORIGINALS</span>
                 </h2>
-                <button onClick={() => setActiveTab("originals")} className="text-[12px] text-gold font-semibold press">See All →</button>
+                <button
+                  onClick={() => setActiveTab("originals")}
+                  className="c-meta press"
+                  style={{ color: "var(--ink-strong)" }}
+                >SEE ALL →</button>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {originals.map((video, i) => {
                   const accent = HERO_ACCENTS[i % HERO_ACCENTS.length];
                   return (
                     <button key={video.id} className="shrink-0 w-[140px] text-left press group" onClick={() => playVideo(video)}>
-                      <div className="relative rounded-2xl overflow-hidden mb-2.5 aspect-[3/4]"
-                        style={{ background: `linear-gradient(180deg, ${accent}20 0%, var(--color-midnight) 100%)` }}>
+                      <div
+                        className="relative overflow-hidden mb-2.5 aspect-[3/4]"
+                        style={{
+                          background: `linear-gradient(180deg, ${accent}20 0%, var(--color-midnight) 100%)`,
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
                         {video.mux_playback_id ? (
                           <img
                             src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=280&height=373&time=5`}
@@ -714,11 +783,15 @@ export default function CultureTV({
           {shows.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">
-                  <span className="text-gold">Shows</span> On Demand
+                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  <span style={{ color: "var(--gold-c)" }}>SHOWS</span> ON DEMAND
                 </h2>
-                <Link href="/live/submit-show" className="text-[12px] text-gold font-semibold press">
-                  Pitch a Show →
+                <Link
+                  href="/live/submit-show"
+                  className="c-meta press"
+                  style={{ color: "var(--ink-strong)" }}
+                >
+                  PITCH A SHOW →
                 </Link>
               </div>
               <div className="grid grid-cols-2 gap-3 px-5">
@@ -728,7 +801,7 @@ export default function CultureTV({
                     href={`/live/shows/${show.slug}`}
                     className="press group"
                   >
-                    <div className="aspect-[2/3] rounded-xl overflow-hidden bg-white/[0.06] mb-2 relative">
+                    <div className="aspect-[2/3] overflow-hidden mb-2 relative" style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}>
                       {show.poster_url ? (
                         <img
                           src={show.poster_url}
@@ -763,10 +836,10 @@ export default function CultureTV({
           {isVerified && localChannels.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">
-                  🌉 Compton <span className="text-gold">Local</span>
+                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  🌉 COMPTON <span style={{ color: "var(--gold-c)" }}>LOCAL</span>
                 </h2>
-                <p className="text-[12px] text-warm-gray mt-0.5">
+                <p className="c-serif-it mt-0.5" style={{ fontSize: 13 }}>
                   Channels for verified Compton members
                 </p>
               </div>
@@ -781,19 +854,24 @@ export default function CultureTV({
             <section className="mb-8 px-5">
               <Link
                 href="/profile"
-                className="block rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/10 via-midnight to-midnight p-5 press hover:border-gold/40 transition-colors"
+                className="block p-5 press transition-colors"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">🌉</span>
                   <div className="flex-1">
-                    <h3 className="font-heading font-bold text-[15px] mb-1">
-                      Compton Local — locked
+                    <h3 className="c-card-t mb-1" style={{ fontSize: 14 }}>
+                      COMPTON LOCAL — LOCKED
                     </h3>
-                    <p className="text-[12px] text-txt-secondary leading-relaxed">
+                    <p className="c-body-sm">
                       Verify your Compton address to unlock school, city, and local scene channels
                       made for members.
                     </p>
-                    <p className="mt-2 text-[11px] text-gold font-semibold">Verify address →</p>
+                    <p className="mt-2 c-kicker" style={{ fontSize: 10, color: "var(--gold-c)" }}>VERIFY ADDRESS →</p>
                   </div>
                 </div>
               </Link>
@@ -804,11 +882,11 @@ export default function CultureTV({
           {featuredVideos.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
+                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   </svg>
-                  Featured
+                  FEATURED
                 </h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
@@ -823,13 +901,13 @@ export default function CultureTV({
           {cityHall.length > 0 && (
             <section className="mb-8">
               <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-cyan">
+                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#06B6D4" }}>
                     <path d="M3 21h18M3 7v14M21 7v14M6 7V4l6-2 6 2v3M9 21v-4h6v4" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  City Hall
+                  CITY HALL
                 </h2>
-                <span className="text-[11px] text-txt-secondary">{cityHall.length} videos</span>
+                <span className="c-meta">{cityHall.length} VIDEOS</span>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {cityHall.map((video) => (
@@ -842,8 +920,12 @@ export default function CultureTV({
           {/* ── Channels scroller ── */}
           <section className="mb-8">
             <div className="flex items-center justify-between px-5 mb-3">
-              <h2 className="font-heading font-bold text-[18px]">Channels</h2>
-              <button onClick={() => setActiveTab("channels")} className="text-[12px] text-gold font-semibold press">See All →</button>
+              <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>CHANNELS</h2>
+              <button
+                onClick={() => setActiveTab("channels")}
+                className="c-meta press"
+                style={{ color: "var(--ink-strong)" }}
+              >SEE ALL →</button>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
               {channels.slice(0, 15).map((ch) => (
@@ -856,7 +938,7 @@ export default function CultureTV({
           {recentVideos.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="font-heading font-bold text-[18px]">Recently Added</h2>
+                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>RECENTLY ADDED</h2>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {recentVideos.slice(0, 10).map((video) => (
@@ -868,32 +950,37 @@ export default function CultureTV({
 
           {/* ── Get Your Content On The Air CTA ── */}
           <section className="mb-8 px-5">
-            <div className="relative overflow-hidden rounded-2xl border border-gold/20">
-              <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-midnight to-coral/10" />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold to-transparent opacity-60" />
-              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold/5 blur-2xl" />
+            <div
+              className="relative overflow-hidden"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
+            >
+              <div style={{ height: 4, background: "var(--gold-c)" }} />
               <div className="relative z-10 p-5">
                 <div className="flex items-center gap-2 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
+                  <div className="w-10 h-10 flex items-center justify-center" style={{ background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink-strong)" }}>
                       <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-heading font-bold text-[16px] text-white">Get On The Air</h3>
-                    <p className="text-[11px] text-gold font-semibold">Your scene. Your story. Your channel.</p>
+                    <h3 className="c-hero" style={{ fontSize: 18 }}>GET ON THE AIR</h3>
+                    <p className="c-serif-it" style={{ fontSize: 12, color: "var(--gold-c)" }}>Your scene. Your story. Your channel.</p>
                   </div>
                 </div>
-                <p className="text-[13px] text-white/60 leading-relaxed mb-4">
+                <p className="c-body-sm mb-4">
                   Got a podcast, cooking show, or community event? Culture TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
                 </p>
                 <div className="flex gap-2">
-                  <Link href="/profile/settings" className="flex items-center gap-2 bg-gold text-midnight px-5 py-2.5 rounded-xl font-heading text-[13px] font-bold press hover:bg-gold-light transition-colors shadow-lg shadow-gold/20">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-                    Apply Now
+                  <Link href="/profile/settings" className="c-btn c-btn-accent flex items-center gap-2 press">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+                    APPLY NOW
                   </Link>
-                  <button onClick={() => setActiveTab("channels")} className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.12] px-4 py-2.5 rounded-xl text-[13px] font-medium press hover:bg-white/[0.1] transition-colors text-white/70">
-                    Browse Channels
+                  <button onClick={() => setActiveTab("channels")} className="c-btn c-btn-outline press">
+                    BROWSE CHANNELS
                   </button>
                 </div>
               </div>
@@ -903,24 +990,33 @@ export default function CultureTV({
           {/* ── Community Stats Bar ── */}
           <section className="mb-8 px-5">
             <div className="flex gap-2">
-              <div className="flex-1 rounded-xl bg-gradient-to-br from-gold/8 to-gold/3 border border-gold/15 p-3 text-center">
-                <p className="text-[20px] font-heading font-bold text-gold">{channels.length}</p>
-                <p className="text-[10px] text-white/40 font-medium">Channels</p>
+              <div
+                className="flex-1 p-3 text-center"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <p className="c-hero" style={{ fontSize: 22, color: "var(--gold-c)" }}>{channels.length}</p>
+                <p className="c-kicker" style={{ fontSize: 10 }}>CHANNELS</p>
               </div>
-              <div className="flex-1 rounded-xl bg-gradient-to-br from-coral/8 to-coral/3 border border-coral/15 p-3 text-center">
-                <p className="text-[20px] font-heading font-bold text-coral">{recentVideos.length + featuredVideos.length}</p>
-                <p className="text-[10px] text-white/40 font-medium">Videos</p>
+              <div
+                className="flex-1 p-3 text-center"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <p className="c-hero" style={{ fontSize: 22, color: "#E84855" }}>{recentVideos.length + featuredVideos.length}</p>
+                <p className="c-kicker" style={{ fontSize: 10 }}>VIDEOS</p>
               </div>
-              <div className="flex-1 rounded-xl bg-gradient-to-br from-emerald/8 to-emerald/3 border border-emerald/15 p-3 text-center">
-                <p className="text-[20px] font-heading font-bold text-emerald">Free</p>
-                <p className="text-[10px] text-white/40 font-medium">Always</p>
+              <div
+                className="flex-1 p-3 text-center"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <p className="c-hero" style={{ fontSize: 22, color: "#22C55E" }}>FREE</p>
+                <p className="c-kicker" style={{ fontSize: 10 }}>ALWAYS</p>
               </div>
             </div>
           </section>
 
           {/* ── Browse by Category ── */}
           <section className="mb-8 px-5">
-            <h2 className="font-heading font-bold text-[18px] mb-3">Browse by Category</h2>
+            <h2 className="c-hero mb-3" style={{ fontSize: 22, color: "var(--ink-strong)" }}>BROWSE BY CATEGORY</h2>
             <div className="grid grid-cols-3 gap-2.5">
               {[
                 { label: "Sports", icon: "trophy", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
@@ -930,10 +1026,18 @@ export default function CultureTV({
                 { label: "Podcasts", icon: "music", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
                 { label: "Education", icon: "book", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
               ].map((cat, i) => (
-                <button key={i} className={`relative overflow-hidden bg-gradient-to-br ${cat.gradient} rounded-2xl border border-border-subtle p-3 text-left press group`}>
-                  <div className="absolute top-0 left-0 right-0 h-[2px] opacity-50" style={{ background: `linear-gradient(90deg, transparent, ${cat.color}, transparent)` }} />
-                  <span className="block mb-1.5"><Icon name={cat.icon as IconName} size={22} /></span>
-                  <span className="font-heading text-[12px] font-bold">{cat.label}</span>
+                <button
+                  key={i}
+                  className="relative overflow-hidden p-3 text-left press group"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                    color: "var(--ink-strong)",
+                  }}
+                >
+                  <div className="absolute top-0 left-0 right-0" style={{ height: 3, background: cat.color }} />
+                  <span className="block mb-1.5 mt-1"><Icon name={cat.icon as IconName} size={22} style={{ color: cat.color }} /></span>
+                  <span className="c-card-t" style={{ fontSize: 12 }}>{cat.label.toUpperCase()}</span>
                 </button>
               ))}
             </div>
@@ -943,11 +1047,15 @@ export default function CultureTV({
           {todayBlocks.length > 0 && (
             <section className="mb-8 px-5">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="font-heading font-bold text-[18px] flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-gold" />
-                  Today on Culture TV
+                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: "var(--gold-c)" }} />
+                  TODAY ON CULTURE TV
                 </h2>
-                <button onClick={() => setActiveTab("schedule")} className="text-[12px] text-gold font-semibold press">Full Schedule →</button>
+                <button
+                  onClick={() => setActiveTab("schedule")}
+                  className="c-meta press"
+                  style={{ color: "var(--ink-strong)" }}
+                >FULL SCHEDULE →</button>
               </div>
               <div className="space-y-2">
                 {todayBlocks.slice(0, 4).map((tb) => <TimeBlockCard key={tb.id} block={tb} />)}
@@ -957,22 +1065,33 @@ export default function CultureTV({
 
           {/* ── Creator Spotlight CTA ── */}
           <section className="mb-8 px-5">
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-coral/10 via-midnight to-coral/10 border border-coral/15 p-5">
-              <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-coral/5 blur-2xl" />
+            <div
+              className="relative overflow-hidden p-5"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
+            >
+              <div style={{ height: 3, background: "#E84855", marginTop: -20, marginLeft: -20, marginRight: -20, marginBottom: 16 }} />
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-2">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-coral">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#E84855" }}>
                     <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                     <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
                     <line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" />
                   </svg>
-                  <h3 className="font-heading font-bold text-[15px]">Got a Podcast?</h3>
+                  <h3 className="c-card-t" style={{ fontSize: 14 }}>GOT A PODCAST?</h3>
                 </div>
-                <p className="text-[12px] text-white/50 mb-3 leading-relaxed">
+                <p className="c-body-sm mb-3">
                   Record it. Upload it. Compton listens. Culture TV hosts local podcasts, talk shows, and audio content from the community.
                 </p>
-                <Link href="/podcasts" className="inline-flex items-center gap-1.5 text-[12px] text-coral font-semibold press">
-                  Explore Podcasts
+                <Link
+                  href="/podcasts"
+                  className="inline-flex items-center gap-1.5 c-kicker press"
+                  style={{ fontSize: 11, color: "var(--ink-strong)" }}
+                >
+                  EXPLORE PODCASTS
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </Link>
               </div>
@@ -981,7 +1100,7 @@ export default function CultureTV({
 
           {/* ── Why Culture TV ── */}
           <section className="mb-8 px-5">
-            <h2 className="font-heading font-bold text-[18px] mb-4">Why <span className="text-gold">Culture TV</span>?</h2>
+            <h2 className="c-hero mb-4" style={{ fontSize: 22, color: "var(--ink-strong)" }}>WHY <span style={{ color: "var(--gold-c)" }}>CULTURE TV</span>?</h2>
             <div className="space-y-3">
               {[
                 { emoji: "1", title: "100% Free", desc: "No subscriptions, no ads for viewers, no paywall. Just Compton.", color: "#22C55E" },
@@ -990,12 +1109,15 @@ export default function CultureTV({
                 { emoji: "4", title: "On Demand", desc: "Missed it live? Watch replays of city meetings, games, and more.", color: "#8B5CF6" },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-3.5">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-heading font-bold text-[14px]" style={{ background: `${item.color}15`, color: item.color }}>
+                  <div
+                    className="w-8 h-8 flex items-center justify-center shrink-0 c-card-t"
+                    style={{ background: item.color, color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)", fontSize: 14 }}
+                  >
                     {item.emoji}
                   </div>
                   <div>
-                    <p className="font-heading font-bold text-[13px] text-white mb-0.5">{item.title}</p>
-                    <p className="text-[12px] text-white/40 leading-relaxed">{item.desc}</p>
+                    <p className="c-card-t mb-0.5" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{item.title.toUpperCase()}</p>
+                    <p className="c-body-sm">{item.desc}</p>
                   </div>
                 </div>
               ))}
@@ -1009,20 +1131,56 @@ export default function CultureTV({
           ══════════════════════════════════════════════════════ */}
       {activeTab === "live" && (
         <div className="animate-fade-in">
-          {/* Stats bar */}
+          {/* Stats bar — shared paper+ink strip, gold numerals */}
           <div className="px-5 mb-5">
-            <div className="flex gap-3">
-              <div className="flex-1 rounded-xl bg-coral/10 border border-coral/20 p-3 text-center">
-                <p className="text-[22px] font-heading font-bold text-coral">{activeStreams.length}</p>
-                <p className="text-[10px] text-txt-secondary">Live Now</p>
+            <div
+              className="flex"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div className="flex-1 p-3 text-center" style={{ borderRight: "2px solid var(--rule-strong-c)" }}>
+                <p
+                  className="c-hero tabular-nums"
+                  style={{ fontSize: 22, color: "var(--ink-strong)", lineHeight: 1 }}
+                >
+                  {activeStreams.length}
+                </p>
+                <p
+                  className="c-kicker mt-1"
+                  style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.6, letterSpacing: "0.14em" }}
+                >
+                  LIVE NOW
+                </p>
               </div>
-              <div className="flex-1 rounded-xl bg-gold/10 border border-gold/20 p-3 text-center">
-                <p className="text-[22px] font-heading font-bold text-gold">{upcomingStreams.length}</p>
-                <p className="text-[10px] text-txt-secondary">Upcoming</p>
+              <div className="flex-1 p-3 text-center" style={{ borderRight: "2px solid var(--rule-strong-c)", background: "var(--gold-c)" }}>
+                <p
+                  className="c-hero tabular-nums"
+                  style={{ fontSize: 22, color: "var(--ink-strong)", lineHeight: 1 }}
+                >
+                  {upcomingStreams.length}
+                </p>
+                <p
+                  className="c-kicker mt-1"
+                  style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.75, letterSpacing: "0.14em" }}
+                >
+                  UPCOMING
+                </p>
               </div>
-              <div className="flex-1 rounded-xl bg-cyan/10 border border-cyan/20 p-3 text-center">
-                <p className="text-[22px] font-heading font-bold text-cyan">{channels.length}</p>
-                <p className="text-[10px] text-txt-secondary">Channels</p>
+              <div className="flex-1 p-3 text-center">
+                <p
+                  className="c-hero tabular-nums"
+                  style={{ fontSize: 22, color: "var(--ink-strong)", lineHeight: 1 }}
+                >
+                  {channels.length}
+                </p>
+                <p
+                  className="c-kicker mt-1"
+                  style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.6, letterSpacing: "0.14em" }}
+                >
+                  CHANNELS
+                </p>
               </div>
             </div>
           </div>
@@ -1048,13 +1206,31 @@ export default function CultureTV({
             </div>
             {upcomingStreams.length === 0 ? (
               <div className="text-center py-10">
-                <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
+                <div
+                  className="w-16 h-16 flex items-center justify-center mx-auto mb-3"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--ink-strong)" strokeOpacity="0.55" strokeWidth="1.5" strokeLinecap="round">
                     <polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                   </svg>
                 </div>
-                <p className="text-sm text-txt-secondary mb-1">No streams scheduled yet</p>
-                {canStream && <p className="text-[12px] text-gold">Apply for a channel to start streaming</p>}
+                <p
+                  className="c-serif-it mb-1"
+                  style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.8 }}
+                >
+                  No streams scheduled yet
+                </p>
+                {canStream && (
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 10, color: "var(--ink-strong)", letterSpacing: "0.14em" }}
+                  >
+                    APPLY FOR A CHANNEL TO START STREAMING
+                  </p>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -1099,7 +1275,10 @@ export default function CultureTV({
               const accent = HERO_ACCENTS[i % HERO_ACCENTS.length];
               return (
                 <button key={video.id} className="w-full text-left press group" onClick={() => playVideo(video)}>
-                  <div className="relative rounded-2xl overflow-hidden border border-border-subtle">
+                  <div
+                    className="relative overflow-hidden"
+                    style={{ border: "2px solid var(--rule-strong-c)" }}
+                  >
                     <div className="h-[200px] relative overflow-hidden">
                       {video.mux_playback_id ? (
                         <img
@@ -1199,11 +1378,24 @@ export default function CultureTV({
                   <Card key={ch.id} hover className="relative">
                     <div className="flex gap-3">
                       <Link href={`/live/channel/${ch.id}`} className="shrink-0">
-                        <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden">
+                        <div
+                          className="w-14 h-14 flex items-center justify-center overflow-hidden"
+                          style={{
+                            background: "var(--gold-c)",
+                            border: "2px solid var(--rule-strong-c)",
+                            color: "var(--ink-strong)",
+                          }}
+                        >
                           {ch.avatar_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img src={ch.avatar_url} alt={ch.name} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-gold font-heading font-bold text-base">{channelInitials(ch.name)}</span>
+                            <span
+                              className="c-hero"
+                              style={{ fontSize: 16, color: "var(--ink-strong)" }}
+                            >
+                              {channelInitials(ch.name)}
+                            </span>
                           )}
                         </div>
                       </Link>
@@ -1259,10 +1451,32 @@ export default function CultureTV({
               const blockCount = timeBlocks.filter((tb) => tb.day_of_week === i).length;
               const isToday = i === today;
               return (
-                <div key={i} className={`shrink-0 w-[52px] rounded-xl p-2 text-center ${isToday ? "bg-gold/15 border border-gold/30" : "bg-white/[0.04] border border-border-subtle"}`}>
-                  <p className={`text-[10px] font-bold ${isToday ? "text-gold" : "text-txt-secondary"}`}>{DAY_NAMES_SHORT[i]}</p>
-                  <p className={`text-[16px] font-heading font-bold ${isToday ? "text-gold" : "text-white"}`}>{blockCount}</p>
-                  <p className="text-[8px] text-txt-secondary">shows</p>
+                <div
+                  key={i}
+                  className="shrink-0 w-[52px] p-2 text-center"
+                  style={{
+                    background: isToday ? "var(--gold-c)" : "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--ink-strong)", opacity: isToday ? 0.8 : 0.6, letterSpacing: "0.1em" }}
+                  >
+                    {DAY_NAMES_SHORT[i]}
+                  </p>
+                  <p
+                    className="c-hero tabular-nums"
+                    style={{ fontSize: 18, color: "var(--ink-strong)", lineHeight: 1 }}
+                  >
+                    {blockCount}
+                  </p>
+                  <p
+                    className="c-kicker"
+                    style={{ fontSize: 8, color: "var(--ink-strong)", opacity: 0.55, letterSpacing: "0.1em" }}
+                  >
+                    SHOWS
+                  </p>
                 </div>
               );
             })}
@@ -1318,16 +1532,22 @@ export default function CultureTV({
 function ChannelBubble({ channel: ch }: { channel: Channel }) {
   return (
     <Link href={`/live/channel/${ch.id}`} className="flex flex-col items-center gap-1.5 shrink-0 press">
-      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold/30 via-coral/20 to-hc-purple/30 p-[2px]">
-        <div className="w-full h-full rounded-full bg-midnight flex items-center justify-center overflow-hidden">
+      <div
+        className="w-16 h-16 rounded-full p-[2px]"
+        style={{ background: "var(--gold-c)" }}
+      >
+        <div
+          className="w-full h-full rounded-full flex items-center justify-center overflow-hidden"
+          style={{ background: "var(--ink-strong)", border: "2px solid var(--ink-strong)" }}
+        >
           {ch.avatar_url ? (
             <img src={ch.avatar_url} alt={ch.name} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-gold font-heading font-bold text-sm">{channelInitials(ch.name)}</span>
+            <span className="c-card-t" style={{ color: "var(--gold-c)", fontSize: 14 }}>{channelInitials(ch.name)}</span>
           )}
         </div>
       </div>
-      <span className="text-[10px] text-txt-secondary text-center w-16 truncate">{ch.name}</span>
+      <span className="c-meta text-center w-16 truncate" style={{ color: "var(--ink-strong)" }}>{ch.name}</span>
     </Link>
   );
 }
@@ -1335,58 +1555,66 @@ function ChannelBubble({ channel: ch }: { channel: Channel }) {
 function VideoCardLarge({ video, onPlay }: { video: ChannelVideo; onPlay: () => void }) {
   return (
     <button onClick={onPlay} className="shrink-0 w-[260px] text-left press group">
-      <div className="relative rounded-xl overflow-hidden mb-2">
-        <div className="aspect-video bg-gradient-to-br from-gold/20 via-midnight to-hc-purple/20 flex items-center justify-center">
+      {/* Thumbnail canvas stays dark — video preview surface */}
+      <div
+        className="relative overflow-hidden mb-2"
+        style={{ border: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
           {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=520&height=292&time=5`} alt={video.title} className="w-full h-full object-cover" />
           ) : video.thumbnail_url ? (
             <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-gold/40"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--gold-c)", opacity: 0.4 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
           <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full bg-gold/90 flex items-center justify-center shadow-lg">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="text-midnight ml-0.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" /></svg>
+            <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="ml-0.5" style={{ color: "var(--ink-strong)" }}><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" /></svg>
             </div>
           </div>
-          {video.duration && <div className="absolute bottom-2 right-2 bg-black/70 rounded px-1.5 py-0.5 text-[10px] font-mono text-white">{formatDuration(video.duration)}</div>}
-          <div className="absolute top-2 left-2"><Badge label="Featured" variant="gold" /></div>
+          {video.duration && <div className="absolute bottom-2 right-2 px-1.5 py-0.5 c-kicker" style={{ fontSize: 10, background: "var(--paper)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}>{formatDuration(video.duration)}</div>}
+          <div className="absolute top-2 left-2"><span className="c-badge-gold" style={{ fontSize: 9 }}>FEATURED</span></div>
         </div>
       </div>
-      <h3 className="font-heading font-bold text-[13px] line-clamp-2 mb-1">{video.title}</h3>
+      <h3 className="c-card-t line-clamp-2 mb-1" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{video.title}</h3>
       <div className="flex items-center gap-1.5">
-        {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
-        <span className="text-[10px] text-txt-secondary">· {formatViews(video.view_count)} views</span>
+        {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
+        <span className="c-meta">· {formatViews(video.view_count)} VIEWS</span>
       </div>
     </button>
   );
 }
 
-function VideoCardSmall({ video, onPlay, badgeLabel, badgeVariant }: { video: ChannelVideo; onPlay: () => void; badgeLabel?: string; badgeVariant?: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }) {
+function VideoCardSmall({ video, onPlay, badgeLabel }: { video: ChannelVideo; onPlay: () => void; badgeLabel?: string; badgeVariant?: "gold" | "blue" | "coral" | "emerald" | "cyan" | "purple" | "pink" }) {
   return (
     <button onClick={onPlay} className="shrink-0 w-[180px] text-left press group">
-      <div className="relative rounded-xl overflow-hidden mb-2">
-        <div className="aspect-video bg-gradient-to-br from-gold/15 via-midnight to-coral/15 flex items-center justify-center">
+      {/* Thumbnail canvas stays dark — video preview surface */}
+      <div
+        className="relative overflow-hidden mb-2"
+        style={{ border: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
           {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=360&height=202&time=5`} alt={video.title} className="w-full h-full object-cover" />
           ) : video.thumbnail_url ? (
             <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-gold/30"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--gold-c)", opacity: 0.35 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
           <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-gold/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-midnight ml-0.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" /></svg>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="ml-0.5" style={{ color: "var(--ink-strong)" }}><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" /></svg>
             </div>
           </div>
-          {video.duration && <div className="absolute bottom-1.5 right-1.5 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">{formatDuration(video.duration)}</div>}
-          {badgeLabel && <div className="absolute top-1.5 left-1.5"><Badge label={badgeLabel} variant={badgeVariant || "gold"} /></div>}
+          {video.duration && <div className="absolute bottom-1.5 right-1.5 px-1 py-0.5 c-kicker" style={{ fontSize: 9, background: "var(--paper)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}>{formatDuration(video.duration)}</div>}
+          {badgeLabel && <div className="absolute top-1.5 left-1.5"><span className="c-badge-ink" style={{ fontSize: 9 }}>{badgeLabel.toUpperCase()}</span></div>}
         </div>
       </div>
-      <h3 className="font-heading font-bold text-[12px] line-clamp-2">{video.title}</h3>
+      <h3 className="c-card-t line-clamp-2" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{video.title}</h3>
       <div className="flex items-center gap-1 mt-0.5">
-        {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
-        {video.published_at && <span className="text-[10px] text-txt-secondary">· {timeAgo(video.published_at)}</span>}
+        {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
+        {video.published_at && <span className="c-meta">· {timeAgo(video.published_at)}</span>}
       </div>
     </button>
   );
@@ -1394,71 +1622,96 @@ function VideoCardSmall({ video, onPlay, badgeLabel, badgeVariant }: { video: Ch
 
 function VideoCardRow({ video, onPlay }: { video: ChannelVideo; onPlay: () => void }) {
   return (
-    <Card hover onClick={onPlay} className="cursor-pointer">
-      <div className="flex gap-3">
-        <div className="w-28 h-[72px] rounded-xl overflow-hidden shrink-0 relative bg-gradient-to-br from-midnight to-deep flex items-center justify-center group">
+    <button
+      onClick={onPlay}
+      className="w-full text-left press"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        color: "var(--ink-strong)",
+      }}
+    >
+      <div className="flex gap-3 p-3">
+        {/* Thumbnail canvas stays dark — video preview surface */}
+        <div
+          className="w-28 h-[72px] overflow-hidden shrink-0 relative flex items-center justify-center group"
+          style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
+        >
           {video.mux_playback_id ? (
             <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=224&height=144&time=5`} alt={video.title} className="w-full h-full object-cover" />
           ) : video.thumbnail_url ? (
             <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-white/20"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--paper)", opacity: 0.3 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="white" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ background: "var(--gold-c)", border: "1.5px solid var(--ink-strong)" }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5" style={{ color: "var(--ink-strong)" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
             </div>
           </div>
-          {video.duration && <div className="absolute bottom-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">{formatDuration(video.duration)}</div>}
+          {video.duration && <div className="absolute bottom-1 right-1 px-1 py-0.5 c-kicker" style={{ fontSize: 9, background: "var(--paper)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}>{formatDuration(video.duration)}</div>}
         </div>
         <div className="flex-1 min-w-0 py-0.5">
-          <h3 className="font-heading font-bold text-[13px] line-clamp-2 mb-1">{video.title}</h3>
-          {video.channel && <p className="text-[10px] text-txt-secondary truncate mb-0.5">{video.channel.name}</p>}
-          <div className="flex items-center gap-2 text-[10px] text-txt-secondary">
-            <span>{formatViews(video.view_count)} views</span>
+          <h3 className="c-card-t line-clamp-2 mb-1" style={{ fontSize: 13 }}>{video.title}</h3>
+          {video.channel && <p className="c-meta truncate mb-0.5">{video.channel.name}</p>}
+          <div className="flex items-center gap-2 c-meta">
+            <span>{formatViews(video.view_count)} VIEWS</span>
             {video.published_at && (
               <>
                 <span>·</span>
-                <span>{timeAgo(video.published_at)}</span>
+                <span>{timeAgo(video.published_at).toUpperCase()}</span>
               </>
             )}
           </div>
         </div>
       </div>
-    </Card>
+    </button>
   );
 }
 
 function TimeBlockCard({ block }: { block: TimeBlock }) {
   const badge = block.channel ? TYPE_BADGE[block.channel.type as ChannelType] || TYPE_BADGE.community : TYPE_BADGE.community;
   return (
-    <Card className="border-gold/10">
+    <div
+      className="p-3"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        color: "var(--ink-strong)",
+      }}
+    >
       <div className="flex gap-3 items-center">
         <div className="w-14 text-center shrink-0">
-          <p className="text-[11px] text-gold font-bold">{formatTimeBlock(block.start_time)}</p>
-          <p className="text-[9px] text-txt-secondary">{formatTimeBlock(block.end_time)}</p>
+          <p className="c-card-t" style={{ fontSize: 11, color: "var(--gold-c)" }}>{formatTimeBlock(block.start_time)}</p>
+          <p className="c-meta" style={{ fontSize: 9 }}>{formatTimeBlock(block.end_time)}</p>
         </div>
-        <div className="w-px h-8 bg-border-subtle" />
+        <div className="w-px h-8" style={{ background: "var(--rule-strong-c)", opacity: 0.3 }} />
         <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-bold text-[13px] truncate">{block.title || (block.channel ? block.channel.name : "Broadcast")}</h3>
+          <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>{block.title || (block.channel ? block.channel.name : "Broadcast")}</h3>
           <div className="flex items-center gap-2">
             {block.channel && (
               <>
-                <div className="w-4 h-4 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center overflow-hidden">
+                <div
+                  className="w-4 h-4 rounded-full flex items-center justify-center overflow-hidden"
+                  style={{ background: "var(--gold-c)", border: "1px solid var(--rule-strong-c)" }}
+                >
                   {block.channel.avatar_url ? (
                     <img src={block.channel.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-[6px] text-gold font-bold">{channelInitials(block.channel.name)}</span>
+                    <span className="c-card-t" style={{ fontSize: 6, color: "var(--ink-strong)" }}>{channelInitials(block.channel.name)}</span>
                   )}
                 </div>
-                <span className="text-[10px] text-txt-secondary truncate">{block.channel.name}</span>
+                <span className="c-meta truncate">{block.channel.name}</span>
                 <Badge label={badge.label} variant={badge.variant} />
               </>
             )}
-            {block.is_recurring && <span className="text-[9px] text-txt-secondary">Weekly</span>}
+            {block.is_recurring && <span className="c-meta" style={{ fontSize: 9 }}>WEEKLY</span>}
           </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

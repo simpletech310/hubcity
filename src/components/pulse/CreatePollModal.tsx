@@ -117,22 +117,41 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      {/* Backdrop (stays dark — scrim) */}
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-[430px] bg-card border-t border-border-subtle rounded-t-3xl animate-slide-up max-h-[85vh] flex flex-col">
+      <div
+        className="relative w-full max-w-[430px] animate-slide-up max-h-[85vh] flex flex-col"
+        style={{
+          background: "var(--paper)",
+          borderTop: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div
+            className="w-10 h-1"
+            style={{ background: "var(--rule-strong-c)", opacity: 0.3, borderRadius: 999 }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-border-subtle">
-          <span className="text-sm font-heading font-bold text-gold">Create Poll</span>
+        <div
+          className="flex items-center justify-between px-5 pb-3"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <span className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
+            § CREATE POLL
+          </span>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-white press transition-colors"
+            className="w-8 h-8 flex items-center justify-center press transition-colors"
+            style={{
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+            }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -143,34 +162,44 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {error && (
-            <div className="bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5 text-xs text-coral">
+            <div
+              className="px-4 py-2.5"
+              style={{
+                background: "rgba(232, 72, 85, 0.1)",
+                border: "2px solid #E84855",
+                color: "#E84855",
+                fontSize: 12,
+              }}
+            >
               {error}
             </div>
           )}
 
           {/* Poll type toggle */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Poll Type</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>POLL TYPE</label>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => setPollType("multiple_choice")}
-                className={`flex-1 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all press ${
+                className="flex-1 px-4 py-2.5 c-card-t transition-all press"
+                style={
                   pollType === "multiple_choice"
-                    ? "bg-gold/20 text-gold border border-gold/30"
-                    : "bg-deep/50 text-txt-secondary border border-border-subtle hover:border-white/10"
-                }`}
+                    ? { background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)" }
+                    : { background: "transparent", color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }
+                }
               >
                 Multiple Choice
               </button>
               <button
                 type="button"
                 onClick={() => setPollType("temperature_check")}
-                className={`flex-1 px-4 py-2.5 rounded-xl text-xs font-semibold transition-all press ${
+                className="flex-1 px-4 py-2.5 c-card-t transition-all press"
+                style={
                   pollType === "temperature_check"
-                    ? "bg-gold/20 text-gold border border-gold/30"
-                    : "bg-deep/50 text-txt-secondary border border-border-subtle hover:border-white/10"
-                }`}
+                    ? { background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)" }
+                    : { background: "transparent", color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }
+                }
               >
                 Temperature Check
               </button>
@@ -179,7 +208,7 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
 
           {/* Question */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Question</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>QUESTION</label>
             <div className="relative">
               <textarea
                 value={question}
@@ -187,9 +216,14 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
                 placeholder="Ask your community something..."
                 maxLength={280}
                 rows={3}
-                className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none resize-none"
+                className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               />
-              <span className="absolute bottom-2 right-3 text-[10px] text-txt-secondary">
+              <span className="absolute bottom-2 right-3 c-meta" style={{ fontSize: 10 }}>
                 {question.length}/280
               </span>
             </div>
@@ -198,7 +232,7 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
           {/* Options */}
           {pollType === "multiple_choice" ? (
             <div>
-              <label className="text-xs font-medium text-txt-secondary mb-2 block">Options</label>
+              <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>OPTIONS</label>
               <div className="space-y-2">
                 {options.map((opt, idx) => (
                   <div key={opt.id} className="flex items-center gap-2">
@@ -208,7 +242,12 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
                       onChange={(e) => updateOption(opt.id, "emoji", e.target.value)}
                       placeholder="\uD83D\uDE00"
                       maxLength={2}
-                      className="w-10 bg-deep/50 border border-border-subtle rounded-lg px-2 py-3 text-sm text-center text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none"
+                      className="w-10 px-2 py-3 text-sm text-center focus:outline-none"
+                      style={{
+                        background: "var(--paper-warm)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                      }}
                     />
                     <input
                       type="text"
@@ -216,13 +255,19 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
                       onChange={(e) => updateOption(opt.id, "label", e.target.value)}
                       placeholder={`Option ${idx + 1}`}
                       maxLength={80}
-                      className="flex-1 bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none"
+                      className="flex-1 px-4 py-3 text-sm focus:outline-none"
+                      style={{
+                        background: "var(--paper-warm)",
+                        border: "2px solid var(--rule-strong-c)",
+                        color: "var(--ink-strong)",
+                      }}
                     />
                     {options.length > 2 && (
                       <button
                         type="button"
                         onClick={() => removeOption(opt.id)}
-                        className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-coral press transition-colors shrink-0"
+                        className="w-8 h-8 flex items-center justify-center press transition-colors shrink-0"
+                        style={{ border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                           <path d="M18 6L6 18M6 6l12 12" />
@@ -236,7 +281,8 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
                 <button
                   type="button"
                   onClick={addOption}
-                  className="mt-2 flex items-center gap-1.5 text-xs text-gold hover:text-gold-light press transition-colors"
+                  className="mt-2 flex items-center gap-1.5 c-meta press transition-colors"
+                  style={{ color: "var(--ink-strong)" }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M12 5v14M5 12h14" />
@@ -247,16 +293,22 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
             </div>
           ) : (
             <div>
-              <label className="text-xs font-medium text-txt-secondary mb-2 block">Temperature Scale Preview</label>
-              <div className="bg-deep/50 border border-border-subtle rounded-xl p-4">
+              <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>TEMPERATURE SCALE PREVIEW</label>
+              <div
+                className="p-4"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{TEMP_CHECK_OPTIONS[1].emoji}</span>
-                    <span className="text-xs text-txt-secondary font-medium">Cold</span>
+                    <span className="c-meta">Cold</span>
                   </div>
                   <div className="flex-1 mx-4 h-2 rounded-full bg-gradient-to-r from-blue-500 via-yellow-400 to-red-500 opacity-60" />
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-txt-secondary font-medium">Hot</span>
+                    <span className="c-meta">Hot</span>
                     <span className="text-2xl">{TEMP_CHECK_OPTIONS[0].emoji}</span>
                   </div>
                 </div>
@@ -267,44 +319,54 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
           {/* Anonymous toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-txt-primary font-medium">Anonymous</p>
-              <p className="text-xs text-txt-secondary">Hide voter identities</p>
+              <p className="c-card-t" style={{ fontSize: 12 }}>Anonymous</p>
+              <p className="c-meta">Hide voter identities</p>
             </div>
             <button
               type="button"
               onClick={() => setIsAnonymous(!isAnonymous)}
-              className={`relative w-11 h-6 rounded-full transition-colors press ${
-                isAnonymous ? "bg-gold" : "bg-deep/50 border border-border-subtle"
-              }`}
+              className="relative w-11 h-6 rounded-full transition-colors press"
+              style={
+                isAnonymous
+                  ? { background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }
+                  : { background: "transparent", border: "2px solid var(--rule-strong-c)" }
+              }
             >
               <div
-                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
                   isAnonymous ? "translate-x-[22px]" : "translate-x-0.5"
                 }`}
+                style={{ background: "var(--ink-strong)" }}
               />
             </button>
           </div>
 
           {/* Ends at */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Ends at (optional)</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>ENDS AT (OPTIONAL)</label>
             <input
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
-              className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary focus:border-gold/30 focus:outline-none [color-scheme:dark]"
+              className="w-full px-4 py-3 text-sm focus:outline-none"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border-subtle">
+        <div
+          className="px-5 py-4"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className={`w-full py-3 rounded-xl text-sm font-semibold transition-all press bg-gradient-to-r from-gold to-gold-light text-midnight ${
-              submitting ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
-            }`}
+            className={`c-btn c-btn-primary w-full press ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {submitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -312,10 +374,10 @@ export default function CreatePollModal({ isOpen, onClose }: CreatePollModalProp
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Publishing...
+                PUBLISHING...
               </span>
             ) : (
-              "Publish Poll"
+              "PUBLISH POLL"
             )}
           </button>
         </div>

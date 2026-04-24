@@ -92,14 +92,17 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
   if (loading) {
     return (
       <div className="mx-5 mb-3">
-        <div className="glass-card-elevated rounded-2xl px-4 py-3 flex items-center gap-3 animate-pulse">
-          <div className="w-5 h-5 rounded-full bg-white/[0.06]" />
-          <div className="h-3 w-10 rounded bg-white/[0.06]" />
-          <div className="w-px h-4 bg-white/[0.06]" />
-          <div className="h-3 w-20 rounded bg-white/[0.06]" />
-          <div className="w-px h-4 bg-white/[0.06]" />
-          <div className="h-3 w-12 rounded bg-white/[0.06]" />
-          <div className="ml-auto h-3 w-14 rounded bg-white/[0.06]" />
+        <div
+          className="px-4 py-3 flex items-center gap-3 animate-pulse"
+          style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <div className="w-5 h-5 rounded-full" style={{ background: "rgba(26,21,18,0.08)" }} />
+          <div className="h-3 w-10" style={{ background: "rgba(26,21,18,0.08)" }} />
+          <div className="w-px h-4" style={{ background: "rgba(26,21,18,0.2)" }} />
+          <div className="h-3 w-20" style={{ background: "rgba(26,21,18,0.08)" }} />
+          <div className="w-px h-4" style={{ background: "rgba(26,21,18,0.2)" }} />
+          <div className="h-3 w-12" style={{ background: "rgba(26,21,18,0.08)" }} />
+          <div className="ml-auto h-3 w-14" style={{ background: "rgba(26,21,18,0.08)" }} />
         </div>
       </div>
     );
@@ -109,7 +112,14 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
 
   return (
     <div className="mx-5 mb-3">
-      <div className="glass-card-elevated rounded-2xl px-4 py-3 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <div
+        className="px-4 py-3 flex items-center gap-3 overflow-x-auto scrollbar-hide"
+        style={{
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
         {/* Weather */}
         {weather && (
           <Link
@@ -119,13 +129,13 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
             <Icon
               name={weatherIconName(weather.icon)}
               size={16}
-              className="text-gold"
+              style={{ color: "var(--gold-c)" }}
             />
-            <span className="text-[13px] font-semibold">
+            <span className="c-card-t" style={{ fontSize: 13 }}>
               {Math.round(weather.temp)}°
             </span>
-            <div className="w-px h-4 bg-white/[0.08]" />
-            <span className="text-[11px] text-white/50 capitalize">
+            <div className="w-px h-4" style={{ background: "rgba(26,21,18,0.25)" }} />
+            <span className="c-meta capitalize">
               {weather.description}
             </span>
           </Link>
@@ -133,7 +143,7 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
 
         {/* Separator */}
         {weather && (aqi || trafficAlertCount > 0) && (
-          <div className="w-px h-4 bg-white/[0.08] shrink-0" />
+          <div className="w-px h-4 shrink-0" style={{ background: "rgba(26,21,18,0.25)" }} />
         )}
 
         {/* AQI Badge */}
@@ -143,8 +153,13 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
             className="flex items-center gap-1.5 shrink-0 press"
           >
             <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: aqiStyle.bg, color: aqiStyle.text }}
+              className="c-kicker px-2 py-0.5"
+              style={{
+                background: aqiStyle.bg,
+                color: aqiStyle.text,
+                border: "1.5px solid var(--rule-strong-c)",
+                fontSize: 10,
+              }}
             >
               AQI {aqi.aqi}
             </span>
@@ -153,7 +168,7 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
 
         {/* Separator */}
         {aqi && trafficAlertCount > 0 && (
-          <div className="w-px h-4 bg-white/[0.08] shrink-0" />
+          <div className="w-px h-4 shrink-0" style={{ background: "rgba(26,21,18,0.25)" }} />
         )}
 
         {/* Traffic */}
@@ -164,12 +179,14 @@ export default function CityPulseBar({ trafficAlertCount = 0 }: CityPulseBarProp
           <Icon
             name="transit"
             size={14}
-            className={trafficAlertCount > 0 ? "text-amber-400" : "text-white/30"}
+            style={{ color: trafficAlertCount > 0 ? "#F59E0B" : "var(--ink-strong)", opacity: trafficAlertCount > 0 ? 1 : 0.4 }}
           />
           <span
-            className={`text-[11px] font-semibold ${
-              trafficAlertCount > 0 ? "text-amber-400" : "text-white/30"
-            }`}
+            className="c-meta"
+            style={{
+              color: trafficAlertCount > 0 ? "#F59E0B" : "var(--ink-strong)",
+              opacity: trafficAlertCount > 0 ? 1 : 0.5,
+            }}
           >
             {trafficAlertCount > 0
               ? `${trafficAlertCount} alert${trafficAlertCount > 1 ? "s" : ""}`

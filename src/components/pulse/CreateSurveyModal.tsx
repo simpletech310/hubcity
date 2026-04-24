@@ -158,22 +158,36 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleClose} />
+      {/* Backdrop (stays dark — scrim) */}
+      <div className="absolute inset-0 bg-black/60" onClick={handleClose} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-[430px] bg-card border-t border-border-subtle rounded-t-3xl animate-slide-up max-h-[90vh] flex flex-col">
+      <div
+        className="relative w-full max-w-[430px] animate-slide-up max-h-[90vh] flex flex-col"
+        style={{
+          background: "var(--paper)",
+          borderTop: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div
+            className="w-10 h-1"
+            style={{ background: "var(--rule-strong-c)", opacity: 0.3, borderRadius: 999 }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-border-subtle">
-          <span className="text-sm font-heading font-bold text-gold">Create Survey</span>
+        <div
+          className="flex items-center justify-between px-5 pb-3"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <span className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>§ CREATE SURVEY</span>
           <button
             onClick={handleClose}
-            className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-white press transition-colors"
+            className="w-8 h-8 flex items-center justify-center press transition-colors"
+            style={{ border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -184,72 +198,96 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
           {error && (
-            <div className="bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5 text-xs text-coral">
+            <div
+              className="px-4 py-2.5"
+              style={{
+                background: "rgba(232, 72, 85, 0.1)",
+                border: "2px solid #E84855",
+                color: "#E84855",
+                fontSize: 12,
+              }}
+            >
               {error}
             </div>
           )}
 
           {/* Title */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Title</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>TITLE</label>
             <input
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Survey title..."
               maxLength={100}
-              className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none"
+              className="w-full px-4 py-3 text-sm focus:outline-none"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             />
-            <span className="text-[10px] text-txt-secondary mt-1 block text-right">{title.length}/100</span>
+            <span className="c-meta mt-1 block text-right" style={{ fontSize: 10 }}>{title.length}/100</span>
           </div>
 
           {/* Description */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Description (optional)</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>DESCRIPTION (OPTIONAL)</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="What is this survey about?"
               maxLength={500}
               rows={2}
-              className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none resize-none"
+              className="w-full px-4 py-3 text-sm focus:outline-none resize-none"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             />
-            <span className="text-[10px] text-txt-secondary mt-1 block text-right">{description.length}/500</span>
+            <span className="c-meta mt-1 block text-right" style={{ fontSize: 10 }}>{description.length}/500</span>
           </div>
 
           {/* Questions */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-3 block">
-              Questions ({questions.length}/20)
+            <label className="c-kicker mb-3 block" style={{ fontSize: 10 }}>
+              QUESTIONS ({questions.length}/20)
             </label>
 
             <div className="space-y-4">
               {questions.map((q, qIdx) => (
                 <div
                   key={q.id}
-                  className="bg-deep/30 border border-border-subtle rounded-xl p-4 space-y-3"
+                  className="p-4 space-y-3"
+                  style={{
+                    background: "var(--paper-warm)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
                 >
                   {/* Question header */}
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-txt-secondary">Q{qIdx + 1}</span>
+                    <span className="c-kicker" style={{ fontSize: 10 }}>Q{qIdx + 1}</span>
                     <div className="flex items-center gap-2">
                       {/* Required toggle */}
                       <button
                         type="button"
                         onClick={() => updateQuestion(q.id, { required: !q.required })}
-                        className={`text-[10px] px-2 py-1 rounded-md font-medium transition-colors press ${
+                        className="px-2 py-1 c-meta transition-colors press"
+                        style={
                           q.required
-                            ? "bg-gold/20 text-gold"
-                            : "bg-white/5 text-txt-secondary"
-                        }`}
+                            ? { background: "var(--gold-c)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)", fontSize: 10 }
+                            : { background: "transparent", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)", fontSize: 10 }
+                        }
                       >
-                        {q.required ? "Required" : "Optional"}
+                        {q.required ? "REQUIRED" : "OPTIONAL"}
                       </button>
                       {questions.length > 1 && (
                         <button
                           type="button"
                           onClick={() => removeQuestion(q.id)}
-                          className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-coral press transition-colors"
+                          className="w-6 h-6 flex items-center justify-center press transition-colors"
+                          style={{ border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                             <path d="M18 6L6 18M6 6l12 12" />
@@ -266,14 +304,24 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                     onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
                     placeholder="Enter your question..."
                     maxLength={300}
-                    className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none"
+                    className="w-full px-4 py-3 text-sm focus:outline-none"
+                    style={{
+                      background: "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
                   />
 
                   {/* Question type */}
                   <select
                     value={q.type}
                     onChange={(e) => updateQuestion(q.id, { type: e.target.value as QuestionType })}
-                    className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary focus:border-gold/30 focus:outline-none appearance-none cursor-pointer"
+                    className="w-full px-4 py-3 text-sm focus:outline-none appearance-none cursor-pointer"
+                    style={{
+                      background: "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
                   >
                     {(Object.keys(QUESTION_TYPE_LABELS) as QuestionType[]).map((type) => (
                       <option key={type} value={type}>
@@ -293,13 +341,19 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                             onChange={(e) => updateOption(q.id, optIdx, e.target.value)}
                             placeholder={`Option ${optIdx + 1}`}
                             maxLength={100}
-                            className="flex-1 bg-deep/50 border border-border-subtle rounded-lg px-3 py-2 text-xs text-txt-primary placeholder:text-txt-secondary/50 focus:border-gold/30 focus:outline-none"
+                            className="flex-1 px-3 py-2 text-xs focus:outline-none"
+                            style={{
+                              background: "var(--paper)",
+                              border: "2px solid var(--rule-strong-c)",
+                              color: "var(--ink-strong)",
+                            }}
                           />
                           {q.options.length > 2 && (
                             <button
                               type="button"
                               onClick={() => removeOption(q.id, optIdx)}
-                              className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-txt-secondary hover:text-coral press transition-colors shrink-0"
+                              className="w-6 h-6 flex items-center justify-center press transition-colors shrink-0"
+                              style={{ border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                             >
                               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                                 <path d="M18 6L6 18M6 6l12 12" />
@@ -312,7 +366,8 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                         <button
                           type="button"
                           onClick={() => addOption(q.id)}
-                          className="flex items-center gap-1 text-[11px] text-gold hover:text-gold-light press transition-colors"
+                          className="flex items-center gap-1 c-meta press transition-colors"
+                          style={{ color: "var(--ink-strong)" }}
                         >
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                             <path d="M12 5v14M5 12h14" />
@@ -327,9 +382,9 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                   {q.type === "rating" && (
                     <div className="flex items-center gap-1 px-1">
                       {[1, 2, 3, 4, 5].map((n) => (
-                        <span key={n} className="text-lg text-gold/40">{"\u2605"}</span>
+                        <span key={n} className="text-lg" style={{ color: "var(--gold-c)" }}>{"\u2605"}</span>
                       ))}
-                      <span className="text-[10px] text-txt-secondary ml-2">1-5 stars</span>
+                      <span className="c-meta ml-2">1-5 stars</span>
                     </div>
                   )}
 
@@ -339,7 +394,12 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                       {Array.from({ length: 10 }, (_, i) => (
                         <div
                           key={i}
-                          className="w-6 h-6 rounded-md bg-deep/50 border border-border-subtle flex items-center justify-center text-[10px] text-txt-secondary"
+                          className="w-6 h-6 flex items-center justify-center c-meta"
+                          style={{
+                            background: "var(--paper)",
+                            border: "1.5px solid var(--rule-strong-c)",
+                            fontSize: 10,
+                          }}
                         >
                           {i + 1}
                         </div>
@@ -354,7 +414,8 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
               <button
                 type="button"
                 onClick={addQuestion}
-                className="mt-3 flex items-center gap-1.5 text-xs text-gold hover:text-gold-light press transition-colors"
+                className="mt-3 flex items-center gap-1.5 c-meta press transition-colors"
+                style={{ color: "var(--ink-strong)" }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <path d="M12 5v14M5 12h14" />
@@ -367,44 +428,54 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
           {/* Anonymous toggle */}
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-txt-primary font-medium">Anonymous</p>
-              <p className="text-xs text-txt-secondary">Hide respondent identities</p>
+              <p className="c-card-t" style={{ fontSize: 12 }}>Anonymous</p>
+              <p className="c-meta">Hide respondent identities</p>
             </div>
             <button
               type="button"
               onClick={() => setIsAnonymous(!isAnonymous)}
-              className={`relative w-11 h-6 rounded-full transition-colors press ${
-                isAnonymous ? "bg-gold" : "bg-deep/50 border border-border-subtle"
-              }`}
+              className="relative w-11 h-6 rounded-full transition-colors press"
+              style={
+                isAnonymous
+                  ? { background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)" }
+                  : { background: "transparent", border: "2px solid var(--rule-strong-c)" }
+              }
             >
               <div
-                className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                className={`absolute top-0.5 w-4 h-4 rounded-full transition-transform ${
                   isAnonymous ? "translate-x-[22px]" : "translate-x-0.5"
                 }`}
+                style={{ background: "var(--ink-strong)" }}
               />
             </button>
           </div>
 
           {/* Ends at */}
           <div>
-            <label className="text-xs font-medium text-txt-secondary mb-2 block">Ends at (optional)</label>
+            <label className="c-kicker mb-2 block" style={{ fontSize: 10 }}>ENDS AT (OPTIONAL)</label>
             <input
               type="datetime-local"
               value={endsAt}
               onChange={(e) => setEndsAt(e.target.value)}
-              className="w-full bg-deep/50 border border-border-subtle rounded-xl px-4 py-3 text-sm text-txt-primary focus:border-gold/30 focus:outline-none [color-scheme:dark]"
+              className="w-full px-4 py-3 text-sm focus:outline-none"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+              }}
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t border-border-subtle">
+        <div
+          className="px-5 py-4"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           <button
             onClick={handleSubmit}
             disabled={submitting}
-            className={`w-full py-3 rounded-xl text-sm font-semibold transition-all press bg-gradient-to-r from-gold to-gold-light text-midnight ${
-              submitting ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
-            }`}
+            className={`c-btn c-btn-primary w-full press ${submitting ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             {submitting ? (
               <span className="flex items-center justify-center gap-2">
@@ -412,10 +483,10 @@ export default function CreateSurveyModal({ isOpen, onClose }: CreateSurveyModal
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Publishing...
+                PUBLISHING...
               </span>
             ) : (
-              "Publish Survey"
+              "PUBLISH SURVEY"
             )}
           </button>
         </div>

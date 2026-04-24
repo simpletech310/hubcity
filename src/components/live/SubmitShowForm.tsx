@@ -7,6 +7,22 @@ interface Props {
   channels: { slug: string; name: string }[];
 }
 
+const inputStyle: React.CSSProperties = {
+  background: "var(--paper-warm)",
+  border: "2px solid var(--rule-strong-c)",
+  color: "var(--ink-strong)",
+  fontSize: 14,
+  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+};
+
+const labelClass = "block c-kicker mb-1.5";
+const labelStyle: React.CSSProperties = {
+  fontSize: 10,
+  color: "var(--ink-strong)",
+  opacity: 0.7,
+  letterSpacing: "0.14em",
+};
+
 export default function SubmitShowForm({ channels }: Props) {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -50,9 +66,25 @@ export default function SubmitShowForm({ channels }: Props) {
 
   if (success) {
     return (
-      <div className="rounded-2xl border border-gold/30 bg-gold/10 p-6 text-center">
-        <h3 className="font-heading font-bold text-lg mb-2">Pitch submitted!</h3>
-        <p className="text-sm text-txt-secondary">We&apos;ll review it and be in touch.</p>
+      <div
+        className="p-6 text-center"
+        style={{
+          background: "var(--gold-c)",
+          border: "3px solid var(--rule-strong-c)",
+        }}
+      >
+        <h3
+          className="c-hero mb-2"
+          style={{ fontSize: 22, color: "var(--ink-strong)", lineHeight: 1 }}
+        >
+          PITCH SUBMITTED
+        </h3>
+        <p
+          className="c-serif-it"
+          style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.8 }}
+        >
+          We&apos;ll review it and be in touch.
+        </p>
       </div>
     );
   }
@@ -60,31 +92,34 @@ export default function SubmitShowForm({ channels }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Show title *</label>
+        <label className={labelClass} style={labelStyle}>SHOW TITLE *</label>
         <input
           name="show_title"
           required
           maxLength={100}
           placeholder="e.g. Street Scholars"
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="w-full px-4 py-3 focus:outline-none"
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Tagline</label>
+        <label className={labelClass} style={labelStyle}>TAGLINE</label>
         <input
           name="tagline"
           maxLength={120}
           placeholder="One short sentence"
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="w-full px-4 py-3 focus:outline-none"
+          style={inputStyle}
         />
       </div>
 
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Which channel fits best?</label>
+        <label className={labelClass} style={labelStyle}>WHICH CHANNEL FITS BEST?</label>
         <select
           name="channel_slug"
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="w-full px-4 py-3 focus:outline-none"
+          style={inputStyle}
           defaultValue=""
         >
           <option value="">-- Any / unsure --</option>
@@ -95,10 +130,11 @@ export default function SubmitShowForm({ channels }: Props) {
       </div>
 
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Format</label>
+        <label className={labelClass} style={labelStyle}>FORMAT</label>
         <select
           name="format"
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="w-full px-4 py-3 focus:outline-none"
+          style={inputStyle}
           defaultValue=""
         >
           <option value="">-- Pick one --</option>
@@ -112,24 +148,26 @@ export default function SubmitShowForm({ channels }: Props) {
       </div>
 
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Synopsis *</label>
+        <label className={labelClass} style={labelStyle}>SYNOPSIS *</label>
         <textarea
           name="synopsis"
           required
           rows={5}
           maxLength={2000}
           placeholder="What's the show about? Who is it for? What makes it different?"
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50 resize-none"
+          className="w-full px-4 py-3 focus:outline-none resize-none"
+          style={{ ...inputStyle, fontFamily: "var(--font-fraunces), serif" }}
         />
       </div>
 
       <div>
-        <label className="block text-[12px] font-semibold mb-1.5">Pilot / sample video URL</label>
+        <label className={labelClass} style={labelStyle}>PILOT / SAMPLE VIDEO URL</label>
         <input
           name="pilot_video_url"
           type="url"
           placeholder="https://..."
-          className="w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="w-full px-4 py-3 focus:outline-none"
+          style={inputStyle}
         />
       </div>
 
@@ -137,25 +175,39 @@ export default function SubmitShowForm({ channels }: Props) {
         <input
           name="instagram"
           placeholder="@instagram"
-          className="px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="px-4 py-3 focus:outline-none"
+          style={inputStyle}
         />
         <input
           name="youtube"
           placeholder="youtube.com/@..."
-          className="px-4 py-3 rounded-xl bg-white/[0.06] border border-border-subtle text-sm focus:outline-none focus:border-gold/50"
+          className="px-4 py-3 focus:outline-none"
+          style={inputStyle}
         />
       </div>
 
       {error && (
-        <p className="text-sm text-coral">{error}</p>
+        <div
+          className="px-4 py-3"
+          style={{
+            background: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--gold-c)",
+            fontSize: 13,
+            fontFamily: "var(--font-archivo-narrow), sans-serif",
+            fontWeight: 700,
+          }}
+        >
+          {error}
+        </div>
       )}
 
       <button
         type="submit"
         disabled={submitting}
-        className="w-full px-6 py-3.5 rounded-xl bg-gold text-midnight font-heading text-[14px] font-bold press shadow-lg shadow-gold/20 disabled:opacity-50"
+        className="w-full c-btn c-btn-primary press disabled:opacity-50"
       >
-        {submitting ? "Submitting…" : "Submit Pitch"}
+        {submitting ? "SUBMITTING…" : "SUBMIT PITCH"}
       </button>
     </form>
   );

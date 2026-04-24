@@ -84,10 +84,15 @@ export default function MediaLightbox({ type, src, alt, onClose }: MediaLightbox
       className="fixed inset-0 z-[200] bg-black flex items-center justify-center"
       style={{ opacity }}
     >
-      {/* Close button */}
+      {/* Close button — paper chip on the dark canvas */}
       <button
         onClick={onClose}
-        className="absolute top-[env(safe-area-inset-top,12px)] right-4 z-20 w-9 h-9 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white press mt-2"
+        className="absolute top-[env(safe-area-inset-top,12px)] right-4 z-20 w-9 h-9 flex items-center justify-center press mt-2"
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 6L6 18M6 6l12 12" />

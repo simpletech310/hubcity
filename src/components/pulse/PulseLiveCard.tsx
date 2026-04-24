@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import dynamic from "next/dynamic";
 import type { LiveStream } from "@/types/database";
 
@@ -25,9 +23,16 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
     .toUpperCase() || "K";
 
   return (
-    <Card className="border-coral/25 relative overflow-hidden !p-0">
-      {/* Top accent */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-coral via-pink to-transparent z-10" />
+    <div
+      className="relative overflow-hidden"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        color: "var(--ink-strong)",
+      }}
+    >
+      {/* Top accent — gold foil bar */}
+      <div style={{ height: 4, background: "var(--gold-c)" }} />
 
       {/* Header */}
       <div className="flex items-center gap-3 p-4 pb-3">
@@ -37,51 +42,66 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
             <img
               src={stream.creator.avatar_url}
               alt={stream.creator.display_name}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-coral/30"
+              className="w-10 h-10 rounded-full object-cover"
+              style={{ border: "2px solid var(--rule-strong-c)" }}
             />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-coral/30 to-pink/30 flex items-center justify-center text-white font-heading font-bold text-sm ring-2 ring-coral/30">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center c-card-t"
+              style={{
+                background: "var(--gold-c)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                fontSize: 13,
+              }}
+            >
               {creatorInitials}
             </div>
           )}
-          <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-coral flex items-center justify-center ring-2 ring-card">
+          <div
+            className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
+            style={{ background: "#E84855", border: "2px solid var(--paper)" }}
+          >
             <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold truncate">
+            <p className="c-card-t truncate" style={{ fontSize: 13 }}>
               {stream.creator?.display_name || "Culture"}
             </p>
-            <Badge label="LIVE" variant="coral" shine />
+            <span className="c-badge-live" style={{ fontSize: 9 }}>LIVE</span>
           </div>
-          <p className="text-[10px] text-txt-secondary">Broadcasting now</p>
+          <p className="c-meta">Broadcasting now</p>
         </div>
 
-        <Badge
-          label={
-            stream.category.charAt(0).toUpperCase() + stream.category.slice(1)
-          }
-          variant="purple"
-        />
+        <span className="c-badge-ink" style={{ fontSize: 9 }}>
+          {stream.category.charAt(0).toUpperCase() + stream.category.slice(1)}
+        </span>
       </div>
 
       {/* Stream title */}
-      <div className="px-4 pb-3">
-        <p className="text-[13px] font-semibold leading-snug">
+      <div
+        className="px-4 pb-3"
+        style={{ borderTop: "2px solid var(--rule-strong-c)", paddingTop: 12 }}
+      >
+        <p className="c-card-t" style={{ fontSize: 13 }}>
           {stream.title}
         </p>
         {stream.description && (
-          <p className="text-[11px] text-txt-secondary mt-1 line-clamp-2">
+          <p className="c-body-sm mt-1 line-clamp-2" style={{ fontSize: 11 }}>
             {stream.description}
           </p>
         )}
       </div>
 
-      {/* Player or thumbnail */}
+      {/* Player or thumbnail — player canvas stays dark (Mux video) */}
       {watching && stream.mux_playback_id ? (
-        <div className="mx-4 mb-4 rounded-xl overflow-hidden border border-border-subtle">
+        <div
+          className="mx-4 mb-4 overflow-hidden"
+          style={{ border: "2px solid var(--rule-strong-c)" }}
+        >
           <MuxPlayer
             playbackId={stream.mux_playback_id}
             streamType="live"
@@ -99,17 +119,27 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
           onClick={() => setWatching(true)}
           className="w-full px-4 pb-4"
         >
-          <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-coral/15 via-midnight to-pink/10 aspect-video flex flex-col items-center justify-center border border-coral/20 group hover:border-coral/40 transition-colors">
+          {/* Thumbnail canvas stays dark — this is a video surface */}
+          <div
+            className="relative overflow-hidden aspect-video flex flex-col items-center justify-center group transition-colors"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
             {/* Animated circles */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-20 h-20 rounded-full border border-coral/10 animate-ping opacity-20" />
+              <div className="w-20 h-20 rounded-full animate-ping opacity-20" style={{ border: "1px solid #E84855" }} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-32 h-32 rounded-full border border-coral/5 animate-pulse opacity-10" />
+              <div className="w-32 h-32 rounded-full animate-pulse opacity-10" style={{ border: "1px solid #E84855" }} />
             </div>
 
             {/* Play button */}
-            <div className="relative w-16 h-16 rounded-full bg-coral/20 backdrop-blur-sm flex items-center justify-center group-hover:bg-coral/30 transition-colors mb-2">
+            <div
+              className="relative w-16 h-16 rounded-full flex items-center justify-center transition-colors mb-2"
+              style={{ background: "rgba(232,72,85,0.25)" }}
+            >
               <svg
                 width="24"
                 height="24"
@@ -119,20 +149,23 @@ export default function PulseLiveCard({ stream }: PulseLiveCardProps) {
                 <polygon points="8,5 19,12 8,19" />
               </svg>
             </div>
-            <span className="relative text-xs font-bold text-coral">
-              Tap to Watch Live
+            <span className="c-card-t" style={{ fontSize: 11, color: "#E84855" }}>
+              TAP TO WATCH LIVE
             </span>
 
             {/* Live badge */}
-            <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-coral/90 rounded-full px-2.5 py-1">
+            <div
+              className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1"
+              style={{ background: "#E84855", border: "1.5px solid var(--paper)" }}
+            >
               <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              <span className="text-[10px] text-white font-bold tracking-wider">
+              <span className="c-kicker" style={{ fontSize: 9, color: "#fff" }}>
                 LIVE
               </span>
             </div>
           </div>
         </button>
       )}
-    </Card>
+    </div>
   );
 }
