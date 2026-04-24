@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Icon from "@/components/ui/Icon";
-import Tag from "@/components/ui/editorial/Tag";
 import type { JobListing, JobType } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
 
@@ -75,48 +74,59 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
     return (
       <Link
         href={`/jobs/${job.slug || job.id}`}
-        className="group block shrink-0 w-[280px] snap-start rounded-2xl panel-editorial p-4 press hover:border-gold/30 transition-colors"
+        className="group block shrink-0 w-[280px] snap-start press"
+        style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)", padding: 16 }}
       >
         <div className="flex items-start justify-between mb-3">
-          <div className="w-12 h-12 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0 overflow-hidden">
+          <div
+            className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden"
+            style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {businessImage ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
             ) : (
-              <Icon name={orgIconName} size={20} className="text-gold" />
+              <Icon name={orgIconName} size={20} style={{ color: "var(--gold-c)" }} />
             )}
           </div>
-          <Tag tone="gold" size="xs">
+          <span className="c-badge c-badge-gold inline-flex items-center gap-1">
             <Icon name="sparkle" size={9} />
-            Featured
-          </Tag>
+            FEATURED
+          </span>
         </div>
-        <h3 className="font-display text-[17px] leading-tight text-white line-clamp-2 group-hover:text-gold transition-colors">
+        <h3
+          className="c-card-t line-clamp-2"
+          style={{ fontSize: 17, color: "var(--ink-strong)" }}
+        >
           {job.title}
         </h3>
-        <p className="text-[11px] text-ivory/55 mt-1 truncate">
+        <p
+          className="c-meta mt-1 truncate"
+          style={{ color: "var(--ink-mute)", textTransform: "none", fontSize: 11 }}
+        >
           {displayName}
         </p>
         {job.location && (
-          <p className="text-[10px] text-ivory/40 mt-0.5 truncate uppercase tracking-editorial-tight">
+          <p
+            className="c-kicker mt-0.5 truncate"
+            style={{ color: "var(--ink-mute)", fontSize: 9 }}
+          >
             {job.location}
           </p>
         )}
         <div className="flex items-center gap-1.5 flex-wrap mt-3">
-          <Tag tone="default" size="xs">
+          <span className="c-badge c-badge-ink inline-flex items-center gap-1">
             <Icon name={meta.iconName} size={9} />
-            {meta.label}
-          </Tag>
+            {meta.label.toUpperCase()}
+          </span>
           {salary && (
-            <Tag tone="gold" size="xs">
-              {salary}
-            </Tag>
+            <span className="c-badge c-badge-gold">{salary}</span>
           )}
           {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
-            <Tag tone={daysUntilDeadline <= 7 ? "coral" : "gold"} size="xs">
+            <span className={`c-badge ${daysUntilDeadline <= 7 ? "c-badge-live" : "c-badge-gold"} inline-flex items-center gap-1`}>
               <Icon name="clock" size={9} />
-              {daysUntilDeadline <= 1 ? "1d" : `${daysUntilDeadline}d`}
-            </Tag>
+              {daysUntilDeadline <= 1 ? "1D" : `${daysUntilDeadline}D`}
+            </span>
           )}
         </div>
       </Link>
@@ -126,62 +136,81 @@ export default function JobCard({ job, featured = false }: JobCardProps) {
   return (
     <Link
       href={`/jobs/${job.slug || job.id}`}
-      className="group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden"
+      className="group block press overflow-hidden"
+      style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
     >
       <div className="p-3.5 flex items-start gap-3">
         {/* Gold icon well */}
-        <div className="w-12 h-12 rounded-xl border border-gold/20 bg-ink flex items-center justify-center shrink-0 overflow-hidden">
+        <div
+          className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden"
+          style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
+        >
           {businessImage ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={businessImage} alt={displayName} className="w-full h-full object-cover" />
           ) : (
-            <Icon name={orgIconName} size={20} className="text-gold" />
+            <Icon name={orgIconName} size={20} style={{ color: "var(--gold-c)" }} />
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="font-display text-[17px] leading-tight text-white line-clamp-1 group-hover:text-gold transition-colors">
+          <h3
+            className="c-card-t line-clamp-1"
+            style={{ fontSize: 17, color: "var(--ink-strong)" }}
+          >
             {job.title}
           </h3>
-          <p className="text-[11px] text-ivory/55 mt-0.5 truncate">
+          <p
+            className="c-meta mt-0.5 truncate"
+            style={{ color: "var(--ink-mute)", textTransform: "none", fontSize: 11 }}
+          >
             {displayName}
             {job.location && (
               <>
-                <span className="mx-1.5 text-ivory/25">·</span>
+                <span className="mx-1.5" style={{ color: "var(--ink-faint)" }}>·</span>
                 {job.location}
               </>
             )}
           </p>
 
           <div className="flex items-center gap-1.5 flex-wrap mt-2">
-            <Tag tone="default" size="xs">
+            <span className="c-badge c-badge-ink inline-flex items-center gap-1">
               <Icon name={meta.iconName} size={9} />
-              {meta.label}
-            </Tag>
+              {meta.label.toUpperCase()}
+            </span>
             {salary && (
-              <Tag tone="gold" size="xs">
-                {salary}
-              </Tag>
+              <span className="c-badge c-badge-gold">{salary}</span>
             )}
             {job.job_type === "volunteer" && (
-              <Tag tone="emerald" size="xs">Open</Tag>
+              <span className="c-badge c-badge-ok">OPEN</span>
             )}
             {daysUntilDeadline !== null && daysUntilDeadline > 0 && daysUntilDeadline <= 14 && (
-              <Tag tone={daysUntilDeadline <= 7 ? "coral" : "gold"} size="xs">
+              <span className={`c-badge ${daysUntilDeadline <= 7 ? "c-badge-live" : "c-badge-gold"} inline-flex items-center gap-1`}>
                 <Icon name="clock" size={9} />
-                {daysUntilDeadline}d
-              </Tag>
+                {daysUntilDeadline}D
+              </span>
             )}
-            <span className="text-[9px] text-ivory/35 uppercase tracking-editorial-tight font-semibold ml-auto">
-              {timeAgo(job.created_at)}
+            <span
+              className="c-kicker ml-auto"
+              style={{ color: "var(--ink-faint)", fontSize: 9 }}
+            >
+              {timeAgo(job.created_at).toUpperCase()}
             </span>
           </div>
         </div>
 
         {/* Apply CTA */}
         <div className="shrink-0 self-center flex flex-col items-end gap-0.5">
-          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-editorial-tight text-gold group-hover:text-gold transition-colors">
-            Apply
+          <span
+            className="inline-flex items-center gap-1 c-kicker"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              padding: "5px 10px",
+              fontSize: 10,
+            }}
+          >
+            APPLY
             <Icon name="arrow-right-thin" size={11} />
           </span>
         </div>
