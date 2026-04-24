@@ -23,12 +23,18 @@ interface ReviewStats {
 }
 
 function StarDisplay({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" | "lg" }) {
-  const sizeClass = size === "lg" ? "text-xl" : size === "md" ? "text-base" : "text-sm";
+  const iconSize = size === "lg" ? 20 : size === "md" ? 16 : 14;
   return (
-    <span className={`inline-flex gap-0.5 ${sizeClass}`} aria-label={`${rating} out of 5 stars`}>
+    <span className="inline-flex gap-0.5" aria-label={`${rating} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((star) => (
-        <span key={star} className={star <= Math.round(rating) ? "text-gold" : "text-white/15"}>
-          <Icon name="star" size={16} />
+        <span
+          key={star}
+          style={{
+            color: star <= Math.round(rating) ? "var(--gold-c)" : "var(--ink-strong)",
+            opacity: star <= Math.round(rating) ? 1 : 0.2,
+          }}
+        >
+          <Icon name="star" size={iconSize} />
         </span>
       ))}
     </span>
@@ -46,23 +52,29 @@ function StarSelector({
 
   return (
     <div className="inline-flex gap-1" role="radiogroup" aria-label="Rating">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          className={`text-2xl transition-transform duration-150 press ${
-            star <= (hovered || value) ? "text-gold scale-110" : "text-white/20 hover:text-white/40"
-          }`}
-          onMouseEnter={() => setHovered(star)}
-          onMouseLeave={() => setHovered(0)}
-          onClick={() => onChange(star)}
-          aria-label={`${star} star${star > 1 ? "s" : ""}`}
-          role="radio"
-          aria-checked={star === value}
-        >
-          <Icon name="star" size={16} />
-        </button>
-      ))}
+      {[1, 2, 3, 4, 5].map((star) => {
+        const on = star <= (hovered || value);
+        return (
+          <button
+            key={star}
+            type="button"
+            className="transition-transform duration-150 press"
+            style={{
+              color: on ? "var(--gold-c)" : "var(--ink-strong)",
+              opacity: on ? 1 : 0.25,
+              transform: on ? "scale(1.1)" : "scale(1)",
+            }}
+            onMouseEnter={() => setHovered(star)}
+            onMouseLeave={() => setHovered(0)}
+            onClick={() => onChange(star)}
+            aria-label={`${star} star${star > 1 ? "s" : ""}`}
+            role="radio"
+            aria-checked={star === value}
+          >
+            <Icon name="star" size={22} />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -71,12 +83,24 @@ function DistributionBar({ star, count, max }: { star: number; count: number; ma
   const pct = max > 0 ? (count / max) * 100 : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[11px] text-txt-secondary w-4 text-right">{star}</span>
-      <span className="text-gold text-[10px]"><Icon name="star" size={16} className="text-gold" /></span>
-      <div className="flex-1 h-1.5 rounded-full bg-white/5 overflow-hidden">
+      <span
+        className="c-kicker w-4 text-right"
+        style={{ fontSize: 10, opacity: 0.65 }}
+      >
+        {star}
+      </span>
+      <Icon name="star" size={10} style={{ color: "var(--gold-c)" }} />
+      <div
+        className="flex-1 overflow-hidden"
+        style={{
+          height: 6,
+          background: "var(--paper-soft)",
+          border: "1.5px solid var(--rule-strong-c)",
+        }}
+      >
         <div
-          className="h-full rounded-full bg-gold transition-all duration-500"
-          style={{ width: `${pct}%` }}
+          className="h-full transition-all duration-500"
+          style={{ width: `${pct}%`, background: "var(--gold-c)" }}
         />
       </div>
       <span className="text-[11px] text-txt-secondary w-6 text-right">{count}</span>
@@ -208,8 +232,18 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
 
       {/* Success message */}
       {success && (
-        <div className="mb-3 rounded-xl bg-emerald/10 border border-emerald/20 px-4 py-2.5 text-sm text-emerald font-medium">
-          Review submitted successfully!
+        <div
+          className="mb-3 px-4 py-2.5"
+          style={{
+            background: "var(--gold-c)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--ink-strong)",
+            fontSize: 13,
+            fontFamily: "var(--font-archivo-narrow), sans-serif",
+            fontWeight: 800,
+          }}
+        >
+          REVIEW SUBMITTED SUCCESSFULLY
         </div>
       )}
 
@@ -271,7 +305,14 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Share your experience..."
                 rows={3}
-                className="w-full bg-white/5 border border-border-subtle rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-txt-secondary/50 focus:outline-none focus:border-gold/40 resize-none transition-colors"
+                className="w-full px-3 py-2 focus:outline-none resize-none"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                  fontSize: 14,
+                  fontFamily: "var(--font-fraunces), serif",
+                }}
               />
             </div>
 
@@ -292,43 +333,76 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
         </Card>
       )}
 
-      {/* Reviews list */}
+      {/* Reviews list — 2px ink row dividers, no cards */}
       {reviews.length > 0 ? (
-        <div className="space-y-2.5">
-          {reviews.map((review) => (
-            <Card key={review.id} padding={false}>
-              <div className="p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2.5">
-                    {/* Avatar placeholder */}
-                    <div className="w-8 h-8 rounded-full bg-gold/10 flex items-center justify-center shrink-0">
-                      <span className="text-gold text-xs font-bold">
-                        {(review.profiles?.display_name || "A")[0].toUpperCase()}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold leading-tight">
-                        {review.profiles?.display_name || "Anonymous"}
-                      </p>
-                      <p className="text-[10px] text-txt-secondary">{formatDate(review.created_at)}</p>
-                    </div>
+        <div>
+          {reviews.map((review, i) => (
+            <div
+              key={review.id}
+              className="py-4"
+              style={{
+                borderTop: i === 0 ? "2px solid var(--rule-strong-c)" : undefined,
+                borderBottom: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                      fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                      fontWeight: 800,
+                      fontSize: 13,
+                    }}
+                  >
+                    {(review.profiles?.display_name || "A")[0].toUpperCase()}
                   </div>
-                  <StarDisplay rating={review.rating} size="sm" />
+                  <div>
+                    <p className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
+                      {review.profiles?.display_name || "Anonymous"}
+                    </p>
+                    <p className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
+                      {formatDate(review.created_at).toUpperCase()}
+                    </p>
+                  </div>
                 </div>
-                {review.comment && (
-                  <p className="text-[13px] text-txt-secondary leading-relaxed mt-1">
-                    {review.comment}
-                  </p>
-                )}
+                <StarDisplay rating={review.rating} size="sm" />
               </div>
-            </Card>
+              {review.comment && (
+                <p
+                  className="c-body mt-2"
+                  style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.45 }}
+                >
+                  {review.comment}
+                </p>
+              )}
+            </div>
           ))}
         </div>
       ) : (
         !showForm && (
-          <div className="rounded-2xl bg-card border border-border-subtle p-6 text-center">
-            <p className="text-txt-secondary text-sm">No reviews yet</p>
-            <p className="text-[11px] text-txt-secondary/60 mt-1">Be the first to share your experience</p>
+          <div
+            className="p-6 text-center"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <p
+              className="c-serif-it"
+              style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.8 }}
+            >
+              No reviews yet
+            </p>
+            <p
+              className="c-kicker mt-1"
+              style={{ fontSize: 10, opacity: 0.55 }}
+            >
+              BE THE FIRST TO SHARE YOUR EXPERIENCE
+            </p>
           </div>
         )
       )}

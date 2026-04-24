@@ -94,14 +94,16 @@ export function pickPrimaryRole(activeRoles: ActiveRole[]): ActiveRole | null {
   return activeRoles[0] ?? null;
 }
 
-/** Tailwind classes per accent color for the chip surface. */
-const ACCENT_CLASSES: Record<string, string> = {
-  gold: "bg-gold/12 border-gold/35 text-gold",
-  emerald: "bg-emerald/12 border-emerald/35 text-emerald",
-  coral: "bg-coral/12 border-coral/35 text-coral",
-  cyan: "bg-cyan/12 border-cyan/35 text-cyan",
-  purple: "bg-purple-500/12 border-purple-500/35 text-purple-300",
-  blue: "bg-blue-500/12 border-blue-500/35 text-blue-300",
+/** Culture palette — only gold fill + paper/ink border + ink text.
+ *  We collapse every role accent to the printed blockprint look so the
+ *  profile hero reads as a newsprint byline rather than a candy rainbow. */
+const CULTURE_ACCENT: Record<string, React.CSSProperties> = {
+  gold: { background: "var(--gold-c)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" },
+  emerald: { background: "var(--paper)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" },
+  coral: { background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)", color: "var(--gold-c)" },
+  cyan: { background: "var(--paper)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" },
+  purple: { background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)", color: "var(--paper)" },
+  blue: { background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" },
 };
 
 interface ProfileRoleChipsProps {
@@ -127,8 +129,8 @@ export default function ProfileRoleChips({
 }: ProfileRoleChipsProps) {
   if (roles.length === 0) return null;
 
-  const padding = size === "sm" ? "px-2 py-[3px]" : "px-2.5 py-1";
-  const fontSize = size === "sm" ? "text-[9px]" : "text-[10px]";
+  const padding = size === "sm" ? "2px 8px" : "4px 10px";
+  const fontSize = size === "sm" ? 9 : 10;
   const iconSize = size === "sm" ? 10 : 11;
 
   return (
@@ -136,19 +138,33 @@ export default function ProfileRoleChips({
       {roles.map((role) => {
         const desc = ROLE_DESCRIPTORS[role];
         if (!desc) return null;
-        const accent = ACCENT_CLASSES[desc.accent] ?? ACCENT_CLASSES.gold;
+        const accent = CULTURE_ACCENT[desc.accent] ?? CULTURE_ACCENT.gold;
         const sub = subLabels?.[role];
         return (
           <span
             key={role}
-            className={`inline-flex items-center gap-1.5 rounded-full border ${padding} ${fontSize} font-semibold uppercase tracking-[0.12em] ${accent}`}
+            className="inline-flex items-center gap-1.5 c-kicker"
+            style={{
+              ...accent,
+              padding,
+              fontSize,
+              letterSpacing: "0.12em",
+            }}
           >
             <Icon name={desc.icon} size={iconSize} strokeWidth={2.2} />
-            {desc.label}
+            {desc.label.toUpperCase()}
             {sub && (
               <>
-                <span className="opacity-50">·</span>
-                <span className="opacity-90 normal-case tracking-normal">{sub}</span>
+                <span style={{ opacity: 0.5 }}>·</span>
+                <span
+                  style={{
+                    textTransform: "none",
+                    letterSpacing: "normal",
+                    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  }}
+                >
+                  {sub}
+                </span>
               </>
             )}
           </span>
