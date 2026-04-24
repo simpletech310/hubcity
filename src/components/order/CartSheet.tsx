@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
-import Card from "@/components/ui/Card";
 import Icon from "@/components/ui/Icon";
 import { useCart, type PickupLocation } from "@/lib/cart";
 import type { Business, VendorVehicle } from "@/types/database";
@@ -131,52 +129,71 @@ export default function CartSheet({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        className="fixed inset-0 z-40"
+        style={{ background: "rgba(26,21,18,0.72)" }}
         onClick={onClose}
       />
 
       {/* Sheet */}
       <div className="fixed inset-x-0 bottom-0 z-50 max-w-[430px] mx-auto">
-        <div className="bg-deep border-t border-border-subtle rounded-t-3xl max-h-[80dvh] flex flex-col">
+        <div
+          className="max-h-[80dvh] flex flex-col"
+          style={{
+            background: "var(--paper)",
+            color: "var(--ink-strong)",
+            borderTop: "3px solid var(--rule-strong-c)",
+          }}
+        >
           {/* Handle */}
           <div className="flex justify-center pt-3 pb-2">
-            <div className="w-10 h-1 rounded-full bg-white/20" />
+            <div
+              className="w-10 h-1 rounded-full"
+              style={{ background: "var(--ink-strong)", opacity: 0.4 }}
+            />
           </div>
 
           {/* Header */}
-          <div className="flex items-center justify-between px-5 pb-3">
-            <h2 className="font-heading text-lg font-bold">
+          <div
+            className="flex items-center justify-between px-5 pb-3"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <h2 className="c-hero" style={{ fontSize: "24px" }}>
               Your Order ({itemCount})
             </h2>
             <button
               onClick={onClose}
-              className="text-txt-secondary hover:text-white transition-colors text-sm"
+              className="c-btn c-btn-outline c-btn-sm"
             >
               Close
             </button>
           </div>
 
           {/* Scrollable content */}
-          <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-4">
+          <div className="flex-1 overflow-y-auto px-5 pb-4 space-y-4 pt-4">
             {/* Order Type Toggle */}
-            <div className="flex gap-2 p-1 bg-white/5 rounded-xl">
+            <div
+              className="flex gap-0"
+              style={{ border: "2px solid var(--rule-strong-c)" }}
+            >
               <button
                 onClick={() => dispatch({ type: "SET_ORDER_TYPE", payload: "pickup" })}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className="flex-1 py-2.5 c-ui text-[11px] transition-all"
+                style={
                   state.orderType === "pickup"
-                    ? "bg-gold text-midnight"
-                    : "text-txt-secondary"
-                }`}
+                    ? { background: "var(--gold-c)", color: "var(--ink-strong)" }
+                    : { background: "var(--paper)", color: "var(--ink-strong)", opacity: 0.7 }
+                }
               >
                 Pickup
               </button>
               <button
                 onClick={() => dispatch({ type: "SET_ORDER_TYPE", payload: "delivery" })}
-                className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className="flex-1 py-2.5 c-ui text-[11px] transition-all"
+                style={
                   state.orderType === "delivery"
-                    ? "bg-gold text-midnight"
-                    : "text-txt-secondary"
-                }`}
+                    ? { background: "var(--gold-c)", color: "var(--ink-strong)" }
+                    : { background: "var(--paper)", color: "var(--ink-strong)", opacity: 0.7 }
+                }
               >
                 Delivery
               </button>
@@ -185,7 +202,10 @@ export default function CartSheet({
             {/* Pickup Location Picker */}
             {state.orderType === "pickup" && pickupOptions.length > 0 && (
               <div className="space-y-2">
-                <p className="text-[11px] font-bold uppercase tracking-wider text-white/50">
+                <p
+                  className="c-kicker"
+                  style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+                >
                   Pick up from
                 </p>
                 <div className="space-y-1.5">
@@ -201,22 +221,36 @@ export default function CartSheet({
                         onClick={() =>
                           dispatch({ type: "SET_PICKUP_LOCATION", payload: opt })
                         }
-                        className={`w-full flex items-center gap-3 p-3 rounded-xl text-left transition-colors press ${
+                        className="w-full flex items-center gap-3 p-3 text-left transition-colors press"
+                        style={
                           selected
-                            ? "bg-gold/10 border border-gold/40"
-                            : "bg-white/[0.04] border border-border-subtle hover:border-white/[0.12]"
-                        }`}
+                            ? {
+                                background: "var(--gold-c)",
+                                border: "2px solid var(--rule-strong-c)",
+                                color: "var(--ink-strong)",
+                              }
+                            : {
+                                background: "var(--paper)",
+                                border: "2px solid var(--rule-strong-c)",
+                                color: "var(--ink-strong)",
+                              }
+                        }
                       >
                         <div
-                          className={`w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center ${
-                            selected ? "border-gold" : "border-white/30"
-                          }`}
+                          className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center"
+                          style={{ border: "2px solid var(--rule-strong-c)" }}
                         >
                           {selected && (
-                            <div className="w-2.5 h-2.5 rounded-full bg-gold" />
+                            <div
+                              className="w-2.5 h-2.5 rounded-full"
+                              style={{ background: "var(--ink-strong)" }}
+                            />
                           )}
                         </div>
-                        <div className="w-8 h-8 rounded-lg bg-white/[0.06] flex items-center justify-center shrink-0">
+                        <div
+                          className="w-8 h-8 flex items-center justify-center shrink-0 c-frame"
+                          style={{ background: "var(--paper-soft)" }}
+                        >
                           <Icon
                             name={
                               opt.kind === "store"
@@ -226,13 +260,12 @@ export default function CartSheet({
                                   : "truck"
                             }
                             size={16}
-                            className={selected ? "text-gold" : "text-white/60"}
+                            style={{ color: "var(--ink-strong)" }}
                           />
                         </div>
                         <span
-                          className={`text-[13px] font-semibold truncate flex-1 ${
-                            selected ? "text-white" : "text-white/80"
-                          }`}
+                          className="c-card-t truncate flex-1"
+                          style={{ fontSize: "13px" }}
                         >
                           {opt.name}
                         </span>
@@ -256,21 +289,34 @@ export default function CartSheet({
             {/* Cart Items */}
             {state.items.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-txt-secondary text-sm">Your cart is empty</p>
+                <p className="c-meta">Your cart is empty</p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div>
                 {state.items.map((item, idx) => (
-                  <Card key={`${item.menu_item_id}-${item.variant_id ?? "base"}-${idx}`}>
+                  <div
+                    key={`${item.menu_item_id}-${item.variant_id ?? "base"}-${idx}`}
+                    className="p-3"
+                    style={{
+                      background: "var(--paper)",
+                      borderBottom: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-[13px] font-bold">{item.name}</h3>
+                        <h3 className="c-card-t" style={{ fontSize: "14px" }}>
+                          {item.name}
+                        </h3>
                         {item.variant_name && (
-                          <p className="text-[11px] text-gold font-medium mt-0.5">
+                          <p
+                            className="c-meta mt-0.5"
+                            style={{ color: "var(--gold-deep-c)" }}
+                          >
                             {item.variant_name}
                           </p>
                         )}
-                        <p className="text-xs text-txt-secondary mt-0.5">
+                        <p className="c-meta mt-0.5">
                           ${(item.price / 100).toFixed(2)} each
                         </p>
                         <input
@@ -288,7 +334,13 @@ export default function CartSheet({
                               payload: { ...state, items: updatedItems },
                             });
                           }}
-                          className="mt-2 w-full bg-white/5 border border-border-subtle rounded-lg px-3 py-1.5 text-[11px] text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+                          className="mt-2 w-full px-3 py-1.5 text-[11px] focus:outline-none"
+                          style={{
+                            background: "var(--paper)",
+                            color: "var(--ink-strong)",
+                            border: "2px solid var(--rule-strong-c)",
+                            borderRadius: 0,
+                          }}
                         />
                       </div>
                       {/* Quantity controls */}
@@ -304,11 +356,19 @@ export default function CartSheet({
                               },
                             })
                           }
-                          className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sm font-bold hover:bg-white/20 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center text-sm font-bold transition-colors"
+                          style={{
+                            background: "var(--paper)",
+                            color: "var(--ink-strong)",
+                            border: "2px solid var(--rule-strong-c)",
+                          }}
                         >
                           -
                         </button>
-                        <span className="text-sm font-bold w-5 text-center">
+                        <span
+                          className="c-card-t w-5 text-center"
+                          style={{ fontSize: "14px" }}
+                        >
                           {item.quantity}
                         </span>
                         <button
@@ -322,13 +382,18 @@ export default function CartSheet({
                               },
                             })
                           }
-                          className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-sm font-bold hover:bg-white/20 transition-colors"
+                          className="w-7 h-7 flex items-center justify-center text-sm font-bold transition-colors"
+                          style={{
+                            background: "var(--paper)",
+                            color: "var(--ink-strong)",
+                            border: "2px solid var(--rule-strong-c)",
+                          }}
                         >
                           +
                         </button>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             )}
@@ -337,18 +402,25 @@ export default function CartSheet({
             {state.items.length > 0 && (
               <div>
                 {appliedCoupon ? (
-                  <div className="flex items-center justify-between bg-emerald/10 border border-emerald/20 rounded-xl px-3 py-2.5">
+                  <div
+                    className="flex items-center justify-between px-3 py-2.5"
+                    style={{
+                      background: "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
                     <div>
-                      <p className="text-xs font-semibold text-emerald">
+                      <p className="c-badge-ok c-badge" style={{ display: "inline-block" }}>
                         {appliedCoupon.title}
                       </p>
-                      <p className="text-[10px] text-emerald/70">
+                      <p className="c-meta mt-1">
                         -${(appliedCoupon.discount_amount / 100).toFixed(2)} off
                       </p>
                     </div>
                     <button
                       onClick={removeCoupon}
-                      className="text-xs text-emerald/70 hover:text-emerald press"
+                      className="c-btn c-btn-outline c-btn-sm press"
                     >
                       Remove
                     </button>
@@ -364,19 +436,29 @@ export default function CartSheet({
                           setCouponCode(e.target.value);
                           setCouponError("");
                         }}
-                        className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+                        className="flex-1 px-3 py-2.5 text-sm focus:outline-none"
+                        style={{
+                          background: "var(--paper)",
+                          color: "var(--ink-strong)",
+                          border: "2px solid var(--rule-strong-c)",
+                          borderRadius: 0,
+                        }}
                       />
-                      <Button
-                        size="sm"
+                      <button
                         onClick={handleApplyCoupon}
-                        loading={couponLoading}
-                        disabled={!couponCode.trim()}
+                        disabled={!couponCode.trim() || couponLoading}
+                        className="c-btn c-btn-accent c-btn-sm"
                       >
-                        Apply
-                      </Button>
+                        {couponLoading ? "..." : "Apply"}
+                      </button>
                     </div>
                     {couponError && (
-                      <p className="text-xs text-coral">{couponError}</p>
+                      <p
+                        className="c-meta"
+                        style={{ color: "var(--red-c)" }}
+                      >
+                        {couponError}
+                      </p>
                     )}
                     <button
                       onClick={() => {
@@ -384,7 +466,7 @@ export default function CartSheet({
                         setCouponCode("");
                         setCouponError("");
                       }}
-                      className="text-xs text-txt-secondary press"
+                      className="c-meta press"
                     >
                       Cancel
                     </button>
@@ -392,7 +474,8 @@ export default function CartSheet({
                 ) : (
                   <button
                     onClick={() => setShowCouponInput(true)}
-                    className="text-xs text-gold font-semibold press"
+                    className="c-ui text-[11px] press"
+                    style={{ color: "var(--ink-strong)" }}
                   >
                     Have a promo code?
                   </button>
@@ -402,39 +485,46 @@ export default function CartSheet({
 
             {/* Price Breakdown */}
             {state.items.length > 0 && (
-              <Card>
+              <div className="c-ink-block p-4">
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-txt-secondary">Subtotal</span>
+                    <span style={{ opacity: 0.75 }}>Subtotal</span>
                     <span>${(subtotal / 100).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-txt-secondary">Tax (9.5%)</span>
+                    <span style={{ opacity: 0.75 }}>Tax (9.5%)</span>
                     <span>${(tax / 100).toFixed(2)}</span>
                   </div>
                   {discount > 0 && (
-                    <div className="flex justify-between text-emerald">
-                      <span>Discount</span>
+                    <div className="flex justify-between">
+                      <span style={{ opacity: 0.75 }}>Discount</span>
                       <span>-${(discount / 100).toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="border-t border-border-subtle pt-2 flex justify-between font-bold">
+                  <div
+                    className="pt-2 flex justify-between c-card-t"
+                    style={{
+                      borderTop: "2px solid var(--paper)",
+                      fontSize: "16px",
+                    }}
+                  >
                     <span>Total</span>
-                    <span className="text-gold">
+                    <span style={{ color: "var(--gold-c)" }}>
                       ${(total / 100).toFixed(2)}
                     </span>
                   </div>
                 </div>
-              </Card>
+              </div>
             )}
           </div>
 
           {/* Checkout Button */}
           {state.items.length > 0 && (
-            <div className="px-5 pb-6 pt-2 border-t border-border-subtle">
-              <Button
-                fullWidth
-                size="lg"
+            <div
+              className="px-5 pb-6 pt-3"
+              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+            >
+              <button
                 onClick={() =>
                   onCheckout(
                     appliedCoupon
@@ -442,16 +532,18 @@ export default function CartSheet({
                       : undefined
                   )
                 }
-                loading={loading}
                 disabled={
+                  loading ||
                   (state.orderType === "delivery" && !deliveryAddress.trim()) ||
                   (state.orderType === "pickup" &&
                     pickupOptions.length > 0 &&
                     !state.pickupLocation)
                 }
+                className="c-btn c-btn-primary w-full"
+                style={{ opacity: loading ? 0.6 : 1 }}
               >
-                Checkout - ${(total / 100).toFixed(2)}
-              </Button>
+                {loading ? "Processing..." : `Checkout — $${(total / 100).toFixed(2)}`}
+              </button>
             </div>
           )}
         </div>

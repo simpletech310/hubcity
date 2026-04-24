@@ -145,7 +145,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   if (deleted) return null;
 
   return (
-    <Card className={`!p-0 overflow-hidden ${post.is_pinned ? "border-gold/20 relative" : ""}`}>
+    <Card className={`!p-0 overflow-hidden ${post.is_pinned ? "relative" : ""}`} style={{ border: "2px solid var(--rule-strong-c)" }}>
       {/* Role-based accent line */}
       {(() => {
         const role = author?.role;
@@ -156,7 +156,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
             ? "from-emerald/50 via-emerald/25 to-transparent"
             : role === "content_creator"
             ? "from-hc-purple/50 via-hc-purple/25 to-transparent"
-            : "from-white/[0.04] via-transparent to-transparent";
+            : "from-transparent via-transparent to-transparent";
         return (
           <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${accentGradient} z-10`} />
         );
@@ -170,7 +170,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       <div className="p-4">
         {/* Pinned label */}
         {post.is_pinned && (
-          <div className="flex items-center gap-1.5 text-[10px] text-gold font-semibold mb-3">
+          <div className="c-kicker flex items-center gap-1.5 mb-3">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
             </svg>
@@ -188,12 +188,12 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 width={44}
                 height={44}
                 className={`w-11 h-11 rounded-full object-cover ring-2 ${
-                  isVerified ? "ring-cyan/30 shadow-[0_0_8px_rgba(6,182,212,0.15)]" : "ring-white/[0.06]"
+                  isVerified ? "ring-cyan/30" : "ring-black/10"
                 }`}
               />
             ) : (
-              <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ${
-                isVerified ? "ring-cyan/30" : "ring-white/[0.06]"
+              <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-sm ring-2 ${
+                isVerified ? "ring-cyan/30" : "ring-black/10"
               }`}>
                 {initials}
               </div>
@@ -201,7 +201,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="text-[13px] font-bold truncate hover:underline">
+              <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="c-card-t text-[13px] font-bold truncate hover:underline" style={{ color: "var(--ink-strong)" }}>
                 {author?.display_name || "Unknown"}
               </Link>
               {isVerified && (
@@ -214,14 +214,14 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 <Badge label={roleBadge.label} variant={roleBadge.variant} />
               )}
             </div>
-            <div className="flex items-center gap-2 mt-0.5">
+            <div className="c-meta flex items-center gap-2 mt-0.5">
               {author?.handle && (
-                <span className="text-[11px] text-white/30">@{author.handle}</span>
+                <span className="text-[11px]" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>@{author.handle}</span>
               )}
-              <span className="text-[10px] text-white/20">&middot;</span>
-              <span className="text-[10px] text-white/30">{timeAgo}</span>
+              <span className="text-[10px]" style={{ color: "var(--ink-strong)", opacity: 0.4 }}>&middot;</span>
+              <span className="text-[10px]" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>{timeAgo}</span>
               {editedAt && (
-                <span className="text-[10px] text-white/20 italic">edited</span>
+                <span className="text-[10px] c-serif-it" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>edited</span>
               )}
             </div>
           </div>
@@ -231,7 +231,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
               <button
                 onClick={() => setShowMenu(!showMenu)}
                 aria-label="Post options"
-                className="p-1.5 rounded-lg hover:bg-white/5 text-txt-secondary hover:text-white transition-colors"
+                className="p-1.5 transition-colors"
+                style={{ color: "var(--ink-strong)", opacity: 0.65 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                   <circle cx="12" cy="5" r="2" />
@@ -242,7 +243,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 w-40 animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+                  <div className="absolute right-0 top-8 z-20 py-1 w-40 animate-in fade-in zoom-in-95 duration-150 origin-top-right" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                     {canEdit && (
                       <button
                         onClick={() => {
@@ -250,14 +251,15 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                           setEditBody(currentBody);
                           setIsEditing(true);
                         }}
-                        className="w-full text-left px-3 py-2 text-xs font-medium text-white hover:bg-white/5 flex items-center gap-2"
+                        className="w-full text-left px-3 py-2 text-xs font-medium flex items-center gap-2"
+                        style={{ color: "var(--ink-strong)" }}
                       >
                         <Icon name="edit" size={16} /> Edit Post
                       </button>
                     )}
                     {canDelete && (
                       <>
-                        {canEdit && <div className="border-t border-white/[0.04] my-0.5" />}
+                        {canEdit && <div className="c-rule-hair my-0.5" />}
                         <button
                           onClick={async () => {
                             setShowMenu(false);
@@ -277,7 +279,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                     )}
                     {!isAuthor && (
                       <>
-                        <div className="border-t border-white/[0.04] my-0.5" />
+                        <div className="c-rule-hair my-0.5" />
                         <button
                           onClick={() => {
                             setShowMenu(false);
@@ -302,7 +304,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
             <textarea
               value={editBody}
               onChange={(e) => setEditBody(e.target.value)}
-              className="w-full bg-white/5 border border-gold/30 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/50 min-h-[80px] resize-none leading-relaxed"
+              className="w-full px-3 py-2.5 text-sm focus:outline-none min-h-[80px] resize-none leading-relaxed"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
               autoFocus
             />
             <div className="flex gap-2 mt-2">
@@ -331,13 +334,13 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                   setSaving(false);
                 }}
                 disabled={saving || !editBody.trim()}
-                className="px-3 py-1.5 rounded-lg bg-gold text-midnight text-[11px] font-bold disabled:opacity-40"
+                className="c-btn c-btn-accent c-btn-sm disabled:opacity-40"
               >
                 {saving ? "Saving..." : "Save"}
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                className="px-3 py-1.5 rounded-lg bg-white/5 text-txt-secondary text-[11px] font-medium"
+                className="c-btn c-btn-outline c-btn-sm"
               >
                 Cancel
               </button>
@@ -345,13 +348,16 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           </div>
         ) : (
           <div className="mb-3">
-            <p className={`text-[14px] text-white/80 leading-relaxed whitespace-pre-wrap ${isLongBody && !bodyExpanded ? "line-clamp-4" : ""}`}>
+            <p
+              className={`c-body text-[14px] leading-relaxed whitespace-pre-wrap ${isLongBody && !bodyExpanded ? "line-clamp-4" : ""}`}
+              style={{ color: "var(--ink-strong)" }}
+            >
               {currentBody}
             </p>
             {isLongBody && (
               <button
                 onClick={() => setBodyExpanded(!bodyExpanded)}
-                className="text-[12px] text-gold font-semibold mt-1 hover:underline"
+                className="c-kicker text-[12px] text-gold font-semibold mt-1 hover:underline"
               >
                 {bodyExpanded ? "Show less" : "Read more"}
               </button>
@@ -363,7 +369,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         {post.hashtags && post.hashtags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {post.hashtags.map((tag: string) => (
-              <span key={tag} className="text-[11px] font-medium text-gold/60 bg-gold/[0.06] border border-gold/[0.08] rounded-full px-2.5 py-0.5 hover:text-gold hover:bg-gold/10 transition-colors cursor-pointer">
+              <span key={tag} className="c-chip gold cursor-pointer">
                 #{tag}
               </span>
             ))}
@@ -375,20 +381,21 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       {post.media_type === "image" && post.image_url && (
         <button
           onClick={() => openImageLightbox(post.image_url!)}
-          className="relative overflow-hidden w-full block"
+          className="c-frame relative overflow-hidden w-full block"
         >
           <Image
             src={post.image_url}
             alt="Post image"
             width={430}
             height={430}
-            className="w-full h-auto max-h-[420px] object-contain bg-black/20"
+            className="w-full h-auto max-h-[420px] object-contain"
+            style={{ background: "var(--paper-soft)" }}
           />
         </button>
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && post.video_url && (
-        <div ref={videoContainerRef} className="overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
+        <div ref={videoContainerRef} className="c-frame overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
           <video
             ref={videoRef}
             src={post.video_url.includes("#") ? post.video_url : `${post.video_url}#t=0.1`}
@@ -407,7 +414,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           {/* Play/pause overlay */}
           {!videoPlaying && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
                   <polygon points="6,3 20,12 6,21" />
                 </svg>
@@ -417,7 +424,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           {/* Mute toggle — always visible so mobile users can control audio */}
           <button
             onClick={(e) => { e.stopPropagation(); setVideoMuted(!videoMuted); if (videoRef.current) videoRef.current.muted = !videoMuted; }}
-            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white transition-opacity"
+            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center transition-opacity"
+            style={{ color: "#fff" }}
             aria-label={videoMuted ? "Unmute video" : "Mute video"}
           >
             {videoMuted ? (
@@ -434,7 +442,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {post.media_type === "video" && post.video_status === "ready" && !post.video_url && post.mux_playback_id && (
-        <div className="overflow-hidden">
+        <div className="c-frame overflow-hidden">
           <MuxPlayer
             playbackId={post.mux_playback_id}
             streamType="on-demand"
@@ -446,14 +454,20 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {post.media_type === "video" && post.video_status === "preparing" && (
-        <div className="bg-white/5 border-t border-b border-border-subtle flex flex-col items-center justify-center py-10 gap-2">
+        <div
+          className="flex flex-col items-center justify-center py-10 gap-2"
+          style={{ background: "var(--paper-warm)", borderTop: "2px solid var(--rule-strong-c)", borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
           <div className="w-8 h-8 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
-          <p className="text-xs text-txt-secondary">Video processing...</p>
+          <p className="text-xs" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>Video processing...</p>
         </div>
       )}
 
       {post.media_type === "video" && post.video_status === "errored" && (
-        <div className="bg-coral/5 border-t border-b border-coral/20 flex items-center justify-center py-6">
+        <div
+          className="bg-coral/5 flex items-center justify-center py-6"
+          style={{ borderTop: "2px solid var(--rule-strong-c)", borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
           <p className="text-xs text-coral">Video failed to process</p>
         </div>
       )}
@@ -501,32 +515,40 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       {showReport && (
         <>
           <div className="fixed inset-0 bg-black/60 z-50" onClick={() => setShowReport(false)} />
-          <div className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 bg-deep border border-border-subtle rounded-2xl p-5 max-w-sm mx-auto">
+          <div
+            className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 p-5 max-w-sm mx-auto"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+          >
             {reported ? (
               <div className="text-center py-4">
                 <p className="text-2xl mb-2"><Icon name="check" size={24} /></p>
-                <p className="text-sm font-bold mb-1">Report Submitted</p>
-                <p className="text-xs text-txt-secondary">Thank you. Our team will review this content.</p>
+                <p className="c-card-t text-sm font-bold mb-1" style={{ color: "var(--ink-strong)" }}>Report Submitted</p>
+                <p className="text-xs" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>Thank you. Our team will review this content.</p>
                 <button
                   onClick={() => { setShowReport(false); setReported(false); }}
-                  className="mt-4 px-4 py-2 bg-gold/10 text-gold rounded-lg text-xs font-bold"
+                  className="c-btn c-btn-accent c-btn-sm mt-4"
                 >
                   Close
                 </button>
               </div>
             ) : (
               <>
-                <h3 className="font-heading font-bold text-sm mb-3">Report This Post</h3>
+                <h3 className="c-card-t font-bold text-sm mb-3" style={{ color: "var(--ink-strong)" }}>Report This Post</h3>
                 <div className="space-y-2 mb-3">
                   {REPORT_REASONS.map((reason) => (
                     <button
                       key={reason.value}
                       onClick={() => setReportReason(reason.value)}
-                      className={`w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                      className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors ${
                         reportReason === reason.value
-                          ? "bg-coral/10 text-coral border border-coral/30"
-                          : "bg-white/5 text-txt-secondary hover:text-white border border-transparent"
+                          ? "bg-coral/10 text-coral"
+                          : ""
                       }`}
+                      style={{
+                        border: reportReason === reason.value ? "2px solid var(--coral, #EF4444)" : "2px solid var(--rule-strong-c)",
+                        color: reportReason === reason.value ? undefined : "var(--ink-strong)",
+                        background: reportReason === reason.value ? undefined : "var(--paper-warm)",
+                      }}
                     >
                       {reason.label}
                     </button>
@@ -536,7 +558,8 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                   placeholder="Additional details (optional)"
                   value={reportDesc}
                   onChange={(e) => setReportDesc(e.target.value)}
-                  className="w-full bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-xs text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 min-h-[60px] resize-none mb-3"
+                  className="w-full px-3 py-2 text-xs focus:outline-none min-h-[60px] resize-none mb-3"
+                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
                 />
                 <div className="flex gap-2">
                   <button
@@ -561,13 +584,14 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                       setReporting(false);
                     }}
                     disabled={!reportReason || reporting}
-                    className="flex-1 py-2 rounded-lg bg-coral text-white text-xs font-bold disabled:opacity-40"
+                    className="flex-1 py-2 bg-coral text-xs font-bold disabled:opacity-40"
+                    style={{ color: "#fff", border: "2px solid var(--rule-strong-c)" }}
                   >
                     {reporting ? "Submitting..." : "Submit Report"}
                   </button>
                   <button
                     onClick={() => { setShowReport(false); setReportReason(""); setReportDesc(""); }}
-                    className="px-4 py-2 rounded-lg bg-white/5 text-txt-secondary text-xs font-medium"
+                    className="c-btn c-btn-outline c-btn-sm"
                   >
                     Cancel
                   </button>

@@ -101,13 +101,10 @@ export default function PollCard({ poll, userId }: PollCardProps) {
 
   return (
     <Card hover className="relative overflow-hidden">
-      {/* Cyan accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-cyan/40 via-cyan/20 to-transparent" />
-
       {/* Type label row */}
-      <div className="flex items-center gap-1.5 text-[10px] text-cyan font-semibold mb-2.5 tracking-wide">
+      <div className="flex items-center gap-1.5 mb-2.5">
         <span><Icon name="chart" size={16} /></span>
-        POLL
+        <span className="c-kicker">POLL</span>
         {isClosed && (
           <span className="ml-1">
             <Badge label="Poll Closed" variant="coral" />
@@ -115,7 +112,7 @@ export default function PollCard({ poll, userId }: PollCardProps) {
         )}
       </div>
 
-      {/* Author row — matches PostCard exactly */}
+      {/* Author row */}
       <div className="flex items-center gap-3 mb-3">
         {author?.avatar_url ? (
           <Image
@@ -123,20 +120,38 @@ export default function PollCard({ poll, userId }: PollCardProps) {
             alt={author.display_name}
             width={40}
             height={40}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-white/5"
+            className="w-10 h-10 rounded-full object-cover"
+            style={{ border: "2px solid var(--rule-strong-c)" }}
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan to-royal flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/5">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center font-heading font-bold text-sm"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+            }}
+          >
             {initials}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold truncate">
+            <p
+              className="text-[13px] font-bold truncate"
+              style={{ color: "var(--ink-strong)" }}
+            >
               {author?.display_name || "Unknown"}
             </p>
             {isVerified && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="shrink-0"
+                style={{ color: "var(--ink-strong)" }}
+              >
                 <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
               </svg>
@@ -145,12 +160,15 @@ export default function PollCard({ poll, userId }: PollCardProps) {
               <Badge label={roleBadge.label} variant={roleBadge.variant} />
             )}
           </div>
-          <p className="text-[10px] text-txt-secondary">{timeAgo}</p>
+          <p className="c-meta">{timeAgo}</p>
         </div>
       </div>
 
       {/* Question */}
-      <p className="text-[14px] font-semibold text-txt-primary leading-snug mb-3">
+      <p
+        className="c-card-t leading-snug mb-3"
+        style={{ color: "var(--ink-strong)" }}
+      >
         {poll.question}
       </p>
 
@@ -178,28 +196,33 @@ export default function PollCard({ poll, userId }: PollCardProps) {
       )}
 
       {/* Bottom row */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border-subtle">
+      <div
+        className="flex items-center justify-between mt-3 pt-3"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-txt-secondary">
+          <span className="c-meta">
             {totalVotes} {totalVotes === 1 ? "vote" : "votes"}
           </span>
           {timeRemaining && !isClosed && (
-            <span className="text-[11px] text-txt-secondary">
-              {timeRemaining}
-            </span>
+            <span className="c-meta">{timeRemaining}</span>
           )}
           {!userId && (
-            <span className="text-[11px] text-gold">Sign in to vote</span>
+            <span className="c-meta" style={{ color: "var(--ink-strong)" }}>
+              Sign in to vote
+            </span>
           )}
         </div>
         <button
-          className="text-[11px] text-txt-secondary hover:text-cyan transition-colors"
+          className="press transition-colors"
+          style={{ color: "var(--ink-strong)" }}
           onClick={(e) => {
             e.stopPropagation();
             if (navigator.share) {
               navigator.share({ url: `/pulse/polls/${poll.id}` });
             }
           }}
+          aria-label="Share"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
@@ -238,7 +261,7 @@ function TemperatureCheck({
   if (showResults) {
     return (
       <div className="space-y-2">
-        <div className="flex justify-between text-base mb-1 px-1">
+        <div className="flex justify-between text-base mb-1 px-1" style={{ color: "var(--ink-strong)" }}>
           <span>•</span>
           <span><Icon name="flame" size={16} /></span>
         </div>
@@ -248,24 +271,34 @@ function TemperatureCheck({
           return (
             <div key={opt.id} className="relative">
               <div
-                className={`
-                  rounded-xl py-2.5 px-3 text-[12px] flex justify-between items-center
-                  transition-all duration-300
-                  ${isUserChoice ? "bg-deep/50 ring-1 ring-cyan/40" : "bg-deep/50"}
-                `}
+                className="relative py-2.5 px-3 text-[12px] flex justify-between items-center transition-all duration-300 overflow-hidden"
+                style={{
+                  background: "var(--paper-soft)",
+                  border: isUserChoice
+                    ? "2px solid var(--ink-strong)"
+                    : "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
+                {/* Ink-filled progress bar on paper track */}
                 <div
-                  className="absolute inset-0 rounded-xl bg-cyan/10 transition-all duration-500 ease-out"
-                  style={{ width: `${pct}%` }}
+                  className="absolute inset-y-0 left-0 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${pct}%`,
+                    background: "var(--ink-strong)",
+                    opacity: 0.15,
+                  }}
                 />
                 <span className="relative z-10 flex items-center gap-1.5">
                   <span className="text-base">{opt.emoji || TEMP_EMOJIS[i] || "sparkle"}</span>
-                  {opt.label && <span className="text-txt-secondary">{opt.label}</span>}
+                  {opt.label && <span>{opt.label}</span>}
                   {isUserChoice && (
-                    <span className="text-cyan text-[10px] font-semibold"><Icon name="check" size={16} /></span>
+                    <span className="text-[10px] font-semibold">
+                      <Icon name="check" size={16} />
+                    </span>
                   )}
                 </span>
-                <span className="relative z-10 text-txt-secondary font-medium">
+                <span className="relative z-10 font-medium tabular-nums">
                   {pct}%
                 </span>
               </div>
@@ -279,7 +312,7 @@ function TemperatureCheck({
   // Voting UI: emoji scale buttons with submit
   return (
     <div className="space-y-3">
-      <div className="flex justify-between text-base px-1">
+      <div className="flex justify-between text-base px-1" style={{ color: "var(--ink-strong)" }}>
         <span>•</span>
         <span><Icon name="flame" size={16} /></span>
       </div>
@@ -291,15 +324,14 @@ function TemperatureCheck({
               key={opt.id}
               disabled={disabled}
               onClick={() => setTempSelection(i)}
-              className={`
-                flex-1 h-12 rounded-xl text-lg font-medium transition-all duration-200
-                ${
-                  isSelected
-                    ? "bg-cyan/15 ring-1 ring-cyan/50 scale-105"
-                    : "bg-deep/50 hover:bg-deep/70"
-                }
-                ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 press"}
-              `}
+              className={`flex-1 h-12 text-lg font-medium transition-all duration-200 ${
+                disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-95 press"
+              }`}
+              style={{
+                background: isSelected ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--ink-strong)",
+                color: "var(--ink-strong)",
+              }}
             >
               {opt.emoji || TEMP_EMOJIS[i] || "sparkle"}
             </button>
@@ -310,11 +342,9 @@ function TemperatureCheck({
         <button
           disabled={disabled}
           onClick={onSubmit}
-          className={`
-            w-full py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200
-            bg-gradient-to-r from-cyan to-royal text-white
-            ${disabled ? "opacity-50 cursor-not-allowed" : "hover:opacity-90 active:scale-[0.98] press"}
-          `}
+          className={`c-btn c-btn-accent w-full ${
+            disabled ? "opacity-50 cursor-not-allowed" : "press"
+          }`}
         >
           Submit
         </button>
@@ -350,26 +380,36 @@ function MultipleChoice({
           return (
             <div key={opt.id} className="relative">
               <div
-                className={`
-                  rounded-xl py-2.5 px-3 text-[12px] flex justify-between items-center
-                  transition-all duration-300 overflow-hidden
-                  ${isUserChoice ? "bg-deep/50 ring-1 ring-cyan/40" : "bg-deep/50"}
-                `}
+                className="relative py-2.5 px-3 text-[12px] flex justify-between items-center transition-all duration-300 overflow-hidden"
+                style={{
+                  background: "var(--paper-soft)",
+                  border: isUserChoice
+                    ? "2px solid var(--ink-strong)"
+                    : "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
               >
+                {/* Ink-filled progress bar */}
                 <div
-                  className="absolute inset-0 rounded-xl bg-cyan/10 transition-all duration-500 ease-out"
-                  style={{ width: `${pct}%` }}
+                  className="absolute inset-y-0 left-0 transition-all duration-500 ease-out"
+                  style={{
+                    width: `${pct}%`,
+                    background: "var(--ink-strong)",
+                    opacity: 0.15,
+                  }}
                 />
                 <span className="relative z-10 flex items-center gap-1.5">
                   {opt.emoji && <span className="text-base">{opt.emoji}</span>}
-                  <span className={isUserChoice ? "font-semibold text-cyan" : ""}>
+                  <span className={isUserChoice ? "font-semibold" : ""}>
                     {opt.label}
                   </span>
                   {isUserChoice && (
-                    <span className="text-cyan text-[10px] font-semibold"><Icon name="check" size={16} /></span>
+                    <span className="text-[10px] font-semibold">
+                      <Icon name="check" size={16} />
+                    </span>
                   )}
                 </span>
-                <span className={`relative z-10 font-medium ${isUserChoice ? "text-cyan" : "text-txt-secondary"}`}>
+                <span className="relative z-10 font-medium tabular-nums">
                   {pct}%
                 </span>
               </div>
@@ -382,12 +422,10 @@ function MultipleChoice({
             key={opt.id}
             disabled={disabled}
             onClick={() => onVote(opt.id)}
-            className={`
-              w-full rounded-xl py-2.5 px-3 text-[12px] text-left
-              bg-deep/50 hover:bg-deep/70 transition-all duration-200
-              flex items-center gap-1.5
-              ${disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer active:scale-[0.98] press"}
-            `}
+            className={`c-btn c-btn-outline w-full text-left flex items-center gap-1.5 ${
+              disabled ? "opacity-50 cursor-not-allowed" : "press"
+            }`}
+            style={{ justifyContent: "flex-start" }}
           >
             {opt.emoji && <span className="text-base">{opt.emoji}</span>}
             <span>{opt.label}</span>

@@ -37,7 +37,8 @@ export default function CommentsPreview({
         <button
           type="button"
           onClick={onOpen}
-          className="block text-[11px] text-ivory/40 hover:text-ivory/70 press font-semibold uppercase tracking-editorial-tight"
+          className="c-kicker block press"
+          style={{ color: "var(--ink-strong)", opacity: 0.65 }}
         >
           View all {totalCount} comments →
         </button>
@@ -47,16 +48,25 @@ export default function CommentsPreview({
           {c.author_handle ? (
             <Link
               href={`/user/${c.author_handle}`}
-              className="shrink-0 font-semibold text-white hover:text-gold press"
+              className="shrink-0 font-semibold press"
+              style={{ color: "var(--ink-strong)" }}
             >
               {c.author_display_name}
             </Link>
           ) : (
-            <span className="shrink-0 font-semibold text-white">
+            <span
+              className="shrink-0 font-semibold"
+              style={{ color: "var(--ink-strong)" }}
+            >
               {c.author_display_name}
             </span>
           )}
-          <p className="text-ivory/70 line-clamp-2 min-w-0">{c.body}</p>
+          <p
+            className="c-body line-clamp-2 min-w-0"
+            style={{ color: "var(--ink-strong)", opacity: 0.75 }}
+          >
+            {c.body}
+          </p>
         </div>
       ))}
     </div>

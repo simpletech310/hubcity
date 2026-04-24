@@ -53,14 +53,17 @@ function getInitials(name: string): string {
 function CommentSkeleton() {
   return (
     <div className="flex gap-2.5 animate-pulse">
-      <div className="w-8 h-8 rounded-full bg-white/[0.06] shrink-0" />
+      <div
+        className="w-8 h-8 rounded-full shrink-0"
+        style={{ background: "var(--paper-soft)" }}
+      />
       <div className="flex-1 space-y-2">
         <div className="flex gap-2">
-          <div className="w-20 h-3 rounded bg-white/[0.06]" />
-          <div className="w-8 h-3 rounded bg-white/[0.04]" />
+          <div className="w-20 h-3" style={{ background: "var(--paper-soft)" }} />
+          <div className="w-8 h-3" style={{ background: "var(--paper-soft)" }} />
         </div>
-        <div className="w-3/4 h-3.5 rounded bg-white/[0.04]" />
-        <div className="w-1/2 h-3.5 rounded bg-white/[0.03]" />
+        <div className="w-3/4 h-3.5" style={{ background: "var(--paper-soft)" }} />
+        <div className="w-1/2 h-3.5" style={{ background: "var(--paper-soft)" }} />
       </div>
     </div>
   );
@@ -284,31 +287,42 @@ export default function CommentsSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0"
+        style={{ background: "rgba(26, 21, 18, 0.55)" }}
         onClick={handleClose}
       />
 
-      {/* Panel */}
-      <div className="relative w-full max-w-[430px] bg-card border-t border-border-subtle rounded-t-2xl animate-slide-up flex flex-col max-h-[80vh]">
+      {/* Panel — paper surface with 3px ink top rule, hard corners */}
+      <div
+        className="relative w-full max-w-[430px] animate-slide-up flex flex-col max-h-[80vh]"
+        style={{
+          background: "var(--paper)",
+          borderTop: "3px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
+      >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2 shrink-0">
-          <div className="w-10 h-1 rounded-full bg-white/20" />
+          <div
+            className="w-10 h-1 rounded-full"
+            style={{ background: "var(--rule-strong-c)", opacity: 0.35 }}
+          />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b border-border-subtle shrink-0">
+        <div
+          className="flex items-center justify-between px-5 pb-3 shrink-0"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
           <button
             onClick={handleClose}
-            className="text-sm text-txt-secondary press"
+            className="c-meta press"
+            style={{ color: "var(--ink-strong)" }}
           >
             Close
           </button>
-          <span className="text-sm font-heading font-bold text-gold">
-            Comments
-          </span>
-          <span className="text-xs text-txt-secondary tabular-nums">
-            {commentCount}
-          </span>
+          <span className="c-kicker">Comments</span>
+          <span className="c-meta tabular-nums">{commentCount}</span>
         </div>
 
         {/* Comment list */}
@@ -321,13 +335,22 @@ export default function CommentsSheet({
             </div>
           ) : comments.length === 0 ? (
             <div className="text-center py-8">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-white/10 mx-auto mb-3">
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="mx-auto mb-3"
+                style={{ color: "var(--ink-strong)", opacity: 0.3 }}
+              >
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-              <p className="text-sm text-txt-secondary">No comments yet</p>
-              <p className="text-xs text-txt-secondary mt-1">
-                Be the first to comment
-              </p>
+              <p className="c-body text-sm">No comments yet</p>
+              <p className="c-meta mt-1">Be the first to comment</p>
             </div>
           ) : (
             comments.map((comment) => (
@@ -345,16 +368,22 @@ export default function CommentsSheet({
 
         {/* Reply indicator */}
         {replyTo && (
-          <div className="px-5 py-2 border-t border-border-subtle bg-white/5 flex items-center gap-2 shrink-0 animate-in slide-in-from-bottom-2 duration-200">
-            <span className="text-xs text-txt-secondary flex-1 truncate">
+          <div
+            className="px-5 py-2 flex items-center gap-2 shrink-0 animate-in slide-in-from-bottom-2 duration-200"
+            style={{
+              borderTop: "2px solid var(--rule-strong-c)",
+              background: "var(--paper-soft)",
+            }}
+          >
+            <span className="c-meta flex-1 truncate">
               Replying to{" "}
-              <span className="text-gold">
+              <span className="c-serif-it" style={{ color: "var(--ink-strong)" }}>
                 {replyTo.author?.display_name || "someone"}
               </span>
             </span>
             <button
               onClick={() => setReplyTo(null)}
-              className="text-xs text-txt-secondary hover:text-white press"
+              className="c-meta press"
             >
               Cancel
             </button>
@@ -362,7 +391,10 @@ export default function CommentsSheet({
         )}
 
         {/* Input bar */}
-        <div className="px-5 py-3 border-t border-border-subtle shrink-0">
+        <div
+          className="px-5 py-3 shrink-0"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           {userId ? (
             <div className="flex items-end gap-2">
               {/* GIF + Emoji buttons */}
@@ -375,7 +407,7 @@ export default function CommentsSheet({
                   }}
                   disabled={submitting}
                   aria-label="Add a GIF"
-                  className="shrink-0 h-8 px-2 rounded-lg text-[10px] font-heading font-bold tracking-[0.15em] uppercase text-gold border border-gold/30 hover:bg-gold/10 press transition-colors disabled:opacity-40"
+                  className="c-btn c-btn-outline c-btn-sm shrink-0"
                 >
                   GIF
                 </button>
@@ -387,9 +419,19 @@ export default function CommentsSheet({
                   }}
                   disabled={submitting}
                   aria-label="Add an emoji"
-                  className="shrink-0 h-8 w-8 rounded-lg flex items-center justify-center text-base hover:bg-gold/10 press transition-colors disabled:opacity-40"
+                  className="c-btn c-btn-outline c-btn-sm shrink-0 h-8 w-8 flex items-center justify-center"
+                  style={{ padding: 0 }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold/80">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
                     <circle cx="12" cy="12" r="10" />
                     <path d="M8 14s1.5 2 4 2 4-2 4-2" />
                     <line x1="9" y1="9" x2="9.01" y2="9" />
@@ -410,7 +452,12 @@ export default function CommentsSheet({
                 placeholder={
                   replyTo ? "Write a reply..." : "Add a comment..."
                 }
-                className="flex-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white placeholder:text-txt-secondary resize-none focus:outline-none focus:border-gold/40 min-h-[38px] max-h-[100px] transition-all"
+                className="flex-1 px-3 py-2 text-sm resize-none focus:outline-none min-h-[38px] max-h-[100px]"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                }}
                 maxLength={1000}
                 rows={1}
                 onKeyDown={(e) => {
@@ -423,10 +470,22 @@ export default function CommentsSheet({
               <button
                 onClick={() => handleSubmit()}
                 disabled={!body.trim() || submitting}
-                className="shrink-0 w-9 h-9 rounded-full bg-gold flex items-center justify-center press transition-all disabled:opacity-40 disabled:cursor-default"
+                className="shrink-0 w-9 h-9 rounded-full flex items-center justify-center press transition-all disabled:opacity-40 disabled:cursor-default"
+                style={{
+                  background: "var(--gold-c)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--ink-strong)",
+                }}
+                aria-label="Send comment"
               >
                 {submitting ? (
-                  <div className="w-4 h-4 border-2 border-midnight/30 border-t-midnight rounded-full animate-spin" />
+                  <div
+                    className="w-4 h-4 border-2 rounded-full animate-spin"
+                    style={{
+                      borderColor: "var(--ink-strong)",
+                      borderTopColor: "transparent",
+                    }}
+                  />
                 ) : (
                   <svg
                     width="16"
@@ -437,7 +496,6 @@ export default function CommentsSheet({
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="text-midnight"
                   >
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
@@ -446,9 +504,7 @@ export default function CommentsSheet({
               </button>
             </div>
           ) : (
-            <p className="text-center text-xs text-txt-secondary py-1">
-              Sign in to comment
-            </p>
+            <p className="c-meta text-center py-1">Sign in to comment</p>
           )}
         </div>
       </div>
@@ -527,11 +583,14 @@ function CommentItem({
     <div className={isReply ? "ml-8 relative" : "relative"}>
       {/* Thread line for replies */}
       {isReply && (
-        <div className="absolute -left-5 top-0 bottom-0 w-[2px] bg-white/[0.06] rounded-full" />
+        <div
+          className="absolute -left-5 top-0 bottom-0"
+          style={{ width: "2px", background: "var(--rule-strong-c)", opacity: 0.25 }}
+        />
       )}
 
       <div className="flex gap-2.5">
-        {/* Avatar */}
+        {/* Avatar — stays circular */}
         {avatarUrl ? (
           <Image
             src={avatarUrl}
@@ -540,13 +599,19 @@ function CommentItem({
             height={isReply ? 28 : 32}
             className={`${
               isReply ? "w-7 h-7" : "w-8 h-8"
-            } rounded-full object-cover ring-1 ring-white/5 shrink-0`}
+            } rounded-full object-cover shrink-0`}
+            style={{ border: "2px solid var(--rule-strong-c)" }}
           />
         ) : (
           <div
             className={`${
               isReply ? "w-7 h-7 text-[9px]" : "w-8 h-8 text-[10px]"
-            } rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold ring-1 ring-white/5 shrink-0`}
+            } rounded-full flex items-center justify-center font-heading font-bold shrink-0`}
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+            }}
           >
             {initials}
           </div>
@@ -555,10 +620,13 @@ function CommentItem({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-white truncate">
+            <span
+              className="text-xs font-semibold truncate"
+              style={{ color: "var(--ink-strong)" }}
+            >
               {name}
             </span>
-            <span className="text-[10px] text-txt-secondary shrink-0">
+            <span className="c-meta shrink-0">
               {getTimeAgo(comment.created_at)}
             </span>
           </div>
@@ -566,7 +634,10 @@ function CommentItem({
             const gifUrl = parseGif(comment.body);
             if (gifUrl) {
               return (
-                <div className="mt-1 inline-block rounded-xl overflow-hidden bg-white/5 border border-border-subtle max-w-[220px]">
+                <div
+                  className="mt-1 inline-block overflow-hidden c-frame max-w-[220px]"
+                  style={{ background: "var(--paper-soft)" }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={gifUrl}
@@ -578,7 +649,10 @@ function CommentItem({
               );
             }
             return (
-              <p className="text-sm text-white/90 mt-0.5 break-words whitespace-pre-wrap">
+              <p
+                className="text-sm mt-0.5 break-words whitespace-pre-wrap"
+                style={{ color: "var(--ink-strong)" }}
+              >
                 {comment.body}
               </p>
             );
@@ -591,8 +665,12 @@ function CommentItem({
               onClick={toggleLike}
               disabled={!userId}
               className={`flex items-center gap-1 text-[11px] press transition-colors ${
-                liked ? "text-coral" : "text-txt-secondary hover:text-coral/60"
-              } ${!userId ? "opacity-40" : ""}`}
+                !userId ? "opacity-40" : ""
+              }`}
+              style={{
+                color: liked ? "var(--red-c, #c0392b)" : "var(--ink-strong)",
+                opacity: liked ? 1 : 0.7,
+              }}
             >
               <svg
                 width="12"
@@ -613,7 +691,8 @@ function CommentItem({
             {userId && !isReply && (
               <button
                 onClick={() => onReply(comment)}
-                className="text-[11px] text-txt-secondary hover:text-gold press transition-colors"
+                className="text-[11px] press transition-colors"
+                style={{ color: "var(--ink-strong)", opacity: 0.7 }}
               >
                 Reply
               </button>
@@ -629,13 +708,15 @@ function CommentItem({
                         onDelete(comment.id);
                         setShowDeleteConfirm(false);
                       }}
-                      className="text-[10px] text-coral font-semibold press"
+                      className="text-[10px] font-semibold press"
+                      style={{ color: "var(--red-c, #c0392b)" }}
                     >
                       Delete
                     </button>
                     <button
                       onClick={() => setShowDeleteConfirm(false)}
-                      className="text-[10px] text-txt-secondary press"
+                      className="text-[10px] press"
+                      style={{ color: "var(--ink-strong)", opacity: 0.7 }}
                     >
                       Cancel
                     </button>
@@ -643,7 +724,8 @@ function CommentItem({
                 ) : (
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="text-[11px] text-txt-secondary hover:text-coral/60 press transition-colors"
+                    className="text-[11px] press transition-colors"
+                    style={{ color: "var(--ink-strong)", opacity: 0.7 }}
                   >
                     Delete
                   </button>
@@ -672,7 +754,8 @@ function CommentItem({
           {!showAllReplies && hiddenCount > 0 && (
             <button
               onClick={() => setShowAllReplies(true)}
-              className="ml-8 text-[11px] text-gold/70 font-semibold press hover:text-gold transition-colors"
+              className="ml-8 text-[11px] font-semibold press transition-colors"
+              style={{ color: "var(--ink-strong)" }}
             >
               View {hiddenCount} more {hiddenCount === 1 ? "reply" : "replies"}
             </button>

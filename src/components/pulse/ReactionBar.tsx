@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ReactionEmoji, Post } from "@/types/database";
-import { REACTION_EMOJI_MAP, REACTION_COLORS } from "@/lib/constants";
+import { REACTION_EMOJI_MAP } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import CommentsSheet from "./CommentsSheet";
 
@@ -193,53 +193,76 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
                 <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
               ))}
           </div>
-          <span className="text-[11px] text-white/30 tabular-nums">{totalReactions}</span>
+          <span className="c-meta tabular-nums">{totalReactions}</span>
           {commentCount > 0 && (
             <>
-              <span className="text-white/10 mx-1">&middot;</span>
-              <span className="text-[11px] text-white/30 tabular-nums">{commentCount} comment{commentCount !== 1 ? "s" : ""}</span>
+              <span className="c-meta mx-1">&middot;</span>
+              <span className="c-meta tabular-nums">
+                {commentCount} comment{commentCount !== 1 ? "s" : ""}
+              </span>
             </>
           )}
         </div>
       )}
 
       {/* Action row */}
-      <div className="flex items-center gap-0.5 pt-2 border-t border-white/[0.04]">
+      <div
+        className="flex items-center gap-1 pt-2"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
         {/* All 5 emoji reactions always visible */}
         {emojis.map((emoji) => {
           const isActive = activeReactions.has(emoji);
           const count = counts[emoji] || 0;
-          const colors = REACTION_COLORS[emoji];
 
           return (
             <button
               key={emoji}
               onClick={() => toggleReaction(emoji)}
               disabled={!userId}
-              className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all ${
-                isActive
-                  ? `${colors.bg} ${colors.text} font-semibold scale-105`
-                  : "text-white/40 hover:bg-white/[0.04] hover:text-white/60"
-              } ${!userId ? "opacity-40 cursor-default" : "press"}`}
+              className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
+                !userId ? "opacity-40 cursor-default" : "press"
+              } ${isActive ? "font-semibold" : ""}`}
+              style={{
+                background: isActive ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--ink-strong)",
+                color: "var(--ink-strong)",
+              }}
+              aria-pressed={isActive}
             >
-              <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
+              <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>
+                {REACTION_EMOJI_MAP[emoji]}
+              </span>
               {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
             </button>
           );
         })}
 
         {/* Right side actions */}
-        <div className="flex items-center gap-0.5 ml-auto">
+        <div className="flex items-center gap-1 ml-auto">
           {/* Share */}
           <button
             onClick={handleShare}
-            className="relative flex items-center gap-1 px-2 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all press"
+            className="relative flex items-center gap-1 px-2 py-1.5 text-xs press transition-all"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+              color: "var(--ink-strong)",
+            }}
+            aria-label="Share"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
             </svg>
             {shareToast && (
-              <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald/20 text-emerald text-[10px] font-semibold px-2 py-1 rounded-lg whitespace-nowrap backdrop-blur-sm">
+              <span
+                className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-2 py-1 whitespace-nowrap"
+                style={{
+                  background: "var(--ink-strong)",
+                  color: "var(--paper)",
+                  border: "2px solid var(--ink-strong)",
+                }}
+              >
                 Link copied!
               </span>
             )}
@@ -249,11 +272,16 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
           <button
             onClick={handleBookmark}
             disabled={!userId}
-            className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all ${
-              bookmarked
-                ? "text-gold"
-                : "text-white/40 hover:bg-white/[0.04] hover:text-white/60"
-            } ${!userId ? "opacity-40 cursor-default" : "press"}`}
+            className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
+              !userId ? "opacity-40 cursor-default" : "press"
+            }`}
+            style={{
+              background: bookmarked ? "var(--gold-c)" : "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+              color: "var(--ink-strong)",
+            }}
+            aria-pressed={bookmarked}
+            aria-label="Bookmark"
           >
             <svg
               width="14"
@@ -272,7 +300,13 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
           {/* Comment button */}
           <button
             onClick={() => setCommentsOpen(true)}
-            className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all press"
+            className="flex items-center gap-1.5 px-2 py-1.5 text-xs press transition-all"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--ink-strong)",
+              color: "var(--ink-strong)",
+            }}
+            aria-label="Comments"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />

@@ -76,37 +76,37 @@ function formatEventDate(dateStr: string) {
 function SuggestedProfilesCard({ profiles }: { profiles: SuggestedProfile[] }) {
   if (profiles.length === 0) return null;
   return (
-    <div className="rounded-2xl border border-border-subtle bg-card overflow-hidden">
+    <div className="overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h3 className="text-[13px] font-bold flex items-center gap-2">
+        <h3 className="c-card-t text-[13px] font-bold flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
           <div className="w-5 h-5 rounded-full bg-gold/15 flex items-center justify-center">
             <Icon name="users" size={10} className="text-gold" />
           </div>
           People to Follow
         </h3>
-        <Link href="/people" className="text-[11px] text-gold font-semibold press">See All</Link>
+        <Link href="/people" className="c-kicker text-[11px] text-gold font-semibold press">See All</Link>
       </div>
       <div className="flex gap-3 px-4 pb-4 overflow-x-auto scrollbar-hide">
         {profiles.map((profile) => {
           const badge = ROLE_BADGE_MAP[profile.role];
           return (
             <Link key={profile.id} href={`/user/${profile.handle}`} className="shrink-0 w-[120px] press">
-              <div className="flex flex-col items-center text-center py-3 px-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all">
+              <div className="flex flex-col items-center text-center py-3 px-2 transition-all" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 {profile.avatar_url ? (
                   <Image
                     src={profile.avatar_url}
                     alt={profile.display_name}
                     width={52}
                     height={52}
-                    className="w-13 h-13 rounded-full object-cover ring-2 ring-white/[0.06] mb-2"
+                    className="w-13 h-13 rounded-full object-cover ring-2 ring-black/10 mb-2"
                   />
                 ) : (
-                  <div className="w-13 h-13 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-lg ring-2 ring-white/[0.06] mb-2">
+                  <div className="w-13 h-13 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-lg ring-2 ring-black/10 mb-2">
                     {profile.display_name.charAt(0)}
                   </div>
                 )}
-                <p className="text-[11px] font-semibold text-white truncate w-full">{profile.display_name}</p>
-                <p className="text-[10px] text-white/30 truncate w-full mb-1.5">@{profile.handle}</p>
+                <p className="text-[11px] font-semibold truncate w-full" style={{ color: "var(--ink-strong)" }}>{profile.display_name}</p>
+                <p className="text-[10px] truncate w-full mb-1.5" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>@{profile.handle}</p>
                 {badge && <Badge label={badge.label} variant={badge.variant} />}
               </div>
             </Link>
@@ -120,15 +120,15 @@ function SuggestedProfilesCard({ profiles }: { profiles: SuggestedProfile[] }) {
 function InlineEventsCard({ events }: { events: CityEvent[] }) {
   if (events.length === 0) return null;
   return (
-    <div className="rounded-2xl border border-border-subtle bg-card overflow-hidden">
+    <div className="overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h3 className="text-[13px] font-bold flex items-center gap-2">
+        <h3 className="c-card-t text-[13px] font-bold flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
           <div className="w-5 h-5 rounded-full bg-hc-blue/15 flex items-center justify-center">
             <Icon name="calendar" size={10} className="text-hc-blue" />
           </div>
           Happening Soon
         </h3>
-        <Link href="/events" className="text-[11px] text-gold font-semibold press">All Events</Link>
+        <Link href="/events" className="c-kicker text-[11px] text-gold font-semibold press">All Events</Link>
       </div>
       <div className="flex gap-3 px-4 pb-4 overflow-x-auto scrollbar-hide">
         {events.map((event) => {
@@ -136,7 +136,7 @@ function InlineEventsCard({ events }: { events: CityEvent[] }) {
           const color = eventCategoryColors[event.category] || "#F2A900";
           return (
             <Link key={event.id} href={`/events/${event.id}`} className="block shrink-0 w-[180px] press">
-              <div className="relative h-[130px] rounded-xl overflow-hidden border border-white/[0.04]">
+              <div className="c-frame relative h-[130px] overflow-hidden">
                 {event.image_url ? (
                   <Image src={event.image_url} alt={event.title} fill className="object-cover" sizes="180px" />
                 ) : (
@@ -145,24 +145,24 @@ function InlineEventsCard({ events }: { events: CityEvent[] }) {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
                 {/* Date badge */}
-                <div className="absolute top-2 left-2 bg-black/60 backdrop-blur-sm rounded-lg px-1.5 py-1 text-center border border-white/10">
+                <div className="absolute top-2 left-2 bg-black/60 px-1.5 py-1 text-center" style={{ border: "2px solid rgba(255,255,255,0.15)" }}>
                   <p className="text-[7px] font-bold uppercase" style={{ color }}>{weekday}</p>
-                  <p className="text-sm font-bold leading-none tabular-nums">{day}</p>
-                  <p className="text-[7px] text-white/50 uppercase">{month}</p>
+                  <p className="text-sm font-bold leading-none tabular-nums" style={{ color: "#fff" }}>{day}</p>
+                  <p className="text-[7px] uppercase" style={{ color: "rgba(255,255,255,0.5)" }}>{month}</p>
                 </div>
 
                 {/* RSVP count */}
                 {event.rsvp_count > 0 && (
-                  <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-full px-1.5 py-0.5 text-[8px] text-white/60 font-semibold tabular-nums">
+                  <div className="absolute top-2 right-2 bg-black/50 rounded-full px-1.5 py-0.5 text-[8px] font-semibold tabular-nums" style={{ color: "rgba(255,255,255,0.7)" }}>
                     {event.rsvp_count} going
                   </div>
                 )}
 
                 {/* Content */}
                 <div className="absolute bottom-0 left-0 right-0 p-2.5">
-                  <h4 className="font-heading font-bold text-[11px] leading-tight line-clamp-2 mb-0.5">{event.title}</h4>
+                  <h4 className="c-card-t font-bold text-[11px] leading-tight line-clamp-2 mb-0.5" style={{ color: "#fff" }}>{event.title}</h4>
                   {event.location_name && (
-                    <p className="text-[9px] text-white/40 truncate flex items-center gap-1">
+                    <p className="text-[9px] truncate flex items-center gap-1" style={{ color: "rgba(255,255,255,0.6)" }}>
                       <Icon name="pin" size={8} className="shrink-0" />
                       {event.location_name}
                     </p>
@@ -190,15 +190,15 @@ function InlineDealsCard({ promotions }: { promotions: Promotion[] }) {
   };
 
   return (
-    <div className="rounded-2xl border border-border-subtle bg-card overflow-hidden">
+    <div className="overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <h3 className="text-[13px] font-bold flex items-center gap-2">
+        <h3 className="c-card-t text-[13px] font-bold flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
           <div className="w-5 h-5 rounded-full bg-emerald/15 flex items-center justify-center">
             <Icon name="tag" size={10} className="text-emerald" />
           </div>
           Local Deals
         </h3>
-        <Link href="/food/specials" className="text-[11px] text-gold font-semibold press">All Deals</Link>
+        <Link href="/food/specials" className="c-kicker text-[11px] text-gold font-semibold press">All Deals</Link>
       </div>
       <div className="flex gap-3 px-4 pb-4 overflow-x-auto scrollbar-hide">
         {promotions.map((promo) => {
@@ -210,20 +210,20 @@ function InlineDealsCard({ promotions }: { promotions: Promotion[] }) {
               href={biz?.slug ? `/food/vendor/${biz.slug}` : "#"}
               className="block shrink-0 w-[160px] press"
             >
-              <div className="rounded-xl border border-white/[0.04] p-3 h-full hover:border-white/[0.08] transition-all relative overflow-hidden">
+              <div className="p-3 h-full transition-all relative overflow-hidden" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${color}, transparent)`, opacity: 0.5 }} />
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${color}15` }}>
+                  <div className="w-7 h-7 flex items-center justify-center" style={{ background: `${color}15`, border: "2px solid var(--rule-strong-c)" }}>
                     <Icon name={typeIcons[promo.promo_type] || "tag"} size={14} style={{ color }} />
                   </div>
                   <span className="text-[9px] font-bold rounded-full px-1.5 py-0.5" style={{ background: `${color}15`, color }}>
                     {promo.promo_type === "discount" && promo.discount_percent ? `${promo.discount_percent}% Off` : typeLabels[promo.promo_type] || promo.promo_type}
                   </span>
                 </div>
-                <h4 className="font-heading font-bold text-[11px] leading-tight line-clamp-2 mb-1">{promo.title}</h4>
-                <p className="text-[9px] text-white/30 truncate">{biz?.name || "Local Business"}</p>
+                <h4 className="c-card-t font-bold text-[11px] leading-tight line-clamp-2 mb-1" style={{ color: "var(--ink-strong)" }}>{promo.title}</h4>
+                <p className="text-[9px] truncate" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>{biz?.name || "Local Business"}</p>
                 {promo.promo_code && (
-                  <span className="mt-2 inline-block text-[9px] font-mono bg-white/[0.04] px-2 py-0.5 rounded text-gold border border-white/[0.06]">
+                  <span className="mt-2 inline-block text-[9px] font-mono px-2 py-0.5 text-gold" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
                     {promo.promo_code}
                   </span>
                 )}
@@ -393,22 +393,14 @@ export default function PulseFeed({
           <div className="inline-flex rounded-full panel-editorial p-0.5">
             <button
               onClick={() => setMode("discover")}
-              className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
-                mode === "discover"
-                  ? "bg-gold text-midnight"
-                  : "text-ivory/60 hover:text-white"
-              }`}
+              className={`c-chip ${mode === "discover" ? "active gold" : ""} press`}
               aria-pressed={mode === "discover"}
             >
               Discover
             </button>
             <button
               onClick={() => setMode("following")}
-              className={`px-4 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
-                mode === "following"
-                  ? "bg-gold text-midnight"
-                  : "text-ivory/60 hover:text-white"
-              }`}
+              className={`c-chip ${mode === "following" ? "active gold" : ""} press`}
               aria-pressed={mode === "following"}
             >
               Following
@@ -420,7 +412,7 @@ export default function PulseFeed({
             </button>
           </div>
           {inFollowing && followedIds.length === 0 && (
-            <span className="text-[10px] text-ivory/40 italic">
+            <span className="text-[10px] c-serif-it" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
               Follow creators on the Discover tab to fill this in.
             </span>
           )}
@@ -430,8 +422,8 @@ export default function PulseFeed({
       {/* ─── Inline Compose Bar ─── */}
       {canPost && (
         <div className="mx-5 mb-3">
-          <div className="flex items-center gap-3 bg-card border border-border-subtle rounded-2xl px-4 py-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading font-bold text-xs ring-2 ring-white/5 shrink-0">
+          <div className="flex items-center gap-3 px-4 py-3" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-xs ring-2 ring-black/10 shrink-0">
               {userName
                 .split(" ")
                 .map((w) => w[0])
@@ -441,7 +433,8 @@ export default function PulseFeed({
             </div>
             <button
               onClick={() => setComposeOpen(true)}
-              className="flex-1 text-left text-sm text-white/30 press"
+              className="flex-1 text-left text-sm press"
+              style={{ color: "var(--ink-strong)", opacity: 0.55 }}
             >
               What&apos;s happening in Compton?
             </button>
@@ -477,11 +470,11 @@ export default function PulseFeed({
             <button
               key={f.value}
               onClick={() => setActiveFilter(f.value)}
-              className="flex items-center gap-1.5 shrink-0 rounded-full px-4 py-2.5 text-[13px] font-semibold transition-all press"
+              className="flex items-center gap-1.5 shrink-0 px-4 py-2.5 text-[13px] font-semibold transition-all press"
               style={{
-                background: isActive ? `${f.color}20` : "rgba(255,255,255,0.04)",
-                color: isActive ? f.color : "rgba(255,255,255,0.4)",
-                border: `1px solid ${isActive ? `${f.color}30` : "rgba(255,255,255,0.06)"}`,
+                background: isActive ? `${f.color}20` : "var(--paper-warm)",
+                color: isActive ? f.color : "var(--ink-strong)",
+                border: `2px solid ${isActive ? `${f.color}60` : "var(--rule-strong-c)"}`,
               }}
             >
               <Icon name={f.iconName} size={14} className="opacity-80" />
@@ -493,13 +486,13 @@ export default function PulseFeed({
 
       {/* ─── Trending Hashtags (inline chips) ─── */}
       {trendingHashtags.length > 0 && activeFilter === "all" && (
-        <div className="flex items-center gap-2 mx-5 mb-4 px-3 py-2 rounded-xl glass-surface overflow-x-auto scrollbar-hide">
+        <div className="flex items-center gap-2 mx-5 mb-4 px-3 py-2 glass-surface overflow-x-auto scrollbar-hide" style={{ border: "2px solid var(--rule-strong-c)" }}>
           <Icon name="trending" size={12} className="text-gold/60 shrink-0" />
-          <span className="text-[10px] text-white/30 uppercase tracking-wider font-semibold shrink-0">Trending</span>
+          <span className="c-kicker text-[10px] uppercase tracking-wider font-semibold shrink-0" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>Trending</span>
           {trendingHashtags.map((t) => (
             <span
               key={t.hashtag}
-              className="shrink-0 bg-gold/8 text-gold/80 text-[11px] font-semibold px-2.5 py-1 rounded-full cursor-pointer hover:bg-gold/15 transition-colors"
+              className="c-chip gold shrink-0 cursor-pointer"
             >
               #{t.hashtag}
             </span>
@@ -511,7 +504,7 @@ export default function PulseFeed({
       {visibleLiveStreams.length > 0 && activeFilter === "all" && (
         <section className="px-5 mb-4">
           <div className="mb-2">
-            <h3 className="font-heading font-bold text-sm flex items-center gap-2">
+            <h3 className="c-card-t font-bold text-sm flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
               <div className="w-2 h-2 rounded-full bg-coral animate-pulse" />
               Live Now
             </h3>
@@ -527,7 +520,7 @@ export default function PulseFeed({
       {/* ─── Main Feed with Interspersed Content ─── */}
       <section className="px-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-heading font-bold text-base flex items-center gap-2">
+          <h2 className="c-card-t font-bold text-base flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
             <div className="w-1 h-5 rounded-full bg-gold" />
             {activeFilter === "all" ? "Latest Feed" :
              activeFilter === "city_official" ? "City News" :
@@ -537,20 +530,20 @@ export default function PulseFeed({
              activeFilter === "polls" ? "All Polls" :
              "All Surveys"}
           </h2>
-          <span className="text-[10px] text-white/20 tabular-nums">{feedItems.length} items</span>
+          <span className="text-[10px] tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.4 }}>{feedItems.length} items</span>
         </div>
 
         <div className="space-y-3 stagger">
           {feedItems.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <Icon
                   name={activeFilter === "polls" ? "chart" : activeFilter === "surveys" ? "document" : activeFilter === "jobs" ? "briefcase" : "pulse"}
                   size={28}
-                  className="text-white/30"
+                  style={{ color: "var(--ink-strong)", opacity: 0.55 }}
                 />
               </div>
-              <p className="text-sm font-semibold mb-1">
+              <p className="c-card-t text-sm font-semibold mb-1" style={{ color: "var(--ink-strong)" }}>
                 {activeFilter === "polls"
                   ? "No active polls yet"
                   : activeFilter === "surveys"
@@ -559,7 +552,7 @@ export default function PulseFeed({
                       ? "No job posts yet"
                       : "No posts yet"}
               </p>
-              <p className="text-xs text-white/30">
+              <p className="text-xs" style={{ color: "var(--ink-strong)", opacity: 0.55 }}>
                 {activeFilter === "polls"
                   ? "Polls will appear here when created by city officials."
                   : activeFilter === "surveys"

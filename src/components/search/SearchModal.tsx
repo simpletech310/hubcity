@@ -260,18 +260,25 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     <div className="fixed inset-0 z-[200] flex flex-col">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-midnight/98 backdrop-blur-2xl"
+        className="absolute inset-0"
+        style={{ background: "rgba(26,21,18,0.72)" }}
         onClick={onClose}
       />
 
       {/* Modal content */}
-      <div className="relative z-10 flex flex-col h-full max-w-[430px] mx-auto w-full animate-slide-up">
+      <div
+        className="relative z-10 flex flex-col h-full max-w-[430px] mx-auto w-full animate-slide-up"
+        style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
+      >
         {/* Header with search input */}
         <div className="px-4 pt-safe-top">
           <div className="flex items-center gap-3 pt-4 pb-3">
             {/* Search input */}
             <div className="flex-1 relative">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-txt-secondary">
+              <div
+                className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+              >
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                   <circle cx="7" cy="7" r="4.5" />
                   <path d="M10.5 10.5l3.5 3.5" />
@@ -283,7 +290,15 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 value={query}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder="Search people, posts, businesses..."
-                className="w-full bg-white/[0.06] border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-txt-secondary/60 focus:outline-none focus:border-gold/40 focus:ring-1 focus:ring-gold/20 transition-all"
+                className="w-full pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 transition-all"
+                style={{
+                  background: "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  borderRadius: 0,
+                  // @ts-expect-error CSS custom prop
+                  "--tw-ring-color": "var(--gold-c)",
+                }}
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -295,7 +310,12 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     setResults(null);
                     inputRef.current?.focus();
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-colors"
+                  style={{
+                    border: "2px solid var(--rule-strong-c)",
+                    background: "var(--paper)",
+                    color: "var(--ink-strong)",
+                  }}
                 >
                   <svg width="10" height="10" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M1 1l8 8M9 1l-8 8" />
@@ -307,7 +327,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             {/* Cancel button */}
             <button
               onClick={onClose}
-              className="text-sm font-medium text-gold press shrink-0"
+              className="c-btn c-btn-outline c-btn-sm press shrink-0"
             >
               Cancel
             </button>
@@ -321,14 +341,33 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
             <div className="space-y-4 pt-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-3 w-20 bg-white/[0.06] rounded mb-3" />
+                  <div
+                    className="h-3 w-20 mb-3"
+                    style={{ background: "var(--paper-soft)" }}
+                  />
                   <div className="space-y-2.5">
                     {[1, 2].map((j) => (
-                      <div key={j} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03]">
-                        <div className="w-10 h-10 rounded-full bg-white/[0.06] shrink-0" />
+                      <div
+                        key={j}
+                        className="flex items-center gap-3 p-3"
+                        style={{
+                          background: "var(--paper)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        <div
+                          className="w-10 h-10 rounded-full shrink-0"
+                          style={{ background: "var(--paper-soft)" }}
+                        />
                         <div className="flex-1 space-y-1.5">
-                          <div className="h-3.5 bg-white/[0.06] rounded w-3/4" />
-                          <div className="h-2.5 bg-white/[0.04] rounded w-1/2" />
+                          <div
+                            className="h-3.5 w-3/4"
+                            style={{ background: "var(--paper-soft)" }}
+                          />
+                          <div
+                            className="h-2.5 w-1/2"
+                            style={{ background: "var(--paper-soft)", opacity: 0.7 }}
+                          />
                         </div>
                       </div>
                     ))}
@@ -349,46 +388,69 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                   return (
                     <div key={category}>
                       <div className="flex items-center gap-2 mb-2 px-1">
-                        <span className="text-gold/70">{meta.icon}</span>
-                        <span className="text-[11px] font-semibold text-txt-secondary uppercase tracking-wider">
+                        <span style={{ color: "var(--ink-strong)", opacity: 0.7 }}>
+                          {meta.icon}
+                        </span>
+                        <span
+                          className="c-kicker"
+                          style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+                        >
                           {meta.label}
                         </span>
-                        <span className="text-[10px] text-txt-secondary/50">
+                        <span
+                          className="c-meta"
+                          style={{ fontSize: "10px" }}
+                        >
                           {items.length}
                         </span>
                       </div>
-                      <div className="space-y-1">
+                      <div>
                         {items.map((item) => (
                           <Link
                             key={item.id}
                             href={item.link}
                             onClick={handleResultClick}
-                            className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-transparent hover:border-gold/10 hover:bg-white/[0.05] transition-all press group"
+                            className="flex items-center gap-3 p-3 transition-all press group"
+                            style={{
+                              background: "var(--paper)",
+                              borderBottom: "2px solid var(--rule-strong-c)",
+                              color: "var(--ink-strong)",
+                            }}
                           >
                             {/* Avatar / image */}
                             {item.image ? (
                               <img
                                 src={item.image}
                                 alt=""
-                                className="w-10 h-10 rounded-full object-cover bg-white/[0.06] shrink-0"
+                                className="w-10 h-10 object-cover shrink-0 c-frame"
+                                style={{ background: "var(--paper-soft)" }}
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0 text-txt-secondary">
+                              <div
+                                className="w-10 h-10 flex items-center justify-center shrink-0 c-frame"
+                                style={{
+                                  background: "var(--paper-soft)",
+                                  color: "var(--ink-strong)",
+                                }}
+                              >
                                 {meta.icon}
                               </div>
                             )}
                             {/* Text */}
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white truncate group-hover:text-gold transition-colors">
+                              <p
+                                className="c-card-t truncate"
+                                style={{ fontSize: "14px" }}
+                              >
                                 {item.title}
                               </p>
                               {item.subtitle && (
-                                <p className="text-xs text-txt-secondary truncate mt-0.5">
+                                <p className="c-meta truncate mt-0.5">
                                   {item.subtitle}
                                 </p>
                               )}
                               {item.description && !item.subtitle && (
-                                <p className="text-xs text-txt-secondary truncate mt-0.5">
+                                <p className="c-meta truncate mt-0.5">
                                   {item.description}
                                 </p>
                               )}
@@ -401,7 +463,8 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                               stroke="currentColor"
                               strokeWidth="2"
                               strokeLinecap="round"
-                              className="text-txt-secondary/30 group-hover:text-gold/50 shrink-0 transition-colors"
+                              className="shrink-0"
+                              style={{ color: "var(--ink-strong)", opacity: 0.5 }}
                             >
                               <path d="M5 2l6 5-6 5" />
                             </svg>
@@ -418,17 +481,31 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           {/* No results */}
           {hasNoResults && !loading && (
             <div className="flex flex-col items-center justify-center pt-16 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
-                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary/50">
+              <div
+                className="w-14 h-14 flex items-center justify-center mb-4 c-frame"
+                style={{ background: "var(--paper-soft)" }}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+                >
                   <circle cx="11" cy="11" r="7" />
                   <path d="M16 16l5 5" />
                   <path d="M8 11h6" />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-txt-secondary">
+              <p
+                className="c-card-t"
+                style={{ fontSize: "14px" }}
+              >
                 No results for &ldquo;{query}&rdquo;
               </p>
-              <p className="text-xs text-txt-secondary/50 mt-1.5 max-w-[240px]">
+              <p className="c-meta mt-1.5 max-w-[240px]">
                 Try searching for people, businesses, events, schools, or channels
               </p>
             </div>
@@ -441,7 +518,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
               {recentSearches.length > 0 && (
                 <div className="mb-6">
                   <div className="flex items-center justify-between px-1 mb-2.5">
-                    <span className="text-[11px] font-semibold text-txt-secondary uppercase tracking-wider">
+                    <span
+                      className="c-kicker"
+                      style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+                    >
                       Recent
                     </span>
                     <button
@@ -449,30 +529,60 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         localStorage.removeItem(RECENT_KEY);
                         setRecentSearches([]);
                       }}
-                      className="text-[11px] text-txt-secondary/50 hover:text-gold transition-colors press"
+                      className="c-meta press"
+                      style={{ textTransform: "none" }}
                     >
                       Clear all
                     </button>
                   </div>
-                  <div className="space-y-0.5">
+                  <div>
                     {recentSearches.map((text) => (
                       <button
                         key={text}
                         onClick={() => handleSuggestionClick(text)}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-colors press group"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 transition-colors press group"
+                        style={{
+                          background: "var(--paper)",
+                          borderBottom: "2px solid var(--rule-strong-c)",
+                          color: "var(--ink-strong)",
+                        }}
                       >
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary/40 shrink-0">
+                        <svg
+                          width="14"
+                          height="14"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          className="shrink-0"
+                          style={{ color: "var(--ink-strong)", opacity: 0.55 }}
+                        >
                           <polyline points="1,1 1,6 6,6" transform="rotate(180 3.5 3.5)" />
                           <path d="M1.5 6A5.5 5.5 0 1 0 3 2.5" />
                         </svg>
-                        <span className="text-sm text-txt-secondary group-hover:text-white transition-colors flex-1 text-left truncate">
+                        <span
+                          className="flex-1 text-left truncate text-sm"
+                          style={{ color: "var(--ink-strong)" }}
+                        >
                           {text}
                         </span>
                         <span
                           onClick={(e) => handleRemoveRecent(text, e)}
-                          className="w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all shrink-0"
+                          className="w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shrink-0"
+                          style={{
+                            border: "2px solid var(--rule-strong-c)",
+                            background: "var(--paper)",
+                          }}
                         >
-                          <svg width="8" height="8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary/60">
+                          <svg
+                            width="8"
+                            height="8"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            style={{ color: "var(--ink-strong)" }}
+                          >
                             <path d="M1 1l6 6M7 1l-6 6" />
                           </svg>
                         </span>
@@ -484,7 +594,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
               {/* Suggestions */}
               <div>
-                <p className="text-[11px] font-semibold text-txt-secondary uppercase tracking-wider px-1 mb-2.5">
+                <p
+                  className="c-kicker px-1 mb-2.5"
+                  style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+                >
                   Suggestions
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -492,7 +605,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                     <button
                       key={text}
                       onClick={() => handleSuggestionClick(text)}
-                      className="text-xs text-txt-secondary bg-white/[0.04] border border-border-subtle rounded-full px-3.5 py-2 hover:border-gold/20 hover:text-white hover:bg-white/[0.06] transition-all press"
+                      className="c-chip press"
                     >
                       {text}
                     </button>
@@ -502,7 +615,10 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
               {/* Footer hint */}
               <div className="mt-10 text-center">
-                <p className="text-[10px] text-txt-secondary/40 leading-relaxed">
+                <p
+                  className="c-meta leading-relaxed"
+                  style={{ fontSize: "10px" }}
+                >
                   Search across people, posts, businesses, events, schools &amp; channels
                 </p>
               </div>

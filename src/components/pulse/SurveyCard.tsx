@@ -86,13 +86,10 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
 
   return (
     <Card hover className="relative overflow-hidden">
-      {/* Purple accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-hc-purple/40 via-hc-purple/20 to-transparent" />
-
       {/* Type label row */}
-      <div className="flex items-center gap-1.5 text-[10px] text-gold font-semibold mb-2.5 tracking-wide">
+      <div className="flex items-center gap-1.5 mb-2.5">
         <span><Icon name="document" size={16} /></span>
-        SURVEY
+        <span className="c-kicker">SURVEY</span>
         {isClosed && (
           <span className="ml-1">
             <Badge label="Closed" variant="coral" />
@@ -100,7 +97,7 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
         )}
       </div>
 
-      {/* Author row — matches PostCard exactly */}
+      {/* Author row */}
       <div className="flex items-center gap-3 mb-3">
         {author?.avatar_url ? (
           <Image
@@ -108,20 +105,38 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
             alt={author.display_name}
             width={40}
             height={40}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-white/5"
+            className="w-10 h-10 rounded-full object-cover"
+            style={{ border: "2px solid var(--rule-strong-c)" }}
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-hc-purple to-royal flex items-center justify-center text-gold font-heading font-bold text-sm ring-2 ring-white/5">
+          <div
+            className="w-10 h-10 rounded-full flex items-center justify-center font-heading font-bold text-sm"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+            }}
+          >
             {initials}
           </div>
         )}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[13px] font-bold truncate">
+            <p
+              className="text-[13px] font-bold truncate"
+              style={{ color: "var(--ink-strong)" }}
+            >
               {author?.display_name || "Unknown"}
             </p>
             {isVerified && (
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                className="shrink-0"
+                style={{ color: "var(--ink-strong)" }}
+              >
                 <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
               </svg>
@@ -130,20 +145,26 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
               <Badge label={roleBadge.label} variant={roleBadge.variant} />
             )}
           </div>
-          <p className="text-[10px] text-txt-secondary">{timeAgo}</p>
+          <p className="c-meta">{timeAgo}</p>
         </div>
       </div>
 
       {/* Title & description */}
-      <p className="text-[14px] font-semibold text-txt-primary leading-snug">
+      <p
+        className="c-card-t leading-snug"
+        style={{ color: "var(--ink-strong)" }}
+      >
         {survey.title}
       </p>
       {survey.description && (
-        <p className="text-[12px] text-txt-secondary mt-1 leading-relaxed">
+        <p
+          className="c-body text-[12px] mt-1 leading-relaxed"
+          style={{ color: "var(--ink-strong)" }}
+        >
           {survey.description}
         </p>
       )}
-      <p className="text-[11px] text-txt-secondary mt-1.5 mb-3">
+      <p className="c-meta mt-1.5 mb-3">
         {sortedQuestions.length} question{sortedQuestions.length !== 1 ? "s" : ""}
       </p>
 
@@ -155,13 +176,13 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
             variant="emerald"
             icon={<span className="text-[9px]"><Icon name="check" size={16} /></span>}
           />
-          <span className="text-[11px] text-txt-secondary">
+          <span className="c-meta">
             {responseCount} {responseCount === 1 ? "response" : "responses"}
           </span>
         </div>
       ) : isClosed ? (
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[11px] text-txt-secondary">
+          <span className="c-meta">
             {responseCount} {responseCount === 1 ? "response" : "responses"}
           </span>
         </div>
@@ -170,12 +191,12 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
           {userId ? (
             <button
               onClick={() => setIsExpanded(true)}
-              className="w-full py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 bg-gradient-to-r from-hc-purple to-royal text-white hover:opacity-90 active:scale-[0.98] press"
+              className="c-btn c-btn-primary w-full press"
             >
               Take Survey
             </button>
           ) : (
-            <p className="text-[11px] text-gold text-center py-2">
+            <p className="c-meta text-center py-2" style={{ color: "var(--ink-strong)" }}>
               Sign in to participate
             </p>
           )}
@@ -183,7 +204,14 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
       ) : (
         <div className="space-y-4">
           {error && (
-            <div className="bg-coral/10 border border-coral/20 rounded-xl px-4 py-2.5 text-[11px] text-coral">
+            <div
+              className="px-4 py-2.5 text-[11px]"
+              style={{
+                background: "var(--paper-soft)",
+                border: "2px solid var(--red-c, #c0392b)",
+                color: "var(--red-c, #c0392b)",
+              }}
+            >
               {error}
             </div>
           )}
@@ -201,18 +229,16 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
           <div className="flex gap-2">
             <button
               onClick={() => setIsExpanded(false)}
-              className="flex-1 py-2.5 rounded-xl text-[12px] font-semibold bg-deep/50 hover:bg-deep/70 transition-all duration-200 active:scale-[0.98] press"
+              className="c-btn c-btn-outline flex-1 press"
             >
               Cancel
             </button>
             <button
               disabled={isSubmitting}
               onClick={handleSubmit}
-              className={`
-                flex-1 py-2.5 rounded-xl text-[12px] font-semibold transition-all duration-200
-                bg-gradient-to-r from-hc-purple to-royal text-white
-                ${isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:opacity-90 active:scale-[0.98] press"}
-              `}
+              className={`c-btn c-btn-primary flex-1 ${
+                isSubmitting ? "opacity-50 cursor-not-allowed" : "press"
+              }`}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
@@ -221,25 +247,28 @@ export default function SurveyCard({ survey, userId }: SurveyCardProps) {
       )}
 
       {/* Bottom row */}
-      <div className="flex items-center justify-between mt-3 pt-3 border-t border-border-subtle">
+      <div
+        className="flex items-center justify-between mt-3 pt-3"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-txt-secondary">
+          <span className="c-meta">
             {responseCount} {responseCount === 1 ? "response" : "responses"}
           </span>
           {timeRemaining && !isClosed && (
-            <span className="text-[11px] text-txt-secondary">
-              {timeRemaining}
-            </span>
+            <span className="c-meta">{timeRemaining}</span>
           )}
         </div>
         <button
-          className="text-[11px] text-txt-secondary hover:text-gold transition-colors"
+          className="press transition-colors"
+          style={{ color: "var(--ink-strong)" }}
           onClick={(e) => {
             e.stopPropagation();
             if (navigator.share) {
               navigator.share({ url: `/pulse/surveys/${survey.id}` });
             }
           }}
+          aria-label="Share"
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8" />
@@ -273,10 +302,15 @@ function QuestionField({
 
   return (
     <div>
-      <label className="block text-[12px] font-semibold text-txt-primary mb-1.5">
-        <span className="text-txt-secondary mr-1">Q{index}.</span>
+      <label
+        className="block text-[12px] font-semibold mb-1.5"
+        style={{ color: "var(--ink-strong)" }}
+      >
+        <span className="c-meta mr-1">Q{index}.</span>
         {question.question}
-        {question.required && <span className="text-coral ml-0.5">*</span>}
+        {question.required && (
+          <span className="ml-0.5" style={{ color: "var(--red-c, #c0392b)" }}>*</span>
+        )}
       </label>
 
       {/* Text */}
@@ -286,45 +320,57 @@ function QuestionField({
           onChange={(e) => onChange(e.target.value)}
           rows={3}
           placeholder="Your answer..."
-          className="w-full rounded-xl bg-deep/50 border border-border-subtle px-3 py-2.5 text-[12px] text-txt-primary placeholder:text-txt-secondary/50 focus:outline-none focus:ring-1 focus:ring-hc-purple/40 resize-none transition-all"
+          className="w-full px-3 py-2.5 text-[12px] resize-none focus:outline-none transition-all"
+          style={{
+            background: "var(--paper)",
+            border: "2px solid var(--rule-strong-c)",
+            color: "var(--ink-strong)",
+          }}
         />
       )}
 
-      {/* Single choice — styled as cards with radio indicator */}
+      {/* Single choice */}
       {question.type === "single_choice" && (
         <div className="space-y-1.5">
-          {parsedOptions.map((opt) => (
-            <button
-              key={opt}
-              onClick={() => onChange(opt)}
-              className={`
-                w-full rounded-xl py-2.5 px-3 text-[12px] text-left transition-all duration-200 press
-                ${
-                  value === opt
-                    ? "bg-hc-purple/15 ring-1 ring-hc-purple/40 text-txt-primary font-semibold"
-                    : "bg-deep/50 hover:bg-deep/70 text-txt-secondary"
-                }
-              `}
-            >
-              <span className="flex items-center gap-2">
-                <span
-                  className={`
-                    w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
-                    ${value === opt ? "border-gold bg-hc-purple" : "border-border-subtle"}
-                  `}
-                >
-                  {value === opt && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                  )}
+          {parsedOptions.map((opt) => {
+            const selected = value === opt;
+            return (
+              <button
+                key={opt}
+                onClick={() => onChange(opt)}
+                className={`w-full py-2.5 px-3 text-[12px] text-left transition-all duration-200 press ${
+                  selected ? "font-semibold" : ""
+                }`}
+                style={{
+                  background: selected ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--ink-strong)",
+                  color: "var(--ink-strong)",
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 transition-all"
+                    style={{
+                      border: "2px solid var(--ink-strong)",
+                      background: selected ? "var(--ink-strong)" : "transparent",
+                    }}
+                  >
+                    {selected && (
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: "var(--gold-c)" }}
+                      />
+                    )}
+                  </span>
+                  {opt}
                 </span>
-                {opt}
-              </span>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Multiple choice — styled as cards with checkbox indicator */}
+      {/* Multiple choice */}
       {question.type === "multiple_choice" && (
         <div className="space-y-1.5">
           {parsedOptions.map((opt) => {
@@ -340,24 +386,34 @@ function QuestionField({
                     onChange([...current, opt]);
                   }
                 }}
-                className={`
-                  w-full rounded-xl py-2.5 px-3 text-[12px] text-left transition-all duration-200 press
-                  ${
-                    selected
-                      ? "bg-hc-purple/15 ring-1 ring-hc-purple/40 text-txt-primary font-semibold"
-                      : "bg-deep/50 hover:bg-deep/70 text-txt-secondary"
-                  }
-                `}
+                className={`w-full py-2.5 px-3 text-[12px] text-left transition-all duration-200 press ${
+                  selected ? "font-semibold" : ""
+                }`}
+                style={{
+                  background: selected ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--ink-strong)",
+                  color: "var(--ink-strong)",
+                }}
               >
                 <span className="flex items-center gap-2">
                   <span
-                    className={`
-                      w-4 h-4 rounded flex items-center justify-center shrink-0 border-2 transition-all
-                      ${selected ? "border-gold bg-hc-purple" : "border-border-subtle"}
-                    `}
+                    className="w-4 h-4 flex items-center justify-center shrink-0 transition-all"
+                    style={{
+                      border: "2px solid var(--ink-strong)",
+                      background: selected ? "var(--ink-strong)" : "transparent",
+                    }}
                   >
                     {selected && (
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="var(--gold-c)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     )}
@@ -370,47 +426,49 @@ function QuestionField({
         </div>
       )}
 
-      {/* Rating — 5 clickable stars */}
+      {/* Rating */}
       {question.type === "rating" && (
         <div className="flex gap-2">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              onClick={() => onChange(star)}
-              className={`
-                w-10 h-10 rounded-xl border flex items-center justify-center text-lg transition-all duration-150 press
-                ${
-                  typeof value === "number" && star <= value
-                    ? "border-gold/40 bg-gold/15 text-gold scale-110"
-                    : "border-border-subtle bg-deep/50 text-txt-secondary hover:border-white/20"
-                }
-              `}
-            >
-              <Icon name="star" size={16} />
-            </button>
-          ))}
+          {[1, 2, 3, 4, 5].map((star) => {
+            const active = typeof value === "number" && star <= value;
+            return (
+              <button
+                key={star}
+                onClick={() => onChange(star)}
+                className="w-10 h-10 flex items-center justify-center text-lg transition-all duration-150 press"
+                style={{
+                  background: active ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--ink-strong)",
+                  color: "var(--ink-strong)",
+                }}
+              >
+                <Icon name="star" size={16} />
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {/* Scale — 1 to 10 numbered buttons */}
+      {/* Scale 1-10 */}
       {question.type === "scale" && (
         <div className="flex gap-1">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-            <button
-              key={num}
-              onClick={() => onChange(num)}
-              className={`
-                flex-1 h-9 rounded-lg text-[11px] font-bold transition-all duration-150 press
-                ${
-                  value === num
-                    ? "border border-gold/40 bg-hc-purple/15 text-gold scale-105"
-                    : "border border-border-subtle bg-deep/50 text-txt-secondary hover:border-white/20"
-                }
-              `}
-            >
-              {num}
-            </button>
-          ))}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => {
+            const active = value === num;
+            return (
+              <button
+                key={num}
+                onClick={() => onChange(num)}
+                className="flex-1 h-9 text-[11px] font-bold transition-all duration-150 press"
+                style={{
+                  background: active ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--ink-strong)",
+                  color: "var(--ink-strong)",
+                }}
+              >
+                {num}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
