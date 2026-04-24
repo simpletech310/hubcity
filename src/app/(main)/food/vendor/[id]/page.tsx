@@ -151,7 +151,7 @@ export default async function VendorDetailPage({
   const categoryLabel = biz.category ? biz.category.replace(/_/g, " ") : "Food Vendor";
 
   return (
-    <div className="animate-fade-in pb-24 bg-ink text-ivory">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Back chip (minimal) */}
       <div className="px-5 pt-4 pb-3">
         <Link
@@ -174,7 +174,7 @@ export default async function VendorDetailPage({
           </Tag>
           {biz.badges?.includes("verified") && (
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.12em] bg-cyan/10 border border-cyan/30 text-cyan backdrop-blur-sm"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-[3px] text-[9px] font-semibold uppercase tracking-[0.12em] bg-cyan/10 border border-cyan/30 text-cyan"
               title="Verified"
             >
               <Icon name="verified" size={10} strokeWidth={2.4} />
@@ -185,11 +185,12 @@ export default async function VendorDetailPage({
 
         {/* Bottom overlay — name + category + live status */}
         <div className="absolute inset-x-0 bottom-0 px-6 pb-7">
-          <h1 className="font-display text-white text-[44px] leading-[0.95] tracking-[-0.01em]">
+          <span className="c-kicker block mb-1" style={{ color: "var(--gold-c)" }}>{categoryLabel}</span>
+          <h1 className="c-hero text-white" style={{ color: "#fff", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}>
             {biz.name}
           </h1>
           <div className="mt-2 flex items-center gap-3 flex-wrap">
-            <span className="text-[12px] font-semibold tracking-[0.14em] uppercase text-gold">
+            <span className="c-serif-it text-[14px]" style={{ color: "#fff" }}>
               {categoryLabel}
             </span>
             {headlineStatus && (
@@ -216,7 +217,7 @@ export default async function VendorDetailPage({
       </HeroBlock>
 
       {/* --- BYLINE STRIP --- */}
-      <div className="px-5 pt-6 pb-5 border-b border-white/[0.06]">
+      <div className="px-5 pt-6 pb-5" style={{ borderBottom: "3px solid var(--rule-strong-c, var(--ink-strong))" }}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-baseline gap-3 min-w-0">
             <EditorialNumber n={1} size="md" />

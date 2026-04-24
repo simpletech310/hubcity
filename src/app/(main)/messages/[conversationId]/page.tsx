@@ -82,13 +82,20 @@ export default async function ThreadPage({
   const otherHandle = other?.profile?.handle ? `@${other.profile.handle}` : null;
 
   return (
-    <div className="animate-fade-in flex flex-col min-h-[100dvh]">
+    <div className="culture-surface min-h-dvh animate-fade-in flex flex-col">
       {/* Thread header — compact, sits under the global fixed Header */}
-      <div className="px-5 pt-4 pb-3 border-b border-white/[0.08] flex items-center gap-3 sticky top-0 z-10 bg-ink/95 backdrop-blur">
+      <div
+        className="px-5 pt-4 pb-3 flex items-center gap-3 sticky top-0 z-10"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "3px solid var(--rule-strong-c, var(--ink-strong))",
+        }}
+      >
         <Link
           href="/messages"
           aria-label="Back to inbox"
-          className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center press hover:border-gold/30 transition-colors text-ivory/80"
+          className="c-chip w-9 h-9 flex items-center justify-center press"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M10 3L5 8l5 5" />
@@ -98,7 +105,10 @@ export default async function ThreadPage({
           href={other?.profile?.handle ? `/user/${other.profile.handle}` : "#"}
           className="flex items-center gap-3 min-w-0 flex-1 press"
         >
-          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/[0.04] border border-white/[0.08] flex items-center justify-center shrink-0">
+          <div
+            className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center shrink-0 c-frame"
+            style={{ background: "var(--paper-soft)" }}
+          >
             {other?.profile?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -107,20 +117,21 @@ export default async function ThreadPage({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-[11px] font-bold text-ivory/80">
+              <span className="text-[11px] font-bold" style={{ color: "var(--ink-strong)" }}>
                 {otherName.slice(0, 2).toUpperCase()}
               </span>
             )}
           </div>
           <div className="min-w-0">
+            <span className="c-kicker block">Direct Message</span>
             <h2
-              className="font-display text-[18px] leading-tight text-white truncate"
-              style={{ fontFamily: 'var(--font-dm-serif), "DM Serif Display", serif' }}
+              className="c-hero truncate"
+              style={{ fontSize: "clamp(28px, 6vw, 44px)", lineHeight: 1, color: "var(--ink-strong)" }}
             >
               {otherName}
             </h2>
             {otherHandle && (
-              <p className="text-[11px] text-ivory/40 truncate">{otherHandle}</p>
+              <p className="c-serif-it text-[12px] truncate">{otherHandle}</p>
             )}
           </div>
         </Link>

@@ -495,7 +495,7 @@ export default function PodcastEpisodePage() {
 
   if (loading) {
     return (
-      <div className="animate-fade-in pb-safe">
+      <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
         <div className="px-5 pt-4">
           <div className="skeleton h-8 w-24 rounded-lg mb-6" />
           <div className="skeleton h-64 rounded-2xl mb-4" />
@@ -509,7 +509,7 @@ export default function PodcastEpisodePage() {
 
   if (!podcast) {
     return (
-      <div className="px-5 text-center py-20 animate-fade-in">
+      <div className="culture-surface min-h-dvh px-5 text-center py-20 animate-fade-in">
         <div className="w-16 h-16 rounded-2xl bg-card mx-auto mb-4 flex items-center justify-center">
           <Icon name="podcast" size={28} className="text-txt-secondary" />
         </div>
@@ -528,7 +528,7 @@ export default function PodcastEpisodePage() {
   }
 
   return (
-    <div className="animate-fade-in pb-safe">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* ── Back Button ── */}
       <div className="px-5 pt-4 mb-4">
         <button

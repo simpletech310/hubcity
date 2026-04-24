@@ -57,7 +57,7 @@ export default async function PersonDetailPage({
   const bioParagraphs = person.bio ? person.bio.split(/\n\n+/) : [];
 
   return (
-    <div className="pb-20">
+    <div className="culture-surface min-h-dvh pb-20">
       {/* ── Full-bleed Hero ── */}
       <div className="relative aspect-[3/4] overflow-hidden">
         {person.portrait_url ? (
@@ -78,7 +78,7 @@ export default async function PersonDetailPage({
         {/* Back button */}
         <Link
           href="/culture/people"
-          className="absolute top-5 left-5 w-9 h-9 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition-colors z-10 press"
+          className="absolute top-5 left-5 w-9 h-9 rounded-full bg-black/50 flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10 press"
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M10 12L6 8l4-4" />
@@ -92,35 +92,36 @@ export default async function PersonDetailPage({
 
         {/* Name & info over gradient */}
         <div className="absolute bottom-6 left-5 right-5 z-10">
-          <h1 className="font-display text-4xl text-white leading-tight">{person.name}</h1>
+          <span className="c-kicker block mb-1" style={{ color: "var(--gold-c)" }}>Notable Person</span>
+          <h1 className="c-hero leading-tight" style={{ color: "#fff", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}>{person.name}</h1>
           {person.title && (
-            <p className="text-sm text-white/80 mt-1">{person.title}</p>
+            <p className="c-serif-it text-[15px] mt-1" style={{ color: "#fff" }}>{person.title}</p>
           )}
           {lifespan && (
-            <p className="text-xs text-gold mt-1.5 font-semibold">{lifespan}</p>
+            <p className="text-xs mt-1.5 font-semibold" style={{ color: "var(--gold-c)" }}>{lifespan}</p>
           )}
         </div>
       </div>
 
       {/* ── Quick Facts Card ── */}
       <div className="px-5">
-        <div className="glass-card rounded-2xl p-4 -mt-6 relative z-10">
+        <div className="c-frame-strong p-4 -mt-6 relative z-10" style={{ background: "var(--paper)" }}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[9px] text-txt-secondary uppercase tracking-wider">Born</p>
-              <p className="text-sm font-semibold text-white">{person.birth_year ?? "\u2014"}</p>
+              <p className="c-kicker">Born</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ink-strong)" }}>{person.birth_year ?? "\u2014"}</p>
             </div>
             <div>
-              <p className="text-[9px] text-txt-secondary uppercase tracking-wider">Era</p>
-              <p className="text-sm font-semibold text-white">{person.era ?? "\u2014"}</p>
+              <p className="c-kicker">Era</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ink-strong)" }}>{person.era ?? "\u2014"}</p>
             </div>
             <div>
-              <p className="text-[9px] text-txt-secondary uppercase tracking-wider">Origin</p>
-              <p className="text-sm font-semibold text-white">Compton, CA</p>
+              <p className="c-kicker">Origin</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ink-strong)" }}>Compton, CA</p>
             </div>
             <div>
-              <p className="text-[9px] text-txt-secondary uppercase tracking-wider">Known For</p>
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="c-kicker">Known For</p>
+              <p className="text-sm font-semibold truncate" style={{ color: "var(--ink-strong)" }}>
                 {person.title ?? (achievements.length > 0 ? achievements[0] : "\u2014")}
               </p>
             </div>
@@ -137,7 +138,7 @@ export default async function PersonDetailPage({
               {bioParagraphs.map((paragraph: string, i: number) => (
                 <p
                   key={i}
-                  className={`text-sm text-txt-secondary leading-relaxed ${i === 0 ? "drop-cap" : ""}`}
+                  className={`c-body text-sm leading-relaxed ${i === 0 ? "drop-cap" : ""}`}
                 >
                   {paragraph}
                 </p>
@@ -151,17 +152,17 @@ export default async function PersonDetailPage({
           <>
             <div className="divider-gold" />
             <div>
-              <h2 className="font-heading font-bold text-sm mb-4">Notable Achievements</h2>
+              <h2 className="c-card-t mb-4" style={{ color: "var(--ink-strong)" }}>Notable Achievements</h2>
               <div className="relative pl-5">
                 {/* Timeline line */}
-                <div className="absolute left-[3px] top-1 bottom-1 w-[2px] bg-gold/30" />
+                <div className="absolute left-[3px] top-1 bottom-1 w-[2px]" style={{ background: "var(--gold-c)" }} />
 
                 <div className="space-y-4">
                   {achievements.map((achievement, i) => (
                     <div key={i} className="relative">
                       {/* Timeline dot */}
-                      <div className="absolute -left-5 top-1.5 w-[8px] h-[8px] rounded-full bg-gold border-2 border-midnight" />
-                      <p className="text-sm text-txt-secondary leading-relaxed">{achievement}</p>
+                      <div className="absolute -left-5 top-1.5 w-[8px] h-[8px] rounded-full" style={{ background: "var(--gold-c)", border: "2px solid var(--paper)" }} />
+                      <p className="c-body text-sm leading-relaxed">{achievement}</p>
                     </div>
                   ))}
                 </div>
@@ -178,7 +179,7 @@ export default async function PersonDetailPage({
           <>
             <div className="divider-gold" />
             <div>
-              <h2 className="font-heading font-bold text-sm mb-3">Learn More</h2>
+              <h2 className="c-card-t mb-3" style={{ color: "var(--ink-strong)" }}>Learn More</h2>
               <div className="space-y-2">
                 {Object.entries(links).map(([name, url]) => (
                   <a
@@ -186,12 +187,13 @@ export default async function PersonDetailPage({
                     href={url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-white/5 border border-border-subtle hover:border-gold/20 transition-colors group"
+                    className="flex items-center justify-between w-full px-4 py-3 c-frame transition-colors group"
+                    style={{ background: "var(--paper-soft)" }}
                   >
-                    <span className="text-sm font-semibold text-white group-hover:text-gold transition-colors">
+                    <span className="text-sm font-semibold" style={{ color: "var(--ink-strong)" }}>
                       {name.charAt(0).toUpperCase() + name.slice(1)}
                     </span>
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-txt-secondary group-hover:text-gold transition-colors">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
                       <path d="M5 11l6-6M5 5h6v6" />
                     </svg>
                   </a>
@@ -205,10 +207,10 @@ export default async function PersonDetailPage({
         {exhibit && (
           <Link
             href={`/culture/exhibits/${exhibit.slug}`}
-            className="block rounded-xl bg-gold/5 border border-gold/15 p-4 shadow-[0_0_20px_rgba(199,167,73,0.08)] hover:shadow-[0_0_30px_rgba(199,167,73,0.15)] transition-shadow"
+            className="block c-gold-block p-4 transition-shadow"
           >
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider">Featured in</p>
-            <p className="text-sm font-heading font-bold text-white mt-0.5">{exhibit.title}</p>
+            <p className="c-kicker">Featured in</p>
+            <p className="c-card-t mt-0.5" style={{ color: "var(--ink-strong)" }}>{exhibit.title}</p>
           </Link>
         )}
 
@@ -217,7 +219,7 @@ export default async function PersonDetailPage({
           <>
             <div className="divider-gold" />
             <div>
-              <h2 className="font-heading font-bold text-sm mb-3">Gallery</h2>
+              <h2 className="c-card-t mb-3" style={{ color: "var(--ink-strong)" }}>Gallery</h2>
               <PersonGallery images={imageUrls} name={person.name} />
             </div>
           </>

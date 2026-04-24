@@ -61,7 +61,7 @@ export default async function ExhibitDetailPage({
   const libraryItems = libraryRes.data ?? [];
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="culture-surface min-h-dvh space-y-6 pb-20">
       {/* Hero */}
       <div className="relative min-h-[280px] flex flex-col justify-end">
         {exhibit.cover_image_url ? (
@@ -86,20 +86,20 @@ export default async function ExhibitDetailPage({
             Exhibits
           </Link>
           {exhibit.era && (
-            <span className="block text-xs font-semibold text-gold uppercase tracking-wider mb-2">
+            <span className="c-kicker block mb-2" style={{ color: "var(--gold-c)" }}>
               {exhibit.era}
             </span>
           )}
-          <h1 className="font-display text-3xl text-white leading-tight">
+          <h1 className="c-hero text-white leading-tight" style={{ color: "#fff", textShadow: "0 2px 24px rgba(0,0,0,0.5)" }}>
             {exhibit.title}
           </h1>
           {exhibit.subtitle && (
-            <p className="text-sm text-txt-secondary mt-2">{exhibit.subtitle}</p>
+            <p className="c-serif-it text-[15px] mt-2" style={{ color: "#fff" }}>{exhibit.subtitle}</p>
           )}
         </div>
       </div>
 
-      <div className="sticky top-0 z-30 bg-midnight/95 backdrop-blur-lg border-b border-border-subtle">
+      <div className="sticky top-0 z-30" style={{ background: "var(--paper)", borderBottom: "3px solid var(--rule-strong-c, var(--ink-strong))" }}>
         <div className="px-5">
           <MuseumNav />
         </div>
@@ -108,7 +108,7 @@ export default async function ExhibitDetailPage({
       {/* Description */}
       {exhibit.description && (
         <section className="px-5">
-          <div className="text-sm text-txt-secondary leading-relaxed whitespace-pre-line">
+          <div className="c-body text-sm leading-relaxed whitespace-pre-line">
             {exhibit.description}
           </div>
         </section>
@@ -117,12 +117,12 @@ export default async function ExhibitDetailPage({
       {/* Curator Note */}
       {exhibit.curator_note && (
         <section className="px-5">
-          <div className="rounded-2xl bg-gold/5 border border-gold/15 p-4">
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-2">
-              Curator's Note
+          <div className="c-gold-block p-4">
+            <p className="c-kicker mb-2">
+              Curator&apos;s Note
             </p>
-            <p className="text-sm text-txt-secondary leading-relaxed italic">
-              "{exhibit.curator_note}"
+            <p className="c-serif-it text-[15px] leading-relaxed">
+              &ldquo;{exhibit.curator_note}&rdquo;
             </p>
           </div>
         </section>

@@ -116,24 +116,24 @@ function PaymentForm({
   return (
     <form onSubmit={handlePay} className="space-y-5 pb-8">
       {/* Order Summary Card */}
-      <div className="rounded-2xl bg-card border border-border-subtle overflow-hidden">
+      <div className="c-ink-block overflow-hidden">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-border-subtle flex items-center justify-between">
-          <p className="text-[10px] text-txt-secondary uppercase tracking-widest font-semibold">Order Summary</p>
-          <p className="text-xs font-mono text-gold">{checkout.orderNumber}</p>
+        <div className="px-4 py-3 border-b-2 border-[color:var(--paper)]/20 flex items-center justify-between">
+          <p className="c-kicker">Order Summary</p>
+          <p className="text-xs font-mono" style={{ color: "var(--gold-c)" }}>{checkout.orderNumber}</p>
         </div>
 
         {/* Event info */}
-        <div className="px-4 py-3 border-b border-border-subtle">
+        <div className="px-4 py-3 border-b-2 border-[color:var(--paper)]/20">
           <p className="text-sm font-bold">{eventName}</p>
-          <p className="text-xs text-txt-secondary mt-0.5">{eventDate}</p>
+          <p className="c-meta mt-0.5 opacity-80">{eventDate}</p>
         </div>
 
         {/* Line items */}
         <div className="px-4 py-3 space-y-2">
           {checkout.items.map((item, i) => (
             <div key={i} className="flex justify-between text-sm">
-              <span className="text-txt-secondary">
+              <span className="opacity-80">
                 {item.sectionName} &times; {item.quantity}
               </span>
               <span className="font-medium">{formatCents(item.unitPrice * item.quantity)}</span>
@@ -142,74 +142,71 @@ function PaymentForm({
         </div>
 
         {/* Totals */}
-        <div className="px-4 py-3 border-t border-border-subtle space-y-1.5">
+        <div className="px-4 py-3 border-t-2 border-[color:var(--paper)]/20 space-y-1.5">
           <div className="flex justify-between text-sm">
-            <span className="text-txt-secondary">Subtotal</span>
+            <span className="opacity-80">Subtotal</span>
             <span>{formatCents(checkout.subtotal)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-txt-secondary">Service fee (5%)</span>
+            <span className="opacity-80">Service fee (5%)</span>
             <span>{formatCents(checkout.fee)}</span>
           </div>
         </div>
 
-        <div className="px-4 py-3 bg-white/[0.02] border-t border-border-subtle">
+        <div className="px-4 py-3 border-t-2 border-[color:var(--paper)]/20">
           <div className="flex justify-between items-center">
-            <span className="text-sm font-bold">Total</span>
-            <span className="text-lg font-bold text-gold">{formatCents(checkout.total)}</span>
+            <span className="c-kicker">Total</span>
+            <span className="text-lg font-bold" style={{ color: "var(--gold-c)" }}>{formatCents(checkout.total)}</span>
           </div>
         </div>
       </div>
 
       {/* Payment section header */}
-      <div className="flex items-center gap-2">
-        <div className="w-1 h-5 rounded-full bg-gold" />
-        <h2 className="font-heading font-bold text-base">Payment</h2>
-        <div className="ml-auto flex items-center gap-1.5">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-emerald">
+      <div className="flex items-center justify-between border-b-[3px] pb-2" style={{ borderColor: "var(--rule-strong-c)" }}>
+        <h2 className="c-kicker">Payment</h2>
+        <div className="flex items-center gap-1.5">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "var(--ink-strong)" }}>
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0110 0v4" />
           </svg>
-          <span className="text-[10px] text-emerald font-semibold">Secured by Stripe</span>
+          <span className="c-kicker" style={{ fontSize: "10px" }}>Secured by Stripe</span>
         </div>
       </div>
 
       {/* Stripe Payment Element */}
-      <div className="rounded-2xl overflow-hidden border border-border-subtle">
+      <div className="c-frame" style={{ background: "var(--paper)" }}>
         <PaymentElement options={{ layout: "tabs" }} />
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-coral/10 border border-coral/20">
-          <p className="text-coral text-sm">{error}</p>
+        <div className="c-frame p-3" style={{ background: "var(--paper-soft)" }}>
+          <p className="text-sm" style={{ color: "var(--ink-strong)" }}>{error}</p>
         </div>
       )}
 
       {/* Pay button */}
-      <div className="rounded-2xl overflow-hidden">
-        <button
-          type="submit"
-          disabled={!stripe || !elements || submitting}
-          className="w-full py-4 bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-base rounded-2xl press disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {submitting ? (
-            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      <button
+        type="submit"
+        disabled={!stripe || !elements || submitting}
+        className="c-btn c-btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        {submitting ? (
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        ) : (
+          <>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
-          ) : (
-            <>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-midnight">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0110 0v4" />
-              </svg>
-              Pay {formatCents(checkout.total)}
-            </>
-          )}
-        </button>
-      </div>
+            Pay {formatCents(checkout.total)}
+          </>
+        )}
+      </button>
 
-      <p className="text-center text-[11px] text-txt-secondary">
+      <p className="c-meta text-center">
         Your payment info is never stored by Culture
       </p>
     </form>
@@ -416,12 +413,13 @@ export default function TicketSelectionPage() {
   const formattedTime = event?.start_time ? formatTime12h(event.start_time) : "";
 
   return (
-    <div className="animate-fade-in min-h-screen">
+    <div className="culture-surface min-h-dvh animate-fade-in">
       {/* ── Header ── */}
       <div className="px-5 pt-4 pb-3">
         <Link
           href={`/events/${eventId}`}
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M10 12L6 8l4-4" />
@@ -465,16 +463,14 @@ export default function TicketSelectionPage() {
         </div>
       )}
 
-      {/* ── Page Title ── */}
-      <div className="px-5 mb-5">
-        <div className="flex items-center gap-2">
-          <div className="w-1 h-5 rounded-full" style={{ background: accentColor }} />
-          <h1 className="font-heading text-xl font-bold">
-            {checkout ? "Checkout" : "Select Tickets"}
-          </h1>
-        </div>
+      {/* ── Page Title (Culture masthead) ── */}
+      <div className="px-5 mb-5 border-b-[3px] pb-4" style={{ borderColor: "var(--rule-strong-c)" }}>
+        <p className="c-kicker mb-2">{checkout ? "Checkout" : "Tickets"}</p>
+        <h1 className="c-hero" style={{ fontSize: "clamp(44px, 9vw, 56px)" }}>
+          {checkout ? "Checkout" : "Select Tickets"}
+        </h1>
         {!checkout && (
-          <p className="text-xs text-txt-secondary mt-1 ml-3">
+          <p className="c-serif-it mt-2">
             Choose your section and quantity
           </p>
         )}
@@ -515,32 +511,32 @@ export default function TicketSelectionPage() {
             options={{
               clientSecret: checkout.clientSecret,
               appearance: {
-                theme: "night",
+                theme: "stripe",
                 variables: {
-                  colorPrimary: "#F2A900",
-                  colorBackground: "#161618",
-                  colorText: "#F5F5F0",
-                  colorDanger: "#EF4444",
-                  borderRadius: "12px",
+                  colorPrimary: "#1a1512",
+                  colorBackground: "#EDE6D6",
+                  colorText: "#1a1512",
+                  colorDanger: "#B3261E",
+                  borderRadius: "0px",
                   fontFamily: "'Inter', system-ui, sans-serif",
                   spacingUnit: "4px",
                 },
                 rules: {
                   ".Input": {
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    border: "2px solid #1a1512",
                     boxShadow: "none",
                   },
                   ".Input:focus": {
-                    border: "1px solid rgba(242,169,0,0.4)",
-                    boxShadow: "0 0 0 1px rgba(242,169,0,0.15)",
+                    border: "2px solid #1a1512",
+                    boxShadow: "0 0 0 1px #F2A900",
                   },
                   ".Tab": {
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    border: "2px solid #1a1512",
                     boxShadow: "none",
                   },
                   ".Tab--selected": {
-                    border: "1px solid rgba(242,169,0,0.4)",
-                    backgroundColor: "rgba(242,169,0,0.05)",
+                    border: "2px solid #1a1512",
+                    backgroundColor: "rgba(242,169,0,0.15)",
                   },
                 },
               },
@@ -680,23 +676,23 @@ export default function TicketSelectionPage() {
       {!loading && !checkout && configs.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 z-40">
           <div className="max-w-[430px] mx-auto">
-            {/* Top gradient fade */}
-            <div className="h-6 bg-gradient-to-t from-midnight to-transparent" />
-
-            <div className="bg-midnight/95 backdrop-blur-xl border-t border-border-subtle px-5 py-4">
+            <div
+              className="border-t-[3px] px-5 py-4"
+              style={{ background: "var(--paper)", borderColor: "var(--rule-strong-c)" }}
+            >
               <div className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-bold">
+                  <p className="c-kicker">
                     {ticketCount} {ticketCount === 1 ? "ticket" : "tickets"}
                   </p>
-                  <p className="text-gold font-bold text-lg">
+                  <p className="font-bold text-lg" style={{ color: "var(--ink-strong)" }}>
                     {formatCents(subtotal)}
                   </p>
                 </div>
                 <button
                   disabled={!hasSelection || checkingOut}
                   onClick={handleContinue}
-                  className="px-8 py-3.5 bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm rounded-xl press disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="c-btn c-btn-primary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   {checkingOut ? (
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
@@ -705,7 +701,7 @@ export default function TicketSelectionPage() {
                     </svg>
                   ) : null}
                   Continue
-                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M6 4l4 4-4 4" />
                   </svg>
                 </button>

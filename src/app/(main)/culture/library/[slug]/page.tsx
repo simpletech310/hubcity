@@ -44,10 +44,10 @@ export default async function LibraryItemDetailPage({
   const exhibit = item.exhibit as { id: string; title: string; slug: string } | null;
 
   return (
-    <div className="pb-20">
+    <div className="culture-surface min-h-dvh pb-20">
       {/* Back */}
       <div className="px-5 pt-4 mb-4">
-        <Link href="/culture/library" className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press">
+        <Link href="/culture/library" className="inline-flex items-center gap-1.5 text-sm font-semibold press" style={{ color: "var(--gold-c)" }}>
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M10 12L6 8l4-4" /></svg>
           Library
         </Link>
@@ -56,7 +56,7 @@ export default async function LibraryItemDetailPage({
       <div className="px-5">
         {/* Cover + Info */}
         <div className="flex gap-4 mb-6">
-          <div className="w-28 h-40 rounded-xl overflow-hidden shrink-0 bg-white/5">
+          <div className="w-28 h-40 overflow-hidden shrink-0 c-frame-strong" style={{ background: "var(--paper-soft)" }}>
             {item.cover_image_url ? (
               <img src={item.cover_image_url} alt={item.title} className="w-full h-full object-cover" />
             ) : (
@@ -67,29 +67,30 @@ export default async function LibraryItemDetailPage({
           </div>
           <div className="flex-1 min-w-0">
             <Badge label={badge.label} variant={badge.variant} size="md" />
-            <h1 className="font-display text-xl text-white mt-2 leading-tight">{item.title}</h1>
+            <span className="c-kicker block mt-3">Library</span>
+            <h1 className="c-hero mt-1 leading-tight" style={{ color: "var(--ink-strong)", fontSize: "clamp(24px, 5vw, 36px)" }}>{item.title}</h1>
             {item.author && (
-              <p className="text-sm text-txt-secondary mt-1">by {item.author}</p>
+              <p className="c-serif-it text-[14px] mt-1">by {item.author}</p>
             )}
-            <div className="mt-2 space-y-1">
+            <div className="mt-2 space-y-1 c-body">
               {item.year_published && (
-                <p className="text-xs text-txt-secondary">{item.year_published}</p>
+                <p className="text-xs">{item.year_published}</p>
               )}
               {item.publisher && (
-                <p className="text-xs text-txt-secondary">{item.publisher}</p>
+                <p className="text-xs">{item.publisher}</p>
               )}
               {item.isbn && (
-                <p className="text-[10px] text-txt-secondary">ISBN: {item.isbn}</p>
+                <p className="text-[10px]">ISBN: {item.isbn}</p>
               )}
             </div>
           </div>
         </div>
+        <div style={{ height: 3, background: "var(--rule-strong-c, var(--ink-strong))", margin: "8px 0 20px" }} />
 
         {/* Description */}
         {item.description && (
           <>
-            <div className="divider-subtle mb-5" />
-            <div className="text-sm text-txt-secondary leading-relaxed whitespace-pre-line mb-5">
+            <div className="c-body text-sm leading-relaxed whitespace-pre-line mb-5">
               {item.description}
             </div>
           </>
@@ -101,7 +102,7 @@ export default async function LibraryItemDetailPage({
             href={item.external_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-3 rounded-xl text-center bg-gradient-to-r from-gold to-gold-light text-midnight font-semibold text-sm press hover:opacity-90 transition-all"
+            className="c-btn c-btn-primary w-full text-center"
           >
             {item.item_type === "book" ? "Find This Book" : item.item_type === "documentary" ? "Watch" : "Read More"} &rarr;
           </a>
@@ -111,10 +112,10 @@ export default async function LibraryItemDetailPage({
         {exhibit && (
           <Link
             href={`/culture/exhibits/${exhibit.slug}`}
-            className="block rounded-xl bg-gold/5 border border-gold/15 p-3 mt-4"
+            className="block c-gold-block p-3 mt-4"
           >
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider">Part of</p>
-            <p className="text-sm font-heading font-bold text-white mt-0.5">{exhibit.title}</p>
+            <p className="c-kicker">Part of</p>
+            <p className="c-card-t mt-0.5" style={{ color: "var(--ink-strong)" }}>{exhibit.title}</p>
           </Link>
         )}
       </div>

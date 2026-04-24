@@ -62,48 +62,51 @@ export default async function ArtistProfilePage({
   const videos = videosRes.data ?? [];
 
   return (
-    <div className="space-y-8 pb-20">
+    <div className="culture-surface min-h-dvh space-y-8 pb-20">
       {/* Artist Header */}
       <div className="px-5 pt-6">
+        <span className="c-kicker block mb-2">Artist</span>
         <div className="flex items-start gap-5">
           {artist.avatar_url ? (
             <img
               src={artist.avatar_url}
               alt=""
-              className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover border-2 border-gold/30"
+              className="w-20 h-20 md:w-28 md:h-28 object-cover c-frame-strong"
             />
           ) : (
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-2xl bg-gold/10 border-2 border-gold/30 flex items-center justify-center">
-              <span className="text-3xl text-gold font-bold">
+            <div className="w-20 h-20 md:w-28 md:h-28 c-frame-strong flex items-center justify-center" style={{ background: "var(--paper-soft)" }}>
+              <span className="text-3xl font-bold" style={{ color: "var(--gold-c)" }}>
                 {(artist.display_name || "?")[0]}
               </span>
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-2xl md:text-4xl text-text-primary">
+            <h1 className="c-hero" style={{ color: "var(--ink-strong)" }}>
               {artist.display_name}
             </h1>
             {artist.bio && (
-              <p className="text-text-secondary text-sm mt-2 line-clamp-4">
+              <p className="c-serif-it text-[14px] mt-2 line-clamp-4">
                 {artist.bio}
               </p>
             )}
             {artist.channel_slug && (
               <Link
                 href={`/channels/${artist.channel_slug}`}
-                className="inline-block mt-3 text-gold text-sm font-semibold hover:underline"
+                className="inline-block mt-3 text-sm font-semibold hover:underline"
+                style={{ color: "var(--gold-c)" }}
               >
                 View Channel &rarr;
               </Link>
             )}
           </div>
         </div>
+        <div style={{ height: 3, background: "var(--rule-strong-c, var(--ink-strong))", marginTop: 20 }} />
       </div>
 
       {/* Content Gallery */}
       {posts.length > 0 && (
         <section className="px-5">
-          <h2 className="font-heading font-bold text-lg text-text-primary mb-4">
+          <h2 className="c-card-t mb-4" style={{ color: "var(--ink-strong)" }}>
             Posts
           </h2>
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
@@ -123,7 +126,7 @@ export default async function ArtistProfilePage({
 
       {videos.length > 0 && (
         <section className="px-5">
-          <h2 className="font-heading font-bold text-lg text-text-primary mb-4">
+          <h2 className="c-card-t mb-4" style={{ color: "var(--ink-strong)" }}>
             Videos
           </h2>
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">

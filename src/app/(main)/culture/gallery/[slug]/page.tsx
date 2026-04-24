@@ -44,17 +44,17 @@ export default async function GalleryItemDetailPage({
   const exhibit = item.exhibit as { id: string; title: string; slug: string } | null;
 
   return (
-    <div className="pb-20">
+    <div className="culture-surface min-h-dvh pb-20">
       {/* Back */}
       <div className="px-5 pt-4 mb-4">
-        <Link href="/culture/gallery" className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press">
+        <Link href="/culture/gallery" className="inline-flex items-center gap-1.5 text-sm font-semibold press" style={{ color: "var(--gold-c)" }}>
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M10 12L6 8l4-4" /></svg>
           Gallery
         </Link>
       </div>
 
       {/* Image(s) */}
-      <div className="relative aspect-square bg-white/5 mx-5 rounded-2xl overflow-hidden mb-5">
+      <div className="relative aspect-square mx-5 overflow-hidden mb-5 c-frame-strong" style={{ background: "var(--paper-soft)" }}>
         {item.image_urls?.[0] ? (
           <img src={item.image_urls[0]} alt={item.title} className="w-full h-full object-contain bg-black" />
         ) : (
@@ -77,29 +77,31 @@ export default async function GalleryItemDetailPage({
       <div className="px-5 space-y-4">
         <div>
           <Badge label={badge.label} variant={badge.variant} size="md" />
-          <h1 className="font-display text-2xl text-white mt-2">{item.title}</h1>
+          <span className="c-kicker block mt-3">Gallery Item</span>
+          <h1 className="c-hero mt-1" style={{ color: "var(--ink-strong)" }}>{item.title}</h1>
+          <div style={{ height: 3, background: "var(--rule-strong-c, var(--ink-strong))", marginTop: 16 }} />
         </div>
 
         {/* Metadata */}
-        <div className="space-y-2">
+        <div className="space-y-2 c-body">
           {item.artist_name && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span><Icon name="palette" size={16} /></span><span>Artist: <span className="text-white">{item.artist_name}</span></span>
+            <div className="flex items-center gap-2 text-sm">
+              <span><Icon name="palette" size={16} /></span><span>Artist: <span style={{ color: "var(--ink-strong)" }}>{item.artist_name}</span></span>
             </div>
           )}
           {item.year_created && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span><Icon name="calendar" size={16} /></span><span>Year: <span className="text-white">{item.year_created}</span></span>
+            <div className="flex items-center gap-2 text-sm">
+              <span><Icon name="calendar" size={16} /></span><span>Year: <span style={{ color: "var(--ink-strong)" }}>{item.year_created}</span></span>
             </div>
           )}
           {item.medium && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span><Icon name="palette" size={16} /></span><span>Medium: <span className="text-white">{item.medium}</span></span>
+            <div className="flex items-center gap-2 text-sm">
+              <span><Icon name="palette" size={16} /></span><span>Medium: <span style={{ color: "var(--ink-strong)" }}>{item.medium}</span></span>
             </div>
           )}
           {item.dimensions && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
-              <span>•</span><span>Dimensions: <span className="text-white">{item.dimensions}</span></span>
+            <div className="flex items-center gap-2 text-sm">
+              <span>&bull;</span><span>Dimensions: <span style={{ color: "var(--ink-strong)" }}>{item.dimensions}</span></span>
             </div>
           )}
         </div>
@@ -108,7 +110,7 @@ export default async function GalleryItemDetailPage({
         {item.description && (
           <>
             <div className="divider-subtle" />
-            <div className="text-sm text-txt-secondary leading-relaxed whitespace-pre-line">
+            <div className="c-body text-sm leading-relaxed whitespace-pre-line">
               {item.description}
             </div>
           </>
@@ -119,8 +121,8 @@ export default async function GalleryItemDetailPage({
           <>
             <div className="divider-subtle" />
             <div>
-              <h2 className="font-heading font-bold text-sm mb-2">Provenance</h2>
-              <p className="text-sm text-txt-secondary leading-relaxed">{item.provenance}</p>
+              <h2 className="c-card-t text-sm mb-2" style={{ color: "var(--ink-strong)" }}>Provenance</h2>
+              <p className="c-body text-sm leading-relaxed">{item.provenance}</p>
             </div>
           </>
         )}
@@ -129,10 +131,10 @@ export default async function GalleryItemDetailPage({
         {exhibit && (
           <Link
             href={`/culture/exhibits/${exhibit.slug}`}
-            className="block rounded-xl bg-gold/5 border border-gold/15 p-3 mt-4"
+            className="block c-gold-block p-3 mt-4"
           >
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider">Part of</p>
-            <p className="text-sm font-heading font-bold text-white mt-0.5">{exhibit.title}</p>
+            <p className="c-kicker">Part of</p>
+            <p className="c-card-t mt-0.5" style={{ color: "var(--ink-strong)" }}>{exhibit.title}</p>
           </Link>
         )}
       </div>

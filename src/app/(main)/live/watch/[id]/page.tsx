@@ -20,7 +20,7 @@ export default async function VideoWatchPage({
   if (!video) {
     return (
       <div className="animate-fade-in px-5 pt-20 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>

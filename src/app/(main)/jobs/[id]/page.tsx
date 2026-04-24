@@ -117,12 +117,13 @@ export default async function JobDetailPage({
   const salary = isVolunteer ? null : formatSalary(listing);
 
   return (
-    <div className="animate-fade-in pb-24">
-      {/* Header */}
-      <div className="px-5 pt-4 mb-4">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
+      {/* Masthead */}
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <Link
           href="/jobs"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="c-kicker inline-flex items-center gap-1.5 press"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
             width="16"
@@ -134,8 +135,12 @@ export default async function JobDetailPage({
           >
             <path d="M10 12L6 8l4-4" />
           </svg>
-          Back
+          § BACK TO JOBS
         </Link>
+        <h1 className="c-hero mt-3" style={{ fontSize: 56, lineHeight: 0.88 }}>
+          {listing.title.toUpperCase()}.
+        </h1>
+        <p className="c-serif-it mt-2">{displayName}</p>
       </div>
 
       {/* Volunteer banner */}
@@ -267,7 +272,7 @@ export default async function JobDetailPage({
               )}
             </div>
             <p className="text-[11px] text-txt-secondary">
-              Posted by <span className="text-white font-medium">{poster.display_name}</span>
+              Posted by <span className="font-medium" style={{ color: "var(--ink-strong)" }}>{poster.display_name}</span>
             </p>
           </div>
         )}

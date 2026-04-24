@@ -84,7 +84,7 @@ export default async function HealthResourceDetailPage({
     res.description?.split(/(?<=[.!?])\s+/)[0]?.trim() ?? "";
 
   return (
-    <article className="animate-fade-in pb-safe bg-midnight">
+    <article className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* Back link */}
       <div className="px-5 pt-4 mb-3">
         <Link
@@ -122,7 +122,7 @@ export default async function HealthResourceDetailPage({
               </h1>
               <div className="mt-5 h-px w-16 bg-gold" />
               {res.organization && (
-                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-black/70">
                   {res.organization}
                 </p>
               )}
@@ -147,7 +147,7 @@ export default async function HealthResourceDetailPage({
               </h1>
               <div className="mt-4 h-px w-14 bg-gold" />
               {res.organization && (
-                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-black/70">
                   {res.organization}
                 </p>
               )}
@@ -196,7 +196,7 @@ export default async function HealthResourceDetailPage({
             <SectionKicker tone="muted">About</SectionKicker>
           </div>
           <div className="rule-hairline mb-5" />
-          <p className="text-[14px] text-ivory/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
+          <p className="text-[14px] text-black/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
             {res.description}
           </p>
         </section>
@@ -218,7 +218,7 @@ export default async function HealthResourceDetailPage({
                   <Icon name="phone" size={18} className="text-gold" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">Phone</p>
+                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Phone</p>
                   <a
                     href={`tel:${res.phone}`}
                     className="font-display text-[18px] text-gold leading-tight block mt-0.5"
@@ -235,18 +235,18 @@ export default async function HealthResourceDetailPage({
                   <Icon name="pin" size={18} className="text-gold" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">Address</p>
+                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Address</p>
                   {mapsUrl ? (
                     <a
                       href={mapsUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[14px] text-ivory/85 leading-snug block mt-0.5 hover:text-gold transition-colors"
+                      className="text-[14px] text-black/85 leading-snug block mt-0.5 hover:text-gold transition-colors"
                     >
                       {res.address}
                     </a>
                   ) : (
-                    <p className="text-[14px] text-ivory/85 leading-snug mt-0.5">{res.address}</p>
+                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">{res.address}</p>
                   )}
                 </div>
               </div>
@@ -258,7 +258,7 @@ export default async function HealthResourceDetailPage({
                   <Icon name="globe" size={18} className="text-gold" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">Website</p>
+                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Website</p>
                   <a
                     href={res.website.startsWith("http") ? res.website : `https://${res.website}`}
                     target="_blank"
@@ -277,8 +277,8 @@ export default async function HealthResourceDetailPage({
                   <Icon name="clock" size={18} className="text-gold" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">Hours</p>
-                  <p className="text-[14px] text-ivory/85 leading-snug mt-0.5">{hoursString}</p>
+                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">Hours</p>
+                  <p className="text-[14px] text-black/85 leading-snug mt-0.5">{hoursString}</p>
                 </div>
               </div>
             )}

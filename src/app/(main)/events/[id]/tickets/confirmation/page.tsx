@@ -3,8 +3,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { generateTicketCode } from "@/lib/tickets";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 import type { TicketOrder, TicketOrderItem, Event } from "@/types/database";
 
 interface ConfirmationPageProps {
@@ -21,7 +19,7 @@ export default async function TicketConfirmationPage({
 
   if (!order_id) {
     return (
-      <div className="animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
+      <div className="culture-surface min-h-dvh animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-coral/15 flex items-center justify-center mb-5">
           <svg
             className="w-8 h-8 text-coral"
@@ -37,14 +35,15 @@ export default async function TicketConfirmationPage({
             />
           </svg>
         </div>
-        <h1 className="font-heading text-xl font-bold mb-2">Payment Failed</h1>
-        <p className="text-txt-secondary text-sm mb-8 max-w-xs">
+        <p className="c-kicker mb-2">Error</p>
+        <h1 className="c-hero mb-2" style={{ fontSize: "clamp(44px, 9vw, 56px)" }}>Payment Failed</h1>
+        <p className="c-serif-it text-sm mb-8 max-w-xs">
           Your payment was not completed. No charges have been made.
         </p>
         <Link href={`/events/${eventId}/tickets`}>
-          <Button size="lg">Try Again</Button>
+          <button className="c-btn c-btn-primary">Try Again</button>
         </Link>
-        <Link href="/events" className="mt-4 text-sm text-txt-secondary press">
+        <Link href="/events" className="mt-4 c-meta press" style={{ color: "var(--ink-strong)" }}>
           Back to Events
         </Link>
       </div>
@@ -77,7 +76,7 @@ export default async function TicketConfirmationPage({
 
   if (!orderRaw) {
     return (
-      <div className="animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
+      <div className="culture-surface min-h-dvh animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-coral/15 flex items-center justify-center mb-5">
           <svg
             className="w-8 h-8 text-coral"
@@ -93,12 +92,13 @@ export default async function TicketConfirmationPage({
             />
           </svg>
         </div>
-        <h1 className="font-heading text-xl font-bold mb-2">Order Not Found</h1>
-        <p className="text-txt-secondary text-sm mb-8 max-w-xs">
+        <p className="c-kicker mb-2">Error</p>
+        <h1 className="c-hero mb-2" style={{ fontSize: "clamp(44px, 9vw, 56px)" }}>Order Not Found</h1>
+        <p className="c-serif-it text-sm mb-8 max-w-xs">
           We could not find this order. Please check your email or contact support.
         </p>
         <Link href="/events">
-          <Button size="lg" variant="secondary">Back to Events</Button>
+          <button className="c-btn c-btn-outline">Back to Events</button>
         </Link>
       </div>
     );
@@ -163,7 +163,7 @@ export default async function TicketConfirmationPage({
 
   if (confirmError) {
     return (
-      <div className="animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
+      <div className="culture-surface min-h-dvh animate-fade-in px-5 pt-12 flex flex-col items-center text-center">
         <div className="w-16 h-16 rounded-full bg-coral/15 flex items-center justify-center mb-5">
           <svg
             className="w-8 h-8 text-coral"
@@ -179,13 +179,14 @@ export default async function TicketConfirmationPage({
             />
           </svg>
         </div>
-        <h1 className="font-heading text-xl font-bold mb-2">Something Went Wrong</h1>
-        <p className="text-txt-secondary text-sm mb-8 max-w-xs">
+        <p className="c-kicker mb-2">Error</p>
+        <h1 className="c-hero mb-2" style={{ fontSize: "clamp(44px, 9vw, 56px)" }}>Something Went Wrong</h1>
+        <p className="c-serif-it text-sm mb-8 max-w-xs">
           Your payment may have succeeded, but we could not confirm your order.
           Please check your email or contact support.
         </p>
         <Link href="/events">
-          <Button size="lg" variant="secondary">Back to Events</Button>
+          <button className="c-btn c-btn-outline">Back to Events</button>
         </Link>
       </div>
     );
@@ -199,7 +200,7 @@ export default async function TicketConfirmationPage({
   );
 
   return (
-    <div className="animate-fade-in px-5 pt-12 pb-12 flex flex-col items-center text-center">
+    <div className="culture-surface min-h-dvh animate-fade-in px-5 pt-12 pb-12 flex flex-col items-center text-center">
       {/* Animated success checkmark */}
       <div className="w-20 h-20 rounded-full bg-emerald/15 flex items-center justify-center mb-6 relative">
         <svg
@@ -231,20 +232,21 @@ export default async function TicketConfirmationPage({
         }
       `}</style>
 
-      <h1 className="font-heading text-2xl font-bold mb-2">Tickets Confirmed!</h1>
-      <p className="text-txt-secondary text-sm mb-6 max-w-xs">
+      <p className="c-kicker mb-2">Confirmed</p>
+      <h1 className="c-hero mb-2" style={{ fontSize: "clamp(44px, 9vw, 56px)" }}>Tickets Confirmed</h1>
+      <p className="c-serif-it text-sm mb-6 max-w-xs">
         You&apos;re heading to {event?.title || "the event"}. Check your email for a receipt.
       </p>
 
-      {/* Order details card */}
-      <Card className="w-full mb-8 text-left">
+      {/* Order details block — inverted ink */}
+      <div className="c-ink-block w-full mb-8 text-left p-5">
         <div className="space-y-3">
           {/* Order number */}
           <div className="flex items-center justify-between">
-            <p className="text-xs text-txt-secondary uppercase tracking-wide font-semibold">
+            <p className="c-kicker" style={{ color: "var(--paper)" }}>
               Order Number
             </p>
-            <p className="text-sm font-mono font-bold text-gold">
+            <p className="text-sm font-mono font-bold" style={{ color: "var(--gold-c)" }}>
               {order.order_number}
             </p>
           </div>
@@ -252,7 +254,7 @@ export default async function TicketConfirmationPage({
           {/* Event name */}
           {event?.title && (
             <div className="flex items-start justify-between gap-2">
-              <p className="text-xs text-txt-secondary uppercase tracking-wide font-semibold shrink-0">
+              <p className="c-kicker shrink-0" style={{ color: "var(--paper)" }}>
                 Event
               </p>
               <p className="text-sm font-semibold text-right">{event.title}</p>
@@ -262,7 +264,7 @@ export default async function TicketConfirmationPage({
           {/* Date */}
           {event?.start_date && (
             <div className="flex items-center justify-between">
-              <p className="text-xs text-txt-secondary uppercase tracking-wide font-semibold">
+              <p className="c-kicker" style={{ color: "var(--paper)" }}>
                 Date
               </p>
               <p className="text-sm">
@@ -279,7 +281,7 @@ export default async function TicketConfirmationPage({
 
           {/* Ticket count */}
           <div className="flex items-center justify-between">
-            <p className="text-xs text-txt-secondary uppercase tracking-wide font-semibold">
+            <p className="c-kicker" style={{ color: "var(--paper)" }}>
               Tickets
             </p>
             <p className="text-sm font-semibold">
@@ -287,20 +289,20 @@ export default async function TicketConfirmationPage({
             </p>
           </div>
 
-          <div className="pt-2 border-t border-border-subtle">
-            <p className="text-xs text-txt-secondary text-center">
+          <div className="pt-2 border-t-2 border-[color:var(--paper)]/20">
+            <p className="text-xs text-center opacity-80">
               Show your ticket code at the door for entry.
             </p>
           </div>
         </div>
-      </Card>
+      </div>
 
       <div className="w-full space-y-3">
         <Link href={`/tickets/${order_id}`} className="block">
-          <Button fullWidth size="lg">View My Tickets</Button>
+          <button className="c-btn c-btn-primary w-full">View My Tickets</button>
         </Link>
         <Link href="/events" className="block">
-          <Button fullWidth size="lg" variant="secondary">Back to Events</Button>
+          <button className="c-btn c-btn-outline w-full">Back to Events</button>
         </Link>
       </div>
     </div>

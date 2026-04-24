@@ -733,7 +733,7 @@ export default async function SchoolDetailPage({
   }
 
   return (
-    <div className="animate-fade-in pb-safe">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* Hero */}
       <div className="relative h-72 overflow-hidden">
         {school.image ? (
@@ -786,12 +786,12 @@ export default async function SchoolDetailPage({
             >
               {levelLabels[school.level]}
             </span>
-            <span className="text-[10px] text-white/40">Est. {school.established}</span>
+            <span className="text-[10px] text-black/50">Est. {school.established}</span>
           </div>
           <h1 className="font-display text-2xl font-bold leading-tight mb-1">
             {school.name}
           </h1>
-          <p className="text-sm text-white/60 italic">&ldquo;{school.tagline}&rdquo;</p>
+          <p className="text-sm text-black/70 italic">&ldquo;{school.tagline}&rdquo;</p>
         </div>
       </div>
 
@@ -800,7 +800,7 @@ export default async function SchoolDetailPage({
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-card border border-border-subtle rounded-xl p-3 text-center">
             <p className="text-lg font-bold font-heading" style={{ color }}>{school.enrollment.toLocaleString()}</p>
-            <p className="text-[9px] text-white/40 uppercase tracking-wider">Students</p>
+            <p className="text-[9px] text-black/50 uppercase tracking-wider">Students</p>
           </div>
           <div className="bg-card border border-border-subtle rounded-xl p-3 text-center">
             <div className="flex items-center justify-center gap-0.5 mb-0.5">
@@ -818,11 +818,11 @@ export default async function SchoolDetailPage({
                 </svg>
               ))}
             </div>
-            <p className="text-[9px] text-white/40 uppercase tracking-wider">{school.rating} Rating</p>
+            <p className="text-[9px] text-black/50 uppercase tracking-wider">{school.rating} Rating</p>
           </div>
           <div className="bg-card border border-border-subtle rounded-xl p-3 text-center">
             <p className="text-lg font-bold font-heading text-emerald">{school.grades}</p>
-            <p className="text-[9px] text-white/40 uppercase tracking-wider">Grades</p>
+            <p className="text-[9px] text-black/50 uppercase tracking-wider">Grades</p>
           </div>
         </div>
       </div>
@@ -844,7 +844,7 @@ export default async function SchoolDetailPage({
               </Link>
               <Link
                 href="/profile/edit"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-white/60 text-[11px] font-semibold press hover:bg-white/10 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-black/70 text-[11px] font-semibold press hover:bg-white/10 transition-colors"
               >
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M8.5 1.5l2 2-6 6H2.5v-2l6-6z" />
@@ -853,7 +853,7 @@ export default async function SchoolDetailPage({
               </Link>
               <Link
                 href="/admin"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-white/60 text-[11px] font-semibold press hover:bg-white/10 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white/5 text-black/70 text-[11px] font-semibold press hover:bg-white/10 transition-colors"
               >
                 <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                   <rect x="1" y="1" width="4" height="4" rx="1" />
@@ -893,11 +893,11 @@ export default async function SchoolDetailPage({
                   <div className="w-3 h-3 rounded-full" style={{ background: school.schoolColors[0] }} />
                   <div className="w-3 h-3 rounded-full" style={{ background: school.schoolColors[1] }} />
                 </div>
-                <span className="text-[11px] text-white/50">{school.colors}</span>
+                <span className="text-[11px] text-black/60">{school.colors}</span>
               </div>
             </div>
             {school.district && (
-              <span className="text-[10px] text-white/30 bg-white/[0.04] rounded-full px-3 py-1 border border-white/[0.06]">
+              <span className="text-[10px] text-black/40 bg-white/[0.04] rounded-full px-3 py-1 border border-white/[0.06]">
                 {school.district}
               </span>
             )}
@@ -910,17 +910,17 @@ export default async function SchoolDetailPage({
             <div className="w-1 h-5 rounded-full" style={{ background: color }} />
             About {school.name.split(" ").slice(0, -1).join(" ")}
           </h2>
-          <p className="text-[13px] text-white/60 leading-relaxed">
+          <p className="text-[13px] text-black/70 leading-relaxed">
             {school.description}
           </p>
           <div className="mt-3 flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-white/[0.04] flex items-center justify-center">
-              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/40" strokeLinecap="round">
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-black/50" strokeLinecap="round">
                 <path d="M12 12a5 5 0 10-10 0v1h10v-1zM7 5a3 3 0 116 0 3 3 0 01-6 0z" />
               </svg>
             </div>
             <div>
-              <p className="text-[11px] text-white/40">Principal</p>
+              <p className="text-[11px] text-black/50">Principal</p>
               <p className="text-[12px] font-semibold">{school.principal}</p>
             </div>
           </div>
@@ -944,7 +944,7 @@ export default async function SchoolDetailPage({
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                   </div>
-                  <p className="text-[12px] text-white/70 leading-relaxed pt-1">{achievement}</p>
+                  <p className="text-[12px] text-black/70 leading-relaxed pt-1">{achievement}</p>
                 </div>
               ))}
             </div>
@@ -992,7 +992,7 @@ export default async function SchoolDetailPage({
                       <path d="M2 5h6M5 2v6" />
                     </svg>
                   </div>
-                  <span className="text-[11px] font-medium text-white/70">{sport}</span>
+                  <span className="text-[11px] font-medium text-black/70">{sport}</span>
                 </div>
               ))}
             </div>
@@ -1010,7 +1010,7 @@ export default async function SchoolDetailPage({
               {school.clubs.map((club) => (
                 <span
                   key={club}
-                  className="text-[11px] font-medium text-white/60 bg-hc-purple/[0.06] rounded-full px-3 py-1.5 border border-gold/15"
+                  className="text-[11px] font-medium text-black/70 bg-hc-purple/[0.06] rounded-full px-3 py-1.5 border border-gold/15"
                 >
                   {club}
                 </span>
@@ -1069,7 +1069,7 @@ export default async function SchoolDetailPage({
                   <p className="text-[12px] font-semibold">{school.address}</p>
                   <p className="text-[10px] text-gold mt-0.5">Get Directions</p>
                 </div>
-                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20" strokeLinecap="round">
+                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-black/30" strokeLinecap="round">
                   <path d="M5 3l4 4-4 4" />
                 </svg>
               </a>
@@ -1086,7 +1086,7 @@ export default async function SchoolDetailPage({
                     <p className="text-[12px] font-semibold">{school.phone}</p>
                     <p className="text-[10px] text-gold mt-0.5">Call School</p>
                   </div>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20" strokeLinecap="round">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-black/30" strokeLinecap="round">
                     <path d="M5 3l4 4-4 4" />
                   </svg>
                 </a>
@@ -1110,7 +1110,7 @@ export default async function SchoolDetailPage({
                     <p className="text-[12px] font-semibold">{school.website}</p>
                     <p className="text-[10px] text-gold mt-0.5">Visit Website</p>
                   </div>
-                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20" strokeLinecap="round">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" className="text-black/30" strokeLinecap="round">
                     <path d="M5 3l4 4-4 4" />
                   </svg>
                 </a>
@@ -1124,7 +1124,7 @@ export default async function SchoolDetailPage({
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-[10px] text-white/40">Principal</p>
+                  <p className="text-[10px] text-black/50">Principal</p>
                   <p className="text-[12px] font-semibold">{school.principal}</p>
                 </div>
               </div>
@@ -1194,10 +1194,10 @@ export default async function SchoolDetailPage({
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-[13px] truncate">{channel.name}</p>
                       {channel.description && (
-                        <p className="text-[11px] text-white/40 truncate">{channel.description}</p>
+                        <p className="text-[11px] text-black/50 truncate">{channel.description}</p>
                       )}
                     </div>
-                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0" strokeLinecap="round">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-black/30 shrink-0" strokeLinecap="round">
                       <path d="M6 4l4 4-4 4" />
                     </svg>
                   </div>
@@ -1215,7 +1215,7 @@ export default async function SchoolDetailPage({
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-bold truncate">{stream.title}</p>
-                          <p className="text-[10px] text-white/40">{stream.viewer_count} watching</p>
+                          <p className="text-[10px] text-black/50">{stream.viewer_count} watching</p>
                         </div>
                       </div>
                     </div>
@@ -1224,21 +1224,21 @@ export default async function SchoolDetailPage({
               )}
 
               {activeStreams.length === 0 && (
-                <p className="text-[11px] text-white/30 mt-2">No live streams right now. Check back for upcoming broadcasts.</p>
+                <p className="text-[11px] text-black/40 mt-2">No live streams right now. Check back for upcoming broadcasts.</p>
               )}
             </>
           ) : (
             <div className="bg-card rounded-2xl border border-border-subtle p-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0 border border-border-subtle">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black/30" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="5" width="16" height="11" rx="2" />
                     <path d="M10 5V3M6 5V4M14 5V4" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="text-[13px] font-medium text-white/40">Channel Coming Soon</p>
-                  <p className="text-[11px] text-white/25">Culture TV channel for this school is on the way</p>
+                  <p className="text-[13px] font-medium text-black/50">Channel Coming Soon</p>
+                  <p className="text-[11px] text-black/40">Culture TV channel for this school is on the way</p>
                 </div>
               </div>
             </div>
@@ -1275,7 +1275,7 @@ export default async function SchoolDetailPage({
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-[13px] truncate">{event.title}</p>
                         {event.location_name && (
-                          <p className="text-[11px] text-white/40 truncate">{event.location_name}</p>
+                          <p className="text-[11px] text-black/50 truncate">{event.location_name}</p>
                         )}
                       </div>
                     </div>
@@ -1286,13 +1286,13 @@ export default async function SchoolDetailPage({
           ) : (
             <div className="bg-card rounded-2xl border border-border-subtle p-6 text-center">
               <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black/30" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="14" height="13" rx="2" />
                   <path d="M3 8h14M7 2v4M13 2v4" />
                 </svg>
               </div>
-              <p className="text-[13px] text-white/40">No upcoming events</p>
-              <p className="text-[11px] text-white/25 mt-0.5">School events will appear here when posted</p>
+              <p className="text-[13px] text-black/50">No upcoming events</p>
+              <p className="text-[11px] text-black/40 mt-0.5">School events will appear here when posted</p>
             </div>
           )}
         </section>
@@ -1330,11 +1330,11 @@ export default async function SchoolDetailPage({
                         )}
                       </div>
                       <p className="text-[12px] font-bold">{author?.display_name ?? "Community Member"}</p>
-                      <span className="text-[10px] text-white/30 ml-auto">
+                      <span className="text-[10px] text-black/40 ml-auto">
                         {new Date(post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     </div>
-                    <p className="text-[12px] text-white/50 leading-relaxed line-clamp-3">{post.body}</p>
+                    <p className="text-[12px] text-black/60 leading-relaxed line-clamp-3">{post.body}</p>
                   </div>
                 );
               })}
@@ -1342,12 +1342,12 @@ export default async function SchoolDetailPage({
           ) : (
             <div className="bg-card rounded-2xl border border-border-subtle p-6 text-center">
               <div className="w-12 h-12 rounded-xl bg-white/[0.04] flex items-center justify-center mx-auto mb-3">
-                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round">
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-black/30" strokeLinecap="round">
                   <path d="M4 4h12M4 8h8M4 12h10" />
                 </svg>
               </div>
-              <p className="text-[13px] text-white/40">No school news yet</p>
-              <p className="text-[11px] text-white/25 mt-0.5">Posts mentioning this school will appear here</p>
+              <p className="text-[13px] text-black/50">No school news yet</p>
+              <p className="text-[11px] text-black/40 mt-0.5">Posts mentioning this school will appear here</p>
             </div>
           )}
         </section>
@@ -1369,7 +1369,7 @@ export default async function SchoolDetailPage({
             </div>
             <div className="relative">
               <h3 className="font-heading font-bold text-lg mb-1">Interested in Enrolling?</h3>
-              <p className="text-[12px] text-white/50 leading-relaxed mb-4">
+              <p className="text-[12px] text-black/60 leading-relaxed mb-4">
                 Contact {school.name} to learn about enrollment, tours, and open house events. Every student deserves a great education.
               </p>
               <div className="flex gap-3">

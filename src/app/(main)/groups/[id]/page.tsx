@@ -262,7 +262,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   // ── Loading ───────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
+      <div className="culture-surface min-h-dvh flex justify-center py-20">
         <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
       </div>
     );
@@ -270,7 +270,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
   if (!group) {
     return (
-      <div className="px-5 py-20 text-center">
+      <div className="culture-surface min-h-dvh px-5 py-20 text-center">
         <p className="text-sm text-txt-secondary">Group not found</p>
         <Link href="/groups" className="text-xs text-gold mt-2 inline-block">Back to groups</Link>
       </div>
@@ -278,7 +278,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* ═══════ HEADER ═══════ */}
       <GroupHeader
         group={group}
@@ -297,7 +297,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             key={t}
             onClick={() => setActiveTab(t)}
             className={`px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2 ${
-              activeTab === t ? "border-gold text-gold" : "border-transparent text-txt-secondary hover:text-white"
+              activeTab === t ? "border-gold text-gold" : "border-transparent text-txt-secondary hover:text-black"
             }`}
           >
             {t}
@@ -339,7 +339,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             {posts.length === 0 && (
               <Card>
                 <div className="text-center py-8">
-                  <Icon name="chat" size={28} className="mx-auto text-white/10 mb-2" />
+                  <Icon name="chat" size={28} className="mx-auto text-black/20 mb-2" />
                   <p className="text-sm font-semibold">No posts yet</p>
                   <p className="text-xs text-txt-secondary mt-1">
                     {isMember ? "Be the first to post!" : "Join to start the conversation"}
@@ -418,7 +418,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   <div className="flex gap-3">
                     <div className="w-12 h-14 rounded-xl bg-gold/10 flex flex-col items-center justify-center shrink-0">
                       <span className="text-[9px] font-bold text-gold tracking-wider">{d.month}</span>
-                      <span className="text-lg font-bold text-white leading-tight">{d.day}</span>
+                      <span className="text-lg font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>{d.day}</span>
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
                       <h3 className="text-sm font-semibold truncate">{ev.title}</h3>

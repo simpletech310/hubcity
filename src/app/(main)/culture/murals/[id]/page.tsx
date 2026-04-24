@@ -60,12 +60,13 @@ export default async function MuralDetailPage({
   }
 
   return (
-    <div className="animate-fade-in pb-24">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Back */}
       <div className="px-5 pt-4 mb-3">
         <Link
           href="/culture/murals"
-          className="inline-flex items-center gap-1.5 text-gold text-sm font-semibold press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold press"
+          style={{ color: "var(--gold-c)" }}
         >
           <svg
             width="16"
@@ -110,23 +111,25 @@ export default async function MuralDetailPage({
           )}
         </div>
       ) : (
-        <div className="mx-5 mb-6 aspect-[16/10] rounded-2xl bg-gradient-to-br from-pink-900/40 via-purple-900/30 to-gold/10 flex items-center justify-center">
+        <div className="mx-5 mb-6 aspect-[16/10] c-frame-strong bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-gold/10 flex items-center justify-center">
           <span className="text-7xl opacity-30"><Icon name="palette" size={16} /></span>
         </div>
       )}
 
       <div className="px-5">
         {/* Title & Artist */}
-        <h1 className="font-display text-2xl md:text-4xl font-bold text-text-primary leading-tight">
+        <span className="c-kicker block mb-2">Mural</span>
+        <h1 className="c-hero leading-tight" style={{ color: "var(--ink-strong)" }}>
           {mural.title}
         </h1>
         {mural.artist_name && (
-          <p className="text-text-secondary text-base mt-1.5">
+          <p className="c-serif-it text-[16px] mt-1.5">
             by{" "}
             {mural.artist_id ? (
               <Link
                 href={`/culture/artists/${mural.artist_id}`}
-                className="text-gold font-semibold hover:underline"
+                className="font-semibold hover:underline"
+                style={{ color: "var(--gold-c)" }}
               >
                 {mural.artist_name}
               </Link>
@@ -135,6 +138,7 @@ export default async function MuralDetailPage({
             )}
           </p>
         )}
+        <div style={{ height: 3, background: "var(--rule-strong-c, var(--ink-strong))", marginTop: 16 }} />
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mt-4">
@@ -158,8 +162,8 @@ export default async function MuralDetailPage({
         {/* Description */}
         {mural.description && (
           <div className="mt-6">
-            <h2 className="font-heading font-bold text-base mb-2">About This Mural</h2>
-            <p className="text-text-secondary text-[14px] leading-relaxed whitespace-pre-wrap">
+            <h2 className="c-card-t mb-2" style={{ color: "var(--ink-strong)" }}>About This Mural</h2>
+            <p className="c-body text-[14px] leading-relaxed whitespace-pre-wrap">
               {mural.description}
             </p>
           </div>
@@ -235,7 +239,7 @@ export default async function MuralDetailPage({
         {/* Nearby Murals */}
         {nearbyMurals.length > 0 && (
           <div className="mt-10">
-            <h2 className="font-heading font-bold text-lg text-text-primary mb-3">
+            <h2 className="c-card-t mb-3" style={{ color: "var(--ink-strong)" }}>
               More in {typeof mural.district === "number" ? `District ${mural.district}` : mural.district}
             </h2>
             <div className="grid grid-cols-2 gap-3">

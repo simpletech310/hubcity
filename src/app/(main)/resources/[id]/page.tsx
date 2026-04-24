@@ -80,7 +80,7 @@ export default async function ResourceDetailPage({
     : null;
 
   return (
-    <article className="animate-fade-in pb-safe bg-midnight">
+    <article className="culture-surface min-h-dvh animate-fade-in pb-safe">
       {/* Back link */}
       <div className="px-5 pt-4 mb-3 flex items-center justify-between">
         <Link
@@ -117,7 +117,7 @@ export default async function ResourceDetailPage({
               </h1>
               <div className="mt-5 h-px w-16 bg-gold" />
               {res.organization && (
-                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-black/70">
                   {res.organization}
                 </p>
               )}
@@ -142,7 +142,7 @@ export default async function ResourceDetailPage({
               </h1>
               <div className="mt-4 h-px w-14 bg-gold" />
               {res.organization && (
-                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
+                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-black/70">
                   {res.organization}
                 </p>
               )}
@@ -193,7 +193,7 @@ export default async function ResourceDetailPage({
             <SectionKicker tone="muted">About</SectionKicker>
           </div>
           <div className="rule-hairline mb-5" />
-          <p className="text-[14px] text-ivory/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
+          <p className="text-[14px] text-black/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
             {res.description}
           </p>
         </section>
@@ -219,10 +219,10 @@ export default async function ResourceDetailPage({
                 <Icon name="document" size={18} className="text-gold" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                   Requirements
                 </p>
-                <p className="text-[14px] text-ivory/85 leading-relaxed mt-1.5">
+                <p className="text-[14px] text-black/85 leading-relaxed mt-1.5">
                   {res.eligibility}
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default async function ResourceDetailPage({
                   <Icon name="clock" size={18} className="text-gold" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                     Deadline
                   </p>
                   <p className="font-display text-[18px] text-gold leading-tight mt-0.5">
@@ -264,7 +264,7 @@ export default async function ResourceDetailPage({
                     <Icon name="phone" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                       Phone
                     </p>
                     <a
@@ -283,10 +283,10 @@ export default async function ResourceDetailPage({
                     <Icon name="pin" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                       Address
                     </p>
-                    <p className="text-[14px] text-ivory/85 leading-snug mt-0.5">
+                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">
                       {res.address}
                     </p>
                   </div>
@@ -299,7 +299,7 @@ export default async function ResourceDetailPage({
                     <Icon name="globe" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                       Website
                     </p>
                     <a
@@ -324,10 +324,10 @@ export default async function ResourceDetailPage({
                     <Icon name="clock" size={18} className="text-gold" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/55">
+                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
                       Hours
                     </p>
-                    <p className="text-[14px] text-ivory/85 leading-snug mt-0.5">
+                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">
                       {res.hours}
                     </p>
                   </div>

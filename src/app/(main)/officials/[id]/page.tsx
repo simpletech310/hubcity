@@ -119,13 +119,14 @@ export default async function OfficialProfilePage({
   }
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="culture-surface min-h-dvh">
       {/* Back nav */}
-      <div className="border-b border-zinc-800 bg-zinc-950">
+      <div style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
         <div className="mx-auto max-w-5xl px-4 py-3">
           <Link
             href="/officials"
-            className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-gold transition-colors"
+            className="c-kicker inline-flex items-center gap-1.5 hover:text-gold transition-colors"
+            style={{ color: "var(--ink-strong)" }}
           >
             <svg
               width="14"

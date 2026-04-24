@@ -32,15 +32,16 @@ export default async function ChannelDetailPage({
 
   if (!channel) {
     return (
-      <div className="animate-fade-in px-5 pt-20 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
+      <div className="culture-surface min-h-dvh animate-fade-in px-5 pt-20 text-center">
+        <div className="w-16 h-16 c-frame flex items-center justify-center mx-auto mb-4" style={{ background: "var(--paper-soft)" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--ink-strong)" }}>
             <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
             <path d="M8 21h8M12 17v4" />
           </svg>
         </div>
-        <h2 className="font-heading font-bold text-lg mb-1">Channel Not Found</h2>
-        <p className="text-sm text-txt-secondary">This channel doesn&apos;t exist or has been removed.</p>
+        <span className="c-kicker block mb-1">404</span>
+        <h2 className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>Channel Not Found</h2>
+        <p className="c-body text-sm">This channel doesn&apos;t exist or has been removed.</p>
       </div>
     );
   }

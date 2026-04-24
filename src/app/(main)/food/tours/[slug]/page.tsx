@@ -50,7 +50,7 @@ export default async function TourDetailPage({
   );
 
   return (
-    <div className="animate-fade-in">
+    <div className="culture-surface min-h-dvh animate-fade-in pb-20">
       {/* Back */}
       <div className="px-5 pt-4 mb-3">
         <Link
@@ -72,7 +72,7 @@ export default async function TourDetailPage({
       </div>
 
       {/* Hero */}
-      <div className="mx-5 h-48 rounded-2xl relative overflow-hidden mb-5">
+      <div className="mx-5 h-48 relative overflow-hidden mb-5 c-frame-strong">
         {typedTour.image_url ? (
           <Image
             src={typedTour.image_url}
@@ -101,17 +101,19 @@ export default async function TourDetailPage({
       </div>
 
       <div className="px-5">
-        <h1 className="font-heading text-2xl font-bold mb-2">
+        <span className="c-kicker block mb-2">Food Tour</span>
+        <h1 className="c-hero mb-2" style={{ color: "var(--ink-strong)" }}>
           {typedTour.name}
         </h1>
         {typedTour.description && (
-          <p className="text-[13px] text-txt-secondary mb-6 leading-relaxed">
+          <p className="c-serif-it text-[15px] mb-5 leading-relaxed">
             {typedTour.description}
           </p>
         )}
+        <div style={{ height: 3, background: "var(--rule-strong-c, var(--ink-strong))", marginBottom: 24 }} />
 
         {/* Stops */}
-        <h2 className="font-heading font-bold text-base mb-4">Tour Stops</h2>
+        <h2 className="c-card-t mb-4" style={{ color: "var(--ink-strong)" }}>Tour Stops</h2>
         <div className="space-y-4 mb-8">
           {stops.map((stop: TourStopRow, index: number) => {
             const biz = stop.business;
