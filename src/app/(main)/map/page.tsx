@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import MapExplorer from "@/components/map/MapExplorer";
 import type { MapPoint } from "@/types/map";
+import { getActiveCity } from "@/lib/city-context";
 
 export const metadata: Metadata = {
   title: "Map — Culture",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
 
 export default async function MapPage() {
   const supabase = await createClient();
+  const city = await getActiveCity();
   const points: MapPoint[] = [];
 
   // Fetch businesses with coordinates
@@ -210,5 +212,60 @@ export default async function MapPage() {
     counts[p.type] = (counts[p.type] ?? 0) + 1;
   }
 
-  return <MapExplorer initialPoints={points} categoryCounts={counts} />;
+  const cityUpper = (city?.name ?? "Everywhere").toUpperCase();
+
+  return (
+    <div className="culture-surface min-h-dvh">
+      {/* Ink-block location strip */}
+      <div
+        className="flex items-center gap-2 px-[18px] py-2.5"
+        style={{ background: "var(--rule-strong-c)", color: "var(--paper)" }}
+      >
+        <span
+          className="c-live-dot inline-block"
+          style={{ width: 8, height: 8, background: "var(--green-c)" }}
+        />
+        <span className="c-kicker" style={{ color: "var(--paper)" }}>
+          THE ATLAS · {cityUpper} · {points.length} PINS
+        </span>
+      </div>
+
+      {/* Masthead title */}
+      <div className="px-[18px] pt-5 pb-3">
+        <div className="c-kicker mb-1.5">§ THE BLOCK</div>
+        <h1
+          className="c-hero"
+          style={{ fontSize: 44, lineHeight: 0.88, letterSpacing: "-0.012em" }}
+        >
+          Find the Block.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Businesses, resources, schools, and the culture pinned to the grid.
+        </p>
+      </div>
+
+      {/* Map explorer (interactive mapbox kept; chrome restyle is a follow-up) */}
+      <div
+        className="mx-[18px]"
+        style={{ border: "3px solid var(--rule-strong-c)", overflow: "hidden" }}
+      >
+        <MapExplorer initialPoints={points} categoryCounts={counts} />
+      </div>
+
+      {/* Colophon */}
+      <div
+        className="px-[18px] py-4 mt-4"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="flex items-center justify-between">
+          <span className="c-kicker" style={{ opacity: 0.5 }}>
+            HUB CITY · ATLAS · {cityUpper}
+          </span>
+          <span className="c-kicker" style={{ opacity: 0.5 }}>
+            {points.length} RESULTS
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 }

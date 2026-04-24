@@ -514,76 +514,90 @@ export default function FoodPage() {
   const withPickup = useMemo(() => filteredBusinesses.filter(b => b.accepts_orders), [filteredBusinesses]);
 
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* ─── Editorial Hero / Masthead ─── */}
-      <div className="relative h-64 overflow-hidden">
-        <Image src="/images/generated/food-hero.png" alt={`Food in ${activeCity?.name ?? "your city"}`} fill className="object-cover" priority />
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/85 to-ink" />
-        <div
-          className="absolute inset-0 opacity-[0.07] mix-blend-overlay pointer-events-none"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E\")",
-          }}
-        />
-
-        <div className="absolute inset-0 flex flex-col justify-end px-5 pb-6">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-              VOL · 01 · ISSUE EAT
-            </span>
-            <span className="block w-1 h-1 rounded-full bg-gold/60" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-              {activeCity?.name ?? "Local"}
-            </span>
-          </div>
-          <h1 className="masthead text-white text-[44px]">EAT.</h1>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="block h-[2px] w-8 bg-gold" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-              The kitchen issue · {activeCity?.name ?? "your city"}
-            </span>
-          </div>
+    <div className="culture-surface animate-fade-in pb-safe min-h-dvh">
+      {/* ─── Culture Masthead — paper palette ─── */}
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § ISSUE EAT · {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
         </div>
+        <h1
+          className="c-display mt-2"
+          style={{ fontSize: 72, lineHeight: 0.82, letterSpacing: "-0.02em" }}
+        >
+          EAT.
+        </h1>
+        <p
+          className="c-serif-it mt-3"
+          style={{ fontSize: 14, lineHeight: 1.45 }}
+        >
+          The plug is local. The kitchen issue from {activeCity?.name ?? "your city"}.
+        </p>
       </div>
 
-      {/* ─── Search ─── */}
-      <div className="px-5 -mt-5 mb-5 relative z-10">
-        <div className="flex items-center gap-3 panel-editorial rounded-2xl border-white/[0.08] px-4 py-3.5 focus-within:border-gold/40 transition-colors shadow-lg shadow-black/40">
+      {/* ─── Search row (printed-rule input + ink FILTER button) ─── */}
+      <div className="px-[18px] mt-4 mb-4 flex items-center gap-2">
+        <div
+          className="flex-1 flex items-center gap-2 px-3 py-2.5"
+          style={{ border: "2px solid var(--rule-strong-c)" }}
+        >
           <svg
-            width="18"
-            height="18"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.8"
             strokeLinecap="round"
-            className="text-ivory/35 shrink-0"
+            strokeLinejoin="round"
+            style={{ color: "var(--ink-strong)" }}
           >
-            <circle cx="8" cy="8" r="5" />
-            <path d="M12 12l4 4" />
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
           </svg>
           <input
             type="text"
-            placeholder="Search restaurants, trucks, dishes..."
+            placeholder="SEARCH RESTAURANTS, TRUCKS, DISHES"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm text-white placeholder:text-ivory/30 w-full outline-none"
+            className="bg-transparent w-full outline-none c-kicker"
+            style={{
+              color: "var(--ink-strong)",
+              fontSize: 11,
+            }}
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="text-ivory/35 hover:text-gold press transition-colors"
+              style={{ color: "var(--ink-mute)" }}
+              aria-label="Clear search"
             >
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              >
                 <path d="M4 4l8 8M12 4l-8 8" />
               </svg>
             </button>
           )}
         </div>
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className="c-btn c-btn-primary"
+          style={{ padding: "12px 14px", fontSize: 11 }}
+        >
+          FILTER
+        </button>
       </div>
 
-      {/* ─── Quick Filters (editorial pills, no per-filter colors) ─── */}
-      <div className="flex gap-2 px-5 mb-5 overflow-x-auto scrollbar-hide pb-1">
+      {/* ─── Quick Filters (c-chip with gold active) ─── */}
+      <div className="c-noscroll flex gap-1.5 px-[14px] overflow-x-auto pb-1 mb-4">
         {quickFilters.map((f) => {
           const isActive = activeQuick === f.filter;
           return (
@@ -594,14 +608,9 @@ export default function FoodPage() {
                 if (f.filter === "trucks") setActiveTab("food_truck");
                 else if (f.filter === "pickup") setSearch("order");
               }}
-              className={`flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-editorial-tight transition-colors press ${
-                isActive
-                  ? "bg-gold text-midnight border border-gold"
-                  : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
-              }`}
+              className={`c-chip${isActive ? " gold" : ""}`}
             >
-              <Icon name={f.iconName} size={14} />
-              {f.label}
+              {f.label.toUpperCase()}
             </button>
           );
         })}
