@@ -1,7 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import type { FoodTour } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 
@@ -9,37 +7,44 @@ export default function TourCard({ tour }: { tour: FoodTour }) {
   const stopCount = tour.stops?.length ?? 0;
 
   return (
-    <Link href={`/food/tours/${tour.slug}`}>
-      <Card hover padding={false}>
-        <div className="h-[120px] relative overflow-hidden rounded-t-2xl">
-          {tour.image_url ? (
-            <Image
-              src={tour.image_url}
-              alt={tour.name}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-coral/20 to-gold/10 flex items-center justify-center">
-              <span className="text-4xl"><Icon name="utensils" size={28} /></span>
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" />
-        </div>
-        <div className="p-3">
-          <h3 className="font-heading font-bold text-[13px] mb-1.5 truncate">
-            {tour.name}
-          </h3>
-          <div className="flex items-center gap-2">
-            <Badge label={`${stopCount} stops`} variant="gold" />
-            {tour.estimated_duration != null && (
-              <span className="text-[10px] text-txt-secondary">
-                ~{tour.estimated_duration} min
-              </span>
-            )}
+    <Link
+      href={`/food/tours/${tour.slug}`}
+      className="block press"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+    >
+      <div
+        className="h-[120px] relative overflow-hidden"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        {tour.image_url ? (
+          <Image src={tour.image_url} alt={tour.name} fill className="object-cover" />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ background: "var(--ink-strong)" }}
+          >
+            <Icon name="utensils" size={32} style={{ color: "var(--gold-c)" }} />
           </div>
+        )}
+      </div>
+      <div className="p-3">
+        <h3
+          className="c-card-t truncate"
+          style={{ fontSize: 14, color: "var(--ink-strong)" }}
+        >
+          {tour.name}
+        </h3>
+        <div className="flex items-center gap-2 mt-1.5">
+          <span className="c-badge c-badge-gold" style={{ fontSize: 9 }}>
+            {stopCount} STOPS
+          </span>
+          {tour.estimated_duration != null && (
+            <span className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>
+              ~{tour.estimated_duration} MIN
+            </span>
+          )}
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }

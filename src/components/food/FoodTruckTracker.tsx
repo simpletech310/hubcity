@@ -240,26 +240,56 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
       {/* Header */}
       <div className="px-5 mb-3 flex items-start justify-between">
         <div>
-          <h2 className="font-heading font-bold text-base flex items-center gap-2">
-            <Icon name="truck" size={18} /> Food Truck Tracker
+          <h2
+            className="c-card-t inline-flex items-center gap-2"
+            style={{ fontSize: 16, color: "var(--ink-strong)" }}
+          >
+            <Icon name="truck" size={18} style={{ color: "var(--ink-strong)" }} />
+            Food Truck Tracker
           </h2>
-          <p className="text-[11px] text-white/40 mt-0.5">
-            Real-time locations · updated as vendors move
+          <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.6 }}>
+            § REAL-TIME · UPDATED AS VENDORS MOVE
           </p>
         </div>
         <div className="flex flex-col items-end gap-2 shrink-0">
-          <span className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald animate-pulse" />
-            {activeCount} rolling
+          <span
+            className="inline-flex items-center gap-1 c-kicker px-2"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 9,
+              height: 22,
+            }}
+          >
+            <span
+              className="animate-pulse"
+              style={{
+                width: 5,
+                height: 5,
+                background: "var(--ink-strong)",
+                display: "inline-block",
+              }}
+            />
+            {activeCount} ROLLING
           </span>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-editorial-tight text-ivory/50 hover:text-gold transition-colors press"
+            className="c-kicker inline-flex items-center gap-1 press"
+            style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.65 }}
           >
             <Icon name="filter" size={10} />
-            {showFilters ? "Hide" : "Filter"}
+            {showFilters ? "HIDE" : "FILTER"}
             {(statusFilter !== "all" || typeFilter !== "all") && !showFilters && (
-              <span className="w-1.5 h-1.5 rounded-full bg-gold ml-0.5" />
+              <span
+                style={{
+                  width: 5,
+                  height: 5,
+                  background: "var(--gold-c)",
+                  display: "inline-block",
+                  marginLeft: 2,
+                }}
+              />
             )}
           </button>
         </div>
@@ -293,7 +323,10 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
 
       {/* Map + Near me */}
       <div className="px-5 mb-3">
-        <div className="relative rounded-2xl overflow-hidden border border-white/[0.06]">
+        <div
+          className="relative overflow-hidden"
+          style={{ border: "2px solid var(--rule-strong-c)" }}
+        >
           <MapView
             points={mapPoints}
             center={mapCenter}
@@ -303,18 +336,31 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
             onPointClick={handlePointClick}
           />
 
-          {/* Near-me button overlay */}
+          {/* Near-me button overlay — paper chip with ink border */}
           <button
             onClick={findNearMe}
             disabled={geoLoading}
-            className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-2 rounded-full bg-[#0A0A0A]/90 border border-white/10 backdrop-blur-md text-[12px] font-semibold text-white hover:border-gold/40 transition-colors press disabled:opacity-50"
+            className="absolute top-3 right-3 inline-flex items-center gap-1.5 c-kicker press"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              padding: "6px 10px",
+              fontSize: 10,
+              opacity: geoLoading ? 0.5 : 1,
+            }}
           >
-            <Icon name="navigation" size={14} className="text-gold" />
-            {geoLoading ? "Locating…" : userCoords ? "Re-center" : "Near me"}
+            <Icon name="navigation" size={12} style={{ color: "var(--gold-c)" }} />
+            {geoLoading ? "LOCATING…" : userCoords ? "RE-CENTER" : "NEAR ME"}
           </button>
         </div>
         {geoError && (
-          <p className="text-[11px] text-coral mt-2 text-center">{geoError}</p>
+          <p
+            className="c-serif-it mt-2 text-center"
+            style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.7 }}
+          >
+            {geoError}
+          </p>
         )}
       </div>
 
@@ -332,7 +378,10 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
       {/* Vehicle list */}
       <div className="px-5 space-y-2.5">
         {sorted.length === 0 ? (
-          <div className="text-center py-8 text-white/40 text-sm">
+          <div
+            className="c-serif-it text-center py-8"
+            style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.65 }}
+          >
             No vehicles match those filters.
           </div>
         ) : (
@@ -350,9 +399,10 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
       <div className="px-5 mt-4">
         <Link
           href="/dashboard/location"
-          className="block text-center text-[11px] text-white/40 hover:text-gold transition-colors press"
+          className="block text-center c-kicker press"
+          style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.6 }}
         >
-          Run a food truck or cart? Manage your fleet &rarr;
+          RUN A FOOD TRUCK OR CART? MANAGE YOUR FLEET ↗
         </Link>
       </div>
     </section>

@@ -211,12 +211,16 @@ export default function DMThread({
       <div
         ref={scrollerRef}
         className="flex-1 overflow-y-auto px-4 py-4 space-y-2"
-        style={{ scrollbarWidth: "thin" }}
+        style={{ scrollbarWidth: "thin", background: "var(--paper)" }}
       >
         {messages.length === 0 && (
           <div className="text-center py-16">
-            <span className="text-4xl block mb-2">{"\u2728"}</span>
-            <p className="text-sm text-ivory/70">Say hi to {otherName}.</p>
+            <p
+              className="c-serif-it"
+              style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.7 }}
+            >
+              Say hi to {otherName}.
+            </p>
           </div>
         )}
 
@@ -228,16 +232,32 @@ export default function DMThread({
             <div key={m.id}>
               {showDay && (
                 <div className="flex items-center gap-3 my-4">
-                  <span className="flex-1 h-px bg-white/[0.06]" />
-                  <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40 tabular-nums">
+                  <span
+                    className="flex-1"
+                    style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+                  />
+                  <span
+                    className="c-kicker tabular-nums"
+                    style={{ fontSize: 10, opacity: 0.55 }}
+                  >
                     {dayLabel(m.created_at)}
                   </span>
-                  <span className="flex-1 h-px bg-white/[0.06]" />
+                  <span
+                    className="flex-1"
+                    style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+                  />
                 </div>
               )}
               <div className={`flex ${mine ? "justify-end" : "justify-start"} items-end gap-2`}>
                 {!mine && (
-                  <div className="w-7 h-7 rounded-full overflow-hidden bg-white/[0.04] border border-white/[0.08] shrink-0 flex items-center justify-center">
+                  <div
+                    className="w-7 h-7 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
+                    style={{
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--rule-strong-c)",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
                     {otherAvatarUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -246,7 +266,13 @@ export default function DMThread({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-[9px] font-bold text-ivory/70">
+                      <span
+                        style={{
+                          fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                          fontWeight: 800,
+                          fontSize: 9,
+                        }}
+                      >
                         {otherName.slice(0, 2).toUpperCase()}
                       </span>
                     )}
@@ -254,10 +280,25 @@ export default function DMThread({
                 )}
                 <div className={`max-w-[75%] flex flex-col ${mine ? "items-end" : "items-start"}`}>
                   <div
-                    className={
+                    className="px-3 py-2"
+                    style={
                       mine
-                        ? "px-4 py-2 rounded-2xl rounded-br-md bg-gold text-midnight text-[14px] leading-snug font-medium shadow-sm"
-                        : "px-4 py-2 rounded-2xl rounded-bl-md panel-ink text-ivory text-[14px] leading-snug"
+                        ? {
+                            background: "var(--gold-c)",
+                            border: "2px solid var(--rule-strong-c)",
+                            color: "var(--ink-strong)",
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                            fontFamily: "var(--font-fraunces), serif",
+                          }
+                        : {
+                            background: "var(--paper)",
+                            border: "2px solid var(--rule-strong-c)",
+                            color: "var(--ink-strong)",
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                            fontFamily: "var(--font-fraunces), serif",
+                          }
                     }
                   >
                     {m.body}
@@ -266,7 +307,8 @@ export default function DMThread({
                       <img
                         src={m.gif_url}
                         alt="gif"
-                        className="mt-1 rounded-lg max-w-full"
+                        className="mt-1 max-w-full"
+                        style={{ border: "2px solid var(--rule-strong-c)" }}
                       />
                     )}
                     {m.image_url && (
@@ -274,11 +316,15 @@ export default function DMThread({
                       <img
                         src={m.image_url}
                         alt="attachment"
-                        className="mt-1 rounded-lg max-w-full"
+                        className="mt-1 max-w-full"
+                        style={{ border: "2px solid var(--rule-strong-c)" }}
                       />
                     )}
                   </div>
-                  <span className="mt-1 text-[9px] text-gold/70 tabular-nums tracking-wide">
+                  <span
+                    className="c-kicker mt-1 tabular-nums"
+                    style={{ fontSize: 9, opacity: 0.55 }}
+                  >
                     {formatTime(m.created_at)}
                   </span>
                 </div>
@@ -288,23 +334,45 @@ export default function DMThread({
         })}
       </div>
 
-      {/* Sticky composer */}
-      <div className="sticky bottom-0 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3 bg-gradient-to-t from-ink via-ink/95 to-transparent">
+      {/* Sticky composer — paper with ink top rule */}
+      <div
+        className="sticky bottom-0 px-3 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3"
+        style={{
+          background: "var(--paper)",
+          borderTop: "2px solid var(--rule-strong-c)",
+        }}
+      >
         {error && (
-          <p className="mb-2 px-4 text-[11px] text-coral">{error}</p>
+          <p
+            className="mb-2 px-4 c-serif-it"
+            style={{ fontSize: 11, color: "var(--ink-strong)" }}
+          >
+            {error}
+          </p>
         )}
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-2 panel-ink rounded-full pl-4 pr-1.5 py-1.5 border border-white/[0.08] focus-within:border-gold/30 transition-colors"
+          className="flex items-center gap-2"
         >
           <button
             type="button"
             aria-label="Add GIF"
             onClick={() => setGifOpen(true)}
             disabled={sending}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-gold/80 hover:text-gold hover:bg-gold/10 disabled:opacity-50 disabled:cursor-not-allowed press transition-colors"
+            className="flex items-center justify-center press disabled:opacity-50"
+            style={{
+              width: 40,
+              height: 40,
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontFamily: "var(--font-dm-mono), monospace",
+              fontWeight: 500,
+              fontSize: 10,
+              letterSpacing: "0.12em",
+            }}
           >
-            <span className="text-[10px] font-bold tracking-wider">GIF</span>
+            GIF
           </button>
           <input
             ref={inputRef}
@@ -312,7 +380,15 @@ export default function DMThread({
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder={`Message ${otherName}…`}
-            className="flex-1 bg-transparent outline-none text-[14px] text-ivory placeholder:text-ivory/40 py-2"
+            className="flex-1 outline-none px-3"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              height: 40,
+              fontSize: 14,
+              fontFamily: "var(--font-fraunces), serif",
+            }}
             maxLength={2000}
             disabled={sending}
           />
@@ -320,7 +396,8 @@ export default function DMThread({
             type="submit"
             disabled={!draft.trim() || sending}
             aria-label="Send"
-            className="w-10 h-10 rounded-full bg-gold text-midnight flex items-center justify-center press hover:bg-gold-light transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="c-btn c-btn-primary press disabled:opacity-40"
+            style={{ width: 40, height: 40, padding: 0 }}
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 3l5 5-5 5" />

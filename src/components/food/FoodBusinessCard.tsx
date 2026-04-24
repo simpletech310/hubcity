@@ -1,16 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import type { Business } from "@/types/database";
 import Icon from "@/components/ui/Icon";
-
-const categoryArt: Record<string, string> = {
-  restaurant: "art-food",
-  food_truck: "art-food",
-  bakery: "art-food",
-  cafe: "art-food",
-};
 
 const categoryLabels: Record<string, string> = {
   restaurant: "Restaurant",
@@ -20,85 +11,113 @@ const categoryLabels: Record<string, string> = {
 };
 
 export default function FoodBusinessCard({ business }: { business: Business }) {
-  const artClass = categoryArt[business.category] ?? "art-food";
   const heroImage = business.image_urls?.[0];
-  // Per-vehicle live status now lives on vendor_vehicles; the
+  // Per-vehicle live status lives on vendor_vehicles; the
   // business-level card just shows a generic "Fleet" chip for mobile.
   const isLive = business.is_mobile_vendor === true;
 
+  const categoryLabel = business.is_mobile_vendor
+    ? "FOOD TRUCK"
+    : (categoryLabels[business.category] ?? business.category).toUpperCase();
+
   return (
-    <Link href={`/business/${business.slug || business.id}`}>
-      <Card hover padding={false}>
-        <div className="flex gap-3 p-3">
-          {/* Image */}
-          <div className="w-20 h-20 rounded-xl shrink-0 overflow-hidden relative">
-            {heroImage ? (
-              <Image
-                src={heroImage}
-                alt={business.name}
-                fill
-                className="object-cover"
+    <Link
+      href={`/business/${business.slug || business.id}`}
+      className="block press"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+    >
+      <div className="flex gap-3 p-3">
+        {/* Image */}
+        <div
+          className="w-20 h-20 shrink-0 overflow-hidden relative"
+          style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper-soft)" }}
+        >
+          {heroImage ? (
+            <Image src={heroImage} alt={business.name} fill className="object-cover" />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{ background: "var(--ink-strong)" }}
+            >
+              <Icon name="utensils" size={22} style={{ color: "var(--gold-c)" }} />
+            </div>
+          )}
+          {isLive && (
+            <div
+              className="absolute top-1 left-1 inline-flex items-center gap-1 px-1"
+              style={{
+                background: "var(--paper)",
+                border: "1.5px solid var(--rule-strong-c)",
+                height: 15,
+              }}
+            >
+              <span
+                className="animate-pulse"
+                style={{ width: 5, height: 5, background: "var(--gold-c)", display: "inline-block" }}
               />
-            ) : (
-              <div className={`w-full h-full ${artClass}`} />
-            )}
-            {isLive && (
-              <div className="absolute top-1.5 left-1.5 bg-emerald/90 backdrop-blur-sm rounded-full px-1.5 py-0.5 flex items-center gap-1">
-                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                <span className="text-[8px] font-bold text-white">LIVE</span>
-              </div>
-            )}
+              <span className="c-kicker" style={{ fontSize: 8, letterSpacing: "0.14em" }}>
+                LIVE
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="c-card-t truncate" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+              {business.name}
+            </h3>
+            <div className="flex items-center gap-1 shrink-0">
+              <Icon name="star" size={12} style={{ color: "var(--gold-c)" }} />
+              <span className="c-meta" style={{ fontSize: 11, textTransform: "none" }}>
+                {Number(business.rating_avg).toFixed(1)}
+              </span>
+            </div>
           </div>
 
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">
-                {business.name}
-              </h3>
-              <div className="flex items-center gap-1 shrink-0">
-                <span className="text-gold text-xs"><Icon name="star" size={14} className="text-gold" /></span>
-                <span className="text-xs font-bold">
-                  {Number(business.rating_avg).toFixed(1)}
-                </span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-txt-secondary mb-1.5 truncate">
+          {business.description && (
+            <p
+              className="c-body mt-0.5 truncate"
+              style={{ fontSize: 12, opacity: 0.8 }}
+            >
               {business.description}
             </p>
+          )}
 
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge
-                label={
-                  business.is_mobile_vendor
-                    ? "Food Truck"
-                    : categoryLabels[business.category] ?? business.category
-                }
-                variant={business.is_mobile_vendor ? "coral" : "purple"}
-              />
-              {business.is_mobile_vendor && (
-                <span className="text-[10px] text-txt-secondary truncate">
-                  <Icon name="truck" size={12} /> Track on the map
-                </span>
-              )}
-              {!business.is_mobile_vendor && business.address && (
-                <span className="text-[10px] text-txt-secondary truncate">
-                  <Icon name="pin" size={16} /> {business.address.split(",")[0]}
-                </span>
-              )}
-            </div>
-
-            {business.accepts_orders && (
-              <div className="mt-2">
-                <span className="inline-flex items-center gap-1 bg-gold/10 text-gold text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                  Order Now
-                </span>
-              </div>
+          <div className="flex items-center gap-2 flex-wrap mt-2">
+            <span className="c-badge c-badge-ink" style={{ fontSize: 9 }}>
+              {categoryLabel}
+            </span>
+            {business.is_mobile_vendor && (
+              <span
+                className="c-kicker inline-flex items-center gap-1"
+                style={{ fontSize: 9, opacity: 0.65 }}
+              >
+                <Icon name="truck" size={10} />
+                TRACK ON MAP
+              </span>
+            )}
+            {!business.is_mobile_vendor && business.address && (
+              <span
+                className="c-kicker inline-flex items-center gap-1 truncate"
+                style={{ fontSize: 9, opacity: 0.65 }}
+              >
+                <Icon name="pin" size={10} />
+                {business.address.split(",")[0]}
+              </span>
             )}
           </div>
+
+          {business.accepts_orders && (
+            <div className="mt-2">
+              <span className="c-badge c-badge-gold" style={{ fontSize: 9 }}>
+                ORDER NOW
+              </span>
+            </div>
+          )}
         </div>
-      </Card>
+      </div>
     </Link>
   );
 }

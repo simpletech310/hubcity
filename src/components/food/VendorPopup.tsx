@@ -5,17 +5,15 @@ import Icon from "@/components/ui/Icon";
 import type { VendorStatus, VendorVehicle, VendorRouteStop } from "@/types/database";
 import { haversineMiles } from "@/lib/geo";
 
-const STATUS_BADGE: Record<
-  VendorStatus,
-  { label: string; color: string; dot: string }
-> = {
-  open: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
-  active: { label: "Open Now", color: "text-emerald", dot: "bg-emerald" },
-  en_route: { label: "On the way", color: "text-gold", dot: "bg-gold" },
-  sold_out: { label: "Sold Out", color: "text-coral", dot: "bg-coral" },
-  closed: { label: "Closed", color: "text-white/40", dot: "bg-white/40" },
-  inactive: { label: "Offline", color: "text-white/40", dot: "bg-white/40" },
-  cancelled: { label: "Cancelled", color: "text-coral", dot: "bg-coral" },
+// Culture palette — gold fill when open, paper with ink border otherwise.
+const STATUS_BADGE: Record<VendorStatus, { label: string; live: boolean }> = {
+  open: { label: "OPEN NOW", live: true },
+  active: { label: "OPEN NOW", live: true },
+  en_route: { label: "ON THE WAY", live: true },
+  sold_out: { label: "SOLD OUT", live: false },
+  closed: { label: "CLOSED", live: false },
+  inactive: { label: "OFFLINE", live: false },
+  cancelled: { label: "CANCELLED", live: false },
 };
 
 function fmt(time: string) {
@@ -44,12 +42,10 @@ interface VendorPopupProps {
 
 export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopupProps) {
   const status = STATUS_BADGE[vehicle.vendor_status] ?? STATUS_BADGE.inactive;
-  const isLive = vehicle.vendor_status === "open" || vehicle.vendor_status === "active";
   const biz = vehicle.business;
-  const typeLabel = vehicle.vehicle_type === "cart" ? "Cart" : "Truck";
+  const typeLabel = vehicle.vehicle_type === "cart" ? "CART" : "TRUCK";
   const today = new Date().getDay();
 
-  // Remaining stops today: same day_of_week AND end_time >= now
   const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
   const toMinutes = (t: string) => {
     const [h, m] = t.split(":").map(Number);
@@ -80,18 +76,34 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
       : null;
 
   return (
-    <div className="relative rounded-2xl border border-white/[0.08] bg-card p-4 animate-fade-in">
+    <div
+      className="relative p-4 animate-fade-in"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+    >
       {/* Close */}
       <button
         onClick={onClose}
         aria-label="Close"
-        className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/[0.12] transition-colors press"
+        className="absolute top-2 right-2 flex items-center justify-center press"
+        style={{
+          width: 28,
+          height: 28,
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+          color: "var(--ink-strong)",
+        }}
       >
         <Icon name="close" size={12} />
       </button>
 
       <div className="flex items-start gap-3 mb-3">
-        <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0 overflow-hidden">
+        <div
+          className="w-12 h-12 flex items-center justify-center shrink-0 overflow-hidden"
+          style={{
+            background: "var(--ink-strong)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
           {biz?.image_urls?.[0] ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={biz.image_urls[0]} alt="" className="w-full h-full object-cover" />
@@ -99,25 +111,42 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
             <Icon
               name={vehicle.vehicle_type === "cart" ? "cart" : "truck"}
               size={22}
-              className="text-gold"
+              style={{ color: "var(--gold-c)" }}
             />
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-bold text-sm text-white truncate">
+        <div className="flex-1 min-w-0 pr-8">
+          <h3 className="c-card-t truncate" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             {biz?.name ?? vehicle.name}
           </h3>
-          <p className="text-[11px] text-white/50 truncate">
-            {typeLabel} &middot; {vehicle.name}
+          <p className="c-kicker mt-0.5" style={{ fontSize: 9, opacity: 0.65 }}>
+            {typeLabel} · {vehicle.name}
           </p>
-          <div className="flex items-center gap-1.5 mt-1">
-            <div
-              className={`w-2 h-2 rounded-full ${status.dot} ${isLive ? "animate-pulse" : ""}`}
-            />
-            <span className={`text-[10px] font-semibold ${status.color}`}>{status.label}</span>
+          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+            <span
+              className="inline-flex items-center gap-1 c-kicker px-2"
+              style={{
+                background: status.live ? "var(--gold-c)" : "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontSize: 9,
+                height: 20,
+              }}
+            >
+              <span
+                className={status.live ? "animate-pulse" : ""}
+                style={{
+                  width: 5,
+                  height: 5,
+                  background: "var(--ink-strong)",
+                  display: "inline-block",
+                }}
+              />
+              {status.label}
+            </span>
             {vehicle.location_updated_at && (
-              <span className="text-[10px] text-white/30">
-                &middot; {timeAgo(vehicle.location_updated_at)}
+              <span className="c-kicker" style={{ fontSize: 9, opacity: 0.55 }}>
+                {timeAgo(vehicle.location_updated_at).toUpperCase()}
               </span>
             )}
           </div>
@@ -125,28 +154,38 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
       </div>
 
       {vehicle.current_location_name && (
-        <p className="text-[12px] text-white/80 flex items-center gap-1.5 mb-3">
-          <Icon name="pin" size={12} className="text-gold shrink-0" />
+        <p
+          className="c-body mb-3 inline-flex items-center gap-1.5"
+          style={{ fontSize: 12, color: "var(--ink-strong)" }}
+        >
+          <Icon name="pin" size={12} style={{ color: "var(--gold-c)" }} />
           <span className="truncate">{vehicle.current_location_name}</span>
           {distanceMiles != null && (
-            <span className="ml-auto text-[10px] text-gold/80 font-semibold shrink-0">
-              {distanceMiles.toFixed(1)} mi
+            <span className="ml-auto c-kicker shrink-0" style={{ fontSize: 9, color: "var(--gold-c)" }}>
+              {distanceMiles.toFixed(1)} MI
             </span>
           )}
         </p>
       )}
 
       {todaysStops.length > 0 && (
-        <div className="mb-3 rounded-xl bg-white/[0.03] border border-white/[0.04] p-2.5">
-          <p className="text-[9px] uppercase tracking-wider text-white/40 font-bold mb-1.5">
-            Next stops today
+        <div
+          className="mb-3 p-2.5"
+          style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <p className="c-kicker mb-1.5" style={{ fontSize: 9, opacity: 0.65 }}>
+            § NEXT STOPS TODAY
           </p>
           <div className="space-y-1.5">
             {todaysStops.map((stop, i) => (
-              <div key={i} className="flex items-center justify-between gap-2 text-[11px]">
-                <span className="text-white/80 truncate">{stop.name}</span>
-                <span className="text-white/50 shrink-0 tabular-nums">
-                  {fmt(stop.start_time)} &ndash; {fmt(stop.end_time)}
+              <div
+                key={i}
+                className="flex items-center justify-between gap-2"
+                style={{ fontSize: 11, color: "var(--ink-strong)" }}
+              >
+                <span className="c-body truncate">{stop.name}</span>
+                <span className="c-kicker shrink-0 tabular-nums" style={{ fontSize: 9, opacity: 0.65 }}>
+                  {fmt(stop.start_time)} – {fmt(stop.end_time)}
                 </span>
               </div>
             ))}
@@ -158,26 +197,24 @@ export default function VendorPopup({ vehicle, userCoords, onClose }: VendorPopu
         {orderHref && (
           <Link
             href={orderHref}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight text-center text-[13px] font-bold press hover:brightness-110 flex items-center justify-center gap-1.5"
+            className="c-btn c-btn-primary inline-flex items-center justify-center gap-1.5"
           >
-            <Icon name="cart" size={14} /> Order for pickup or delivery
+            <Icon name="cart" size={14} />
+            ORDER FOR PICKUP OR DELIVERY
           </Link>
         )}
         <div className="flex gap-2">
-          <Link
-            href={vendorHref}
-            className="flex-1 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] text-center text-[12px] font-bold text-white press hover:bg-white/[0.1]"
-          >
-            View menu
+          <Link href={vendorHref} className="c-btn c-btn-outline c-btn-sm flex-1 text-center">
+            VIEW MENU
           </Link>
           {directionsHref && (
             <a
               href={directionsHref}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2 rounded-xl bg-white/[0.06] border border-white/[0.08] text-center text-[12px] font-bold text-white press hover:bg-white/[0.1]"
+              className="c-btn c-btn-outline c-btn-sm flex-1 text-center"
             >
-              Directions
+              DIRECTIONS
             </a>
           )}
         </div>
