@@ -9,11 +9,7 @@ import Tag from "@/components/ui/editorial/Tag";
 import HeroBlock from "@/components/ui/editorial/HeroBlock";
 import { createClient } from "@/lib/supabase/client";
 import { useActiveCity } from "@/hooks/useActiveCity";
-import type { Business, FoodSpecial, FoodPromotion } from "@/types/database";
-import CityOwnershipFilter, {
-  DEFAULT_OWNERSHIP_OPTIONS,
-  type CityOption,
-} from "@/components/filters/CityOwnershipFilter";
+import type { Business } from "@/types/database";
 
 // ---------------------------------------------------------------------------
 // Category config
@@ -221,29 +217,9 @@ export default function BusinessPage() {
   const activeCity = useActiveCity();
   const [activeCategory, setActiveCategory] = useState("all");
   const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [cities, setCities] = useState<CityOption[]>([]);
-  const [selectedCities, setSelectedCities] = useState<string[]>([]);
-  const [selectedOwnership, setSelectedOwnership] = useState<string[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_specials, setSpecials] = useState<FoodSpecial[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [_promotions, setPromotions] = useState<FoodPromotion[]>([]);
   const [search, setSearch] = useState("");
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Load cities once
-  useEffect(() => {
-    const supabase = createClient();
-    supabase
-      .from("cities")
-      .select("slug, name, launch_status")
-      .eq("launch_status", "live")
-      .order("name")
-      .then(({ data }) => {
-        if (data) setCities(data.map((c) => ({ slug: c.slug, name: c.name })));
-      });
-  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -269,25 +245,6 @@ export default function BusinessPage() {
 
       const { data } = await query;
       setBusinesses((data as Business[]) ?? []);
-
-      // Also fetch any active food_specials and food_promotions
-      const [{ data: sData }, { data: pData }] = await Promise.all([
-        supabase
-          .from("food_specials")
-          .select("*, business:businesses(id, name, slug, image_urls, category)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(10),
-        supabase
-          .from("food_promotions")
-          .select("*, business:businesses(id, name, slug, image_urls, category)")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(10),
-      ]);
-
-      setSpecials((sData as FoodSpecial[]) ?? []);
-      setPromotions((pData as FoodPromotion[]) ?? []);
       setLoading(false);
     }
     fetchData();
@@ -295,16 +252,6 @@ export default function BusinessPage() {
 
   const filtered = useMemo(() => {
     let result = businesses;
-
-    if (selectedCities.length > 0) {
-      result = result.filter((b) => b.city?.slug && selectedCities.includes(b.city.slug));
-    }
-
-    if (selectedOwnership.length > 0) {
-      result = result.filter((b) =>
-        selectedOwnership.some((badge) => b.badges?.includes(badge))
-      );
-    }
 
     if (quickFilter === "new") {
       result = result.filter((b) => b.badges?.includes("new_business"));
@@ -324,7 +271,7 @@ export default function BusinessPage() {
       );
     }
     return result;
-  }, [businesses, search, quickFilter, selectedCities, selectedOwnership]);
+  }, [businesses, search, quickFilter]);
 
   const featured = filtered.filter((b) => b.is_featured);
   const regular = filtered.filter((b) => !b.is_featured);
@@ -346,9 +293,7 @@ export default function BusinessPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE COMMERCE · {selectedCities.length === 1
-            ? (cities.find((c) => c.slug === selectedCities[0])?.name?.toUpperCase() || "ALL")
-            : "EVERYWHERE"}
+          § VOL·01 · ISSUE COMMERCE · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -357,141 +302,86 @@ export default function BusinessPage() {
           Commerce.
         </h1>
         <p className="c-serif-it mt-2 mb-4" style={{ fontSize: 13 }}>
-          {selectedCities.length === 1
-            ? `Shops, services & makers in ${cities.find((c) => c.slug === selectedCities[0])?.name || "your city"}.`
+          {activeCity
+            ? `Shops, services & makers in ${activeCity.name}.`
             : "Every city, every category."}
         </p>
-        <div className="hidden">
-        <div className="flex items-center gap-3 mb-4">
-            <span />
-          </div>
-
-          {/* Quick Action Pills — editorial gold/ink, no per-category tints */}
-          <div className="flex gap-2 flex-wrap">
-            {quickActions.map((action) => {
-              const isActive = quickFilter === action.filter;
-              return (
-                <button
-                  key={action.filter}
-                  onClick={() => setQuickFilter(isActive ? null : action.filter)}
-                  className={`group flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-all press ${
-                    isActive
-                      ? "bg-gold text-midnight border-gold"
-                      : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
-                  }`}
-                >
-                  <Icon
-                    name={action.iconName}
-                    size={14}
-                    className={isActive ? "text-midnight" : "text-gold/70 group-hover:text-gold"}
-                  />
-                  <span className="text-[10px] font-bold uppercase tracking-editorial-tight">
-                    {action.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
       </div>
 
-      {/* ── Stats Strip ─────────────────────────────────────────── */}
-      <div className="px-5 mt-4 mb-5">
-        <div className="grid grid-cols-4 gap-2">
-          {[
-            { label: "Businesses", value: totalCount || "50+" },
-            { label: "Categories", value: categories.length - 1 },
-            { label: "Badges", value: allBadges.length || "10" },
-            { label: "Deals", value: localDeals.length },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl panel-editorial p-2.5 text-center">
-              <p className="font-display text-[20px] leading-none text-gold tabular-nums">
-                {stat.value}
-              </p>
-              <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-1.5">
-                {stat.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── City + Ownership Filter (wrapped in editorial panel) ── */}
-      <div className="px-5 mb-5">
-        <div className="rounded-2xl panel-editorial py-3 -mx-5 px-0">
-          <CityOwnershipFilter
-            cities={cities}
-            selectedCities={selectedCities}
-            onCityToggle={(slug) =>
-              setSelectedCities((prev) =>
-                prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
-              )
-            }
-            onClearCities={() => setSelectedCities([])}
-            ownership={DEFAULT_OWNERSHIP_OPTIONS}
-            selectedOwnership={selectedOwnership}
-            onOwnershipToggle={(badge) =>
-              setSelectedOwnership((prev) =>
-                prev.includes(badge) ? prev.filter((b) => b !== badge) : [...prev, badge]
-              )
-            }
-          />
-        </div>
-      </div>
-
-      {/* ── Search Bar ──────────────────────────────────────────── */}
-      <div className="px-5 mb-4">
-        <div className="flex items-center gap-3 bg-card border border-border-subtle rounded-2xl px-4 py-3 focus-within:border-gold/40 transition-all">
-          <Icon name="search" size={18} className="text-white/30 shrink-0" />
+      {/* ── Search + Category strip ─────────────────────────────── */}
+      <div
+        className="px-5 pt-4 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        {/* Search */}
+        <div className="relative mb-3">
+          <svg
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--ink-strong)"
+            strokeOpacity="0.4"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <input
             type="text"
-            placeholder="Search businesses, badges, services..."
+            placeholder="Search businesses, badges, services…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent text-sm text-white placeholder:text-white/25 w-full outline-none"
+            className="w-full pl-9 pr-3 py-2.5 focus:outline-none"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 13,
+            }}
           />
           {search && (
-            <button onClick={() => setSearch("")} className="text-white/30 hover:text-white press">
-              <Icon name="close" size={16} />
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 press"
+              style={{ color: "var(--ink-strong)", opacity: 0.4 }}
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l6 6M10 4l-6 6"/></svg>
             </button>
           )}
         </div>
-      </div>
 
-      {/* ── Category Filter Row (editorial gold/ink) ────────────── */}
-      <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
-        {categories.map((cat) => {
-          const isActive = activeCategory === cat.value;
-          return (
-            <button
-              key={cat.value}
-              onClick={() => {
-                setActiveCategory(cat.value);
-                setQuickFilter(null);
-              }}
-              className={`group flex items-center gap-1.5 shrink-0 rounded-full px-3.5 py-2 text-[11px] font-bold uppercase tracking-editorial-tight transition-all press border ${
-                isActive
-                  ? "bg-gold text-midnight border-gold"
-                  : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
-              }`}
-            >
-              <span
-                className={`w-5 h-5 rounded-md flex items-center justify-center ${
-                  isActive
-                    ? "bg-midnight/20"
-                    : "bg-ink border border-gold/15 group-hover:border-gold/40"
-                }`}
+        {/* Category chips */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {categories.map((cat) => {
+            const isActive = activeCategory === cat.value;
+            return (
+              <button
+                key={cat.value}
+                onClick={() => {
+                  setActiveCategory(cat.value);
+                  setQuickFilter(null);
+                }}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 press transition-colors"
+                style={{
+                  background: isActive ? "var(--gold-c)" : "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 11,
+                  fontWeight: isActive ? 800 : 600,
+                  letterSpacing: "0.06em",
+                }}
               >
-                <Icon
-                  name={cat.iconName}
-                  size={12}
-                  className={isActive ? "text-midnight" : "text-gold"}
-                />
-              </span>
-              {cat.label}
-            </button>
-          );
-        })}
+                <Icon name={cat.iconName} size={12} style={{ color: "var(--ink-strong)" }} />
+                {cat.label.toUpperCase()}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {loading ? (

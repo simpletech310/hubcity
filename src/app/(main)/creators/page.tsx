@@ -9,7 +9,6 @@ import {
   EditorialNumber,
   FeatureSpread,
   HeroBlock,
-  SectionKicker,
   SnapCarousel,
   Tag,
 } from "@/components/ui/editorial";
@@ -244,103 +243,106 @@ export default async function CreatorsPage({
       </div>
 
       {/* ── Filters ───────────────────────────────────────────────── */}
-      <div className="px-5 pt-2 pb-3 flex flex-col gap-3">
-        {/* Type */}
-        <div>
-          <p className="mb-1.5">
-            <SectionKicker tone="muted">Type</SectionKicker>
-          </p>
-          <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 pb-1">
+      <div
+        className="px-5 pt-3 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 pb-1">
+            {/* Type pills */}
+            <Link
+              href={filterHref("all", selectedCitySlug)}
+              className="shrink-0 px-3 py-1.5 press transition-colors"
+              style={{
+                background: selectedRole === "all" ? "var(--gold-c)" : "var(--paper)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                fontFamily: "var(--font-archivo-narrow), sans-serif",
+                fontSize: 11,
+                fontWeight: selectedRole === "all" ? 800 : 600,
+                letterSpacing: "0.06em",
+              }}
+            >
+              ALL
+            </Link>
+            {(CREATOR_ROLES as readonly RoleKey[]).map((r) => (
               <Link
-                href={filterHref("all", selectedCitySlug)}
-                className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                key={r}
+                href={filterHref(r, selectedCitySlug)}
+                className="shrink-0 px-3 py-1.5 press transition-colors"
                 style={{
-                  background: selectedRole === "all" ? "var(--gold-c)" : "var(--paper)",
+                  background: selectedRole === r ? "var(--gold-c)" : "var(--paper)",
                   color: "var(--ink-strong)",
                   border: "2px solid var(--rule-strong-c)",
                   fontFamily: "var(--font-archivo-narrow), sans-serif",
                   fontSize: 11,
-                  fontWeight: selectedRole === "all" ? 800 : 600,
+                  fontWeight: selectedRole === r ? 800 : 600,
+                  letterSpacing: "0.06em",
                 }}
               >
-                All
+                {ROLE_LABEL[r].toUpperCase()}
               </Link>
-              {(CREATOR_ROLES as readonly RoleKey[]).map((r) => (
-                <Link
-                  key={r}
-                  href={filterHref(r, selectedCitySlug)}
-                  className="shrink-0 px-3.5 py-1.5 transition-colors press"
-                  style={{
-                    background: selectedRole === r ? "var(--gold-c)" : "var(--paper)",
-                    color: "var(--ink-strong)",
-                    border: "2px solid var(--rule-strong-c)",
-                    fontFamily: "var(--font-archivo-narrow), sans-serif",
-                    fontSize: 11,
-                    fontWeight: selectedRole === r ? 800 : 600,
-                  }}
-                >
-                  {ROLE_LABEL[r]}
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
+            ))}
 
-        {/* City */}
-        <div>
-          <p className="mb-1.5">
-            <SectionKicker tone="muted">City</SectionKicker>
-          </p>
-          <div className="-mx-5 px-5 overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 pb-1">
+            {/* Divider */}
+            {liveCities.length > 0 && (
+              <span
+                className="shrink-0 self-stretch"
+                style={{ width: 2, background: "var(--rule-strong-c)", margin: "2px 4px" }}
+              />
+            )}
+
+            {/* City pills */}
+            {liveCities.length > 0 && (
               <Link
                 href={filterHref(selectedRole, "all")}
-                className="shrink-0 px-3.5 py-1.5 transition-colors press"
+                className="shrink-0 px-3 py-1.5 press transition-colors"
                 style={{
-                  background: selectedCitySlug === "all" ? "var(--gold-c)" : "var(--paper)",
-                  color: "var(--ink-strong)",
+                  background: selectedCitySlug === "all" ? "var(--ink-strong)" : "var(--paper)",
+                  color: selectedCitySlug === "all" ? "var(--paper)" : "var(--ink-strong)",
                   border: "2px solid var(--rule-strong-c)",
                   fontFamily: "var(--font-archivo-narrow), sans-serif",
                   fontSize: 11,
                   fontWeight: selectedCitySlug === "all" ? 800 : 600,
+                  letterSpacing: "0.06em",
                 }}
               >
-                All cities
+                ALL CITIES
               </Link>
-              {liveCities.map((c) => (
-                <Link
-                  key={c.slug}
-                  href={filterHref(selectedRole, c.slug)}
-                  className="shrink-0 px-3.5 py-1.5 transition-colors press"
-                  style={{
-                    background: selectedCitySlug === c.slug ? "var(--gold-c)" : "var(--paper)",
-                    color: "var(--ink-strong)",
-                    border: "2px solid var(--rule-strong-c)",
-                    fontFamily: "var(--font-archivo-narrow), sans-serif",
-                    fontSize: 11,
-                    fontWeight: selectedCitySlug === c.slug ? 800 : 600,
-                  }}
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
+            )}
+            {liveCities.map((c) => (
+              <Link
+                key={c.slug}
+                href={filterHref(selectedRole, c.slug)}
+                className="shrink-0 px-3 py-1.5 press transition-colors"
+                style={{
+                  background: selectedCitySlug === c.slug ? "var(--ink-strong)" : "var(--paper)",
+                  color: selectedCitySlug === c.slug ? "var(--paper)" : "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 11,
+                  fontWeight: selectedCitySlug === c.slug ? 800 : 600,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {c.name.toUpperCase()}
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Results summary + clear — only when a filter is active */}
+        {/* Results + clear when filtered */}
         {(selectedRole !== "all" || selectedCitySlug !== "all") && (
-          <div className="flex items-center justify-between">
-            <span className="c-meta" style={{ fontSize: 11 }}>
+          <div className="flex items-center justify-between mt-2">
+            <span className="c-meta" style={{ fontSize: 10, opacity: 0.6 }}>
               {creators.length} result{creators.length === 1 ? "" : "s"}
             </span>
             <Link
               href="/creators"
               className="c-kicker press"
-              style={{ color: "var(--ink-strong)" }}
+              style={{ fontSize: 10, color: "var(--ink-strong)" }}
             >
-              Clear filters
+              Clear ×
             </Link>
           </div>
         )}

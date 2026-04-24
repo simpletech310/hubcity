@@ -5,24 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import Icon from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
-import Chip from "@/components/ui/Chip";
 import type {
   ExploreItem,
   ExploreKind,
   ExploreWhatFilter,
-  ExploreWhoFilter,
 } from "@/types/database";
-
-const WHO_FILTERS: { key: ExploreWhoFilter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "city_ambassador", label: "Ambassadors" },
-  { key: "business_owner", label: "Business" },
-  { key: "content_creator", label: "Creators" },
-  { key: "resource_provider", label: "Resources" },
-  { key: "school", label: "Schools" },
-  { key: "chamber_admin", label: "Chamber" },
-  { key: "admin", label: "Admin" },
-];
 
 const WHAT_FILTERS: { key: ExploreWhatFilter; label: string; kinds: ExploreKind[] }[] = [
   { key: "all", label: "All", kinds: [] },
@@ -186,24 +173,11 @@ interface ExploreMosaicProps {
 
 export default function ExploreMosaic({ items }: ExploreMosaicProps) {
   const [search, setSearch] = useState("");
-  const [who, setWho] = useState<ExploreWhoFilter>("all");
   const [what, setWhat] = useState<ExploreWhatFilter>("all");
 
   const filtered = useMemo(() => {
     let result = items;
 
-    // Who filter — narrows creator tiles by role; leaves other kinds alone.
-    if (who !== "all") {
-      result = result.filter((i) => {
-        if (i.kind !== "creator") return true;
-        return (
-          i.meta?.role === who ||
-          (who === "content_creator" && i.meta?.role === "creator")
-        );
-      });
-    }
-
-    // What filter
     if (what !== "all") {
       const entry = WHAT_FILTERS.find((f) => f.key === what);
       const allowed = new Set(entry?.kinds ?? []);
@@ -220,20 +194,25 @@ export default function ExploreMosaic({ items }: ExploreMosaicProps) {
     }
 
     return result;
-  }, [items, who, what, search]);
+  }, [items, what, search]);
 
   return (
     <div>
-      {/* Search */}
-      <div className="px-5">
-        <div className="relative">
+      {/* Search + filter strip */}
+      <div
+        className="px-5 pt-4 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        {/* Search */}
+        <div className="relative mb-3">
           <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-txt-secondary"
-            width="16"
-            height="16"
+            className="absolute left-3 top-1/2 -translate-y-1/2"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="currentColor"
+            stroke="var(--ink-strong)"
+            strokeOpacity="0.4"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -243,58 +222,74 @@ export default function ExploreMosaic({ items }: ExploreMosaicProps) {
           </svg>
           <input
             type="text"
-            placeholder="Search creators, events, shows, art..."
+            placeholder="Search creators, events, shows, art…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white/[0.05] border border-border-subtle rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full pl-9 pr-3 py-2.5 focus:outline-none"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--ink-strong)",
+              fontSize: 13,
+            }}
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 press"
+              style={{ color: "var(--ink-strong)", opacity: 0.4 }}
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4l6 6M10 4l-6 6"/></svg>
+            </button>
+          )}
         </div>
-      </div>
 
-      {/* What (content kind) filter */}
-      <div className="px-5 mt-3">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {WHAT_FILTERS.map((f) => (
-            <Chip
-              key={f.key}
-              label={f.label}
-              active={what === f.key}
-              onClick={() => setWhat(f.key)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Who (role) filter — only active when viewing creators or all */}
-      <div className="px-5 mt-2">
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {WHO_FILTERS.map((f) => (
-            <Chip
-              key={f.key}
-              label={f.label}
-              active={who === f.key}
-              onClick={() => setWho(f.key)}
-            />
-          ))}
+        {/* Filter chips */}
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide">
+          {WHAT_FILTERS.map((f) => {
+            const active = what === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => setWhat(f.key)}
+                className="shrink-0 px-3 py-1.5 press transition-colors"
+                style={{
+                  background: active ? "var(--gold-c)" : "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--ink-strong)",
+                  fontFamily: "var(--font-archivo-narrow), sans-serif",
+                  fontSize: 11,
+                  fontWeight: active ? 800 : 600,
+                  letterSpacing: "0.06em",
+                }}
+              >
+                {f.label.toUpperCase()}
+              </button>
+            );
+          })}
         </div>
       </div>
 
       {/* Count */}
-      <div className="px-5 mt-3 mb-3">
-        <p className="text-xs text-txt-secondary font-medium">
+      <div className="px-5 pt-2 pb-1">
+        <p className="c-meta" style={{ fontSize: 10, opacity: 0.55 }}>
           {filtered.length} {filtered.length === 1 ? "result" : "results"}
         </p>
       </div>
 
       {/* Mosaic */}
-      <div className="px-4">
+      <div className="px-4 pt-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-10">
-            <div className="w-12 h-12 rounded-full bg-white/[0.05] flex items-center justify-center mx-auto mb-3">
-              <Icon name="search" size={20} className="text-txt-secondary" />
-            </div>
-            <p className="text-sm font-semibold text-white">Nothing found</p>
-            <p className="text-xs text-txt-secondary mt-1">
+          <div
+            className="text-center py-12"
+            style={{
+              background: "var(--paper-soft)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <Icon name="search" size={22} style={{ color: "var(--ink-strong)", opacity: 0.35 }} className="mx-auto mb-3" />
+            <p className="c-card-t" style={{ fontSize: 13 }}>Nothing found</p>
+            <p className="c-meta mt-1" style={{ fontSize: 11 }}>
               Try clearing a filter or searching something else.
             </p>
           </div>

@@ -129,6 +129,7 @@ function FeaturedSchoolCard({ school }: { school: School }) {
 
 function SchoolCard({ school }: { school: School }) {
   const schoolColors = getSchoolColors(school);
+  const color = schoolColors[0];
   const colorNames = getColorNames(school);
   return (
     <Link href={`/schools/${school.slug}`} className="block press">
