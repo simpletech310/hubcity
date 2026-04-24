@@ -88,103 +88,106 @@ export default function JobsPage() {
   const regularJobs = !search && activeType === "all" ? filtered.slice(3) : filtered;
 
   return (
-    <div className="animate-fade-in pb-20">
-      {/* ── Hero / Masthead ── */}
-      <div className="relative min-h-[220px] flex flex-col justify-end mb-5">
-        <Image
-          src="/images/generated/jobs-hero.png"
-          alt={`Job opportunities in ${activeCity?.name ?? "your city"}`}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-midnight via-midnight/80 to-midnight" />
+    <div className="culture-surface min-h-dvh animate-fade-in pb-20">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § VOL·01 · ISSUE WORK · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+        </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Work.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13, lineHeight: 1.45 }}>
+          Opportunity, hustle, and the next chapter.
+        </p>
 
-        <div className="relative z-10 px-5 pt-6 pb-5">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-gold tabular-nums">
-              VOL · 01 · ISSUE WORK
-            </span>
-            <span className="block w-1 h-1 rounded-full bg-gold/60" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-white/40">
-              {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
-            </span>
-          </div>
-          <h1 className="masthead text-white text-[44px]">WORK.</h1>
-          <div className="mt-3 flex items-center gap-3">
-            <span className="block h-[2px] w-8 bg-gold" />
-            <span className="text-[10px] font-bold uppercase tracking-editorial text-ivory/60">
-              Opportunity, hustle, and the next chapter
-            </span>
-          </div>
-
-          {/* Editorial Search Bar */}
-          <div className="panel-editorial rounded-2xl border-white/[0.08] flex items-center gap-3 px-4 py-3.5 mt-5 focus-within:border-gold/40 transition-colors">
-            <Icon name="search" size={18} className="text-gold shrink-0" />
-            <input
-              type="text"
-              placeholder="Search jobs, companies..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-transparent text-sm text-white placeholder:text-ivory/30 w-full outline-none"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="text-ivory/40 hover:text-white press"
-                aria-label="Clear search"
-              >
-                <Icon name="close" size={16} />
-              </button>
-            )}
-          </div>
+        <div
+          className="flex items-center gap-3 mt-4 px-3"
+          style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+        >
+          <Icon name="search" size={16} style={{ color: "var(--ink-strong)" }} />
+          <input
+            type="text"
+            placeholder="Search jobs, companies..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 outline-none"
+            style={{
+              background: "transparent",
+              color: "var(--ink-strong)",
+              fontSize: 13,
+              padding: "12px 0",
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="press"
+              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+              aria-label="Clear search"
+            >
+              <Icon name="close" size={16} />
+            </button>
+          )}
         </div>
       </div>
 
-      {/* ── Job-Type Filter Chips (editorial) ── */}
-      <div className="flex gap-2 px-5 mb-6 overflow-x-auto scrollbar-hide pb-1">
+      {/* Job-Type Filter Chips */}
+      <div className="flex gap-2 px-[18px] mt-4 mb-6 overflow-x-auto scrollbar-hide pb-1">
         {jobTypes.map((type) => {
           const isActive = activeType === type.value;
           return (
             <button
               key={type.value}
               onClick={() => setActiveType(type.value)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-bold uppercase tracking-editorial-tight whitespace-nowrap shrink-0 press transition-colors ${
-                isActive
-                  ? "bg-gold text-midnight border border-gold"
-                  : "panel-editorial text-ivory/70 border-white/[0.08] hover:border-gold/30"
-              }`}
+              className={`c-chip ${isActive ? "gold" : ""}`}
             >
               <Icon name={type.iconName} size={13} />
-              {type.label}
+              {type.label.toUpperCase()}
             </button>
           );
         })}
       </div>
 
       {loading ? (
-        <div className="px-5 space-y-3">
+        <div className="px-[18px] space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-2xl panel-editorial h-24 opacity-40 animate-pulse" />
+            <div
+              key={i}
+              className="h-24 animate-pulse"
+              style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper-soft)" }}
+            />
           ))}
         </div>
       ) : (
-        <div className="px-5 space-y-8">
-          {/* ── Job Categories (only when no search) ── */}
+        <div className="px-[18px] space-y-8">
+          {/* Categories */}
           {!search && (
             <section>
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                <span
+                  className="c-kicker tabular-nums"
+                  style={{ color: "var(--gold-c)", fontSize: 14 }}
+                >
                   № 01
                 </span>
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+                <span className="c-kicker" style={{ opacity: 0.55 }}>
                   Browse by Category
                 </span>
-                <span className="ml-auto rule-hairline flex-1 self-center" />
+                <span
+                  className="ml-auto flex-1 self-center"
+                  style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+                />
                 {activeCategory && (
                   <button
                     onClick={() => setActiveCategory(null)}
-                    className="ml-2 text-[10px] font-bold tracking-editorial-tight uppercase text-gold press shrink-0"
+                    className="c-kicker press shrink-0 ml-2"
+                    style={{ color: "var(--gold-c)" }}
                   >
                     Clear
                   </button>
@@ -200,21 +203,25 @@ export default function JobsPage() {
                       onClick={() =>
                         setActiveCategory(isActive ? null : { value: cat.value, filter: cat.filter })
                       }
-                      className={`panel-editorial p-4 rounded-xl flex flex-col items-center gap-2 press transition-colors ${
-                        isActive ? "border-gold/40" : "hover:border-gold/25"
-                      }`}
+                      className="p-4 flex flex-col items-center gap-2 press"
+                      style={{
+                        background: isActive ? "var(--gold-c)" : "var(--paper)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
                     >
                       <div
-                        className={`w-10 h-10 rounded-lg border bg-ink flex items-center justify-center ${
-                          isActive ? "border-gold/40" : "border-gold/20"
-                        }`}
+                        className="w-10 h-10 flex items-center justify-center"
+                        style={{
+                          background: "var(--ink-strong)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
                       >
-                        <Icon name={cat.iconName} size={18} className="text-gold" />
+                        <Icon name={cat.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                       </div>
-                      <span className="font-display text-[14px] leading-none text-white">
+                      <span className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
                         {cat.label}
                       </span>
-                      <span className="text-[10px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">
+                      <span className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>
                         {count !== null ? `${count} Open` : "Browse"}
                       </span>
                     </button>
@@ -238,32 +245,44 @@ export default function JobsPage() {
             </section>
           )}
 
-          {/* ── Job Listings ── */}
+          {/* Job Listings */}
           <section>
             <div className="flex items-baseline gap-3 mb-3">
-              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+              <span
+                className="c-kicker tabular-nums"
+                style={{ color: "var(--gold-c)", fontSize: 14 }}
+              >
                 № {featuredJobs.length > 0 ? "03" : !search ? "02" : "01"}
               </span>
-              <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+              <span className="c-kicker" style={{ opacity: 0.55 }}>
                 {activeType === "all" && !search
                   ? "All Listings"
                   : `${filtered.length} Result${filtered.length !== 1 ? "s" : ""}`}
               </span>
-              <span className="ml-auto rule-hairline flex-1 self-center" />
+              <span
+                className="ml-auto flex-1 self-center"
+                style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+              />
             </div>
             <div className="space-y-2.5 stagger">
               {regularJobs.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
               {filtered.length === 0 && (
-                <div className="rounded-2xl panel-editorial py-14 px-6 text-center">
-                  <div className="w-12 h-12 mx-auto mb-4 rounded-xl border border-gold/20 bg-ink flex items-center justify-center">
-                    <Icon name="search" size={22} className="text-gold" />
+                <div
+                  className="py-14 px-6 text-center"
+                  style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+                >
+                  <div
+                    className="w-12 h-12 mx-auto mb-4 flex items-center justify-center"
+                    style={{ background: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)" }}
+                  >
+                    <Icon name="search" size={22} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="font-display text-[18px] leading-tight text-white mb-1">
+                  <p className="c-card-t mb-1" style={{ fontSize: 17 }}>
                     No jobs found
                   </p>
-                  <p className="text-[11px] text-ivory/50 uppercase tracking-editorial-tight font-semibold">
+                  <p className="c-kicker" style={{ fontSize: 10, opacity: 0.6 }}>
                     Try a different search or filter
                   </p>
                 </div>

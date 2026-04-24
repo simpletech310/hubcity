@@ -35,30 +35,25 @@ export default async function OfficialsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-black">
-      {/* Header */}
-      <div className="border-b border-zinc-800 bg-zinc-950">
-        <div className="mx-auto max-w-5xl px-4 py-8">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
-              <span className="text-gold text-lg">&#127963;</span>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white font-heading tracking-tight">
-                Elected Officials
-              </h1>
-              <p className="text-sm text-zinc-400">
-                Compton City Council &amp; CUSD Board of Trustees
-              </p>
-            </div>
-          </div>
-          <p className="text-sm text-zinc-500 mt-3 max-w-2xl leading-relaxed">
-            Real votes. Real decisions. Built from official City of Compton
-            records, court filings, state audits, CUSD BoardDocs, and
-            investigative reporting. Know who represents you and how they use
-            their power.
-          </p>
+    <div className="culture-surface min-h-dvh">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § CIVIC · ACCOUNTABILITY · COMPTON
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Officials.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13, lineHeight: 1.5 }}>
+          Compton City Council &amp; CUSD Board of Trustees. Real votes, real
+          decisions — drawn from official records, court filings, state audits,
+          CUSD BoardDocs, and investigative reporting.
+        </p>
       </div>
 
       <OfficialsClient

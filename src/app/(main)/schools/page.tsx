@@ -35,56 +35,39 @@ export interface School {
 
 function SchoolsLoadingSkeleton() {
   return (
-    <div className="animate-fade-in pb-safe">
-      {/* Hero skeleton */}
-      <div className="relative h-56 overflow-hidden bg-card">
-        <div className="absolute inset-0 bg-gradient-to-b from-midnight/60 via-midnight/80 to-midnight" />
-        <div className="absolute inset-0 flex flex-col items-start justify-end px-5 pb-5">
-          <div className="h-6 w-48 bg-white/10 rounded-full mb-3 animate-pulse" />
-          <div className="h-8 w-40 bg-white/10 rounded-lg mb-1 animate-pulse" />
-          <div className="h-4 w-64 bg-white/10 rounded-lg animate-pulse" />
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      <div
+        className="px-[18px] pt-5 pb-4"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
+        <div className="c-kicker" style={{ opacity: 0.65 }}>
+          § CIVIC · SCHOOLS · COMPTON
         </div>
+        <h1
+          className="c-hero mt-2"
+          style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+        >
+          Schools.
+        </h1>
+        <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
+          Loading the district.
+        </p>
       </div>
-      {/* Stats skeleton */}
-      <div className="px-5 -mt-3 mb-5 relative z-10">
-        <div className="grid grid-cols-4 gap-2">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-card border border-border-subtle rounded-xl p-2.5 text-center">
-              <div className="h-5 w-8 bg-white/10 rounded mx-auto mb-1 animate-pulse" />
-              <div className="h-2 w-12 bg-white/10 rounded mx-auto animate-pulse" />
-            </div>
-          ))}
-        </div>
-      </div>
-      {/* Search skeleton */}
-      <div className="px-5 mb-4">
-        <div className="h-12 bg-card border border-border-subtle rounded-xl animate-pulse" />
-      </div>
-      {/* Filter chips skeleton */}
-      <div className="flex gap-2 px-5 mb-6">
+      <div className="px-[18px] mt-4 space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-9 w-24 bg-white/[0.04] rounded-full animate-pulse shrink-0" />
-        ))}
-      </div>
-      {/* Cards skeleton */}
-      <div className="px-5 mb-8 space-y-3">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="bg-card border border-border-subtle rounded-2xl p-4 animate-pulse">
+          <div
+            key={i}
+            className="animate-pulse"
+            style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper-soft)", padding: 16 }}
+          >
             <div className="flex items-start gap-3 mb-3">
-              <div className="w-12 h-12 rounded-xl bg-white/10" />
-              <div className="flex-1">
-                <div className="h-4 w-40 bg-white/10 rounded mb-1" />
-                <div className="h-3 w-56 bg-white/10 rounded" />
+              <div
+                style={{ width: 48, height: 48, background: "var(--ink-strong)", opacity: 0.15 }}
+              />
+              <div className="flex-1 space-y-2">
+                <div style={{ height: 14, width: 160, background: "var(--ink-strong)", opacity: 0.15 }} />
+                <div style={{ height: 10, width: 220, background: "var(--ink-strong)", opacity: 0.08 }} />
               </div>
-            </div>
-            <div className="flex gap-2 mb-3">
-              <div className="h-3 w-20 bg-white/10 rounded" />
-              <div className="h-3 w-16 bg-white/10 rounded" />
-            </div>
-            <div className="flex gap-1.5">
-              {[1, 2, 3].map((j) => (
-                <div key={j} className="h-6 w-24 bg-white/[0.04] rounded-full" />
-              ))}
             </div>
           </div>
         ))}
@@ -105,15 +88,18 @@ async function SchoolsData() {
   if (error) {
     console.error("Failed to fetch schools:", error);
     return (
-      <div className="animate-fade-in pb-safe">
+      <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
         <div className="px-5 py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round" strokeLinejoin="round">
+          <div
+            className="mx-auto mb-4 flex items-center justify-center"
+            style={{ width: 56, height: 56, border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+          >
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--ink-strong)", opacity: 0.5 }} strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 21V7l9-4 9 4v14M3 21h18M9 21V11h6v10" />
             </svg>
           </div>
-          <p className="text-sm font-semibold mb-1">Unable to load schools</p>
-          <p className="text-xs text-white/40">Please try again later</p>
+          <p className="c-card-t" style={{ fontSize: 14 }}>Unable to load schools</p>
+          <p className="c-serif-it mt-1" style={{ fontSize: 12, opacity: 0.7 }}>Please try again later</p>
         </div>
       </div>
     );
@@ -121,15 +107,18 @@ async function SchoolsData() {
 
   if (!schools || schools.length === 0) {
     return (
-      <div className="animate-fade-in pb-safe">
+      <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
         <div className="px-5 py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-            <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round" strokeLinejoin="round">
+          <div
+            className="mx-auto mb-4 flex items-center justify-center"
+            style={{ width: 56, height: 56, border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+          >
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--ink-strong)", opacity: 0.5 }} strokeLinecap="round" strokeLinejoin="round">
               <path d="M3 21V7l9-4 9 4v14M3 21h18M9 21V11h6v10" />
             </svg>
           </div>
-          <p className="text-sm font-semibold mb-1">No schools yet</p>
-          <p className="text-xs text-white/40">Schools will appear here once added</p>
+          <p className="c-card-t" style={{ fontSize: 14 }}>No schools yet</p>
+          <p className="c-serif-it mt-1" style={{ fontSize: 12, opacity: 0.7 }}>Schools will appear here once added</p>
         </div>
       </div>
     );
