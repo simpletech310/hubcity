@@ -57,9 +57,16 @@ export default function GroupGallery({ groupId }: GroupGalleryProps) {
 
   if (loading) {
     return (
-      <div className="px-5 grid grid-cols-3 gap-1">
+      <div
+        className="px-5 grid grid-cols-3"
+        style={{ gap: "2px", background: "var(--rule-strong-c)", border: "2px solid var(--rule-strong-c)" }}
+      >
         {Array.from({ length: 9 }).map((_, i) => (
-          <div key={i} className="aspect-square bg-white/[0.03] rounded-lg animate-pulse" />
+          <div
+            key={i}
+            className="aspect-square animate-pulse"
+            style={{ background: "var(--paper-soft)" }}
+          />
         ))}
       </div>
     );
@@ -68,14 +75,28 @@ export default function GroupGallery({ groupId }: GroupGalleryProps) {
   if (items.length === 0) {
     return (
       <div className="px-5">
-        <div className="text-center py-12 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto text-white/10 mb-2">
-            <rect x="3" y="3" width="18" height="18" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+        <div
+          className="text-center py-12"
+          style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
+        >
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="var(--ink-strong)"
+            strokeWidth="1.5"
+            className="mx-auto mb-3"
+            style={{ opacity: 0.35 }}
+          >
+            <rect x="3" y="3" width="18" height="18" strokeLinecap="round" strokeLinejoin="round" />
             <circle cx="8.5" cy="8.5" r="1.5" />
             <path d="M21 15l-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <p className="text-xs text-txt-secondary">No photos or videos yet</p>
-          <p className="text-[10px] text-txt-secondary mt-1">Media from group posts will appear here</p>
+          <p className="c-kicker" style={{ opacity: 0.7 }}>No photos · no videos</p>
+          <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
+            Media from group posts will appear here
+          </p>
         </div>
       </div>
     );
@@ -83,33 +104,56 @@ export default function GroupGallery({ groupId }: GroupGalleryProps) {
 
   return (
     <>
-      <div className="px-5 grid grid-cols-3 gap-1">
-        {items.map((item) => (
-          <div key={item.id} className="relative aspect-square rounded-lg overflow-hidden bg-black/20">
-            {item.video_url ? (
-              <button onClick={() => toggleVideo(item.id)} className="w-full h-full relative">
-                <video
-                  ref={(el) => { videoRefs.current[item.id] = el; }}
-                  src={item.video_url}
-                  playsInline
-                  muted
-                  preload="metadata"
-                  onEnded={() => setPlayingVideo(null)}
-                  className="w-full h-full object-cover"
-                />
-                {playingVideo !== item.id && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21" /></svg>
-                  </div>
-                )}
-              </button>
-            ) : item.image_url ? (
-              <button onClick={() => { setLightboxSrc(item.image_url!); setLightboxOpen(true); }} className="w-full h-full">
-                <Image src={item.image_url} alt="" width={140} height={140} className="w-full h-full object-cover" />
-              </button>
-            ) : null}
-          </div>
-        ))}
+      <div className="px-5">
+        <div
+          className="grid grid-cols-3"
+          style={{
+            gap: "2px",
+            background: "var(--rule-strong-c)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="relative aspect-square overflow-hidden"
+              style={{ background: "var(--paper-soft)" }}
+            >
+              {item.video_url ? (
+                <button onClick={() => toggleVideo(item.id)} className="w-full h-full relative">
+                  <video
+                    ref={(el) => { videoRefs.current[item.id] = el; }}
+                    src={item.video_url}
+                    playsInline
+                    muted
+                    preload="metadata"
+                    onEnded={() => setPlayingVideo(null)}
+                    className="w-full h-full object-cover"
+                  />
+                  {playingVideo !== item.id && (
+                    <div
+                      className="absolute inset-0 flex items-center justify-center"
+                      style={{ background: "color-mix(in srgb, var(--ink-strong) 35%, transparent)" }}
+                    >
+                      <div
+                        className="w-9 h-9 flex items-center justify-center"
+                        style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--ink-strong)">
+                          <polygon points="6,3 20,12 6,21" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </button>
+              ) : item.image_url ? (
+                <button onClick={() => { setLightboxSrc(item.image_url!); setLightboxOpen(true); }} className="w-full h-full">
+                  <Image src={item.image_url} alt="" width={140} height={140} className="w-full h-full object-cover" />
+                </button>
+              ) : null}
+            </div>
+          ))}
+        </div>
       </div>
 
       {lightboxOpen && (

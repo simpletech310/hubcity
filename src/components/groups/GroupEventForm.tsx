@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Button from "@/components/ui/Button";
-import Card from "@/components/ui/Card";
 
 interface GroupEventFormProps {
   groupId: string;
@@ -19,6 +17,18 @@ const EVENT_CATEGORIES = [
   { value: "culture", label: "Culture" },
   { value: "youth", label: "Youth" },
 ];
+
+const INPUT_STYLE: React.CSSProperties = {
+  background: "var(--paper-warm)",
+  border: "2px solid var(--rule-strong-c)",
+  color: "var(--ink-strong)",
+  fontFamily: "var(--font-body), Inter, sans-serif",
+  fontSize: 14,
+};
+
+const LABEL_STYLE: React.CSSProperties = {
+  color: "var(--ink-strong)",
+};
 
 export default function GroupEventForm({ groupId, isOpen, onClose, onCreated }: GroupEventFormProps) {
   const [title, setTitle] = useState("");
@@ -67,79 +77,132 @@ export default function GroupEventForm({ groupId, isOpen, onClose, onCreated }: 
   if (!isOpen) return null;
 
   return (
-    <Card>
+    <div
+      className="p-4"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
+    >
       <div className="space-y-3">
-        <h3 className="text-sm font-semibold">New Event</h3>
+        <h3 className="c-card-t" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
+          NEW EVENT
+        </h3>
 
-        <input type="text" placeholder="Event title" value={title} onChange={(e) => setTitle(e.target.value)}
-          className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+        <input
+          type="text"
+          placeholder="Event title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full px-4 py-2.5 focus:outline-none"
+          style={INPUT_STYLE}
         />
 
-        <textarea placeholder="Description (optional)" value={description} onChange={(e) => setDescription(e.target.value)} rows={2}
-          className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40 resize-none"
+        <textarea
+          placeholder="Description (optional)"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={2}
+          className="w-full px-4 py-2.5 focus:outline-none resize-none"
+          style={INPUT_STYLE}
         />
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Date</label>
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-              className="w-full mt-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold/40"
+            <label className="c-kicker" style={{ fontSize: 10, ...LABEL_STYLE }}>
+              DATE
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full mt-1 px-3 py-2 focus:outline-none"
+              style={INPUT_STYLE}
             />
           </div>
           <div>
-            <label className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Time</label>
-            <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)}
-              className="w-full mt-1 bg-white/5 border border-border-subtle rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-gold/40"
+            <label className="c-kicker" style={{ fontSize: 10, ...LABEL_STYLE }}>
+              TIME
+            </label>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full mt-1 px-3 py-2 focus:outline-none"
+              style={INPUT_STYLE}
             />
           </div>
         </div>
 
-        <input type="text" placeholder="Location (optional)" value={locationName} onChange={(e) => setLocationName(e.target.value)}
-          className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-txt-secondary focus:outline-none focus:border-gold/40"
+        <input
+          type="text"
+          placeholder="Location (optional)"
+          value={locationName}
+          onChange={(e) => setLocationName(e.target.value)}
+          className="w-full px-4 py-2.5 focus:outline-none"
+          style={INPUT_STYLE}
         />
 
-        <select value={category} onChange={(e) => setCategory(e.target.value)}
-          className="w-full bg-white/5 border border-border-subtle rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold/40"
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full px-4 py-2.5 focus:outline-none"
+          style={INPUT_STYLE}
         >
           {EVENT_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
         </select>
 
         {/* Visibility picker */}
         <div>
-          <label className="text-[10px] text-txt-secondary uppercase tracking-wider font-semibold">Visibility</label>
+          <label className="c-kicker" style={{ fontSize: 10, ...LABEL_STYLE }}>
+            VISIBILITY
+          </label>
           <div className="flex gap-2 mt-1.5">
             <button
               onClick={() => setVisibility("public")}
-              className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                visibility === "public"
-                  ? "border-gold/30 bg-gold/10 text-gold"
-                  : "border-border-subtle bg-white/5 text-txt-secondary"
+              className={`flex-1 px-3 py-2 c-kicker press ${
+                visibility === "public" ? "c-btn-accent" : ""
               }`}
+              style={{
+                fontSize: 10,
+                background: visibility === "public" ? "var(--gold-c)" : "var(--paper-warm)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
-              Public — shows in Events
+              PUBLIC · SHOWS IN EVENTS
             </button>
             <button
               onClick={() => setVisibility("group")}
-              className={`flex-1 px-3 py-2 rounded-xl text-xs font-semibold transition-all border ${
-                visibility === "group"
-                  ? "border-gold/30 bg-hc-purple/10 text-gold"
-                  : "border-border-subtle bg-white/5 text-txt-secondary"
-              }`}
+              className="flex-1 px-3 py-2 c-kicker press"
+              style={{
+                fontSize: 10,
+                background: visibility === "group" ? "var(--ink-strong)" : "var(--paper-warm)",
+                color: visibility === "group" ? "var(--gold-c)" : "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
-              Group Only
+              GROUP ONLY
             </button>
           </div>
         </div>
 
         <div className="flex gap-2">
-          <Button onClick={handleCreate} loading={creating} disabled={!title.trim() || !startDate}>
-            Create Event
-          </Button>
-          <button onClick={onClose} className="px-4 py-2 text-xs text-txt-secondary hover:text-white transition-colors">
-            Cancel
+          <button
+            onClick={handleCreate}
+            disabled={!title.trim() || !startDate || creating}
+            className="c-btn c-btn-primary c-btn-sm press disabled:opacity-40"
+          >
+            {creating ? "CREATING…" : "CREATE EVENT"}
+          </button>
+          <button
+            onClick={onClose}
+            className="c-btn c-btn-outline c-btn-sm press"
+          >
+            CANCEL
           </button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

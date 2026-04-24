@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback, use } from "react";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import Icon from "@/components/ui/Icon";
 import GroupHeader from "@/components/groups/GroupHeader";
@@ -74,8 +73,9 @@ interface GroupEvent {
 type GroupTab = "posts" | "events" | "gallery" | "members";
 
 const CATEGORY_BADGE: Record<string, "gold" | "emerald" | "cyan" | "purple" | "coral" | "blue" | "pink"> = {
-  neighborhood: "cyan", interest: "purple", school: "blue",
-  faith: "pink", sports: "emerald", business: "gold", other: "coral",
+  // All category variants collapse to gold/emerald in the Culture palette
+  neighborhood: "gold", interest: "gold", school: "gold",
+  faith: "gold", sports: "emerald", business: "gold", other: "gold",
 };
 
 // ── Helpers ─────────────────────────────────────────────
@@ -263,7 +263,10 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   if (loading) {
     return (
       <div className="culture-surface min-h-dvh flex justify-center py-20">
-        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+        <div
+          className="w-8 h-8 rounded-full animate-spin"
+          style={{ border: "2px solid var(--gold-c)", borderTopColor: "transparent" }}
+        />
       </div>
     );
   }
@@ -271,8 +274,16 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   if (!group) {
     return (
       <div className="culture-surface min-h-dvh px-5 py-20 text-center">
-        <p className="text-sm text-txt-secondary">Group not found</p>
-        <Link href="/groups" className="text-xs text-gold mt-2 inline-block">Back to groups</Link>
+        <p className="c-kicker" style={{ color: "var(--ink-strong)", opacity: 0.65 }}>
+          GROUP NOT FOUND
+        </p>
+        <Link
+          href="/groups"
+          className="c-kicker mt-2 inline-block"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          ← BACK TO SCENES
+        </Link>
       </div>
     );
   }
@@ -291,24 +302,56 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       />
 
       {/* ═══════ TABS ═══════ */}
-      <div className="flex gap-1 px-5 mt-3 mb-3 border-b border-border-subtle">
-        {(["posts", "events", "gallery", "members"] as GroupTab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setActiveTab(t)}
-            className={`px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2 ${
-              activeTab === t ? "border-gold text-gold" : "border-transparent text-txt-secondary hover:text-black"
-            }`}
-          >
-            {t}
-            {t === "events" && groupEvents.length > 0 && (
-              <span className="ml-1.5 text-[9px] bg-gold/20 text-gold px-1.5 py-0.5 rounded-full">{groupEvents.length}</span>
-            )}
-            {t === "members" && (
-              <span className="ml-1.5 text-[9px] bg-white/10 px-1.5 py-0.5 rounded-full">{group.member_count}</span>
-            )}
-          </button>
-        ))}
+      <div
+        className="flex gap-1 px-5 mt-3 mb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        {(["posts", "events", "gallery", "members"] as GroupTab[]).map((t) => {
+          const active = activeTab === t;
+          return (
+            <button
+              key={t}
+              onClick={() => setActiveTab(t)}
+              className="px-4 py-2.5 c-kicker transition-all"
+              style={{
+                fontSize: 11,
+                color: "var(--ink-strong)",
+                opacity: active ? 1 : 0.55,
+                borderBottom: active ? "3px solid var(--gold-c)" : "3px solid transparent",
+                marginBottom: -2,
+              }}
+            >
+              {t.toUpperCase()}
+              {t === "events" && groupEvents.length > 0 && (
+                <span
+                  className="ml-1.5 c-kicker"
+                  style={{
+                    fontSize: 9,
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    padding: "1px 6px",
+                  }}
+                >
+                  {groupEvents.length}
+                </span>
+              )}
+              {t === "members" && (
+                <span
+                  className="ml-1.5 c-kicker"
+                  style={{
+                    fontSize: 9,
+                    background: "var(--paper-soft)",
+                    color: "var(--ink-strong)",
+                    border: "1.5px solid var(--rule-strong-c)",
+                    padding: "1px 6px",
+                  }}
+                >
+                  {group.member_count}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* ═══════ POSTS TAB ═══════ */}
@@ -322,30 +365,44 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
           {!isMember && !loading && (
             <div className="px-5 mt-4 mb-4">
-              <Card>
-                <div className="text-center py-4">
-                  <p className="text-sm text-txt-secondary">Join this group to participate in discussions</p>
-                  <button onClick={handleJoin} disabled={joining}
-                    className="mt-3 px-6 py-2 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press"
-                  >
-                    {joining ? "Joining..." : "Join Group"}
-                  </button>
-                </div>
-              </Card>
+              <div
+                className="p-4 text-center"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <p className="c-serif-it" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+                  Join this scene to join the conversation.
+                </p>
+                <button
+                  onClick={handleJoin}
+                  disabled={joining}
+                  className="c-btn c-btn-primary c-btn-sm mt-3 press disabled:opacity-40"
+                >
+                  {joining ? "JOINING…" : "JOIN GROUP"}
+                </button>
+              </div>
             </div>
           )}
 
           <div className="px-5 space-y-3">
             {posts.length === 0 && (
-              <Card>
-                <div className="text-center py-8">
-                  <Icon name="chat" size={28} className="mx-auto text-black/20 mb-2" />
-                  <p className="text-sm font-semibold">No posts yet</p>
-                  <p className="text-xs text-txt-secondary mt-1">
-                    {isMember ? "Be the first to post!" : "Join to start the conversation"}
-                  </p>
-                </div>
-              </Card>
+              <div
+                className="p-6 text-center"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <Icon name="chat" size={28} className="mx-auto mb-2" style={{ color: "var(--ink-strong)", opacity: 0.35 }} />
+                <p className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
+                  NO POSTS YET
+                </p>
+                <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
+                  {isMember ? "Be the first to post." : "Join to start the conversation."}
+                </p>
+              </div>
             )}
 
             {posts.map((post) => (
@@ -381,12 +438,18 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           {isAdminOrMod && (
             <button
               onClick={() => setShowCreateEvent(!showCreateEvent)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-gold/30 text-gold text-xs font-semibold hover:bg-gold/5 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 c-kicker press"
+              style={{
+                fontSize: 11,
+                color: "var(--ink-strong)",
+                border: "2px dashed var(--rule-strong-c)",
+                background: "var(--paper-warm)",
+              }}
             >
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
               </svg>
-              Create Event
+              {showCreateEvent ? "CLOSE FORM" : "CREATE EVENT"}
             </button>
           )}
 
@@ -398,46 +461,80 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           />
 
           {groupEvents.length === 0 && (
-            <Card>
-              <div className="text-center py-8">
-                <p className="text-3xl mb-2">📅</p>
-                <p className="text-sm font-semibold">No events yet</p>
-                <p className="text-xs text-txt-secondary mt-1">
-                  {isAdminOrMod ? "Create your first event above!" : "Events will appear here"}
-                </p>
-              </div>
-            </Card>
+            <div
+              className="p-6 text-center"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <p className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
+                NO EVENTS YET
+              </p>
+              <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
+                {isAdminOrMod ? "Create your first event above." : "Events will appear here."}
+              </p>
+            </div>
           )}
 
           {groupEvents.map((ev) => {
             const d = formatEventDate(ev.start_date);
             return (
-              <Link key={ev.id} href={`/events/${ev.id}`}>
-                <Card hover className="relative overflow-hidden">
-                  <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+              <Link key={ev.id} href={`/events/${ev.id}`} className="block">
+                <div
+                  className="relative overflow-hidden p-3"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  <div style={{ height: 3, background: "var(--gold-c)", marginLeft: -12, marginRight: -12, marginTop: -12, marginBottom: 10 }} />
                   <div className="flex gap-3">
-                    <div className="w-12 h-14 rounded-xl bg-gold/10 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[9px] font-bold text-gold tracking-wider">{d.month}</span>
-                      <span className="text-lg font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>{d.day}</span>
+                    <div
+                      className="w-14 h-14 flex flex-col items-center justify-center shrink-0"
+                      style={{
+                        background: "var(--ink-strong)",
+                        color: "var(--gold-c)",
+                      }}
+                    >
+                      <span className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>{d.month}</span>
+                      <span
+                        className="c-hero"
+                        style={{ fontSize: 22, lineHeight: 1, color: "var(--paper)" }}
+                      >
+                        {d.day}
+                      </span>
                     </div>
                     <div className="flex-1 min-w-0 space-y-1">
-                      <h3 className="text-sm font-semibold truncate">{ev.title}</h3>
+                      <h3 className="c-card-t truncate" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
+                        {ev.title}
+                      </h3>
                       <div className="flex items-center gap-2 flex-wrap">
                         <Badge label={ev.category} variant={CATEGORY_BADGE[ev.category] || "gold"} />
                         {ev.visibility === "group" && (
-                          <Badge label="Group Only" variant="purple" />
+                          <Badge label="Group Only" variant="gold" />
                         )}
                         {ev.location_name && (
-                          <span className="text-[10px] text-txt-secondary truncate">{ev.location_name}</span>
+                          <span className="c-kicker truncate" style={{ fontSize: 9, opacity: 0.6 }}>
+                            {ev.location_name}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-center gap-2">
-                        {ev.start_time && <span className="text-[10px] text-txt-secondary">{formatTime(ev.start_time)}</span>}
-                        {ev.rsvp_count > 0 && <span className="text-[10px] text-emerald">{ev.rsvp_count} going</span>}
+                        {ev.start_time && (
+                          <span className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
+                            {formatTime(ev.start_time).toUpperCase()}
+                          </span>
+                        )}
+                        {ev.rsvp_count > 0 && (
+                          <span className="c-kicker" style={{ fontSize: 9, color: "var(--ink-strong)", fontWeight: 700 }}>
+                            {ev.rsvp_count} GOING
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
-                </Card>
+                </div>
               </Link>
             );
           })}
@@ -451,50 +548,101 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
       {/* ═══════ MEMBERS TAB ═══════ */}
       {activeTab === "members" && (
-        <div className="px-5 space-y-2">
+        <div className="px-5">
           {members.length === 0 ? (
             <div className="flex justify-center py-8">
-              <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+              <div
+                className="w-6 h-6 rounded-full animate-spin"
+                style={{ border: "2px solid var(--gold-c)", borderTopColor: "transparent" }}
+              />
             </div>
           ) : (
-            members.map((m) => (
-              <div key={m.user?.id} className="flex items-center gap-3 py-2.5 border-b border-border-subtle last:border-0">
-                <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center overflow-hidden shrink-0">
+            members.map((m, i) => (
+              <div
+                key={m.user?.id}
+                className="flex items-center gap-3 py-3"
+                style={{
+                  borderTop: i === 0 ? "2px solid var(--rule-strong-c)" : undefined,
+                  borderBottom: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+                  style={{
+                    background: "var(--gold-c)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
                   {m.user?.avatar_url ? (
                     <img src={m.user.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-sm font-bold text-txt-secondary">{m.user?.display_name?.charAt(0) || "?"}</span>
+                    <span
+                      className="c-card-t"
+                      style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                    >
+                      {m.user?.display_name?.charAt(0) || "?"}
+                    </span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-sm font-semibold truncate">{m.user?.display_name || "Unknown"}</p>
+                    <p
+                      className="c-card-t truncate"
+                      style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                    >
+                      {m.user?.display_name || "Unknown"}
+                    </p>
                     {m.role === "admin" && <Badge label="Admin" variant="gold" />}
-                    {m.role === "moderator" && <Badge label="Mod" variant="purple" />}
+                    {m.role === "moderator" && <Badge label="Mod" variant="gold" />}
                   </div>
-                  {m.user?.handle && <p className="text-[10px] text-txt-secondary">@{m.user.handle}</p>}
+                  {m.user?.handle && (
+                    <p className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
+                      @{m.user.handle.toUpperCase()}
+                    </p>
+                  )}
                 </div>
                 {myRole === "admin" && m.user?.id !== userId && (
                   <div className="flex items-center gap-1">
                     {m.role === "member" && (
-                      <button onClick={() => handleChangeRole(m.user!.id, "moderator")}
-                        className="px-2 py-1 text-[9px] bg-purple/10 text-gold rounded-lg hover:bg-purple/20 transition-colors flex items-center gap-1"
+                      <button
+                        onClick={() => handleChangeRole(m.user!.id, "moderator")}
+                        className="px-2 py-1 c-kicker flex items-center gap-1 press"
+                        style={{
+                          fontSize: 9,
+                          background: "var(--gold-c)",
+                          color: "var(--ink-strong)",
+                          border: "1.5px solid var(--rule-strong-c)",
+                        }}
                       >
-                        <Icon name="crown" size={10} /> Mod
+                        <Icon name="crown" size={10} /> MOD
                       </button>
                     )}
                     {m.role === "moderator" && (
-                      <button onClick={() => handleChangeRole(m.user!.id, "member")}
-                        className="px-2 py-1 text-[9px] bg-white/5 text-txt-secondary rounded-lg hover:bg-white/10 transition-colors"
+                      <button
+                        onClick={() => handleChangeRole(m.user!.id, "member")}
+                        className="px-2 py-1 c-kicker press"
+                        style={{
+                          fontSize: 9,
+                          background: "var(--paper-soft)",
+                          color: "var(--ink-strong)",
+                          border: "1.5px solid var(--rule-strong-c)",
+                        }}
                       >
-                        Demote
+                        DEMOTE
                       </button>
                     )}
                     {m.role !== "admin" && (
-                      <button onClick={() => handleRemoveMember(m.user!.id, m.user!.display_name)}
-                        className="px-2 py-1 text-[9px] bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors flex items-center gap-1"
+                      <button
+                        onClick={() => handleRemoveMember(m.user!.id, m.user!.display_name)}
+                        className="px-2 py-1 c-kicker flex items-center gap-1 press"
+                        style={{
+                          fontSize: 9,
+                          background: "var(--ink-strong)",
+                          color: "var(--paper)",
+                          border: "1.5px solid var(--rule-strong-c)",
+                        }}
                       >
-                        <Icon name="trash" size={10} /> Remove
+                        <Icon name="trash" size={10} /> REMOVE
                       </button>
                     )}
                   </div>

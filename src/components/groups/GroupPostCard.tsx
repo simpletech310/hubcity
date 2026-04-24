@@ -215,16 +215,25 @@ export default function GroupPostCard({
   };
 
   return (
-    <div className={`glass-card-elevated rounded-2xl !p-0 overflow-hidden relative ${post.is_pinned ? "border-gold/15" : ""}`}>
-      {/* Pinned accent */}
+    <div
+      className="!p-0 overflow-hidden relative"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
+    >
+      {/* Pinned accent — gold foil bar across top */}
       {post.is_pinned && (
-        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-gradient-to-b from-gold to-gold/20 rounded-full z-10" />
+        <div style={{ height: 4, background: "var(--gold-c)" }} />
       )}
 
       {/* Author header */}
       <div className="p-4 pb-0">
         {post.is_pinned && (
-          <div className="flex items-center gap-1 text-gold text-[10px] font-semibold mb-2">
+          <div
+            className="inline-flex items-center gap-1 c-kicker mb-2"
+            style={{ fontSize: 10, color: "var(--ink-strong)" }}
+          >
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
             </svg>
@@ -235,21 +244,35 @@ export default function GroupPostCard({
         <div className="flex items-center gap-3">
           <Link
             href={author?.handle ? `/user/${author.handle}` : "#"}
-            className="w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple ring-2 ring-white/[0.06] flex items-center justify-center overflow-hidden shrink-0"
+            className="w-11 h-11 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
           >
             {author?.avatar_url ? (
               <Image src={author.avatar_url} alt="" width={44} height={44} className="w-full h-full object-cover" />
             ) : (
-              <span className="text-sm font-bold text-gold font-heading">{initials}</span>
+              <span
+                className="c-card-t"
+                style={{ fontSize: 13, color: "var(--ink-strong)" }}
+              >
+                {initials}
+              </span>
             )}
           </Link>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <p className="text-[13px] font-bold truncate">{author?.display_name || "Unknown"}</p>
+              <p
+                className="c-card-t truncate"
+                style={{ fontSize: 13, color: "var(--ink-strong)" }}
+              >
+                {author?.display_name || "Unknown"}
+              </p>
               {roleBadge && <Badge label={roleBadge.label} variant={roleBadge.variant} />}
             </div>
-            <p className="text-[11px] text-white/30">
-              {author?.handle ? `@${author.handle} · ` : ""}{timeAgo(post.created_at)}
+            <p className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
+              {author?.handle ? `@${author.handle.toUpperCase()} · ` : ""}{timeAgo(post.created_at).toUpperCase()}
             </p>
           </div>
 
@@ -258,7 +281,9 @@ export default function GroupPostCard({
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-1.5 text-txt-secondary hover:text-white transition-colors rounded-lg hover:bg-white/5"
+                className="p-1.5 press"
+                style={{ color: "var(--ink-strong)" }}
+                aria-label="Post menu"
               >
                 <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="5" r="1.5" /><circle cx="12" cy="12" r="1.5" /><circle cx="12" cy="19" r="1.5" />
@@ -267,21 +292,31 @@ export default function GroupPostCard({
               {showMenu && (
                 <>
                   <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                  <div className="absolute right-0 top-8 z-20 bg-deep border border-border-subtle rounded-xl shadow-xl py-1 min-w-[140px] animate-in fade-in zoom-in-95 duration-150 origin-top-right">
+                  <div
+                    className="absolute right-0 top-8 z-20 py-1 min-w-[140px] animate-in fade-in zoom-in-95 duration-150 origin-top-right"
+                    style={{
+                      background: "var(--paper)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
                     {isAdminOrMod && (
                       <button
                         onClick={() => { setShowMenu(false); onPin(post.id, !post.is_pinned); }}
-                        className="w-full text-left px-3 py-2 text-xs hover:bg-white/5 transition-colors"
+                        className="w-full text-left px-3 py-2 c-kicker"
+                        style={{ fontSize: 10, color: "var(--ink-strong)" }}
                       >
-                        {post.is_pinned ? "Unpin Post" : "Pin Post"}
+                        {post.is_pinned ? "UNPIN POST" : "PIN POST"}
                       </button>
                     )}
-                    {isAdminOrMod && <div className="border-t border-white/[0.04] my-0.5" />}
+                    {isAdminOrMod && (
+                      <div style={{ borderTop: "1.5px solid var(--rule-strong-c)", opacity: 0.3 }} />
+                    )}
                     <button
                       onClick={() => { setShowMenu(false); onDelete(post.id); }}
-                      className="w-full text-left px-3 py-2 text-xs text-coral hover:bg-coral/5 transition-colors"
+                      className="w-full text-left px-3 py-2 c-kicker"
+                      style={{ fontSize: 10, color: "var(--ink-strong)" }}
                     >
-                      Delete Post
+                      DELETE POST
                     </button>
                   </div>
                 </>
@@ -292,12 +327,19 @@ export default function GroupPostCard({
 
         {/* Body */}
         <div className="mt-3">
-          <p className={`text-[14px] text-white/80 leading-relaxed whitespace-pre-wrap ${isLong && !bodyExpanded ? "line-clamp-4" : ""}`}>
+          <p
+            className={`c-body whitespace-pre-wrap ${isLong && !bodyExpanded ? "line-clamp-4" : ""}`}
+            style={{ fontSize: 14, color: "var(--ink-strong)", lineHeight: 1.5 }}
+          >
             {post.body}
           </p>
           {isLong && (
-            <button onClick={() => setBodyExpanded(!bodyExpanded)} className="text-[12px] text-gold font-semibold mt-1">
-              {bodyExpanded ? "Show less" : "Read more"}
+            <button
+              onClick={() => setBodyExpanded(!bodyExpanded)}
+              className="c-kicker mt-1"
+              style={{ fontSize: 10, color: "var(--ink-strong)" }}
+            >
+              {bodyExpanded ? "SHOW LESS" : "READ MORE"}
             </button>
           )}
         </div>
@@ -305,14 +347,33 @@ export default function GroupPostCard({
 
       {/* Image */}
       {post.image_url && post.media_type !== "video" && (
-        <button onClick={() => { setLightboxSrc(post.image_url!); setLightboxOpen(true); }} className="mt-3 w-full block overflow-hidden">
-          <Image src={post.image_url} alt="" width={430} height={430} className="w-full h-auto max-h-[420px] object-contain bg-black/20" />
+        <button
+          onClick={() => { setLightboxSrc(post.image_url!); setLightboxOpen(true); }}
+          className="mt-3 w-full block overflow-hidden"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
+          <Image
+            src={post.image_url}
+            alt=""
+            width={430}
+            height={430}
+            className="w-full h-auto max-h-[420px] object-contain"
+            style={{ background: "var(--paper-soft)" }}
+          />
         </button>
       )}
 
       {/* Video — inline playback */}
       {post.video_url && (
-        <div ref={videoContainerRef} className="mt-3 overflow-hidden bg-black flex items-center justify-center relative group cursor-pointer" onClick={toggleVideoPlay}>
+        <div
+          ref={videoContainerRef}
+          className="mt-3 overflow-hidden flex items-center justify-center relative group cursor-pointer"
+          onClick={toggleVideoPlay}
+          style={{
+            background: "var(--ink-strong)",
+            borderTop: "2px solid var(--rule-strong-c)",
+          }}
+        >
           <video
             ref={videoRef}
             src={post.video_url.includes("#") ? post.video_url : `${post.video_url}#t=0.1`}
@@ -325,15 +386,30 @@ export default function GroupPostCard({
             style={videoDims ? { width: `${videoDims.w}px`, height: `${videoDims.h}px` } : { maxWidth: "100%", maxHeight: "560px", width: "auto", height: "auto" }}
           />
           {!videoPlaying && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-              <div className="w-14 h-14 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21" /></svg>
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: "color-mix(in srgb, var(--ink-strong) 35%, transparent)" }}
+            >
+              <div
+                className="w-12 h-12 flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--paper)",
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="var(--ink-strong)"><polygon points="6,3 20,12 6,21" /></svg>
               </div>
             </div>
           )}
           <button
             onClick={(e) => { e.stopPropagation(); setVideoMuted(!videoMuted); if (videoRef.current) videoRef.current.muted = !videoMuted; }}
-            className="absolute bottom-3 right-3 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute bottom-3 right-3 w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--paper)",
+              color: "var(--ink-strong)",
+            }}
+            aria-label={videoMuted ? "Unmute" : "Mute"}
           >
             {videoMuted ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -350,7 +426,11 @@ export default function GroupPostCard({
 
       {/* Legacy image_url without media_type */}
       {post.image_url && !post.media_type && !post.video_url && (
-        <button onClick={() => { setLightboxSrc(post.image_url!); setLightboxOpen(true); }} className="mt-3 w-full block overflow-hidden">
+        <button
+          onClick={() => { setLightboxSrc(post.image_url!); setLightboxOpen(true); }}
+          className="mt-3 w-full block overflow-hidden"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           <img src={post.image_url} alt="" className="w-full max-h-[400px] object-cover" />
         </button>
       )}
@@ -365,18 +445,31 @@ export default function GroupPostCard({
                 <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
               ))}
             </div>
-            <span className="text-[11px] text-white/30 tabular-nums">{totalReactions}</span>
+            <span
+              className="c-kicker tabular-nums"
+              style={{ fontSize: 10, opacity: 0.6 }}
+            >
+              {totalReactions}
+            </span>
             {(post.comment_count || 0) > 0 && (
               <>
-                <span className="text-white/10 mx-1">&middot;</span>
-                <span className="text-[11px] text-white/30 tabular-nums">{post.comment_count} comment{post.comment_count !== 1 ? "s" : ""}</span>
+                <span style={{ opacity: 0.3 }} className="mx-1">·</span>
+                <span
+                  className="c-kicker tabular-nums"
+                  style={{ fontSize: 10, opacity: 0.6 }}
+                >
+                  {post.comment_count} COMMENT{post.comment_count !== 1 ? "S" : ""}
+                </span>
               </>
             )}
           </div>
         )}
 
         {/* Action row */}
-        <div className="flex items-center gap-0.5 pt-2 border-t border-white/[0.04]">
+        <div
+          className="flex items-center gap-0.5 pt-2"
+          style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+        >
           {reactionEmojis.map((emoji) => {
             const isActive = userReactions.includes(emoji);
             const count = post.reaction_counts?.[emoji] || 0;
@@ -387,11 +480,12 @@ export default function GroupPostCard({
                 key={emoji}
                 onClick={() => isMember && onReact(post.id, emoji)}
                 disabled={!isMember}
-                className={`flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all ${
-                  isActive ? `${colors.bg} ${colors.text} font-semibold scale-105` : "text-white/40 hover:bg-white/[0.04] hover:text-white/60"
+                className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
+                  isActive ? `${colors.bg} ${colors.text} font-semibold` : ""
                 } ${!isMember ? "opacity-40 cursor-default" : "press"}`}
+                style={!isActive ? { color: "var(--ink-strong)", opacity: 0.55 } : undefined}
               >
-                <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
+                <span className={`text-sm ${isActive ? "" : "grayscale opacity-70"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
                 {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
               </button>
             );
@@ -400,13 +494,26 @@ export default function GroupPostCard({
           {/* Right side actions */}
           <div className="flex items-center gap-0.5 ml-auto">
             {/* Share */}
-            <button onClick={handleShare} className="relative flex items-center gap-1 px-2 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all press">
+            <button
+              onClick={handleShare}
+              className="relative flex items-center gap-1 px-2 py-1.5 text-xs transition-all press"
+              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+              aria-label="Share"
+            >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13" />
               </svg>
               {shareToast && (
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald/20 text-emerald text-[10px] font-semibold px-2 py-1 rounded-lg whitespace-nowrap backdrop-blur-sm">
-                  Link copied!
+                <span
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 c-kicker whitespace-nowrap px-2 py-1"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    fontSize: 9,
+                  }}
+                >
+                  LINK COPIED
                 </span>
               )}
             </button>
@@ -414,7 +521,8 @@ export default function GroupPostCard({
             {/* Comment */}
             <button
               onClick={() => onCommentOpen(post.id)}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-xs text-white/40 hover:bg-white/[0.04] hover:text-white/60 rounded-full transition-all press"
+              className="flex items-center gap-1.5 px-2 py-1.5 text-xs transition-all press"
+              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
