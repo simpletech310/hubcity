@@ -4,13 +4,26 @@ import Image from "next/image";
 import { useCart } from "@/lib/cart";
 import type { MenuItem } from "@/types/database";
 
+/**
+ * Lightweight business descriptor every menu card carries so adds can
+ * be routed into the right per-business bag in the cart.
+ */
+export interface BusinessRef {
+  id: string;
+  name: string;
+  slug: string | null;
+  logoUrl: string | null;
+  category: string | null;
+}
+
 interface MenuItemCardProps {
   item: MenuItem;
+  business: BusinessRef;
   isRetail?: boolean;
   onTap?: (item: MenuItem) => void;
 }
 
-export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProps) {
+export default function MenuItemCard({ item, business, isRetail, onTap }: MenuItemCardProps) {
   const { dispatch } = useCart();
 
   function handleAdd(e: React.MouseEvent) {
@@ -18,10 +31,13 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
     dispatch({
       type: "ADD_ITEM",
       payload: {
-        menu_item_id: item.id,
-        name: item.name,
-        price: item.price,
-        quantity: 1,
+        business,
+        item: {
+          menu_item_id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: 1,
+        },
       },
     });
   }
@@ -167,41 +183,60 @@ export default function MenuItemCard({ item, isRetail, onTap }: MenuItemCardProp
         className={`flex items-start gap-3 ${onTap ? "cursor-pointer" : ""}`}
         onClick={() => onTap?.(item)}
       >
-        {/* Product image thumbnail */}
-        {item.image_url && (
-          <div
-            className="relative w-16 h-16 overflow-hidden shrink-0"
-            style={{
-              background: "var(--paper-soft)",
-              border: "2px solid var(--rule-strong-c)",
-            }}
-          >
+        {/* Product image thumbnail — always render a 64×64 tile so the
+            row has a consistent grid, even when no photo is uploaded. A
+            knife-and-fork icon stands in as the "no image" placeholder
+            (Culture treatment: ink on paper-soft, 2px ink frame). */}
+        <div
+          className="relative w-16 h-16 overflow-hidden shrink-0"
+          style={{
+            background: "var(--paper-soft)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          {item.image_url ? (
             <Image
               src={item.image_url}
               alt={item.name}
               fill
               className="object-cover"
             />
-            {hasVideo && (
-              <div
-                className="absolute inset-0 flex items-center justify-center"
-                style={{ background: "rgba(26,21,18,0.3)" }}
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--ink-strong)"
+                strokeOpacity="0.35"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                <div
-                  className="w-6 h-6 flex items-center justify-center"
-                  style={{
-                    background: "var(--gold-c)",
-                    border: "2px solid var(--rule-strong-c)",
-                  }}
-                >
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--ink-strong)">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
+                <path d="M3 2v7a2 2 0 002 2 2 2 0 002-2V2M5 2v20M16 2v13h4.5M16 15v7" />
+              </svg>
+            </div>
+          )}
+          {hasVideo && item.image_url && (
+            <div
+              className="absolute inset-0 flex items-center justify-center"
+              style={{ background: "rgba(26,21,18,0.3)" }}
+            >
+              <div
+                className="w-6 h-6 flex items-center justify-center"
+                style={{
+                  background: "var(--gold-c)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="var(--ink-strong)">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
         <div className="flex-1 min-w-0">
           <h3 className="c-card-t truncate" style={{ fontSize: "13px" }}>{item.name}</h3>

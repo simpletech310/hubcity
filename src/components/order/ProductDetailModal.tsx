@@ -4,15 +4,20 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart";
 import type { MenuItem, ProductVariant } from "@/types/database";
+import type { BusinessRef } from "./MenuItemCard";
 
 interface ProductDetailModalProps {
   item: MenuItem | null;
+  /** The business this detail modal is scoped to — every add carries
+   *  it so multi-business carts stay separated. */
+  business: BusinessRef;
   open: boolean;
   onClose: () => void;
 }
 
 export default function ProductDetailModal({
   item,
+  business,
   open,
   onClose,
 }: ProductDetailModalProps) {
@@ -79,12 +84,15 @@ export default function ProductDetailModal({
     dispatch({
       type: "ADD_ITEM",
       payload: {
-        menu_item_id: item.id,
-        variant_id: selectedVariant?.id,
-        variant_name: selectedVariant?.name,
-        name: item.name,
-        price: displayPrice,
-        quantity: 1,
+        business,
+        item: {
+          menu_item_id: item.id,
+          variant_id: selectedVariant?.id,
+          variant_name: selectedVariant?.name,
+          name: item.name,
+          price: displayPrice,
+          quantity: 1,
+        },
       },
     });
     onClose();
@@ -192,14 +200,50 @@ export default function ProductDetailModal({
             )}
           </div>
         ) : (
+          // Editorial "no photo yet" slab — paper-soft background with a
+          // printed plate illustration, gold kicker rule, and a small note
+          // so the hero area doesn't feel broken when the business
+          // hasn't uploaded product photography yet.
           <div
-            className="aspect-[4/3] flex items-center justify-center"
+            className="aspect-[4/3] flex flex-col items-center justify-center gap-3 relative"
             style={{
               background: "var(--paper-soft)",
               borderBottom: "2px solid var(--rule-strong-c)",
             }}
           >
-            <span className="c-meta" style={{ opacity: 0.4 }}>NO IMAGE</span>
+            <div
+              className="absolute top-3 left-3"
+              style={{ width: 40, height: 2, background: "var(--gold-c)" }}
+            />
+            <svg
+              width="56"
+              height="56"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--ink-strong)"
+              strokeOpacity="0.45"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="5" />
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2" />
+            </svg>
+            <div className="text-center">
+              <p
+                className="c-kicker"
+                style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.55, letterSpacing: "0.16em" }}
+              >
+                PHOTO COMING SOON
+              </p>
+              <p
+                className="c-serif-it mt-1"
+                style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.6 }}
+              >
+                Tap through for the full description below.
+              </p>
+            </div>
           </div>
         )}
 

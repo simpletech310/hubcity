@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCart } from "@/lib/cart";
-import MenuItemCard from "./MenuItemCard";
+import MenuItemCard, { type BusinessRef } from "./MenuItemCard";
 import CartSheet from "./CartSheet";
 import PaymentSheet from "./PaymentSheet";
 import ProductDetailModal from "./ProductDetailModal";
@@ -25,9 +25,14 @@ export default function OrderView({
   preselectedVehicleId = null,
 }: OrderViewProps) {
   const router = useRouter();
-  const { state, dispatch, subtotal, itemCount } = useCart();
+  const { state, dispatch, subtotal, itemCount, totalItemCount, bags } = useCart();
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+
+  // How many other businesses this shopper has open bags at — used to
+  // flag the multi-business cart header so people know their food and
+  // clothing orders are staying separated.
+  const otherBagCount = bags.filter((b) => b.businessId !== business.id).length;
 
   // Payment state
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -42,29 +47,47 @@ export default function OrderView({
 
   const isRetail = business.category === "retail";
 
-  // Set business in cart context on mount
+  // Lightweight descriptor shared with MenuItemCard, ProductDetailModal,
+  // and the cart so every add is stamped with the right business.
+  const businessRef = useMemo<BusinessRef>(
+    () => ({
+      id: business.id,
+      name: business.name,
+      slug: business.slug ?? null,
+      logoUrl: business.image_urls?.[0] ?? null,
+      category: business.category ?? null,
+    }),
+    [business.id, business.name, business.slug, business.image_urls, business.category]
+  );
+
+  // Mark this business as the active bag-in-progress. Items added from
+  // the menu below land here. Other bags (food at a different vendor,
+  // clothes, etc.) stay untouched.
   useEffect(() => {
-    dispatch({
-      type: "SET_BUSINESS",
-      payload: { id: business.id, name: business.name },
-    });
-  }, [business.id, business.name, dispatch]);
+    dispatch({ type: "SET_ACTIVE_BUSINESS", payload: businessRef });
+  }, [businessRef, dispatch]);
 
   // Pre-seed pickup location if navigated here from a food-truck pin
   useEffect(() => {
     if (!preselectedVehicleId) return;
     const v = vehicles.find((x) => x.id === preselectedVehicleId);
     if (!v) return;
-    dispatch({ type: "SET_ORDER_TYPE", payload: "pickup" });
+    dispatch({
+      type: "SET_ORDER_TYPE",
+      payload: { businessId: business.id, orderType: "pickup" },
+    });
     dispatch({
       type: "SET_PICKUP_LOCATION",
       payload: {
-        kind: "vehicle",
-        vehicleId: v.id,
-        name: `${v.name}${v.current_location_name ? ` — ${v.current_location_name}` : ""}`,
+        businessId: business.id,
+        location: {
+          kind: "vehicle",
+          vehicleId: v.id,
+          name: `${v.name}${v.current_location_name ? ` — ${v.current_location_name}` : ""}`,
+        },
       },
     });
-  }, [preselectedVehicleId, vehicles, dispatch]);
+  }, [preselectedVehicleId, vehicles, business.id, dispatch]);
 
   // Group menu items by category
   const grouped = useMemo(() => {
@@ -83,6 +106,11 @@ export default function OrderView({
   }
 
   async function handleCheckout(opts?: { couponId?: string; discount?: number }) {
+    // Only the ACTIVE business's bag checks out — other bags (food at
+    // another vendor, clothing, etc.) are left in the cart for later.
+    const activeBag = state.bags.find((b) => b.businessId === business.id);
+    if (!activeBag || activeBag.items.length === 0) return;
+
     setCheckoutLoading(true);
 
     try {
@@ -92,8 +120,8 @@ export default function OrderView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           business_id: business.id,
-          type: state.orderType,
-          items: state.items.map((item) => ({
+          type: activeBag.orderType,
+          items: activeBag.items.map((item) => ({
             menu_item_id: item.menu_item_id,
             variant_id: item.variant_id ?? null,
             name: item.name,
@@ -102,17 +130,17 @@ export default function OrderView({
             special_instructions: item.special_instructions ?? null,
           })),
           delivery_address:
-            state.orderType === "delivery" ? "" : null,
+            activeBag.orderType === "delivery" ? "" : null,
           pickup_location_name:
-            state.orderType === "pickup" && state.pickupLocation
-              ? state.pickupLocation.name
+            activeBag.orderType === "pickup" && activeBag.pickupLocation
+              ? activeBag.pickupLocation.name
               : null,
           pickup_vehicle_id:
-            state.orderType === "pickup" &&
-            state.pickupLocation?.kind === "vehicle"
-              ? state.pickupLocation.vehicleId ?? null
+            activeBag.orderType === "pickup" &&
+            activeBag.pickupLocation?.kind === "vehicle"
+              ? activeBag.pickupLocation.vehicleId ?? null
               : null,
-          tip: state.tip,
+          tip: activeBag.tip,
           coupon_id: opts?.couponId ?? null,
         }),
       });
@@ -140,7 +168,10 @@ export default function OrderView({
   }
 
   function handlePaymentSuccess(confirmedOrderId: string) {
-    dispatch({ type: "CLEAR" });
+    // Only clear the bag for the business we just checked out — other
+    // bags (food at a different vendor, clothing, etc.) remain so the
+    // user can finish those whenever they're ready.
+    dispatch({ type: "CLEAR_BAG", payload: { businessId: business.id } });
     setPaymentOpen(false);
     router.push(`/orders/${confirmedOrderId}`);
   }
@@ -156,7 +187,7 @@ export default function OrderView({
       style={{ background: "var(--paper)", color: "var(--ink-strong)" }}
     >
       {/* ── Sticky Cart Header ── */}
-      {itemCount > 0 && !paymentOpen && (
+      {(itemCount > 0 || totalItemCount > 0) && !paymentOpen && (
         <div className="sticky top-0 z-30">
           <div
             style={{
@@ -193,14 +224,36 @@ export default function OrderView({
                     border: "2px solid var(--rule-strong-c)",
                   }}
                 >
-                  {itemCount}
+                  {totalItemCount}
                 </span>
               </button>
 
-              {/* Business name + subtotal */}
+              {/* Business name + subtotal + multi-bag note */}
               <div className="flex-1 min-w-0">
-                <p className="c-kicker truncate" style={{ opacity: 0.7, fontSize: "10px" }}>{business.name}</p>
-                <p className="c-card-t" style={{ fontSize: "14px" }}>${(subtotal / 100).toFixed(2)}</p>
+                <p
+                  className="c-kicker truncate"
+                  style={{ opacity: 0.7, fontSize: "10px" }}
+                >
+                  {itemCount > 0 ? business.name : "TAP TO VIEW CART"}
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <p className="c-card-t" style={{ fontSize: "14px" }}>
+                    ${(subtotal / 100).toFixed(2)}
+                  </p>
+                  {otherBagCount > 0 && (
+                    <span
+                      className="c-kicker"
+                      style={{
+                        fontSize: 9,
+                        color: "var(--ink-strong)",
+                        opacity: 0.7,
+                        letterSpacing: "0.14em",
+                      }}
+                    >
+                      +{otherBagCount} OTHER BAG{otherBagCount === 1 ? "" : "S"}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* View Cart button */}
@@ -280,23 +333,23 @@ export default function OrderView({
                     <MenuItemCard
                       key={item.id}
                       item={item}
+                      business={businessRef}
                       isRetail
                       onTap={handleProductTap}
                     />
                   ))}
                 </div>
               ) : (
-                // List layout for restaurant menu
+                // List layout for restaurant menu — every item is tappable
+                // so users can read full description, variants, and dietary
+                // info even when the business hasn't uploaded a photo yet.
                 <div className="space-y-2">
                   {items.map((item) => (
                     <MenuItemCard
                       key={item.id}
                       item={item}
-                      onTap={
-                        item.image_url || item.gallery_urls?.length
-                          ? handleProductTap
-                          : undefined
-                      }
+                      business={businessRef}
+                      onTap={handleProductTap}
                     />
                   ))}
                 </div>
@@ -365,6 +418,7 @@ export default function OrderView({
       {/* Product Detail Modal */}
       <ProductDetailModal
         item={selectedItem}
+        business={businessRef}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
       />
