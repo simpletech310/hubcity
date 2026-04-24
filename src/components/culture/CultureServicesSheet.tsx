@@ -99,18 +99,35 @@ export default function CultureServicesSheet({
         }`}
         role="dialog"
         aria-label="Services"
+        style={{
+          // Cap the sheet so it never exceeds the viewport. The grid
+          // + footer scroll inside; the header stays pinned at the
+          // top of the sheet. 88dvh leaves a small peek of backdrop
+          // so the user can tap to dismiss.
+          maxHeight: "88dvh",
+          display: "flex",
+          flexDirection: "column",
+        }}
       >
         <div
           style={{
             background: "var(--paper)",
             borderTop: "3px solid var(--rule-strong-c)",
-            paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 96px)",
+            display: "flex",
+            flexDirection: "column",
+            flex: "1 1 auto",
+            minHeight: 0,
+            overflow: "hidden",
           }}
         >
-          {/* Header row */}
+          {/* Header row — sticky at top of sheet */}
           <div
             className="flex items-center justify-between px-[18px] py-3"
-            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+            style={{
+              borderBottom: "2px solid var(--rule-strong-c)",
+              flexShrink: 0,
+              background: "var(--paper)",
+            }}
           >
             <span className="c-kicker" style={{ opacity: 0.7 }}>
               § THE HUB
@@ -126,30 +143,42 @@ export default function CultureServicesSheet({
             </button>
           </div>
 
-          {/* Title block */}
-          <div className="px-[18px] pt-4 pb-3">
-            <h2
-              className="c-hero"
-              style={{ fontSize: 44, lineHeight: 0.88, letterSpacing: "-0.012em" }}
-            >
-              Everything.
-            </h2>
-            <p className="c-serif-it mt-1.5" style={{ fontSize: 13 }}>
-              Every corner of the city, one tap away.
-            </p>
-          </div>
-
-          {/* Printed grid — 3 cols, 2px ink rules between cells */}
+          {/* Scrollable body */}
           <div
-            className="mx-[18px]"
+            className="overscroll-contain"
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              border: "2px solid var(--rule-strong-c)",
-              background: "var(--rule-strong-c)",
-              gap: "2px",
+              overflowY: "auto",
+              WebkitOverflowScrolling: "touch",
+              flex: "1 1 auto",
+              minHeight: 0,
+              paddingBottom:
+                "calc(env(safe-area-inset-bottom, 0px) + 108px)",
             }}
           >
+            {/* Title block */}
+            <div className="px-[18px] pt-4 pb-3">
+              <h2
+                className="c-hero"
+                style={{ fontSize: 44, lineHeight: 0.88, letterSpacing: "-0.012em" }}
+              >
+                Everything.
+              </h2>
+              <p className="c-serif-it mt-1.5" style={{ fontSize: 13 }}>
+                Every corner of the city, one tap away.
+              </p>
+            </div>
+
+            {/* Printed grid — 3 cols, 2px ink rules between cells */}
+            <div
+              className="mx-[18px]"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                border: "2px solid var(--rule-strong-c)",
+                background: "var(--rule-strong-c)",
+                gap: "2px",
+              }}
+            >
             {TILES.map((tile) => {
               const active =
                 pathname === tile.href || pathname.startsWith(tile.href + "/");
@@ -207,6 +236,7 @@ export default function CultureServicesSheet({
             >
               YOU ↗
             </Link>
+          </div>
           </div>
         </div>
       </div>
