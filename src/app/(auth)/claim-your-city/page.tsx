@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Button from "@/components/ui/Button";
@@ -30,6 +30,14 @@ const BENEFITS = [
 ];
 
 export default function ClaimYourCityPage() {
+  return (
+    <Suspense fallback={<div className="min-h-dvh bg-midnight" />}>
+      <ClaimYourCityInner />
+    </Suspense>
+  );
+}
+
+function ClaimYourCityInner() {
   const [address, setAddress] = useState("");
   const [address2, setAddress2] = useState("");
   const [city, setCity] = useState("");
