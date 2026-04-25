@@ -94,39 +94,36 @@ export default function CultureTopNav() {
       <header
         className="sticky top-0 z-50 flex items-center justify-between px-[14px]"
         style={{
-          background: "var(--paper)",
-          borderBottom: "2px solid var(--rule-strong-c)",
+          background: "var(--rule-strong-c)",
+          borderBottom: "3px solid var(--gold-c)",
           height: 52,
         }}
         aria-label="Top"
       >
-        {/* Left: HC mark + city kicker */}
+        {/* Left: Culture wordmark + city kicker */}
         <Link href="/" aria-label="Hub City home" className="flex items-center gap-2.5 press">
           <span
             style={{
-              width: 28,
-              height: 28,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "var(--gold-c)",
-              border: "2px solid var(--rule-strong-c)",
               fontFamily: "var(--font-anton), Anton, Impact, sans-serif",
-              fontSize: 13,
+              fontSize: 18,
               lineHeight: 1,
               letterSpacing: "-0.02em",
-              color: "var(--ink-strong)",
+              color: "var(--gold-c)",
               textTransform: "uppercase",
             }}
           >
-            HC
+            Culture
           </span>
           {!onHome && (
             <span
-              className="c-kicker"
               style={{
-                fontSize: 10,
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 800,
+                fontSize: 9,
                 letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--paper)",
+                opacity: 0.55,
                 maxWidth: 190,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -219,9 +216,9 @@ const iconBtnStyle: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   justifyContent: "center",
-  border: "2px solid var(--rule-strong-c)",
-  background: "var(--paper)",
-  color: "var(--ink-strong)",
+  border: "2px solid var(--gold-c)",
+  background: "transparent",
+  color: "var(--paper)",
 };
 
 function UnreadDot() {

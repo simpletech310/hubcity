@@ -29,7 +29,7 @@ const TILES: ServiceTile[] = [
   { href: "/creators", label: "Discover", icon: "camera" },
   { href: "/podcasts", label: "Podcasts", icon: "podcast" },
   { href: "/resources", label: "Support", icon: "book" },
-  { href: "/tickets", label: "Tickets", icon: "ticket" },
+  { href: "/profile/tickets", label: "Tickets", icon: "ticket" },
   { href: "/orders", label: "Orders", icon: "receipt" },
   { href: "/bookings", label: "Bookings", icon: "handshake" },
 ];
