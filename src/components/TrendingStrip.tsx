@@ -73,7 +73,7 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
         {reels.map((reel) => (
           <Link
             key={`reel-${reel.id}`}
-            href={`/reels/${reel.id}`}
+            href={`/moments?r=${reel.id}`}
             className="shrink-0 press"
             style={{ width: 104 }}
           >

@@ -11,10 +11,16 @@ export const metadata = {
     "Record a moment, share a moment. Short videos from the Hub City and beyond.",
 };
 
-export default async function MomentsPage() {
+export default async function MomentsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ r?: string }>;
+}) {
   const supabase = await createClient();
   const nowISO = new Date().toISOString();
   const activeCity = await getActiveCity();
+  const params = (await searchParams) ?? {};
+  const startReelId = params.r;
 
   const cityUpper = (activeCity?.name ?? "Everywhere").toUpperCase();
 
@@ -106,10 +112,14 @@ export default async function MomentsPage() {
     );
   }
 
+  const initialIndex = startReelId
+    ? Math.max(0, reels.findIndex((r) => r.id === startReelId))
+    : 0;
+
   return (
     <>
       {Masthead}
-      <ReelsViewer reels={reels} />
+      <ReelsViewer reels={reels} initialIndex={initialIndex} />
     </>
   );
 }

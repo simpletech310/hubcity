@@ -3,7 +3,6 @@ import LiveNowBanner from "@/components/live/LiveNowBanner";
 import TrendingStrip from "@/components/TrendingStrip";
 import type { TrendingReel, TrendingEvent } from "@/components/TrendingStrip";
 import {
-  CultureMasthead,
   CultureMarquee,
   CultureSectionHead,
   CultureChipRow,
@@ -309,16 +308,6 @@ export default async function HomePage({
   const cityName = labelCity?.name ?? "Everywhere";
   const cityUpper = cityName.toUpperCase();
 
-  // Wordmark: "HUB CITY." only when the label city is Compton (the flagship).
-  // For every other city, the masthead wears the city's own name so the
-  // paper feels like a local edition. When the listener is browsing all
-  // cities (default), the wordmark says CULTURE.
-  const wordmark = (() => {
-    if (!labelCity) return "CULTURE.";
-    const slug = (labelCity.slug ?? "").toLowerCase();
-    if (slug === "compton") return "HUB CITY.";
-    return `${cityUpper}.`;
-  })();
   const today = new Date();
   const dateLabel = today.toLocaleDateString("en-US", {
     month: "short",
@@ -405,74 +394,6 @@ export default async function HomePage({
       className="culture-surface min-h-dvh mx-auto max-w-[430px] relative"
       style={{ paddingBottom: 120 }}
     >
-      {/* Masthead */}
-      <CultureMasthead
-        vol={volLabel}
-        iss={issLabel}
-        date={dateLabel}
-        wordmark={wordmark}
-        actions={
-          <>
-            <Link
-              href="/search"
-              className="w-9 h-9 flex items-center justify-center"
-              style={{
-                border: "2px solid var(--rule-strong-c)",
-                color: "var(--ink-strong)",
-              }}
-              aria-label="Search"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m20 20-3.5-3.5" />
-              </svg>
-            </Link>
-            <Link
-              href="/notifications"
-              className="w-9 h-9 relative flex items-center justify-center"
-              style={{
-                background: "var(--rule-strong-c)",
-                color: "var(--paper)",
-              }}
-              aria-label="Notifications"
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M6 17h12l-1.5-2V11a4.5 4.5 0 0 0-9 0v4L6 17Z" />
-                <path d="M10 20a2 2 0 0 0 4 0" />
-              </svg>
-              <span
-                className="absolute"
-                style={{
-                  top: 5,
-                  right: 5,
-                  width: 8,
-                  height: 8,
-                  background: "var(--gold-c)",
-                }}
-              />
-            </Link>
-          </>
-        }
-      />
-
       {/* Filter strip — city scope. Default = ALL CITIES. */}
       <div
         className="flex items-center gap-2 px-[18px] py-2"
