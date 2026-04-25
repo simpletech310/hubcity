@@ -5,6 +5,8 @@ import Image from "next/image";
 import type { Album, Track } from "@/types/database";
 import TrackRow from "./TrackRow";
 import { useAudioPlay, type PlayableItem } from "./AudioPlayContext";
+import AudioPaywall from "./AudioPaywall";
+import type { AudioAccess } from "@/lib/audio-access";
 
 const RELEASE_LABEL: Record<string, string> = {
   single: "SINGLE",
@@ -21,11 +23,16 @@ const RELEASE_LABEL: Record<string, string> = {
 export default function AlbumDetail({
   album,
   tracks,
+  access,
+  channelName,
 }: {
   album: Album;
   tracks: Track[];
+  access?: AudioAccess;
+  channelName?: string | null;
 }) {
   const { play, current, isPlaying, toggle } = useAudioPlay();
+  const locked = access ? !access.allowed : false;
 
   const queue: PlayableItem[] = tracks
     .filter((t) => !!t.mux_playback_id)
@@ -37,6 +44,7 @@ export default function AlbumDetail({
       coverUrl: album.cover_art_url,
       muxPlaybackId: t.mux_playback_id as string,
       durationSeconds: t.duration_seconds,
+      channelId: album.channel_id ?? null,
       context: { kind: "album", slug: album.slug, title: album.title },
     }));
 
@@ -146,40 +154,51 @@ export default function AlbumDetail({
           {album.is_demo && <> · DEMO</>}
         </div>
 
-        {/* Play all */}
-        <button
-          type="button"
-          onClick={onPlayAll}
-          disabled={queue.length === 0}
-          className="press mt-5 inline-flex items-center gap-2 px-5 py-2"
-          style={{
-            background: "var(--gold-c)",
-            border: "2px solid var(--ink-strong)",
-            color: "var(--ink-strong)",
-            fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontWeight: 800,
-            fontSize: 12,
-            letterSpacing: "0.18em",
-            opacity: queue.length === 0 ? 0.4 : 1,
-          }}
-        >
-          {showPause ? (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" />
-                <rect x="14" y="4" width="4" height="16" />
-              </svg>
-              PAUSE
-            </>
-          ) : (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="6,3 20,12 6,21" />
-              </svg>
-              PLAY ALL
-            </>
-          )}
-        </button>
+        {/* Play all OR paywall */}
+        {locked && access && !access.allowed ? (
+          <AudioPaywall
+            channelId={access.channel_id}
+            channelName={channelName}
+            priceCents={access.subscription_price_cents}
+            currency={access.currency}
+            reason={access.reason}
+            contentLabel={album.title}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onPlayAll}
+            disabled={queue.length === 0}
+            className="press mt-5 inline-flex items-center gap-2 px-5 py-2"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+              color: "var(--ink-strong)",
+              fontFamily: "var(--font-archivo), Archivo, sans-serif",
+              fontWeight: 800,
+              fontSize: 12,
+              letterSpacing: "0.18em",
+              opacity: queue.length === 0 ? 0.4 : 1,
+            }}
+          >
+            {showPause ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+                PAUSE
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+                PLAY ALL
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {/* Description */}
@@ -212,7 +231,7 @@ export default function AlbumDetail({
         }}
       >
         <div
-          className="px-4 py-2 c-kicker"
+          className="px-4 py-2 c-kicker flex items-center justify-between"
           style={{
             fontSize: 10,
             letterSpacing: "0.2em",
@@ -220,20 +239,25 @@ export default function AlbumDetail({
             background: "var(--paper-soft, #DCD3BF)",
           }}
         >
-          TRACKLIST
+          <span>TRACKLIST</span>
+          {locked && (
+            <span style={{ opacity: 0.7 }}>🔒 SUBSCRIBERS</span>
+          )}
         </div>
-        {tracks.map((t) => (
-          <TrackRow
-            key={t.id}
-            track={t}
-            album={{
-              slug: album.slug,
-              title: album.title,
-              cover_art_url: album.cover_art_url,
-            }}
-            queue={queue}
-          />
-        ))}
+        <div style={{ opacity: locked ? 0.5 : 1, pointerEvents: locked ? "none" : "auto" }}>
+          {tracks.map((t) => (
+            <TrackRow
+              key={t.id}
+              track={t}
+              album={{
+                slug: album.slug,
+                title: album.title,
+                cover_art_url: album.cover_art_url,
+              }}
+              queue={queue}
+            />
+          ))}
+        </div>
       </div>
 
       {/* Per-track credits */}

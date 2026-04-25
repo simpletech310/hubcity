@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import AlbumDetail from "@/components/audio/AlbumDetail";
+import { resolveAlbumAccess } from "@/lib/audio-access";
 import type { Album, Track } from "@/types/database";
 
 export const dynamic = "force-dynamic";
@@ -22,24 +23,57 @@ export default async function AlbumPage({
 
   if (error || !album) notFound();
 
-  const [{ data: tracks }, creatorRow] = await Promise.all([
+  const albumRow = album as Album;
+
+  const [{ data: tracks }, creatorRow, channelRow, userR] = await Promise.all([
     supabase
       .from("tracks")
       .select("*")
-      .eq("album_id", (album as Album).id)
+      .eq("album_id", albumRow.id)
       .eq("is_published", true)
       .order("track_number"),
-    (album as Album).creator_id
+    albumRow.creator_id
       ? supabase
           .from("profiles")
           .select("display_name, avatar_url")
-          .eq("id", (album as Album).creator_id as string)
+          .eq("id", albumRow.creator_id as string)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    albumRow.channel_id
+      ? supabase
+          .from("channels")
+          .select(
+            "id, name, owner_id, subscription_price_cents, subscription_currency"
+          )
+          .eq("id", albumRow.channel_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    supabase.auth.getUser(),
   ]);
 
+  const channel = (channelRow.data ?? null) as
+    | {
+        id: string;
+        name: string | null;
+        owner_id: string | null;
+        subscription_price_cents: number | null;
+        subscription_currency: string | null;
+      }
+    | null;
+
+  const access = await resolveAlbumAccess(
+    supabase,
+    {
+      id: albumRow.id,
+      channel_id: albumRow.channel_id ?? null,
+      access_type: albumRow.access_type ?? "free",
+    },
+    channel,
+    userR.data.user?.id ?? null
+  );
+
   const albumWithCreator: Album = {
-    ...(album as Album),
+    ...albumRow,
     creator: creatorRow.data
       ? {
           display_name: creatorRow.data.display_name as string,
@@ -49,6 +83,11 @@ export default async function AlbumPage({
   };
 
   return (
-    <AlbumDetail album={albumWithCreator} tracks={(tracks ?? []) as Track[]} />
+    <AlbumDetail
+      album={albumWithCreator}
+      tracks={(tracks ?? []) as Track[]}
+      access={access}
+      channelName={channel?.name ?? null}
+    />
   );
 }

@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Podcast } from "@/types/database";
 import { useAudioPlay, type PlayableItem } from "./AudioPlayContext";
+import AudioPaywall from "./AudioPaywall";
+import type { AudioAccess } from "@/lib/audio-access";
 
 function formatDuration(seconds: number | null | undefined) {
   if (!seconds || !isFinite(seconds)) return "—";
@@ -18,6 +20,7 @@ interface ShowMeta {
   description: string | null;
   cover_art_url: string | null;
   genre_slug: string | null;
+  channel_id?: string | null;
   episode_count: number;
 }
 
@@ -29,11 +32,16 @@ interface ShowMeta {
 export default function PodcastShowDetail({
   show,
   episodes,
+  access,
+  channelName,
 }: {
   show: ShowMeta;
   episodes: Podcast[];
+  access?: AudioAccess;
+  channelName?: string | null;
 }) {
   const { play, current, isPlaying, toggle } = useAudioPlay();
+  const locked = access ? !access.allowed : false;
 
   const queue: PlayableItem[] = episodes
     .filter((e) => !!e.mux_playback_id)
@@ -45,6 +53,7 @@ export default function PodcastShowDetail({
       coverUrl: e.thumbnail_url ?? show.cover_art_url ?? null,
       muxPlaybackId: e.mux_playback_id as string,
       durationSeconds: e.duration ?? null,
+      channelId: show.channel_id ?? null,
       context: { kind: "podcast", slug: show.slug, title: show.title },
     }));
 
@@ -141,39 +150,50 @@ export default function PodcastShowDetail({
           {show.genre_slug && <> · {show.genre_slug.replace(/-/g, " ").toUpperCase()}</>}
         </div>
 
-        <button
-          type="button"
-          onClick={onPlayLatest}
-          disabled={queue.length === 0}
-          className="press mt-5 inline-flex items-center gap-2 px-5 py-2"
-          style={{
-            background: "var(--gold-c)",
-            border: "2px solid var(--ink-strong)",
-            color: "var(--ink-strong)",
-            fontFamily: "var(--font-archivo), Archivo, sans-serif",
-            fontWeight: 800,
-            fontSize: 12,
-            letterSpacing: "0.18em",
-            opacity: queue.length === 0 ? 0.4 : 1,
-          }}
-        >
-          {showPause ? (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" />
-                <rect x="14" y="4" width="4" height="16" />
-              </svg>
-              PAUSE
-            </>
-          ) : (
-            <>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="6,3 20,12 6,21" />
-              </svg>
-              PLAY LATEST
-            </>
-          )}
-        </button>
+        {locked && access && !access.allowed ? (
+          <AudioPaywall
+            channelId={access.channel_id}
+            channelName={channelName}
+            priceCents={access.subscription_price_cents}
+            currency={access.currency}
+            reason={access.reason}
+            contentLabel={show.title}
+          />
+        ) : (
+          <button
+            type="button"
+            onClick={onPlayLatest}
+            disabled={queue.length === 0}
+            className="press mt-5 inline-flex items-center gap-2 px-5 py-2"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+              color: "var(--ink-strong)",
+              fontFamily: "var(--font-archivo), Archivo, sans-serif",
+              fontWeight: 800,
+              fontSize: 12,
+              letterSpacing: "0.18em",
+              opacity: queue.length === 0 ? 0.4 : 1,
+            }}
+          >
+            {showPause ? (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" />
+                  <rect x="14" y="4" width="4" height="16" />
+                </svg>
+                PAUSE
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+                PLAY LATEST
+              </>
+            )}
+          </button>
+        )}
       </div>
 
       {show.description && (
@@ -201,7 +221,7 @@ export default function PodcastShowDetail({
         }}
       >
         <div
-          className="px-4 py-2 c-kicker"
+          className="px-4 py-2 c-kicker flex items-center justify-between"
           style={{
             fontSize: 10,
             letterSpacing: "0.2em",
@@ -209,16 +229,19 @@ export default function PodcastShowDetail({
             background: "var(--paper-soft, #DCD3BF)",
           }}
         >
-          EPISODES
+          <span>EPISODES</span>
+          {locked && <span style={{ opacity: 0.7 }}>🔒 SUBSCRIBERS</span>}
         </div>
-        {episodes.map((ep) => (
-          <EpisodeRow
-            key={ep.id}
-            episode={ep}
-            show={show}
-            queue={queue}
-          />
-        ))}
+        <div style={{ opacity: locked ? 0.5 : 1, pointerEvents: locked ? "none" : "auto" }}>
+          {episodes.map((ep) => (
+            <EpisodeRow
+              key={ep.id}
+              episode={ep}
+              show={show}
+              queue={queue}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

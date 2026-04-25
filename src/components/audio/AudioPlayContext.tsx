@@ -30,8 +30,29 @@ export interface PlayableItem {
   muxPlaybackId: string;
   /** Total length in seconds (for scrubber UI). */
   durationSeconds?: number | null;
+  /** Channel that owns this content — used for subscriber ad gate. */
+  channelId?: string | null;
   /** Optional album/show context for back-navigation. */
   context?: { kind: "album" | "podcast"; slug: string; title: string } | null;
+}
+
+/**
+ * Audio ad payload as returned by /api/frequency/ad-decision.
+ * Wire-shape mirrors the route response; component code reads only
+ * `audio_url`, `duration`, `title`, `body`, `click_url`, `skippable_after`.
+ */
+export interface AudioAd {
+  audio_url: string;
+  duration: number;
+  title: string;
+  body: string;
+  click_url: string | null;
+  impression_url: string | null;
+  creative_id: number | string | null;
+  campaign_id: number | string | null;
+  advertiser_id: number | string | null;
+  ad_id: number | string | null;
+  skippable_after: number;
 }
 
 interface AudioPlayState {
@@ -43,6 +64,10 @@ interface AudioPlayState {
   position: number;
   duration: number;
   expanded: boolean;
+  /** Are we currently rolling an ad before / between content? */
+  mode: "content" | "ad";
+  /** Ad metadata for the overlay UI; null when mode === 'content'. */
+  ad: AudioAd | null;
 }
 
 interface AudioPlayApi extends AudioPlayState {
@@ -56,6 +81,10 @@ interface AudioPlayApi extends AudioPlayState {
   /** Tear down the current item completely so the mini player unmounts. */
   stop: () => void;
   setExpanded: (open: boolean) => void;
+  /** Skip the running ad after `skippable_after` seconds (otherwise no-op). */
+  skipAd: () => void;
+  /** Open the ad's click-through URL in a new tab and record the click. */
+  clickAd: () => void;
   /** Internal: bind a real <audio> element so the API can drive it. */
   _registerAudio: (el: HTMLAudioElement | null) => void;
   /** Internal: report time updates from the bound element. */
@@ -77,9 +106,15 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     position: 0,
     duration: 0,
     expanded: false,
+    mode: "content",
+    ad: null,
   });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Track which content item the ad is preroll-ing for so _onEnded can swap.
+  const pendingContentRef = useRef<PlayableItem | null>(null);
+  // Avoid stacking ad fetches in flight.
+  const adInFlightRef = useRef<boolean>(false);
 
   const _registerAudio = useCallback((el: HTMLAudioElement | null) => {
     audioRef.current = el;
@@ -93,39 +128,138 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, isPlaying: playing }));
   }, []);
 
-  const playInternal = useCallback((item: PlayableItem, queue: PlayableItem[], index: number) => {
-    // Drive the <audio> element imperatively *inside* the same call
-    // stack as the click handler. Mobile Safari rejects play() if it
-    // happens after the user-gesture window closes (microtask, await,
-    // setTimeout). Setting src + calling play() synchronously keeps the
-    // gesture eligibility intact.
+  /**
+   * Drive the <audio> element straight to the content track.
+   * MUST stay synchronous with the user gesture — no awaits before play().
+   * `muted` is used as a "warm" flag during pre-roll fetch — we play silently
+   * to consume the gesture, then unmute once the ad / content is committed.
+   */
+  const driveContent = useCallback((item: PlayableItem, opts?: { muted?: boolean }) => {
     const a = audioRef.current;
-    if (a) {
-      const src = muxAudioStreamUrl(item.muxPlaybackId);
-      if (a.src !== src) {
-        a.src = src;
-        a.load();
-      }
-      try {
-        a.currentTime = 0;
-      } catch {
-        /* ignore */
-      }
-      const p = a.play();
-      if (p && typeof p.catch === "function") p.catch(() => {});
+    if (!a) return;
+    const src = muxAudioStreamUrl(item.muxPlaybackId);
+    if (a.src !== src) {
+      a.src = src;
+      a.load();
     }
-    setState((s) => ({
-      ...s,
-      current: item,
-      queue,
-      index,
-      position: 0,
-      duration: item.durationSeconds ?? s.duration,
-      // Auto-open the full-screen player on the first tap. The user
-      // can collapse it (mini bar persists) or fully Stop ✕.
-      expanded: true,
-    }));
+    try {
+      a.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+    a.muted = !!opts?.muted;
+    const p = a.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
   }, []);
+
+  /**
+   * Drive the <audio> element to an ad. Used after a user-gesture-initiated
+   * play() chain, so this still needs to be reachable from the original
+   * gesture for mobile autoplay rules.
+   */
+  const driveAd = useCallback((ad: AudioAd) => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (a.src !== ad.audio_url) {
+      a.src = ad.audio_url;
+      a.load();
+    }
+    try {
+      a.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+    a.muted = false;
+    const p = a.play();
+    if (p && typeof p.catch === "function") p.catch(() => {});
+
+    // Fire impression best-effort.
+    if (ad.impression_url) {
+      fetch(ad.impression_url).catch(() => {});
+    }
+  }, []);
+
+  /**
+   * Fetch a pre-roll ad for the given item and either swap to the ad
+   * (mode='ad', stash content as pending) or fall through to content.
+   * Runs after the user-gesture-driven content `play()` already started —
+   * we cancel the content via the swap, which is fine on desktop. For
+   * mobile this still works because the audio element is already "unlocked"
+   * by the prior synchronous play().
+   */
+  const tryPreRoll = useCallback(
+    async (item: PlayableItem): Promise<boolean> => {
+      if (adInFlightRef.current) return false;
+      adInFlightRef.current = true;
+      try {
+        const params = new URLSearchParams({
+          zone: "podcast_preroll",
+          item_id: item.id,
+        });
+        if (item.channelId) params.set("channel_id", item.channelId);
+        const r = await fetch(`/api/frequency/ad-decision?${params.toString()}`, {
+          cache: "no-store",
+        });
+        if (!r.ok) return false;
+        const data = (await r.json()) as { ad: AudioAd | null };
+        const ad = data.ad;
+        if (!ad || !ad.audio_url) return false;
+
+        // Listener may have already navigated away or hit Stop while we
+        // were fetching — bail in that case.
+        if (!audioRef.current) return false;
+
+        pendingContentRef.current = item;
+        setState((s) => ({
+          ...s,
+          mode: "ad",
+          ad,
+          position: 0,
+          duration: ad.duration || s.duration,
+        }));
+        driveAd(ad);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        adInFlightRef.current = false;
+      }
+    },
+    [driveAd]
+  );
+
+  const playInternal = useCallback(
+    (item: PlayableItem, queue: PlayableItem[], index: number) => {
+      // 1. Start content MUTED so the gesture is consumed and the audio
+      //    element is unlocked for any later imperative src swap (ad).
+      //    User hears nothing during the ~50–300ms ad-decision fetch.
+      driveContent(item, { muted: true });
+      pendingContentRef.current = null;
+      setState((s) => ({
+        ...s,
+        current: item,
+        queue,
+        index,
+        position: 0,
+        duration: item.durationSeconds ?? s.duration,
+        mode: "content",
+        ad: null,
+        // Auto-open the full-screen player on the first tap. The user
+        // can collapse it (mini bar persists) or fully Stop ✕.
+        expanded: true,
+      }));
+      // 2. Race the ad-decision; on a fill swap to ad, otherwise unmute
+      //    content.
+      void tryPreRoll(item).then((adServed) => {
+        if (!adServed) {
+          // No ad fill — unmute the content that's already playing.
+          const a = audioRef.current;
+          if (a) a.muted = false;
+        }
+      });
+    },
+    [driveContent, tryPreRoll]
+  );
 
   const play = useCallback(
     (item: PlayableItem, queue?: PlayableItem[]) => {
@@ -156,38 +290,35 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const advance = useCallback((direction: 1 | -1) => {
-    // Read current state imperatively to avoid stale closures inside
-    // setState — we need the new item *before* we touch the audio
-    // element so the play() call stays inside the user gesture.
-    setState((s) => {
-      const nextIdx = s.index + direction;
-      if (nextIdx < 0 || nextIdx >= s.queue.length) return s;
-      const item = s.queue[nextIdx];
-      const a = audioRef.current;
-      if (a) {
-        const src = muxAudioStreamUrl(item.muxPlaybackId);
-        if (a.src !== src) {
-          a.src = src;
-          a.load();
-        }
-        try {
-          a.currentTime = 0;
-        } catch {
-          /* ignore */
-        }
-        const p = a.play();
-        if (p && typeof p.catch === "function") p.catch(() => {});
+  const advance = useCallback(
+    (direction: 1 | -1) => {
+      // Read current state imperatively to avoid stale closures inside
+      // setState — we need the new item *before* we touch the audio
+      // element so the play() call stays inside the user gesture.
+      let nextItem: PlayableItem | null = null;
+      let nextIdx = -1;
+      setState((s) => {
+        const idx = s.index + direction;
+        if (idx < 0 || idx >= s.queue.length) return s;
+        nextIdx = idx;
+        nextItem = s.queue[idx];
+        return {
+          ...s,
+          current: s.queue[idx],
+          index: idx,
+          position: 0,
+          duration: s.queue[idx].durationSeconds ?? s.duration,
+          mode: "content",
+          ad: null,
+        };
+      });
+      if (nextItem && nextIdx >= 0) {
+        driveContent(nextItem);
+        // No pre-roll on manual prev/next — feels punitive.
       }
-      return {
-        ...s,
-        current: item,
-        index: nextIdx,
-        position: 0,
-        duration: item.durationSeconds ?? s.duration,
-      };
-    });
-  }, []);
+    },
+    [driveContent]
+  );
 
   const next = useCallback(() => advance(1), [advance]);
   const previous = useCallback(() => advance(-1), [advance]);
@@ -203,8 +334,28 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const _onEnded = useCallback(() => {
+    // When an ad finishes, swap into the queued content.
+    let inAd = false;
+    setState((s) => {
+      if (s.mode === "ad") inAd = true;
+      return s;
+    });
+    if (inAd) {
+      const pending = pendingContentRef.current;
+      pendingContentRef.current = null;
+      setState((s) => ({
+        ...s,
+        mode: "content",
+        ad: null,
+        position: 0,
+        duration: pending?.durationSeconds ?? s.duration,
+      }));
+      if (pending) driveContent(pending);
+      return;
+    }
+    // Otherwise, advance to next track.
     next();
-  }, [next]);
+  }, [driveContent, next]);
 
   const stop = useCallback(() => {
     const a = audioRef.current;
@@ -217,6 +368,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
         /* ignore */
       }
     }
+    pendingContentRef.current = null;
     setState({
       current: null,
       queue: [],
@@ -225,11 +377,39 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       position: 0,
       duration: 0,
       expanded: false,
+      mode: "content",
+      ad: null,
     });
   }, []);
 
   const setExpanded = useCallback((open: boolean) => {
     setState((s) => ({ ...s, expanded: open }));
+  }, []);
+
+  const skipAd = useCallback(() => {
+    // Force-end the ad: if we have pending content, swap to it.
+    const pending = pendingContentRef.current;
+    pendingContentRef.current = null;
+    setState((s) => {
+      if (s.mode !== "ad") return s;
+      return {
+        ...s,
+        mode: "content",
+        ad: null,
+        position: 0,
+        duration: pending?.durationSeconds ?? s.duration,
+      };
+    });
+    if (pending) driveContent(pending);
+  }, [driveContent]);
+
+  const clickAd = useCallback(() => {
+    setState((s) => {
+      if (s.ad?.click_url && typeof window !== "undefined") {
+        window.open(s.ad.click_url, "_blank", "noopener,noreferrer");
+      }
+      return s;
+    });
   }, []);
 
   const value = useMemo<AudioPlayApi>(
@@ -244,12 +424,31 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       seek,
       stop,
       setExpanded,
+      skipAd,
+      clickAd,
       _registerAudio,
       _onTimeUpdate,
       _onPlayState,
       _onEnded,
     }),
-    [state, play, pause, resume, toggle, next, previous, seek, stop, setExpanded, _registerAudio, _onTimeUpdate, _onPlayState, _onEnded]
+    [
+      state,
+      play,
+      pause,
+      resume,
+      toggle,
+      next,
+      previous,
+      seek,
+      stop,
+      setExpanded,
+      skipAd,
+      clickAd,
+      _registerAudio,
+      _onTimeUpdate,
+      _onPlayState,
+      _onEnded,
+    ]
   );
 
   return <AudioPlayCtx.Provider value={value}>{children}</AudioPlayCtx.Provider>;

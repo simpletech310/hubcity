@@ -27,6 +27,10 @@ export default function AudioPlayer() {
     stop,
     setExpanded,
     expanded,
+    mode,
+    ad,
+    skipAd,
+    clickAd,
     _registerAudio,
     _onTimeUpdate,
     _onPlayState,
@@ -61,8 +65,15 @@ export default function AudioPlayer() {
 
   if (!current) return audioEl;
 
-  const totalSec = duration || current.durationSeconds || 0;
+  const isAd = mode === "ad" && ad != null;
+  const totalSec = isAd
+    ? ad.duration || duration || 0
+    : duration || current.durationSeconds || 0;
   const pct = totalSec > 0 ? Math.min(100, (position / totalSec) * 100) : 0;
+  const canSkip = isAd && position >= (ad?.skippable_after ?? 5);
+  const skipCountdown = isAd
+    ? Math.max(0, Math.ceil((ad?.skippable_after ?? 5) - position))
+    : 0;
 
   return (
     <>
@@ -78,6 +89,65 @@ export default function AudioPlayer() {
           borderBottom: "2px solid var(--rule-strong-c)",
         }}
       >
+        {/* AD strip — replaces the cover/title row while an ad runs */}
+        {isAd && ad && (
+          <div
+            className="flex items-center justify-between px-3 py-1"
+            style={{
+              background: "var(--gold-c)",
+              borderBottom: "2px solid var(--ink-strong)",
+            }}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontSize: 9,
+                  letterSpacing: "0.22em",
+                  background: "var(--ink-strong)",
+                  color: "var(--paper)",
+                  padding: "2px 6px",
+                  fontWeight: 800,
+                }}
+              >
+                AD
+              </span>
+              <button
+                onClick={clickAd}
+                className="press truncate text-left"
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  letterSpacing: "0.06em",
+                  color: "var(--ink-strong)",
+                }}
+                aria-label="Open advertiser"
+              >
+                {ad.title}
+              </button>
+            </div>
+            <button
+              onClick={canSkip ? skipAd : undefined}
+              disabled={!canSkip}
+              className="press shrink-0 ml-2"
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 800,
+                fontSize: 10,
+                letterSpacing: "0.16em",
+                color: "var(--ink-strong)",
+                opacity: canSkip ? 1 : 0.55,
+                padding: "2px 6px",
+                border: "1.5px solid var(--ink-strong)",
+              }}
+              aria-label={canSkip ? "Skip ad" : `Skip in ${skipCountdown}s`}
+            >
+              {canSkip ? "SKIP ▸" : `SKIP ${skipCountdown}s`}
+            </button>
+          </div>
+        )}
+
         {/* Progress strip */}
         <div
           aria-hidden
@@ -131,16 +201,16 @@ export default function AudioPlayer() {
               className="c-card-t truncate"
               style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.15 }}
             >
-              {current.title}
+              {isAd ? "Up next" : current.title}
             </div>
-            {current.subtitle && (
-              <div
-                className="c-meta truncate"
-                style={{ fontSize: 11, opacity: 0.75, color: "var(--ink-strong)" }}
-              >
-                {current.subtitle}
-              </div>
-            )}
+            <div
+              className="c-meta truncate"
+              style={{ fontSize: 11, opacity: 0.75, color: "var(--ink-strong)" }}
+            >
+              {isAd
+                ? current.title
+                : current.subtitle ?? ""}
+            </div>
           </button>
 
           {/* Controls */}
@@ -149,7 +219,8 @@ export default function AudioPlayer() {
               onClick={previous}
               className="p-2 press"
               aria-label="Previous"
-              style={{ color: "var(--ink-strong)" }}
+              disabled={isAd}
+              style={{ color: "var(--ink-strong)", opacity: isAd ? 0.4 : 1 }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 5h2v14H6zM20 5l-12 7 12 7z" />
@@ -180,7 +251,8 @@ export default function AudioPlayer() {
               onClick={next}
               className="p-2 press"
               aria-label="Next"
-              style={{ color: "var(--ink-strong)" }}
+              disabled={isAd}
+              style={{ color: "var(--ink-strong)", opacity: isAd ? 0.4 : 1 }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M16 5h2v14h-2zM4 5l12 7-12 7z" />
@@ -222,9 +294,28 @@ function ExpandedPlayer({
   onSeek: (s: number) => void;
   onStop: () => void;
 }) {
-  const { current, isPlaying, position, duration, toggle, next, previous } = useAudioPlay();
+  const {
+    current,
+    isPlaying,
+    position,
+    duration,
+    toggle,
+    next,
+    previous,
+    mode,
+    ad,
+    skipAd,
+    clickAd,
+  } = useAudioPlay();
   if (!current) return null;
-  const totalSec = duration || current.durationSeconds || 0;
+  const isAd = mode === "ad" && ad != null;
+  const totalSec = isAd
+    ? ad.duration || duration || 0
+    : duration || current.durationSeconds || 0;
+  const canSkip = isAd && position >= (ad?.skippable_after ?? 5);
+  const skipCountdown = isAd
+    ? Math.max(0, Math.ceil((ad?.skippable_after ?? 5) - position))
+    : 0;
 
   function formatTime(s: number) {
     if (!isFinite(s) || s < 0) return "0:00";
@@ -253,7 +344,7 @@ function ExpandedPlayer({
             </svg>
           </button>
           <div className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--ink-strong)" }}>
-            FREQUENCY · NOW PLAYING
+            {isAd ? "FREQUENCY · SPONSORED" : "FREQUENCY · NOW PLAYING"}
           </div>
           <button
             onClick={onStop}
@@ -269,6 +360,69 @@ function ExpandedPlayer({
             STOP ✕
           </button>
         </div>
+
+        {/* AD foil bar */}
+        {isAd && ad && (
+          <button
+            onClick={clickAd}
+            className="press w-full text-left"
+            style={{
+              background: "var(--gold-c)",
+              borderBottom: "2px solid var(--ink-strong)",
+              padding: "10px 16px",
+            }}
+            aria-label="Open advertiser"
+          >
+            <div className="flex items-center gap-3">
+              <span
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 10,
+                  letterSpacing: "0.22em",
+                  color: "var(--paper)",
+                  background: "var(--ink-strong)",
+                  padding: "3px 7px",
+                }}
+              >
+                AD
+              </span>
+              <div className="flex-1 min-w-0">
+                <div
+                  className="truncate"
+                  style={{
+                    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    letterSpacing: "0.04em",
+                    color: "var(--ink-strong)",
+                  }}
+                >
+                  {ad.title}
+                </div>
+                {ad.body && (
+                  <div
+                    className="c-serif-it truncate"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.85 }}
+                  >
+                    {ad.body}
+                  </div>
+                )}
+              </div>
+              <span
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 10,
+                  letterSpacing: "0.16em",
+                  color: "var(--ink-strong)",
+                }}
+              >
+                TAP ▸
+              </span>
+            </div>
+          </button>
+        )}
 
         {/* Cover */}
         <div className="flex-1 flex items-center justify-center px-6 py-8">
@@ -294,9 +448,9 @@ function ExpandedPlayer({
         {/* Title + meta */}
         <div className="px-6">
           <h2 className="c-hero" style={{ fontSize: 28, lineHeight: 1.05, color: "var(--ink-strong)" }}>
-            {current.title}
+            {isAd ? `Up next · ${current.title}` : current.title}
           </h2>
-          {current.subtitle && (
+          {current.subtitle && !isAd && (
             <p className="c-serif-it mt-1" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.85 }}>
               {current.subtitle}
             </p>
@@ -312,8 +466,9 @@ function ExpandedPlayer({
             step={1}
             value={Math.min(Math.floor(position), Math.floor(totalSec) || 0)}
             onChange={(e) => onSeek(parseInt(e.target.value, 10))}
+            disabled={isAd}
             className="w-full"
-            style={{ accentColor: "var(--gold-c)" }}
+            style={{ accentColor: "var(--gold-c)", opacity: isAd ? 0.5 : 1 }}
             aria-label="Seek"
           />
           <div className="flex items-center justify-between mt-1 c-meta" style={{ fontSize: 11, opacity: 0.75 }}>
@@ -324,7 +479,7 @@ function ExpandedPlayer({
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-6 px-6 py-6 pb-10">
-          <button onClick={previous} className="p-3 press" aria-label="Previous" style={{ color: "var(--ink-strong)" }}>
+          <button onClick={previous} disabled={isAd} className="p-3 press" aria-label="Previous" style={{ color: "var(--ink-strong)", opacity: isAd ? 0.4 : 1 }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
               <path d="M6 5h2v14H6zM20 5l-12 7 12 7z" />
             </svg>
@@ -350,10 +505,23 @@ function ExpandedPlayer({
               </svg>
             )}
           </button>
-          <button onClick={next} className="p-3 press" aria-label="Next" style={{ color: "var(--ink-strong)" }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M16 5h2v14h-2zM4 5l12 7-12 7z" />
-            </svg>
+          <button onClick={isAd ? (canSkip ? skipAd : undefined) : next} disabled={isAd && !canSkip} className="p-3 press" aria-label={isAd ? "Skip ad" : "Next"} style={{ color: "var(--ink-strong)", opacity: isAd && !canSkip ? 0.4 : 1 }}>
+            {isAd ? (
+              <span
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  letterSpacing: "0.18em",
+                }}
+              >
+                {canSkip ? "SKIP ▸" : `SKIP ${skipCountdown}s`}
+              </span>
+            ) : (
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 5h2v14h-2zM4 5l12 7-12 7z" />
+              </svg>
+            )}
           </button>
         </div>
       </div>
