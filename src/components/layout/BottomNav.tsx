@@ -14,16 +14,16 @@ type ServiceItem = { href: string; label: string; iconName: IconName };
  * These are the 10 sections that don't need a verified address to be useful. */
 const BASE_SERVICES: ServiceItem[] = [
   { href: "/events", label: "Events", iconName: "calendar" },
-  { href: "/food", label: "Food", iconName: "utensils" },
-  { href: "/business", label: "Business", iconName: "briefcase" },
+  { href: "/food", label: "Eat", iconName: "utensils" },
+  { href: "/business", label: "Commerce", iconName: "briefcase" },
   { href: "/health", label: "Health", iconName: "heart-pulse" },
   { href: "/culture", label: "Culture", iconName: "palette" },
-  { href: "/jobs", label: "Opportunities", iconName: "briefcase" },
+  { href: "/jobs", label: "Work", iconName: "briefcase" },
   { href: "/groups", label: "Community", iconName: "users" },
   { href: "/people", label: "Explore", iconName: "sparkle" },
   { href: "/creators", label: "Discover", iconName: "film" },
   { href: "/resources", label: "Community", iconName: "book" },
-  { href: "/live", label: "Culture TV", iconName: "film" },
+  { href: "/live", label: "On Air", iconName: "film" },
 ];
 
 /* Verified-only overlays — city-specific sections that require a verified

@@ -18,12 +18,12 @@ type ServiceTile = { href: string; label: string; icon: IconName };
  *  Grouping loose so the grid reads left→right like a newspaper index. */
 const TILES: ServiceTile[] = [
   { href: "/events", label: "Events", icon: "calendar" },
-  { href: "/food", label: "Food", icon: "utensils" },
-  { href: "/business", label: "Business", icon: "briefcase" },
-  { href: "/pulse", label: "Pulse", icon: "pulse" },
-  { href: "/live", label: "Culture TV", icon: "film" },
+  { href: "/food", label: "Eat", icon: "utensils" },
+  { href: "/business", label: "Commerce", icon: "briefcase" },
+  { href: "/pulse", label: "Feed", icon: "pulse" },
+  { href: "/live", label: "On Air", icon: "film" },
   { href: "/health", label: "Health", icon: "heart-pulse" },
-  { href: "/jobs", label: "Jobs", icon: "briefcase" },
+  { href: "/jobs", label: "Work", icon: "briefcase" },
   { href: "/groups", label: "Community", icon: "users" },
   { href: "/people", label: "Explore", icon: "sparkle" },
   { href: "/creators", label: "Discover", icon: "camera" },

@@ -944,7 +944,7 @@ export default function CultureTV({
                   </div>
                 </div>
                 <p className="c-body-sm mb-4">
-                  Got a podcast, cooking show, or community event? Culture TV puts Compton creators front and center. Apply for your own channel and start streaming to the city.
+                  Got a podcast, cooking show, or community event? On Air puts Compton creators front and center. Apply for your own channel and start streaming to the city.
                 </p>
                 <div className="flex gap-2">
                   <Link href="/profile/settings" className="c-btn c-btn-accent flex items-center gap-2 press">
@@ -1021,7 +1021,7 @@ export default function CultureTV({
               <div className="flex items-center justify-between mb-3">
                 <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
                   <span className="w-2 h-2 rounded-full" style={{ background: "var(--gold-c)" }} />
-                  TODAY ON CULTURE TV
+                  TODAY ON AIR
                 </h2>
                 <button
                   onClick={() => setActiveTab("schedule")}
@@ -1056,7 +1056,7 @@ export default function CultureTV({
                   <h3 className="c-card-t" style={{ fontSize: 14 }}>GOT A PODCAST?</h3>
                 </div>
                 <p className="c-body-sm mb-3">
-                  Record it. Upload it. Compton listens. Culture TV hosts local podcasts, talk shows, and audio content from the community.
+                  Record it. Upload it. Compton listens. On Air hosts local podcasts, talk shows, and audio content from the community.
                 </p>
                 <Link
                   href="/podcasts"
@@ -1072,7 +1072,7 @@ export default function CultureTV({
 
           {/* ── Why Culture TV ── */}
           <section className="mb-8 px-5">
-            <h2 className="c-hero mb-4" style={{ fontSize: 22, color: "var(--ink-strong)" }}>WHY <span style={{ color: "var(--gold-c)" }}>CULTURE TV</span>?</h2>
+            <h2 className="c-hero mb-4" style={{ fontSize: 22, color: "var(--ink-strong)" }}>WHY <span style={{ color: "var(--gold-c)" }}>ON AIR</span>?</h2>
             <div className="space-y-3">
               {[
                 { emoji: "1", title: "100% Free", desc: "No subscriptions, no ads for viewers, no paywall. Just Compton.", color: "#22C55E" },
@@ -1304,7 +1304,7 @@ export default function CultureTV({
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="c-card-t mb-0.5" style={{ fontSize: 15 }}>ALL VIDEOS</h2>
-                <p className="c-serif-it" style={{ fontSize: 12 }}>Latest from Culture TV</p>
+                <p className="c-serif-it" style={{ fontSize: 12 }}>Latest from On Air</p>
               </div>
               <div className="px-5 space-y-3">
                 {recentVideos.filter((v) => v.video_type !== "original").map((video) => (

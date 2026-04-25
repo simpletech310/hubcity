@@ -693,10 +693,10 @@ export default async function ProfilePage() {
           {([
             { label: "Find Resources", icon: "search" as IconName, desc: "AI-powered matching", href: "/resources", color: "#22C55E" },
             { label: "Browse Events", icon: "calendar" as IconName, desc: `${rsvpCount ?? 0} RSVPs`, href: "/events", color: "#3B82F6" },
-            { label: "Independents", icon: "store" as IconName, desc: "Deals & specials", href: "/business", color: "#F2A900" },
-            { label: "The Pulse", icon: "pulse" as IconName, desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
+            { label: "Commerce", icon: "store" as IconName, desc: "Deals & specials", href: "/business", color: "#F2A900" },
+            { label: "Feed", icon: "pulse" as IconName, desc: "News & updates", href: "/pulse", color: "#8B5CF6" },
             { label: "Community", icon: "landmark" as IconName, desc: "Resources & support", href: "/resources", color: "#06B6D4" },
-            { label: "Food & Dining", icon: "utensils" as IconName, desc: "Order & explore", href: "/food", color: "#FF6B6B" },
+            { label: "Eat", icon: "utensils" as IconName, desc: "Order & explore", href: "/food", color: "#FF6B6B" },
           ]).map((action) => (
             <Link key={action.label} href={action.href}>
               <div className="c-frame p-3 press relative overflow-hidden" style={{ background: "var(--paper-soft)" }}>

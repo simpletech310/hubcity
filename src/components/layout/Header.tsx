@@ -10,9 +10,9 @@ import Wordmark from "@/components/layout/Wordmark";
 
 /* ── Section title mappings — magazine-section names, not functional labels ── */
 const pageTitles: Record<string, string> = {
-  "/pulse": "The Feed",
-  "/live": "Culture TV",
-  "/business": "Scene",
+  "/pulse": "Feed",
+  "/live": "On Air",
+  "/business": "Commerce",
   "/events": "Events",
   "/resources": "Community",
   "/profile": "Profile",
@@ -24,7 +24,7 @@ const pageTitles: Record<string, string> = {
   // "/schools": "Schools",       // hidden — civic nav
   "/culture": "Heritage",
   // "/parks": "Parks",           // hidden — civic nav
-  "/jobs": "Opportunities",
+  "/jobs": "Work",
   "/people": "Explore",
   "/creators": "Discover",
   // "/district": "District",     // hidden — civic feature flag
