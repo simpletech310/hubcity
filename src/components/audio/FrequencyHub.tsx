@@ -61,14 +61,11 @@ export default function FrequencyHub({ data }: { data: FrequencyHubData }) {
           § VOL.{new Date().getFullYear() % 100} · AIRWAVE · AUDIO
         </div>
         <h1
-          className="c-display mt-2"
+          className="c-hero mt-2"
           style={{
-            fontSize: 72,
-            lineHeight: 0.82,
+            fontSize: 56,
+            lineHeight: 0.88,
             letterSpacing: "-0.02em",
-            fontStyle: "italic",
-            fontFamily: "var(--font-fraunces), Fraunces, serif",
-            fontWeight: 700,
           }}
         >
           Frequency.

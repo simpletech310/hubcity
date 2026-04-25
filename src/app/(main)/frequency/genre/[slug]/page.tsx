@@ -95,14 +95,11 @@ export default async function GenrePage({
         </Link>
         <div className="c-kicker">§ GENRE · {genre.slug.toUpperCase()}</div>
         <h1
-          className="c-display mt-2"
+          className="c-hero mt-2"
           style={{
             fontSize: 56,
-            lineHeight: 0.85,
+            lineHeight: 0.88,
             letterSpacing: "-0.02em",
-            fontStyle: "italic",
-            fontFamily: "var(--font-fraunces), Fraunces, serif",
-            fontWeight: 700,
           }}
         >
           {genre.name}.

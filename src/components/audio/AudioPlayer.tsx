@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { useAudioPlay } from "./AudioPlayContext";
-import { muxAudioStreamUrl } from "@/lib/audio/seed";
 
 /**
  * Persistent mini audio player. Mounted once at the (main) layout level
@@ -25,6 +24,7 @@ export default function AudioPlayer() {
     next,
     previous,
     seek,
+    stop,
     setExpanded,
     expanded,
     _registerAudio,
@@ -38,31 +38,35 @@ export default function AudioPlayer() {
     return () => _registerAudio(null);
   }, [_registerAudio]);
 
-  if (!current) return null;
+  // The <audio> element must always be in the DOM so the imperative
+  // play() inside the click handler has a target. The mini bar is
+  // conditionally rendered, but the element below stays mounted.
+  const audioEl = (
+    <audio
+      ref={audio}
+      preload="metadata"
+      onTimeUpdate={(e) => {
+        const el = e.currentTarget;
+        _onTimeUpdate(el.currentTime, el.duration || 0);
+      }}
+      onLoadedMetadata={(e) => {
+        const el = e.currentTarget;
+        _onTimeUpdate(el.currentTime, el.duration || 0);
+      }}
+      onPlay={() => _onPlayState(true)}
+      onPause={() => _onPlayState(false)}
+      onEnded={_onEnded}
+    />
+  );
 
-  const src = muxAudioStreamUrl(current.muxPlaybackId);
+  if (!current) return audioEl;
+
   const totalSec = duration || current.durationSeconds || 0;
   const pct = totalSec > 0 ? Math.min(100, (position / totalSec) * 100) : 0;
 
   return (
     <>
-      {/* Hidden audio element drives playback */}
-      <audio
-        ref={audio}
-        src={src}
-        preload="metadata"
-        onTimeUpdate={(e) => {
-          const el = e.currentTarget;
-          _onTimeUpdate(el.currentTime, el.duration || 0);
-        }}
-        onLoadedMetadata={(e) => {
-          const el = e.currentTarget;
-          _onTimeUpdate(el.currentTime, el.duration || 0);
-        }}
-        onPlay={() => _onPlayState(true)}
-        onPause={() => _onPlayState(false)}
-        onEnded={_onEnded}
-      />
+      {audioEl}
 
       {/* Docked mini bar — sits above CultureBottomNav (which is fixed bottom:0) */}
       <div
@@ -182,16 +186,42 @@ export default function AudioPlayer() {
                 <path d="M16 5h2v14h-2zM4 5l12 7-12 7z" />
               </svg>
             </button>
+            <button
+              onClick={stop}
+              className="p-2 press"
+              aria-label="Close player"
+              style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
 
-      {expanded && <ExpandedPlayer onClose={() => setExpanded(false)} onSeek={seek} />}
+      {expanded && <ExpandedPlayer onClose={() => setExpanded(false)} onSeek={seek} onStop={stop} />}
     </>
   );
 }
 
-function ExpandedPlayer({ onClose, onSeek }: { onClose: () => void; onSeek: (s: number) => void }) {
+function ExpandedPlayer({
+  onClose,
+  onSeek,
+  onStop,
+}: {
+  onClose: () => void;
+  onSeek: (s: number) => void;
+  onStop: () => void;
+}) {
   const { current, isPlaying, position, duration, toggle, next, previous } = useAudioPlay();
   if (!current) return null;
   const totalSec = duration || current.durationSeconds || 0;
@@ -225,7 +255,19 @@ function ExpandedPlayer({ onClose, onSeek }: { onClose: () => void; onSeek: (s: 
           <div className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.2em", color: "var(--ink-strong)" }}>
             FREQUENCY · NOW PLAYING
           </div>
-          <div style={{ width: 28 }} />
+          <button
+            onClick={onStop}
+            className="press c-kicker"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              color: "var(--ink-strong)",
+              padding: "4px 6px",
+            }}
+            aria-label="Close player"
+          >
+            STOP ✕
+          </button>
         </div>
 
         {/* Cover */}

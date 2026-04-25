@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { muxAudioStreamUrl } from "@/lib/audio/seed";
 
 /**
  * A single playable item — track from an album OR podcast episode.
@@ -52,6 +53,8 @@ interface AudioPlayApi extends AudioPlayState {
   next: () => void;
   previous: () => void;
   seek: (seconds: number) => void;
+  /** Tear down the current item completely so the mini player unmounts. */
+  stop: () => void;
   setExpanded: (open: boolean) => void;
   /** Internal: bind a real <audio> element so the API can drive it. */
   _registerAudio: (el: HTMLAudioElement | null) => void;
@@ -91,6 +94,26 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const playInternal = useCallback((item: PlayableItem, queue: PlayableItem[], index: number) => {
+    // Drive the <audio> element imperatively *inside* the same call
+    // stack as the click handler. Mobile Safari rejects play() if it
+    // happens after the user-gesture window closes (microtask, await,
+    // setTimeout). Setting src + calling play() synchronously keeps the
+    // gesture eligibility intact.
+    const a = audioRef.current;
+    if (a) {
+      const src = muxAudioStreamUrl(item.muxPlaybackId);
+      if (a.src !== src) {
+        a.src = src;
+        a.load();
+      }
+      try {
+        a.currentTime = 0;
+      } catch {
+        /* ignore */
+      }
+      const p = a.play();
+      if (p && typeof p.catch === "function") p.catch(() => {});
+    }
     setState((s) => ({
       ...s,
       current: item,
@@ -99,21 +122,6 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       position: 0,
       duration: item.durationSeconds ?? s.duration,
     }));
-    // Defer to next microtask so the <audio src> swap has applied.
-    queueMicrotask(() => {
-      const a = audioRef.current;
-      if (!a) return;
-      try {
-        a.currentTime = 0;
-        // Some browsers require a user gesture before play(); we let
-        // the play promise reject silently and surface the "isPlaying"
-        // state from the audio element's events.
-        const p = a.play();
-        if (p && typeof p.catch === "function") p.catch(() => {});
-      } catch {
-        /* ignore */
-      }
-    });
   }, []);
 
   const play = useCallback(
@@ -145,43 +153,41 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const next = useCallback(() => {
+  const advance = useCallback((direction: 1 | -1) => {
+    // Read current state imperatively to avoid stale closures inside
+    // setState — we need the new item *before* we touch the audio
+    // element so the play() call stays inside the user gesture.
     setState((s) => {
-      if (s.index < 0 || s.index + 1 >= s.queue.length) return s;
-      const item = s.queue[s.index + 1];
-      queueMicrotask(() => {
-        const a = audioRef.current;
-        if (!a) return;
+      const nextIdx = s.index + direction;
+      if (nextIdx < 0 || nextIdx >= s.queue.length) return s;
+      const item = s.queue[nextIdx];
+      const a = audioRef.current;
+      if (a) {
+        const src = muxAudioStreamUrl(item.muxPlaybackId);
+        if (a.src !== src) {
+          a.src = src;
+          a.load();
+        }
         try {
           a.currentTime = 0;
-          const p = a.play();
-          if (p && typeof p.catch === "function") p.catch(() => {});
         } catch {
           /* ignore */
         }
-      });
-      return { ...s, current: item, index: s.index + 1, position: 0, duration: item.durationSeconds ?? s.duration };
+        const p = a.play();
+        if (p && typeof p.catch === "function") p.catch(() => {});
+      }
+      return {
+        ...s,
+        current: item,
+        index: nextIdx,
+        position: 0,
+        duration: item.durationSeconds ?? s.duration,
+      };
     });
   }, []);
 
-  const previous = useCallback(() => {
-    setState((s) => {
-      if (s.index <= 0) return s;
-      const item = s.queue[s.index - 1];
-      queueMicrotask(() => {
-        const a = audioRef.current;
-        if (!a) return;
-        try {
-          a.currentTime = 0;
-          const p = a.play();
-          if (p && typeof p.catch === "function") p.catch(() => {});
-        } catch {
-          /* ignore */
-        }
-      });
-      return { ...s, current: item, index: s.index - 1, position: 0, duration: item.durationSeconds ?? s.duration };
-    });
-  }, []);
+  const next = useCallback(() => advance(1), [advance]);
+  const previous = useCallback(() => advance(-1), [advance]);
 
   const seek = useCallback((seconds: number) => {
     const a = audioRef.current;
@@ -197,6 +203,28 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     next();
   }, [next]);
 
+  const stop = useCallback(() => {
+    const a = audioRef.current;
+    if (a) {
+      try {
+        a.pause();
+        a.removeAttribute("src");
+        a.load();
+      } catch {
+        /* ignore */
+      }
+    }
+    setState({
+      current: null,
+      queue: [],
+      index: -1,
+      isPlaying: false,
+      position: 0,
+      duration: 0,
+      expanded: false,
+    });
+  }, []);
+
   const setExpanded = useCallback((open: boolean) => {
     setState((s) => ({ ...s, expanded: open }));
   }, []);
@@ -211,13 +239,14 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       next,
       previous,
       seek,
+      stop,
       setExpanded,
       _registerAudio,
       _onTimeUpdate,
       _onPlayState,
       _onEnded,
     }),
-    [state, play, pause, resume, toggle, next, previous, seek, setExpanded, _registerAudio, _onTimeUpdate, _onPlayState, _onEnded]
+    [state, play, pause, resume, toggle, next, previous, seek, stop, setExpanded, _registerAudio, _onTimeUpdate, _onPlayState, _onEnded]
   );
 
   return <AudioPlayCtx.Provider value={value}>{children}</AudioPlayCtx.Provider>;

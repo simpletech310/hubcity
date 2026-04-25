@@ -115,14 +115,11 @@ export default function PodcastShowDetail({
         </div>
 
         <h1
-          className="c-display mt-4 text-center"
+          className="c-hero mt-4 text-center"
           style={{
             fontSize: 36,
             lineHeight: 0.95,
             letterSpacing: "-0.01em",
-            fontStyle: "italic",
-            fontFamily: "var(--font-fraunces), Fraunces, serif",
-            fontWeight: 700,
             color: "var(--ink-strong)",
           }}
         >
