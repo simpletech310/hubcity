@@ -43,8 +43,6 @@ export default async function EventDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  // Accept either a slug or a UUID. UUIDs match /^[0-9a-f-]{36}$/; anything
-  // else tries the slug column first.
   const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   let eventRow = null;
   if (looksLikeUuid) {
@@ -57,13 +55,9 @@ export default async function EventDetailPage({
   }
   if (!eventRow) notFound();
   const event = eventRow;
-
   const ev = event as Event;
 
-  // Fetch user's existing RSVP status (if logged in)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
 
   let userRsvpStatus: string | null = null;
   if (user) {
@@ -75,7 +69,6 @@ export default async function EventDetailPage({
     userRsvpStatus = rsvp?.status ?? null;
   }
 
-  // Fetch ticket configs if ticketed
   let ticketConfigs: (EventTicketConfig & { venue_section: { name: string; description: string | null; color: string | null } | null })[] = [];
   let venue: Venue | null = null;
 
@@ -86,7 +79,6 @@ export default async function EventDetailPage({
       .eq("event_id", event.id)
       .eq("is_active", true)
       .order("venue_section(sort_order)");
-
     ticketConfigs = (configs ?? []) as typeof ticketConfigs;
 
     if (ev.venue_id) {
@@ -108,7 +100,6 @@ export default async function EventDetailPage({
   const year = startDate.getFullYear();
   const isToday = new Date().toDateString() === startDate.toDateString();
 
-  // Lowest price for ticket CTA
   const lowestPrice = ticketConfigs.length > 0
     ? Math.min(...ticketConfigs.filter(c => c.available_count > 0).map(c => c.price))
     : 0;
@@ -120,17 +111,21 @@ export default async function EventDetailPage({
 
   return (
     <article className="culture-surface animate-fade-in pb-safe min-h-dvh">
-      {/* ── Cover ── */}
+
+      {/* ── HERO (dark overlay — ivory text is intentional here) ── */}
       <div className="relative">
         <HeroBlock image={ev.image_url ?? null} aspect="3/2" alt={ev.title}>
-          {/* Floating controls live above the hero chrome */}
+          {/* Back button */}
           <div className="absolute top-4 left-4 z-20">
             <Link
               href="/events"
-              className="w-9 h-9 rounded-full flex items-center justify-center press"
-              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              className="w-9 h-9 flex items-center justify-center press"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
             >
-              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-ivory">
+              <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: "var(--ink-strong)" }}>
                 <path d="M11 13L7 9l4-4" />
               </svg>
             </Link>
@@ -139,29 +134,26 @@ export default async function EventDetailPage({
             <SaveButton itemType="event" itemId={ev.id} />
           </div>
 
-          {/* Hero bottom — kicker, title, gold rule, meta */}
+          {/* Hero bottom overlay — DARK SURFACE: ivory stays correct */}
           <div className="absolute inset-x-0 bottom-0 px-6 pb-7 z-10">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
               <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
               {ev.is_featured && <Tag tone="gold" size="sm">Featured</Tag>}
               {isToday && <Tag tone="coral" size="sm">Live Today</Tag>}
-              {ev.district && <Tag tone="default" size="sm">District {ev.district}</Tag>}
+              {ev.district && <Tag tone="default" size="sm">{ev.district}</Tag>}
             </div>
-
             <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[26ch]">
               {ev.title}
             </h1>
-
-            <div className="mt-5 h-px w-16 bg-gold" />
-
-            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-editorial-tight text-ivory/70">
-              <span className="text-ivory">{dayName}, {monthName} {dayNum}</span>
-              <span className="text-ivory/40">·</span>
-              <span>{timeLine}</span>
+            <div className="mt-5" style={{ height: 3, width: 48, background: "var(--gold-c)" }} />
+            <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[11px] uppercase tracking-editorial-tight">
+              <span style={{ color: "#fff" }}>{dayName}, {monthName} {dayNum}</span>
+              <span style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
+              <span style={{ color: "rgba(255,255,255,0.75)" }}>{timeLine}</span>
               {ev.location_name && (
                 <>
-                  <span className="text-ivory/40">·</span>
-                  <span className="truncate max-w-[18ch]">{ev.location_name}</span>
+                  <span style={{ color: "rgba(255,255,255,0.4)" }}>·</span>
+                  <span className="truncate max-w-[18ch]" style={{ color: "rgba(255,255,255,0.75)" }}>{ev.location_name}</span>
                 </>
               )}
             </div>
@@ -169,133 +161,168 @@ export default async function EventDetailPage({
         </HeroBlock>
       </div>
 
-      {/* ── Byline Strip ── */}
-      <div className="px-5 mt-6 flex items-baseline gap-4">
+      {/* ── BYLINE STRIP ── */}
+      <div
+        className="px-5 py-4 flex items-center gap-4"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
         <EditorialNumber n={1} size="sm" />
         <SectionKicker tone="gold">Feature · {categoryLabel}</SectionKicker>
-        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
-        <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/55 whitespace-nowrap">
+        <div className="flex-1" style={{ height: 2, background: "var(--rule-strong-c)", opacity: 0.2 }} />
+        <span
+          style={{
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontWeight: 700,
+            fontSize: 10,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--ink-strong)",
+            opacity: 0.45,
+            whiteSpace: "nowrap",
+          }}
+        >
           {dateLine}
         </span>
       </div>
 
-      {/* ── Body — Magazine Column ── */}
+      {/* ── DESCRIPTION ── */}
       {ev.description && (
         <section className="px-5 mt-8 max-w-[68ch]">
-          <p className="font-display text-[22px] leading-snug text-ivory first-letter:font-display first-letter:text-[56px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
-            {ev.description}
+          <p
+            className="c-serif-it leading-snug"
+            style={{
+              fontSize: 22,
+              color: "var(--ink-strong)",
+            }}
+          >
+            <span
+              style={{
+                fontFamily: "var(--font-dm-serif), DM Serif Display, serif",
+                fontSize: 56,
+                float: "left",
+                marginRight: 6,
+                marginTop: 4,
+                lineHeight: 1,
+                color: "var(--gold-c)",
+              }}
+            >
+              {ev.description[0]}
+            </span>
+            {ev.description.slice(1)}
           </p>
         </section>
       )}
 
-      {/* Pull quote — a highlighted tagline from the event copy */}
+      {/* ── PULL QUOTE ── */}
       {ev.description && ev.description.length > 180 && (
         <aside className="px-5 mt-8 max-w-[68ch]">
-          <div className="border-l-2 border-gold pl-5 py-2">
-            <p className="font-display text-[24px] leading-snug text-ivory/90">
+          <div style={{ borderLeft: "3px solid var(--gold-c)", paddingLeft: 20, paddingTop: 8, paddingBottom: 8 }}>
+            <p
+              className="c-serif-it leading-snug"
+              style={{ fontSize: 22, color: "var(--ink-strong)" }}
+            >
               &ldquo;{ev.title}&rdquo;
             </p>
-            <p className="mt-2 text-[10px] uppercase tracking-editorial text-gold">
+            <p
+              style={{
+                marginTop: 8,
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--gold-c)",
+              }}
+            >
               {dayName}, {monthName} {dayNum} · {timeLine}
             </p>
           </div>
         </aside>
       )}
 
-      {/* ── Section 01 · Details ── */}
+      {/* ── SECTION 01 · DETAILS ── */}
       <section className="px-5 mt-10">
         <div className="mb-4 flex items-baseline gap-3">
           <EditorialNumber n={1} size="md" />
           <SectionKicker tone="muted">The Details</SectionKicker>
         </div>
-        <div className="rule-hairline mb-5" />
+        <div style={{ height: 2, background: "var(--rule-strong-c)", marginBottom: 20 }} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <EditorialCard variant="ink" border="gold" className="p-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="calendar" size={18} className="text-gold" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Date</p>
-                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
-                  {monthName.slice(0, 3)} {dayNum}
-                </p>
-                <p className="text-[11px] text-ivory/70 mt-0.5">{dayName}</p>
-              </div>
-            </div>
-          </EditorialCard>
-
-          <EditorialCard variant="ink" border="gold" className="p-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="clock" size={18} className="text-gold" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Time</p>
-                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
-                  {timeLine}
-                </p>
-                <p className="text-[11px] text-ivory/70 mt-0.5">
-                  {ev.end_time ? `Until ${formatTime12h(ev.end_time)}` : "Doors open"}
-                </p>
-              </div>
-            </div>
-          </EditorialCard>
-
-          <EditorialCard variant="ink" border="gold" className="p-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="users" size={18} className="text-gold" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Attending</p>
-                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5">
-                  {ev.rsvp_count.toLocaleString()}
-                </p>
-                <p className="text-[11px] text-ivory/70 mt-0.5">Going</p>
-              </div>
-            </div>
-          </EditorialCard>
+        <div className="grid grid-cols-3 gap-2.5">
+          {/* Date */}
+          <DetailCard
+            icon="calendar"
+            label="Date"
+            value={`${monthName.slice(0, 3)} ${dayNum}`}
+            sub={dayName}
+          />
+          {/* Time */}
+          <DetailCard
+            icon="clock"
+            label="Time"
+            value={timeLine}
+            sub={ev.end_time ? `Until ${formatTime12h(ev.end_time)}` : "Doors open"}
+          />
+          {/* Attending */}
+          <DetailCard
+            icon="users"
+            label="Going"
+            value={ev.rsvp_count.toLocaleString()}
+            sub="Attending"
+          />
         </div>
 
-        {/* Location — full-width editorial card */}
+        {/* Location */}
         {ev.location_name && (
-          <EditorialCard variant="glass" border="subtle" className="mt-3 p-4">
-            <div className="flex items-center gap-3.5">
-              <div
-                className="w-12 h-12 flex items-center justify-center shrink-0"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="pin" size={20} className="text-gold" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Venue</p>
-                <p className="font-display text-[18px] text-ivory leading-tight mt-0.5 truncate">
-                  {ev.location_name}
-                </p>
-                {ev.address && (
-                  <p className="text-[12px] text-ivory/70 truncate mt-0.5">{ev.address}</p>
-                )}
-                {venue && (
-                  <p className="text-[10px] uppercase tracking-editorial-tight text-gold mt-1">{venue.name}</p>
-                )}
-              </div>
+          <div
+            className="mt-2.5 p-4 flex items-center gap-3.5"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <div
+              className="w-12 h-12 flex items-center justify-center shrink-0"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+            >
+              <Icon name="pin" size={20} style={{ color: "var(--gold-c)" }} />
             </div>
-          </EditorialCard>
+            <div className="flex-1 min-w-0">
+              <p
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 9,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--ink-strong)",
+                  opacity: 0.5,
+                }}
+              >
+                Venue
+              </p>
+              <p className="c-card-t mt-0.5 truncate" style={{ fontSize: 18 }}>
+                {ev.location_name}
+              </p>
+              {ev.address && (
+                <p className="c-body-sm truncate mt-0.5" style={{ opacity: 0.65 }}>{ev.address}</p>
+              )}
+              {venue && (
+                <p style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 700,
+                  fontSize: 10,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--gold-c)",
+                  marginTop: 4,
+                }}>
+                  {venue.name}
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </section>
 
-      {/* ── Section 02 · Tickets / Attend ── */}
+      {/* ── SECTION 02 · TICKETS / ATTEND ── */}
       {ev.is_ticketed ? (
         <section className="px-5 mt-10">
           <div className="mb-4 flex items-baseline gap-3">
@@ -305,51 +332,76 @@ export default async function EventDetailPage({
               <Tag tone="coral" size="sm" className="ml-auto">Sold Out</Tag>
             )}
           </div>
-          <div className="rule-hairline mb-5" />
+          <div style={{ height: 2, background: "var(--rule-strong-c)", marginBottom: 20 }} />
 
           {ticketConfigs.length > 0 && (
-            <div className="space-y-2.5 mb-5">
+            <div className="space-y-2 mb-5">
               {ticketConfigs.map((config) => {
                 const section = config.venue_section;
                 const isSoldOut = config.available_count <= 0;
                 return (
-                  <EditorialCard
+                  <div
                     key={config.id}
-                    variant="ink"
-                    border={isSoldOut ? "subtle" : "gold"}
-                    className={`p-4 ${isSoldOut ? "opacity-50" : ""}`}
+                    className="p-4 flex items-center justify-between gap-3"
+                    style={{
+                      background: "var(--paper)",
+                      border: `2px solid ${isSoldOut ? "var(--rule-strong-c)" : "var(--gold-c)"}`,
+                      opacity: isSoldOut ? 0.5 : 1,
+                    }}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-[9px] uppercase tracking-editorial-tight text-ivory/50">Section</p>
-                        <p className="font-display text-[20px] text-ivory leading-tight mt-0.5 truncate">
-                          {section?.name ?? "General Admission"}
-                        </p>
-                        {section?.description && (
-                          <p className="text-[11px] text-ivory/70 truncate mt-1">{section.description}</p>
+                    <div className="min-w-0">
+                      <p
+                        style={{
+                          fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                          fontWeight: 700,
+                          fontSize: 9,
+                          letterSpacing: "0.14em",
+                          textTransform: "uppercase",
+                          color: "var(--ink-strong)",
+                          opacity: 0.5,
+                        }}
+                      >
+                        Section
+                      </p>
+                      <p className="c-card-t mt-0.5 truncate" style={{ fontSize: 20 }}>
+                        {section?.name ?? "General Admission"}
+                      </p>
+                      {section?.description && (
+                        <p className="c-body-sm truncate mt-1" style={{ opacity: 0.65 }}>{section.description}</p>
+                      )}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="c-hero" style={{ fontSize: 22, color: "var(--gold-c)", lineHeight: 1 }}>
+                        {formatCents(config.price)}
+                      </p>
+                      <div className="mt-2">
+                        {isSoldOut ? (
+                          <Tag tone="coral" size="xs">Sold Out</Tag>
+                        ) : (
+                          <Tag tone="gold" size="xs">{config.available_count} left</Tag>
                         )}
                       </div>
-                      <div className="shrink-0 text-right">
-                        <p className="font-display text-[22px] text-gold leading-none">
-                          {formatCents(config.price)}
-                        </p>
-                        <div className="mt-2">
-                          {isSoldOut ? (
-                            <Tag tone="coral" size="xs">Sold Out</Tag>
-                          ) : (
-                            <Tag tone="gold" size="xs">{config.available_count} left</Tag>
-                          )}
-                        </div>
-                      </div>
                     </div>
-                  </EditorialCard>
+                  </div>
                 );
               })}
             </div>
           )}
 
           {salesMessage && (
-            <p className="text-[11px] uppercase tracking-editorial-tight text-ivory/55 mb-4 text-center">
+            <p
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 700,
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--ink-strong)",
+                opacity: 0.5,
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
               {salesMessage}
             </p>
           )}
@@ -361,26 +413,29 @@ export default async function EventDetailPage({
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="font-heading font-bold text-base leading-none">Get Tickets</p>
+                  <p className="font-heading font-bold text-base leading-none">GET TICKETS</p>
                   {lowestPrice > 0 && isFinite(lowestPrice) && (
-                    <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
+                    <p style={{ fontSize: 11, fontWeight: 600, marginTop: 6, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7 }}>
                       From {formatCents(lowestPrice)}
                     </p>
                   )}
                 </div>
                 <div className="w-10 h-10 flex items-center justify-center" style={{ border: "2px solid currentColor" }}>
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M5 10h10M12 6l4 4-4 4" />
                   </svg>
                 </div>
               </div>
             </Link>
           ) : (
-            <EditorialCard variant="ink" border="subtle" className="p-4 text-center">
-              <p className="text-[12px] text-ivory/70">
+            <div
+              className="p-4 text-center"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+            >
+              <p className="c-body-sm" style={{ opacity: 0.6 }}>
                 {salesMessage ?? "Tickets Unavailable"}
               </p>
-            </EditorialCard>
+            </div>
           )}
         </section>
       ) : (
@@ -390,76 +445,130 @@ export default async function EventDetailPage({
             <SectionKicker tone="muted">Attend</SectionKicker>
             <Tag tone="gold" size="sm" className="ml-auto">Free</Tag>
           </div>
-          <div className="rule-hairline mb-5" />
+          <div style={{ height: 2, background: "var(--rule-strong-c)", marginBottom: 20 }} />
 
-          {user ? (
-            <EditorialCard variant="glass" border="subtle" className="p-4">
+          <div
+            className="p-4"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            {user ? (
               <RSVPButton
                 eventId={ev.id}
                 initialStatus={userRsvpStatus as "going" | "interested" | "not_going" | null}
                 rsvpCount={ev.rsvp_count}
               />
-            </EditorialCard>
-          ) : (
-            <Link
-              href="/login"
-              className="c-btn c-btn-primary block w-full text-center press"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-heading font-bold text-base leading-none">Sign In to RSVP</p>
-                  <p className="text-midnight/70 text-[11px] font-semibold mt-1.5 uppercase tracking-editorial-tight">
-                    Join the community
-                  </p>
+            ) : (
+              <Link
+                href="/login"
+                className="c-btn c-btn-primary block w-full text-center press"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-heading font-bold text-base leading-none">SIGN IN TO RSVP</p>
+                    <p style={{ fontSize: 11, fontWeight: 600, marginTop: 6, letterSpacing: "0.1em", textTransform: "uppercase", opacity: 0.7 }}>
+                      Join the community
+                    </p>
+                  </div>
+                  <div className="w-10 h-10 flex items-center justify-center" style={{ border: "2px solid currentColor" }}>
+                    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M5 10h10M12 6l4 4-4 4" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="w-10 h-10 flex items-center justify-center" style={{ border: "2px solid currentColor" }}>
-                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-midnight">
-                    <path d="M5 10h10M12 6l4 4-4 4" />
-                  </svg>
-                </div>
-              </div>
-            </Link>
-          )}
+              </Link>
+            )}
+          </div>
         </section>
       )}
 
-      {/* ── Section 03 · Share / Calendar / Report ── */}
+      {/* ── SECTION 03 · SHARE ── */}
       <section className="px-5 mt-10">
         <div className="mb-4 flex items-baseline gap-3">
           <EditorialNumber n={3} size="md" />
           <SectionKicker tone="muted">Take it With You</SectionKicker>
         </div>
-        <div className="rule-hairline mb-5" />
+        <div style={{ height: 2, background: "var(--rule-strong-c)", marginBottom: 20 }} />
 
         <div className="grid grid-cols-3 gap-2.5">
           <a
             href={`/api/events/${ev.id}/ical`}
             download="event.ics"
-            className="c-btn c-btn-outline c-btn-sm px-4 py-3 flex flex-col items-center gap-1.5 press"
+            className="press flex flex-col items-center gap-2 py-4"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
           >
-            <Icon name="calendar" size={16} className="text-gold" />
-            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Calendar</span>
+            <Icon name="calendar" size={18} style={{ color: "var(--gold-c)" }} />
+            <span
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-strong)",
+                opacity: 0.65,
+              }}
+            >
+              Calendar
+            </span>
           </a>
-          <button className="c-btn c-btn-outline c-btn-sm px-4 py-3 flex flex-col items-center gap-1.5 press">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
+          <button
+            className="press flex flex-col items-center gap-2 py-4"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
               <path d="M4 8v5a1 1 0 001 1h6a1 1 0 001-1V8M8 2v8M5 5l3-3 3 3" />
             </svg>
-            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Share</span>
+            <span
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-strong)",
+                opacity: 0.65,
+              }}
+            >
+              Share
+            </span>
           </button>
-          <button className="c-btn c-btn-outline c-btn-sm px-4 py-3 flex flex-col items-center gap-1.5 press">
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-gold">
-              <path d="M3 3h10v10H3z" />
-              <path d="M8 6v4M8 12h0" />
+          <button
+            className="press flex flex-col items-center gap-2 py-4"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
+              <circle cx="9" cy="9" r="8" /><path d="M9 6v4M9 12h0" />
             </svg>
-            <span className="text-[10px] uppercase tracking-editorial-tight text-ivory/70">Report</span>
+            <span
+              style={{
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 700,
+                fontSize: 10,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: "var(--ink-strong)",
+                opacity: 0.65,
+              }}
+            >
+              Report
+            </span>
           </button>
         </div>
       </section>
 
-      {/* ── END divider ── */}
+      {/* ── END DIVIDER ── */}
       <IssueDivider label="END" />
 
-      {/* ── Related rail (placeholder — empty rail still renders a proper editorial shell) ── */}
+      {/* ── RELATED RAIL ── */}
       <SnapCarousel
         number={4}
         kicker="Also in the Issue"
@@ -468,14 +577,66 @@ export default async function EventDetailPage({
         className="pb-10"
       >
         <div className="snap-start shrink-0 w-[220px]">
-          <EditorialCard variant="ink" border="subtle" className="p-5 h-[140px] flex flex-col justify-between">
+          <div
+            className="p-5 h-[140px] flex flex-col justify-between"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
             <SectionKicker tone="gold">Browse</SectionKicker>
-            <p className="font-display text-[20px] text-ivory leading-tight">
+            <p className="c-card-t" style={{ fontSize: 16, lineHeight: 1.25 }}>
               Explore more {categoryIcons[ev.category] ? ev.category : "events"} happening around the city.
             </p>
-          </EditorialCard>
+          </div>
         </div>
       </SnapCarousel>
+
     </article>
+  );
+}
+
+// ── Detail cell card ──────────────────────────────────────────
+function DetailCard({
+  icon,
+  label,
+  value,
+  sub,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  sub?: string;
+}) {
+  return (
+    <div
+      className="p-4 flex flex-col gap-3"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+    >
+      <div
+        className="w-9 h-9 flex items-center justify-center"
+        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+      >
+        <Icon name={icon} size={16} style={{ color: "var(--gold-c)" }} />
+      </div>
+      <div className="min-w-0">
+        <p
+          style={{
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontWeight: 700,
+            fontSize: 9,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "var(--ink-strong)",
+            opacity: 0.45,
+          }}
+        >
+          {label}
+        </p>
+        <p className="c-card-t mt-0.5" style={{ fontSize: 17, lineHeight: 1.1 }}>
+          {value}
+        </p>
+        {sub && (
+          <p className="c-body-sm mt-0.5" style={{ opacity: 0.55 }}>{sub}</p>
+        )}
+      </div>
+    </div>
   );
 }
