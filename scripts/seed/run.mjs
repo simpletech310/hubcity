@@ -453,11 +453,14 @@ const KNECT_VIDEOS = [
   },
 ];
 
+const COVERS_DIR = '/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets/knect tv/music/Music Posters';
+
 const KNECT_TRACKS = [
   {
     artist: 'Drake feat. Tems',
     title: 'Lost in Lagos',
     file: '/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets/knect tv/music/Drake feat Tems. - Lost in Lagos❤.mp3',
+    cover: `${COVERS_DIR}/lost in lagos.png`,
     genre_slug: 'hip-hop',
     access_type: 'free',
   },
@@ -465,6 +468,7 @@ const KNECT_TRACKS = [
     artist: 'GIVĒON',
     title: 'I Can Tell',
     file: '/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets/knect tv/music/GIVĒON - I CAN TELL (Official Audio).mp3',
+    cover: `${COVERS_DIR}/i can tell.jpg`,
     genre_slug: 'r-b-soul',
     access_type: 'subscribers',
   },
@@ -472,6 +476,7 @@ const KNECT_TRACKS = [
     artist: 'Kehlani feat. Usher',
     title: 'Shoulda Never',
     file: '/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets/knect tv/music/Kehlani - Shoulda Never (feat. Usher) [Official Audio].mp3',
+    cover: `${COVERS_DIR}/shoulda never.png`,
     genre_slug: 'r-b-soul',
     access_type: 'free',
   },
@@ -556,6 +561,21 @@ async function seedKnectTV() {
     console.log(`  ↑ ${t.title} → Mux (audio) …`);
     const mux = await uploadToMux(t.file, { audioOnly: true, label: albumSlug });
 
+    // Upload the cover art if present so the album doesn't render as a
+    // gold "♪" placeholder on /frequency.
+    let coverArtUrl = null;
+    let coverArtPath = null;
+    if (t.cover) {
+      const ext = path.extname(t.cover).toLowerCase();
+      coverArtPath = `covers/${albumSlug}${ext}`;
+      try {
+        coverArtUrl = await uploadFile(t.cover, 'audio-art', coverArtPath);
+      } catch (e) {
+        console.warn(`  ⚠ cover upload failed for ${albumSlug}: ${e?.message ?? e}`);
+        coverArtUrl = null;
+      }
+    }
+
     // Create album.
     const albumRow = {
       slug: albumSlug,
@@ -564,7 +584,8 @@ async function seedKnectTV() {
       release_type: 'single',
       genre_slug: t.genre_slug,
       access_type: t.access_type,
-      cover_art_url: null,
+      cover_art_url: coverArtUrl,
+      cover_art_path: coverArtPath,
       channel_id: ch.id,
       creator_id: owner.id,
       is_published: true,
