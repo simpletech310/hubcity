@@ -418,9 +418,9 @@ export default function EventsPage() {
                     >
                       <div
                         className="w-10 h-10 flex items-center justify-center mb-2.5"
-                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                        style={{ background: "var(--ink-strong)" }}
                       >
-                        <Icon name={cat.icon} size={18} style={{ color: "var(--ink-strong)" }} />
+                        <Icon name={cat.icon} size={18} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <p className="c-card-t" style={{ fontSize: 15, color: "var(--ink-strong)" }}>{cat.label}</p>
                       <p className="c-kicker mt-1 tabular-nums">
@@ -457,9 +457,9 @@ export default function EventsPage() {
                 <div className="text-center py-16">
                   <div
                     className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
-                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                    style={{ background: "var(--ink-strong)" }}
                   >
-                    <Icon name="calendar" size={28} style={{ color: "var(--ink-strong)" }} />
+                    <Icon name="calendar" size={28} style={{ color: "var(--gold-c)" }} />
                   </div>
                   <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No events found</p>
                   <p className="c-meta max-w-[240px] mx-auto">
@@ -478,9 +478,9 @@ export default function EventsPage() {
               <div className="relative">
                 <div
                   className="w-10 h-10 flex items-center justify-center mb-3"
-                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  style={{ background: "var(--ink-strong)" }}
                 >
-                  <Icon name="calendar" size={20} style={{ color: "var(--ink-strong)" }} />
+                  <Icon name="calendar" size={20} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <p className="c-kicker mb-1">
                   Got something planned?

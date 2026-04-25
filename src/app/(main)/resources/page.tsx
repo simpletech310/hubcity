@@ -290,9 +290,9 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
                         >
                           <div
                             className="w-8 h-8 flex items-center justify-center shrink-0"
-                            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                            style={{ background: "var(--ink-strong)" }}
                           >
-                            <Icon name={categoryIcons[r.category] || "document"} size={16} style={{ color: "var(--ink-strong)" }} />
+                            <Icon name={categoryIcons[r.category] || "document"} size={16} style={{ color: "var(--gold-c)" }} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <p className="c-card-t truncate" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{r.name}</p>
@@ -514,10 +514,10 @@ export default function ResourcesPage() {
                       style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
                     >
                       <div
-                        className="w-10 h-10 flex items-center justify-center transition-colors"
-                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                        className="w-10 h-10 flex items-center justify-center"
+                        style={{ background: "var(--ink-strong)" }}
                       >
-                        <Icon name={cat.icon} size={18} style={{ color: "var(--ink-strong)" }} />
+                        <Icon name={cat.icon} size={18} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <p className="c-kicker" style={{ color: "var(--ink-strong)" }}>
                         {cat.label}
@@ -607,9 +607,9 @@ export default function ResourcesPage() {
             <div className="px-5 text-center py-16">
               <div
                 className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                style={{ background: "var(--ink-strong)" }}
               >
-                <Icon name="search" size={28} style={{ color: "var(--ink-strong)" }} />
+                <Icon name="search" size={28} style={{ color: "var(--gold-c)" }} />
               </div>
               <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No resources found</p>
               <p className="c-meta mb-4">Try a different search or category</p>
@@ -634,9 +634,9 @@ export default function ResourcesPage() {
               <div className="flex items-center gap-4">
                 <div
                   className="w-12 h-12 flex items-center justify-center shrink-0"
-                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                  style={{ background: "var(--ink-strong)" }}
                 >
-                  <Icon name="phone" size={22} style={{ color: "var(--ink-strong)" }} />
+                  <Icon name="phone" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1">
                   <p className="c-card-t" style={{ fontSize: 17, color: "var(--ink-strong)" }}>Need immediate help?</p>
@@ -705,9 +705,9 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
             <div className="flex flex-col items-center gap-2 py-2">
               <div
                 className="w-12 h-12 flex items-center justify-center"
-                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+                style={{ background: "var(--ink-strong)" }}
               >
-                <Icon name={iconName} size={22} style={{ color: "var(--ink-strong)" }} />
+                <Icon name={iconName} size={22} style={{ color: "var(--gold-c)" }} />
               </div>
               <span className="c-kicker" style={{ fontSize: 8, color: "var(--ink-strong)" }}>
                 {r.category}

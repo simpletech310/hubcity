@@ -481,7 +481,7 @@ export default function BusinessPage() {
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
                     <div className="p-4 h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
-                      <div className="w-10 h-10 flex items-center justify-center mb-3" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                      <div className="w-10 h-10 flex items-center justify-center mb-3" style={{ background: "var(--ink-strong)" }}>
                         <Icon name={biz.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <h3 className="font-display text-[15px] leading-tight truncate mb-0.5" style={{ color: "var(--ink-strong)" }}>
@@ -540,7 +540,7 @@ export default function BusinessPage() {
                       style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                           <Icon name={deal.iconName} size={16} style={{ color: "var(--gold-c)" }} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -603,7 +603,7 @@ export default function BusinessPage() {
                       className="shrink-0 px-3 py-2.5 flex items-center gap-2 press transition-colors"
                       style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     >
-                      <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                      <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                         <Icon name={badgeIcons[badge] || "tag"} size={14} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <div className="text-left">
@@ -640,7 +640,7 @@ export default function BusinessPage() {
                         className="group p-3 flex items-center gap-3 press transition-colors text-left"
                         style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                       >
-                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                           <Icon name={cat.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -663,7 +663,7 @@ export default function BusinessPage() {
             <section className="px-5 mb-6">
               <div className="p-5" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <div className="w-11 h-11 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                     <Icon name="heart-pulse" size={20} style={{ color: "var(--gold-c)" }} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -741,7 +741,7 @@ export default function BusinessPage() {
 
               {filtered.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
                     <Icon name="search" size={28} style={{ color: "var(--gold-c)" }} />
                   </div>
                   <p className="font-display text-[17px] mb-1" style={{ color: "var(--ink-strong)" }}>No businesses found</p>
@@ -755,7 +755,7 @@ export default function BusinessPage() {
           <div className="px-5 mt-8 mb-3">
             <div className="p-5 transition-colors" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                   <Icon name="megaphone" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -777,7 +777,7 @@ export default function BusinessPage() {
           <div className="px-5 mb-4">
             <div className="p-5 transition-colors" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
                   <Icon name="store" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -815,7 +815,7 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
       <div className="overflow-hidden h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+            <div className="w-10 h-10 flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
               <Icon name={deal.iconName} size={18} style={{ color: "var(--gold-c)" }} />
             </div>
             <Tag tone="coral" size="xs">{deal.discount}</Tag>
@@ -873,9 +873,7 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
-                <Icon name={iconName} size={24} style={{ color: "var(--gold-c)" }} />
-              </div>
+              <Icon name={iconName} size={32} style={{ color: "var(--gold-c)" }} />
             </div>
           )}
 
@@ -976,10 +974,8 @@ function BusinessRow({ biz }: { biz: Business }) {
           {biz.image_urls?.[0] ? (
             <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
           ) : (
-            <div className="flex flex-col items-center gap-2 py-2">
-              <div className="w-11 h-11 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
-                <Icon name={iconName} size={20} style={{ color: "var(--gold-c)" }} />
-              </div>
+            <div className="flex flex-col items-center gap-2">
+              <Icon name={iconName} size={24} style={{ color: "var(--gold-c)" }} />
               <span className="text-[8px] font-bold uppercase tracking-editorial-tight" style={{ color: "var(--gold-c)" }}>
                 {biz.category}
               </span>
