@@ -42,7 +42,7 @@
   --color-border-glow: rgba(242, 169, 0, 0.2);
 
   /* ─── Typography ─── */
-  --font-heading: "Space Grotesk", system-ui, sans-serif;
+  --font-heading: "Archivo Narrow", "Archivo", system-ui, sans-serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-display: "DM Serif Display", serif;
 }
@@ -819,7 +819,7 @@ img {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.28em;
-  color: rgba(245, 240, 230, 0.55);
+  color: var(--ink-mute);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
