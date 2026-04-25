@@ -147,12 +147,19 @@ export default function LiveSimulatedPlayer({
 
   if (!schedule.length || !currentBroadcast || !currentVideo?.mux_playback_id) {
     return (
-      <div className="px-5 pt-4 mb-6">
-        <div className="rounded-2xl border border-border-subtle bg-white/[0.04] p-8 text-center">
-          <p className="font-heading text-lg text-txt-secondary">
-            Culture TV Live is off the air.
+      <div className="mb-6">
+        <div
+          className="px-6 py-10 text-center"
+          style={{
+            background: "var(--paper)",
+            borderTop: "3px solid var(--rule-strong-c)",
+            borderBottom: "3px solid var(--rule-strong-c)",
+          }}
+        >
+          <p className="c-kicker" style={{ opacity: 0.7 }}>
+            § CULTURE TV LIVE · OFF AIR
           </p>
-          <p className="text-xs text-txt-secondary mt-1">
+          <p className="c-serif-it mt-2" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
             The schedule hasn&apos;t been generated yet.
           </p>
         </div>
@@ -161,30 +168,57 @@ export default function LiveSimulatedPlayer({
   }
 
   return (
-    <div className="px-5 pt-4 mb-6 animate-fade-in">
-      {/* Branding strip */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/15 border border-coral/30">
-          <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-          <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">
-            CULTURE TV LIVE
-          </span>
-        </div>
+    <div className="mb-8 animate-fade-in">
+      {/* ── Branding strip — gold pill + show kicker, full-bleed ── */}
+      <div
+        className="px-[18px] py-2 flex items-center gap-3"
+        style={{
+          background: "var(--ink-strong)",
+          color: "var(--paper)",
+          borderTop: "3px solid var(--rule-strong-c)",
+          borderBottom: "3px solid var(--rule-strong-c)",
+        }}
+      >
+        <span
+          className="inline-flex items-center gap-1.5"
+          style={{
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            padding: "3px 8px",
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontWeight: 800,
+            fontSize: 10,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
+          }}
+        >
+          <span
+            className="inline-block animate-pulse"
+            style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--ink-strong)" }}
+          />
+          CULTURE TV · LIVE
+        </span>
         {phase === "content" && currentShow && (
-          <span className="text-[11px] text-txt-secondary">
-            ON AIR · {currentShow.title}
-            {currentBroadcast.ends_at && ` · ends ${fmtAirtime(currentBroadcast.ends_at)}`}
+          <span
+            className="c-kicker truncate"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+          >
+            ON AIR · {currentShow.title.toUpperCase()}
+            {currentBroadcast.ends_at && ` · UNTIL ${fmtAirtime(currentBroadcast.ends_at).toUpperCase()}`}
           </span>
         )}
         {phase === "ad" && (
-          <span className="text-[11px] text-gold font-semibold">
-            Commercial break
+          <span
+            className="c-kicker"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+          >
+            COMMERCIAL BREAK
           </span>
         )}
       </div>
 
-      {/* Player */}
-      <div className="rounded-2xl overflow-hidden border border-border-subtle shadow-lg shadow-black/40 bg-black">
+      {/* ── Player — full-bleed, no rounded corners, ink letterbox ── */}
+      <div style={{ background: "var(--ink-strong)", borderBottom: "3px solid var(--rule-strong-c)" }}>
         {phase === "content" && (
           <MuxPlayer
             key={`content-${currentBroadcast.id}`}
@@ -218,69 +252,155 @@ export default function LiveSimulatedPlayer({
         )}
       </div>
 
-      {/* Metadata card (clickable for more info) */}
+      {/* ── Now Playing — newsprint show card ─────────────────── */}
       {phase === "content" && currentShow && (
         <Link
           href={`/live/shows/${currentShow.slug}`}
-          className="mt-3 flex items-center gap-3 p-3 rounded-xl border border-border-subtle bg-white/[0.04] hover:bg-white/[0.08] transition-colors press"
+          className="press"
+          style={{
+            display: "flex",
+            gap: 14,
+            padding: "14px 18px",
+            background: "var(--paper)",
+            borderBottom: "2px solid var(--rule-strong-c)",
+          }}
         >
-          {currentShow.poster_url && (
-            <div className="w-12 h-16 rounded-md overflow-hidden bg-white/[0.08] shrink-0">
+          <div
+            style={{
+              width: 70,
+              height: 92,
+              flexShrink: 0,
+              overflow: "hidden",
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            {currentShow.poster_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={currentShow.poster_url}
                 alt=""
                 className="w-full h-full object-cover"
               />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{ color: "var(--gold-c)" }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="6,3 20,12 6,21" />
+                </svg>
+              </div>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="c-kicker" style={{ fontSize: 9, opacity: 0.65 }}>
+              § NOW PLAYING
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="font-heading font-bold text-sm truncate">
+            <p
+              className="c-card-t mt-1"
+              style={{
+                fontSize: 17,
+                color: "var(--ink-strong)",
+                lineHeight: 1.15,
+                letterSpacing: "0.005em",
+              }}
+            >
               {currentShow.title}
             </p>
             {currentShow.tagline && (
-              <p className="text-[11px] text-txt-secondary truncate">
+              <p
+                className="c-serif-it mt-1"
+                style={{
+                  fontSize: 13,
+                  color: "var(--ink-strong)",
+                  opacity: 0.85,
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }}
+              >
                 {currentShow.tagline}
               </p>
             )}
+            <div
+              className="c-kicker mt-2"
+              style={{ fontSize: 9, color: "var(--gold-c)" }}
+            >
+              SHOW DETAILS →
+            </div>
           </div>
-          <span className="text-[11px] text-gold font-semibold shrink-0">
-            More info →
-          </span>
         </Link>
       )}
 
-      {/* Up Next */}
+      {/* ── Up Next — newsprint poster strip ──────────────────── */}
       {upcoming.length > 0 && (
-        <div className="mt-4">
-          <h3 className="font-heading font-bold text-[11px] tracking-wider text-txt-secondary uppercase mb-2">
-            Up Next
-          </h3>
-          <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-1 px-1">
+        <section className="px-[18px] pt-4 pb-1">
+          <div className="flex items-baseline justify-between mb-2">
+            <div className="c-kicker">§ UP NEXT</div>
+            <span
+              className="c-kicker"
+              style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.55 }}
+            >
+              {upcoming.length.toString().padStart(2, "0")}
+            </span>
+          </div>
+          <div className="c-rule mb-3" />
+          <div
+            className="flex gap-3 overflow-x-auto pb-1"
+            style={{ scrollSnapType: "x mandatory" }}
+          >
             {upcoming.map((b) => (
               <Link
                 key={b.id}
                 href={b.video?.show ? `/live/shows/${b.video.show.slug}` : "#"}
-                className="shrink-0 w-[140px] press"
+                className="press shrink-0"
+                style={{ width: 132, scrollSnapAlign: "start" }}
               >
-                <div className="aspect-[2/3] rounded-lg overflow-hidden bg-white/[0.06] mb-1.5">
+                <div
+                  style={{
+                    aspectRatio: "2 / 3",
+                    overflow: "hidden",
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    marginBottom: 6,
+                  }}
+                >
                   {b.video?.show?.poster_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={b.video.show.poster_url}
                       alt=""
                       className="w-full h-full object-cover"
                     />
-                  ) : null}
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ color: "var(--gold-c)" }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="6,3 20,12 6,21" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
-                <p className="text-[11px] text-gold font-semibold">
-                  {fmtAirtime(b.starts_at)}
+                <p
+                  className="c-kicker"
+                  style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+                >
+                  {fmtAirtime(b.starts_at).toUpperCase()}
                 </p>
-                <p className="text-[12px] font-semibold truncate">
+                <p
+                  className="c-card-t truncate"
+                  style={{ fontSize: 12, color: "var(--ink-strong)", marginTop: 2 }}
+                >
                   {b.video?.show?.title || b.video?.title}
                 </p>
               </Link>
             ))}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

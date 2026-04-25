@@ -1,8 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import dynamic from "next/dynamic";
 import type { AdDecision } from "@/lib/ads";
 import { fetchAd, fireTracking, recordImpression } from "@/lib/ads";
+
+// Mux Player handles HLS + iOS autoplay quirks that a raw <video> tag
+// loading an m3u8 source cannot. The /live/watch player uses the same
+// component for content; reusing it here means the ad behaves identically.
+const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), { ssr: false });
+
+/** Pull the Mux playback id out of a `https://stream.mux.com/<id>.m3u8` URL. */
+function muxPlaybackIdFromUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const m = /stream\.mux\.com\/([^./?]+)\.m3u8/.exec(url);
+  return m?.[1] ?? null;
+}
 
 interface VideoAdOverlayProps {
   contentId: string;
@@ -125,15 +138,34 @@ export default function VideoAdOverlay({
       {/* Ad content */}
       <div className="flex-1 flex items-center justify-center">
         {ad.video_url ? (
-          <video
-            ref={videoRef}
-            src={ad.video_url}
-            autoPlay
-            playsInline
-            className="w-full h-full object-contain"
-            onEnded={handleSkip}
-            onError={handleSkip}
-          />
+          (() => {
+            const playbackId = muxPlaybackIdFromUrl(ad.video_url);
+            return playbackId ? (
+              <MuxPlayer
+                playbackId={playbackId}
+                streamType="on-demand"
+                autoPlay
+                accentColor="#F2A900"
+                style={{ aspectRatio: "16/9", width: "100%" }}
+                metadata={{ video_title: `Ad: ${ad.business_name}` }}
+                onEnded={handleSkip}
+                onError={handleSkip}
+              />
+            ) : (
+              // Fallback for non-Mux URLs — keep the raw <video> path so an
+              // image-or-text creative or a self-hosted clip still works.
+              <video
+                ref={videoRef}
+                src={ad.video_url}
+                autoPlay
+                muted
+                playsInline
+                className="w-full h-full object-contain"
+                onEnded={handleSkip}
+                onError={handleSkip}
+              />
+            );
+          })()
         ) : (
           /* Image / text card fallback */
           <div className="max-w-md mx-auto px-6 text-center">

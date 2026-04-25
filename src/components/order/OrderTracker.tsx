@@ -2,11 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import Badge from "@/components/ui/Badge";
-import Card from "@/components/ui/Card";
 import type { OrderStatus } from "@/types/database";
 
-const statusSteps: OrderStatus[] = [
+const STATUS_STEPS: OrderStatus[] = [
   "pending",
   "confirmed",
   "preparing",
@@ -14,38 +12,34 @@ const statusSteps: OrderStatus[] = [
   "picked_up",
 ];
 
-const statusLabels: Record<string, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  preparing: "Preparing",
-  ready: "Ready",
-  picked_up: "Picked Up",
-  delivered: "Delivered",
-  cancelled: "Cancelled",
-};
-
-const statusVariant: Record<string, "gold" | "emerald" | "coral" | "cyan" | "purple"> = {
-  pending: "gold",
-  confirmed: "cyan",
-  preparing: "purple",
-  ready: "emerald",
-  picked_up: "emerald",
-  delivered: "emerald",
-  cancelled: "coral",
+const STATUS_LABEL: Record<string, string> = {
+  pending: "PENDING",
+  confirmed: "CONFIRMED",
+  preparing: "PREPARING",
+  ready: "READY",
+  picked_up: "PICKED UP",
+  delivered: "DELIVERED",
+  cancelled: "CANCELLED",
 };
 
 interface OrderTrackerProps {
   orderId: string;
   initialStatus: OrderStatus;
-  orderNumber: string;
+  /** Kept for back-compat; the page renders its own order number now. */
+  orderNumber?: string;
+  /** Same — kept so the existing call site doesn't have to change. */
   businessName?: string;
 }
 
+/**
+ * Newsprint-style horizontal status stepper. The page wrapper renders the
+ * order number + business + status pill above this component, so the
+ * tracker's job is purely the visual progress timeline. Re-subscribes to
+ * Supabase realtime for live status flips during pickup / delivery.
+ */
 export default function OrderTracker({
   orderId,
   initialStatus,
-  orderNumber,
-  businessName,
 }: OrderTrackerProps) {
   const [status, setStatus] = useState<OrderStatus>(initialStatus);
   const supabase = createClient();
@@ -53,8 +47,7 @@ export default function OrderTracker({
   useEffect(() => {
     // Subscribe to both the parent order row AND the deliveries row for this
     // order. Deliveries status changes are what drive the text-based "live"
-    // feel during the courier handoff (picked_up -> delivered). No GPS pings
-    // — status is the only signal per the in-house courier product decision.
+    // feel during the courier handoff (picked_up -> delivered).
     const channel = supabase
       .channel(`order-${orderId}`)
       .on(
@@ -69,7 +62,7 @@ export default function OrderTracker({
           if (payload.new?.status) {
             setStatus(payload.new.status as OrderStatus);
           }
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -81,14 +74,12 @@ export default function OrderTracker({
         },
         (payload) => {
           const delStatus = (payload.new as { status?: string } | null)?.status;
-          // Mirror delivery status into the order tracker so customers see
-          // "out_for_delivery" / "delivered" without waiting for a refresh.
           if (delStatus === "picked_up") {
             setStatus("out_for_delivery" as OrderStatus);
           } else if (delStatus === "delivered") {
             setStatus("delivered" as OrderStatus);
           }
-        }
+        },
       )
       .subscribe();
 
@@ -97,78 +88,104 @@ export default function OrderTracker({
     };
   }, [orderId, supabase]);
 
-  const currentStepIndex = statusSteps.indexOf(status);
+  const currentStepIndex = STATUS_STEPS.indexOf(status);
+
+  if (status === "cancelled") {
+    return (
+      <div
+        className="px-4 py-3"
+        style={{
+          background: "var(--paper)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
+      >
+        <div
+          className="c-kicker"
+          style={{ fontSize: 11, color: "var(--ink-mute)", letterSpacing: "0.18em" }}
+        >
+          § ORDER CANCELLED — ANY CHARGE IS BEING REFUNDED.
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <>
-      {/* Order Header */}
-      <div>
-        <div className="flex items-center justify-between mb-1">
-          <h1 className="font-heading text-xl font-bold">{orderNumber}</h1>
-          <Badge
-            label={statusLabels[status] ?? status}
-            variant={statusVariant[status] ?? "gold"}
-            size="md"
-          />
-        </div>
-        {businessName && (
-          <p className="text-sm" style={{ color: "var(--ink-mute)" }}>{businessName}</p>
-        )}
+    <div
+      className="c-kicker"
+      style={{
+        background: "var(--paper)",
+        border: "2px solid var(--rule-strong-c)",
+        padding: "16px 14px 12px",
+      }}
+    >
+      <div className="flex items-center justify-between gap-1">
+        {STATUS_STEPS.map((step, i) => {
+          const isActive = i <= currentStepIndex;
+          const isCurrent = i === currentStepIndex;
+          return (
+            <div
+              key={step}
+              className="flex-1 flex flex-col items-center"
+              style={{ minWidth: 0 }}
+            >
+              <div className="flex items-center w-full">
+                {i > 0 && (
+                  <div
+                    style={{
+                      flex: 1,
+                      height: 2,
+                      background: isActive ? "var(--ink-strong)" : "var(--rule-c)",
+                    }}
+                  />
+                )}
+                <div
+                  style={{
+                    width: isCurrent ? 16 : 12,
+                    height: isCurrent ? 16 : 12,
+                    flexShrink: 0,
+                    background: isCurrent
+                      ? "var(--gold-c)"
+                      : isActive
+                        ? "var(--ink-strong)"
+                        : "var(--paper-soft, #DCD3BF)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                />
+                {i < STATUS_STEPS.length - 1 && (
+                  <div
+                    style={{
+                      flex: 1,
+                      height: 2,
+                      background:
+                        i < currentStepIndex ? "var(--ink-strong)" : "var(--rule-c)",
+                    }}
+                  />
+                )}
+              </div>
+              <span
+                style={{
+                  marginTop: 8,
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: isCurrent ? 800 : 700,
+                  fontSize: 9,
+                  letterSpacing: "0.14em",
+                  color: isActive ? "var(--ink-strong)" : "var(--ink-mute)",
+                  textAlign: "center",
+                  textTransform: "uppercase",
+                  // wrap long labels (e.g. "PICKED UP")
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  width: "100%",
+                  display: "inline-block",
+                }}
+              >
+                {STATUS_LABEL[step]}
+              </span>
+            </div>
+          );
+        })}
       </div>
-
-      {/* Status Stepper */}
-      {status !== "cancelled" && (
-        <Card>
-          <div className="flex items-center justify-between">
-            {statusSteps.map((step, i) => {
-              const isActive = i <= currentStepIndex;
-              const isCurrent = i === currentStepIndex;
-              return (
-                <div key={step} className="flex-1 flex flex-col items-center">
-                  <div className="flex items-center w-full">
-                    {i > 0 && (
-                      <div
-                        className={`flex-1 h-0.5 ${isActive ? "bg-gold" : ""}`}
-                        style={!isActive ? { background: "var(--rule-c)" } : undefined}
-                      />
-                    )}
-                    <div
-                      className={`w-4 h-4 rounded-full shrink-0 border-2 transition-all ${
-                        isCurrent
-                          ? "bg-gold border-gold shadow-lg shadow-gold/30"
-                          : isActive
-                          ? "bg-gold/60 border-gold/60"
-                          : ""
-                      }`}
-                      style={(!isCurrent && !isActive) ? { background: "var(--paper-soft)", borderColor: "var(--rule-c)" } : undefined}
-                    />
-                    {i < statusSteps.length - 1 && (
-                      <div
-                        className={`flex-1 h-0.5 ${i < currentStepIndex ? "bg-gold" : ""}`}
-                        style={i >= currentStepIndex ? { background: "var(--rule-c)" } : undefined}
-                      />
-                    )}
-                  </div>
-                  <span
-                    className={`text-[9px] mt-1.5 font-semibold ${isActive ? "text-gold" : ""}`}
-                    style={!isActive ? { color: "var(--ink-mute)" } : undefined}
-                  >
-                    {statusLabels[step]}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      )}
-
-      {status === "cancelled" && (
-        <Card>
-          <div className="text-center py-2">
-            <Badge label="Cancelled" variant="coral" size="md" />
-          </div>
-        </Card>
-      )}
-    </>
+    </div>
   );
 }
