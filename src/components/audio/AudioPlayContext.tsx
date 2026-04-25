@@ -115,6 +115,10 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   const pendingContentRef = useRef<PlayableItem | null>(null);
   // Avoid stacking ad fetches in flight.
   const adInFlightRef = useRef<boolean>(false);
+  // Mirror of `state.mode` for use in _onEnded — reading state inside a
+  // setState updater is synchronous in React 18 but can be coalesced under
+  // automatic batching, so we keep an explicit ref to be safe.
+  const modeRef = useRef<"content" | "ad">("content");
 
   const _registerAudio = useCallback((el: HTMLAudioElement | null) => {
     audioRef.current = el;
@@ -138,9 +142,11 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     if (!a) return;
     const src = muxAudioStreamUrl(item.muxPlaybackId);
+    // Don't call load() after assigning src — that resets the element and
+    // breaks the iOS Safari user-gesture chain that the original play() set
+    // up. Just assign src and call play(); the element handles loading.
     if (a.src !== src) {
       a.src = src;
-      a.load();
     }
     try {
       a.currentTime = 0;
@@ -160,9 +166,10 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   const driveAd = useCallback((ad: AudioAd) => {
     const a = audioRef.current;
     if (!a) return;
+    // Same as driveContent: skip load() so the assignment-only swap keeps the
+    // user-gesture chain intact for iOS.
     if (a.src !== ad.audio_url) {
       a.src = ad.audio_url;
-      a.load();
     }
     try {
       a.currentTime = 0;
@@ -210,6 +217,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
         if (!audioRef.current) return false;
 
         pendingContentRef.current = item;
+        modeRef.current = "ad";
         setState((s) => ({
           ...s,
           mode: "ad",
@@ -235,6 +243,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       //    User hears nothing during the ~50–300ms ad-decision fetch.
       driveContent(item, { muted: true });
       pendingContentRef.current = null;
+      modeRef.current = "content";
       setState((s) => ({
         ...s,
         current: item,
@@ -313,6 +322,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
         };
       });
       if (nextItem && nextIdx >= 0) {
+        modeRef.current = "content";
         driveContent(nextItem);
         // No pre-roll on manual prev/next — feels punitive.
       }
@@ -335,14 +345,10 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
 
   const _onEnded = useCallback(() => {
     // When an ad finishes, swap into the queued content.
-    let inAd = false;
-    setState((s) => {
-      if (s.mode === "ad") inAd = true;
-      return s;
-    });
-    if (inAd) {
+    if (modeRef.current === "ad") {
       const pending = pendingContentRef.current;
       pendingContentRef.current = null;
+      modeRef.current = "content";
       setState((s) => ({
         ...s,
         mode: "content",
@@ -369,6 +375,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       }
     }
     pendingContentRef.current = null;
+    modeRef.current = "content";
     setState({
       current: null,
       queue: [],
@@ -388,18 +395,17 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
 
   const skipAd = useCallback(() => {
     // Force-end the ad: if we have pending content, swap to it.
+    if (modeRef.current !== "ad") return;
     const pending = pendingContentRef.current;
     pendingContentRef.current = null;
-    setState((s) => {
-      if (s.mode !== "ad") return s;
-      return {
-        ...s,
-        mode: "content",
-        ad: null,
-        position: 0,
-        duration: pending?.durationSeconds ?? s.duration,
-      };
-    });
+    modeRef.current = "content";
+    setState((s) => ({
+      ...s,
+      mode: "content",
+      ad: null,
+      position: 0,
+      duration: pending?.durationSeconds ?? s.duration,
+    }));
     if (pending) driveContent(pending);
   }, [driveContent]);
 

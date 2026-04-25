@@ -46,7 +46,10 @@ export default function SnapCarousel({
             {number !== undefined && <EditorialNumber n={number} size="md" />}
             {kicker && <SectionKicker tone="muted">{kicker}</SectionKicker>}
             {title && (
-              <h3 className="font-display text-[22px] leading-none truncate" style={{ color: "var(--ink-strong)" }}>
+              <h3
+                className="c-title truncate"
+                style={{ fontSize: 26, lineHeight: 0.95, letterSpacing: "-0.005em", color: "var(--ink-strong)" }}
+              >
                 {title}
               </h3>
             )}

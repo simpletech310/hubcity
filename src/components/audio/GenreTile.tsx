@@ -39,11 +39,9 @@ export default function GenreTile({
         <div
           className="c-hero"
           style={{
-            fontSize: 22,
-            lineHeight: 1.0,
-            fontFamily: "var(--font-fraunces), Fraunces, serif",
-            fontStyle: "italic",
-            fontWeight: 700,
+            fontSize: 24,
+            lineHeight: 0.95,
+            letterSpacing: "-0.01em",
           }}
         >
           {genre.name}

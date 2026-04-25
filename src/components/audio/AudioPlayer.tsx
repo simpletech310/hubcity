@@ -48,7 +48,8 @@ export default function AudioPlayer() {
   const audioEl = (
     <audio
       ref={audio}
-      preload="metadata"
+      preload="auto"
+      playsInline
       onTimeUpdate={(e) => {
         const el = e.currentTarget;
         _onTimeUpdate(el.currentTime, el.duration || 0);

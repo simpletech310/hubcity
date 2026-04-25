@@ -175,8 +175,8 @@ async function getLocalAdDecision(
     const supabase = createAdminClient();
 
     const adTypeMap: Record<string, string[]> = {
-      podcast_preroll: ["audio_spot", "pre_roll"],
-      podcast_midroll: ["audio_spot", "mid_roll"],
+      podcast_preroll: ["audio_spot"],
+      podcast_midroll: ["audio_spot"],
       video_preroll: ["pre_roll"],
       live_overlay: ["overlay", "banner"],
       feed_banner: ["banner"],
@@ -188,12 +188,22 @@ async function getLocalAdDecision(
 
     const types = adTypeMap[req.zone] || ["banner"];
 
-    const { data: creatives } = await supabase
+    let q = supabase
       .from("ad_creatives")
       .select("*, campaign:ad_campaigns!inner(*)")
       .in("ad_type", types)
-      .filter("campaign.status", "eq", "active")
-      .limit(5);
+      .filter("campaign.status", "eq", "active");
+
+    // Audio zones must serve creatives that actually have an audio URL.
+    if (req.zone === "podcast_preroll" || req.zone === "podcast_midroll") {
+      q = q.not("audio_url", "is", null);
+    }
+    // Video zones must serve creatives with a video URL.
+    if (req.zone === "video_preroll") {
+      q = q.not("video_url", "is", null);
+    }
+
+    const { data: creatives } = await q.limit(5);
 
     if (!creatives || creatives.length === 0) return null;
 
