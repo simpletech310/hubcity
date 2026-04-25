@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { formatCents } from "@/lib/stripe";
 import type { TicketOrder, TicketOrderItem, Ticket } from "@/types/database";
@@ -250,28 +251,49 @@ export default function ETicketPage() {
         <div className="c-hero" style={{ fontSize: 56, marginTop: 8, lineHeight: 0.88 }}>TICKETS.</div>
       </div>
 
-      {/* Tab strip */}
+      {/* Tab strip — UPCOMING / PAST link back to list; status chip shows this order */}
       <div style={{ display: "flex", borderBottom: "2px solid var(--rule-strong-c)" }}>
         {[
-          { label: "UPCOMING", active: !isInactive },
-          { label: "PAST", active: false },
-          { label: isInactive ? statusLabel(order.status) : "BOOKED", active: isInactive },
+          { label: "UPCOMING", href: "/profile/tickets?tab=upcoming", active: !isInactive && event && event.start_date >= new Date().toISOString().split("T")[0] },
+          { label: "PAST",     href: "/profile/tickets?tab=past",     active: !isInactive && !!event && event.start_date < new Date().toISOString().split("T")[0] },
+          { label: isInactive ? statusLabel(order.status) : "BOOKED", href: null, active: isInactive || (!event || event.start_date >= new Date().toISOString().split("T")[0]) },
         ].map((t, i) => (
-          <div
-            key={i}
-            className="c-ui"
-            style={{
-              flex: 1,
-              padding: "12px 0",
-              textAlign: "center",
-              fontSize: 11,
-              letterSpacing: "0.14em",
-              background: t.active ? "var(--ink-strong)" : "transparent",
-              color: t.active ? "var(--paper)" : "var(--ink-strong)",
-            }}
-          >
-            {t.label}
-          </div>
+          t.href ? (
+            <Link
+              key={i}
+              href={t.href}
+              className="c-ui"
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                textAlign: "center",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                background: t.active ? "var(--ink-strong)" : "transparent",
+                color: t.active ? "var(--paper)" : "var(--ink-strong)",
+                borderRight: i < 2 ? "2px solid var(--rule-strong-c)" : undefined,
+                textDecoration: "none",
+              }}
+            >
+              {t.label}
+            </Link>
+          ) : (
+            <div
+              key={i}
+              className="c-ui"
+              style={{
+                flex: 1,
+                padding: "12px 0",
+                textAlign: "center",
+                fontSize: 11,
+                letterSpacing: "0.14em",
+                background: t.active ? "var(--ink-strong)" : "transparent",
+                color: t.active ? "var(--paper)" : "var(--ink-strong)",
+              }}
+            >
+              {t.label}
+            </div>
+          )
         ))}
       </div>
 
