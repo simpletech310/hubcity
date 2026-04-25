@@ -121,6 +121,9 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       index,
       position: 0,
       duration: item.durationSeconds ?? s.duration,
+      // Auto-open the full-screen player on the first tap. The user
+      // can collapse it (mini bar persists) or fully Stop ✕.
+      expanded: true,
     }));
   }, []);
 

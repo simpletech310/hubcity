@@ -11,8 +11,16 @@ export const FREQUENCY_SEED = {
   duration_seconds: 186,
 } as const;
 
+/**
+ * Direct-download audio URL for Mux audio-only assets. Requires the
+ * asset to have a static rendition enabled (POST /assets/:id/static-renditions
+ * with resolution: "audio-only"). Mux serves it as `audio.m4a`. This
+ * URL plays natively in `<audio>` across Chrome / Safari / Firefox so
+ * we don't need hls.js for the standard playback path.
+ */
 export const muxAudioStreamUrl = (playbackId: string) =>
-  `https://stream.mux.com/${playbackId}.m4a`;
+  `https://stream.mux.com/${playbackId}/audio.m4a`;
 
+/** HLS fallback (Safari only without hls.js). */
 export const muxAudioHlsUrl = (playbackId: string) =>
   `https://stream.mux.com/${playbackId}.m3u8`;
