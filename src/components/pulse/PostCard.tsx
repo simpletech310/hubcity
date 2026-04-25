@@ -145,49 +145,38 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
 
   return (
     <div
-      className={`overflow-hidden ${post.is_pinned ? "relative" : ""}`}
-      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+      className="overflow-hidden"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)", boxShadow: "3px 3px 0 rgba(26,21,18,0.18)" }}
     >
-      {/* Role-based accent line */}
+      {/* Top accent bar — pinned takes priority, then role color */}
       {(() => {
         const role = author?.role;
-        const color =
-          role === "city_official" || role === "city_ambassador" || role === "admin"
-            ? "#F2A900"
-            : role === "business_owner"
-            ? "#22C55E"
-            : role === "content_creator"
-            ? "#8B5CF6"
-            : null;
-        return color ? (
-          <div
-            className="absolute top-0 left-0 right-0 h-[3px] z-10"
-            style={{ background: `linear-gradient(90deg, ${color}99, transparent)` }}
-          />
-        ) : null;
+        const color = post.is_pinned
+          ? "var(--gold-c)"
+          : role === "city_official" || role === "city_ambassador" || role === "admin"
+          ? "#F2A900"
+          : role === "business_owner"
+          ? "#22C55E"
+          : role === "content_creator"
+          ? "#8B5CF6"
+          : null;
+        return color ? <div style={{ height: 4, background: color }} /> : null;
       })()}
 
-      {/* Pinned accent — overrides role line */}
-      {post.is_pinned && (
-        <div
-          className="absolute top-0 left-0 right-0 h-[3px] z-10"
-          style={{ background: "linear-gradient(90deg, #F2A90099, transparent)" }}
-        />
-      )}
-
-      <div className="p-4">
+      {/* Author header — paper-warm zone */}
+      <div style={{ background: "var(--paper-warm)", borderBottom: "2px solid var(--rule-strong-c)", padding: "12px 16px" }}>
         {/* Pinned label */}
         {post.is_pinned && (
-          <div className="c-kicker flex items-center gap-1.5 mb-3">
+          <div className="c-kicker flex items-center gap-1.5 mb-2.5">
             <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
               <path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z" />
             </svg>
-            Pinned Post
+            PINNED POST
           </div>
         )}
 
         {/* Author row */}
-        <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
           <Link href={author?.handle ? `/user/${author.handle}` : "#"} className="shrink-0">
             {author?.avatar_url ? (
               <Image
@@ -305,7 +294,10 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
             </div>
           )}
         </div>
+      </div>
 
+      {/* Body zone */}
+      <div style={{ padding: "12px 16px 12px" }}>
         {/* Content */}
         {isEditing ? (
           <div className="mb-3">
@@ -375,7 +367,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
 
         {/* Hashtags */}
         {post.hashtags && post.hashtags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex flex-wrap gap-1.5">
             {post.hashtags.map((tag: string) => (
               <span key={tag} className="c-chip gold cursor-pointer">
                 #{tag}
@@ -481,7 +473,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       )}
 
       {/* Reactions */}
-      <div className="px-4 pb-1 pt-1">
+      <div className="px-4 pt-2 pb-0">
         <ReactionBar post={post} userReactions={userReactions} userId={userId} />
       </div>
 

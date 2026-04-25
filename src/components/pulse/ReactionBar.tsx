@@ -182,22 +182,22 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
 
   return (
     <>
-      {/* Reaction summary line */}
+      {/* Reaction summary — emoji stack + counts, only when reactions exist */}
       {totalReactions > 0 && (
         <div className="flex items-center gap-1.5 mb-2">
-          <div className="flex -space-x-1">
+          <div className="flex items-center -space-x-0.5">
             {emojis
               .filter((e) => (counts[e] || 0) > 0)
               .slice(0, 3)
               .map((e) => (
-                <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
+                <span key={e} className="text-sm leading-none">{REACTION_EMOJI_MAP[e]}</span>
               ))}
           </div>
-          <span className="c-meta tabular-nums">{totalReactions}</span>
+          <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "rgba(26,21,18,0.5)" }}>{totalReactions}</span>
           {commentCount > 0 && (
             <>
-              <span className="c-meta mx-1">&middot;</span>
-              <span className="c-meta tabular-nums">
+              <span style={{ opacity: 0.35, fontSize: 10 }}>·</span>
+              <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "rgba(26,21,18,0.5)" }}>
                 {commentCount} comment{commentCount !== 1 ? "s" : ""}
               </span>
             </>
@@ -205,50 +205,54 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
         </div>
       )}
 
-      {/* Action row */}
+      {/* Action row — full bleed (container has px-4, -mx-4 cancels it out) */}
       <div
-        className="flex items-center gap-1 pt-2"
+        className="flex items-stretch -mx-4"
         style={{ borderTop: "2px solid var(--rule-strong-c)" }}
       >
-        {/* All 5 emoji reactions always visible */}
-        {emojis.map((emoji) => {
-          const isActive = activeReactions.has(emoji);
-          const count = counts[emoji] || 0;
+        {/* Emoji reactions — flat touch targets, no individual box borders */}
+        <div className="flex items-center flex-1 px-1">
+          {emojis.map((emoji) => {
+            const isActive = activeReactions.has(emoji);
+            const count = counts[emoji] || 0;
+            return (
+              <button
+                key={emoji}
+                onClick={() => toggleReaction(emoji)}
+                disabled={!userId}
+                className={`flex items-center gap-0.5 px-1.5 py-2.5 transition-all ${
+                  !userId ? "opacity-40 cursor-default" : "active:scale-90"
+                }`}
+                style={isActive ? { background: "var(--gold-c)" } : undefined}
+                aria-pressed={isActive}
+                aria-label={`React with ${emoji}`}
+              >
+                <span className={`text-base leading-none ${isActive ? "" : "grayscale opacity-50"}`}>
+                  {REACTION_EMOJI_MAP[emoji]}
+                </span>
+                {count > 0 && (
+                  <span
+                    className="c-kicker tabular-nums"
+                    style={{ fontSize: 9, color: isActive ? "var(--ink-strong)" : "rgba(26,21,18,0.5)" }}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
 
-          return (
-            <button
-              key={emoji}
-              onClick={() => toggleReaction(emoji)}
-              disabled={!userId}
-              className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
-                !userId ? "opacity-40 cursor-default" : "press"
-              } ${isActive ? "font-semibold" : ""}`}
-              style={{
-                background: isActive ? "var(--gold-c)" : "var(--paper)",
-                border: "2px solid var(--ink-strong)",
-                color: "var(--ink-strong)",
-              }}
-              aria-pressed={isActive}
-            >
-              <span className={`text-sm ${isActive ? "" : "grayscale opacity-60"}`}>
-                {REACTION_EMOJI_MAP[emoji]}
-              </span>
-              {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
-            </button>
-          );
-        })}
-
-        {/* Right side actions */}
-        <div className="flex items-center gap-1 ml-auto">
+        {/* Right group: share · bookmark · comment — separated by vertical rule */}
+        <div
+          className="flex items-stretch"
+          style={{ borderLeft: "2px solid var(--rule-strong-c)" }}
+        >
           {/* Share */}
           <button
             onClick={handleShare}
-            className="relative flex items-center gap-1 px-2 py-1.5 text-xs press transition-all"
-            style={{
-              background: "var(--paper)",
-              border: "2px solid var(--ink-strong)",
-              color: "var(--ink-strong)",
-            }}
+            className="relative flex items-center px-3 py-2 press transition-all"
+            style={{ color: "var(--ink-strong)", borderRight: "2px solid var(--rule-strong-c)" }}
             aria-label="Share"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -256,14 +260,10 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
             </svg>
             {shareToast && (
               <span
-                className="absolute -top-8 left-1/2 -translate-x-1/2 text-[10px] font-semibold px-2 py-1 whitespace-nowrap"
-                style={{
-                  background: "var(--ink-strong)",
-                  color: "var(--paper)",
-                  border: "2px solid var(--ink-strong)",
-                }}
+                className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 c-kicker"
+                style={{ background: "var(--ink-strong)", color: "var(--paper)", fontSize: 9, zIndex: 10 }}
               >
-                Link copied!
+                COPIED
               </span>
             )}
           </button>
@@ -272,13 +272,11 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
           <button
             onClick={handleBookmark}
             disabled={!userId}
-            className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
-              !userId ? "opacity-40 cursor-default" : "press"
-            }`}
+            className={`flex items-center px-3 py-2 transition-all ${!userId ? "opacity-40 cursor-default" : "press"}`}
             style={{
-              background: bookmarked ? "var(--gold-c)" : "var(--paper)",
-              border: "2px solid var(--ink-strong)",
+              background: bookmarked ? "var(--gold-c)" : "transparent",
               color: "var(--ink-strong)",
+              borderRight: "2px solid var(--rule-strong-c)",
             }}
             aria-pressed={bookmarked}
             aria-label="Bookmark"
@@ -297,21 +295,19 @@ export default function ReactionBar({ post, userReactions, userId }: ReactionBar
             </svg>
           </button>
 
-          {/* Comment button */}
+          {/* Comment — most prominent, always rightmost */}
           <button
             onClick={() => setCommentsOpen(true)}
-            className="flex items-center gap-1.5 px-2 py-1.5 text-xs press transition-all"
-            style={{
-              background: "var(--paper)",
-              border: "2px solid var(--ink-strong)",
-              color: "var(--ink-strong)",
-            }}
-            aria-label="Comments"
+            className="flex items-center gap-1.5 px-3 py-2 press transition-all"
+            style={{ color: "var(--ink-strong)" }}
+            aria-label="Open comments"
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span className="tabular-nums">{commentCount}</span>
+            <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "var(--ink-strong)" }}>
+              {commentCount}
+            </span>
           </button>
         </div>
       </div>

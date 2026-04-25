@@ -6,7 +6,7 @@ import Image from "next/image";
 import Badge from "@/components/ui/Badge";
 import MediaLightbox from "@/components/pulse/MediaLightbox";
 import CommentsPreview from "@/components/pulse/CommentsPreview";
-import { REACTION_EMOJI_MAP, REACTION_COLORS, ROLE_BADGE_MAP } from "@/lib/constants";
+import { REACTION_EMOJI_MAP, ROLE_BADGE_MAP } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/client";
 import type { ReactionEmoji } from "@/types/database";
 
@@ -216,10 +216,11 @@ export default function GroupPostCard({
 
   return (
     <div
-      className="!p-0 overflow-hidden relative"
+      className="!p-0 overflow-hidden"
       style={{
         background: "var(--paper)",
         border: "2px solid var(--rule-strong-c)",
+        boxShadow: "3px 3px 0 rgba(26,21,18,0.18)",
       }}
     >
       {/* Pinned accent — gold foil bar across top */}
@@ -227,8 +228,8 @@ export default function GroupPostCard({
         <div style={{ height: 4, background: "var(--gold-c)" }} />
       )}
 
-      {/* Author header */}
-      <div className="p-4 pb-0">
+      {/* Author header — paper-warm zone */}
+      <div style={{ background: "var(--paper-warm)", borderBottom: "2px solid var(--rule-strong-c)", padding: "12px 16px" }}>
         {post.is_pinned && (
           <div
             className="inline-flex items-center gap-1 c-kicker mb-2"
@@ -324,25 +325,25 @@ export default function GroupPostCard({
             </div>
           )}
         </div>
+      </div>
 
-        {/* Body */}
-        <div className="mt-3">
-          <p
-            className={`c-body whitespace-pre-wrap ${isLong && !bodyExpanded ? "line-clamp-4" : ""}`}
-            style={{ fontSize: 14, color: "var(--ink-strong)", lineHeight: 1.5 }}
+      {/* Body zone */}
+      <div style={{ padding: "12px 16px 12px" }}>
+        <p
+          className={`c-body whitespace-pre-wrap ${isLong && !bodyExpanded ? "line-clamp-4" : ""}`}
+          style={{ fontSize: 14, color: "var(--ink-strong)", lineHeight: 1.5 }}
+        >
+          {post.body}
+        </p>
+        {isLong && (
+          <button
+            onClick={() => setBodyExpanded(!bodyExpanded)}
+            className="c-kicker mt-1"
+            style={{ fontSize: 10, color: "var(--ink-strong)" }}
           >
-            {post.body}
-          </p>
-          {isLong && (
-            <button
-              onClick={() => setBodyExpanded(!bodyExpanded)}
-              className="c-kicker mt-1"
-              style={{ fontSize: 10, color: "var(--ink-strong)" }}
-            >
-              {bodyExpanded ? "SHOW LESS" : "READ MORE"}
-            </button>
-          )}
-        </div>
+            {bodyExpanded ? "SHOW LESS" : "READ MORE"}
+          </button>
+        )}
       </div>
 
       {/* Image */}
@@ -436,68 +437,77 @@ export default function GroupPostCard({
       )}
 
       {/* Reactions + actions */}
-      <div className="px-4 pb-3 pt-2.5">
-        {/* Reaction summary */}
+      <div className="px-4 pt-2 pb-0">
+        {/* Reaction summary — only when reactions exist */}
         {totalReactions > 0 && (
           <div className="flex items-center gap-1.5 mb-2">
-            <div className="flex -space-x-1">
+            <div className="flex items-center -space-x-0.5">
               {reactionEmojis.filter((e) => (post.reaction_counts?.[e] || 0) > 0).slice(0, 3).map((e) => (
-                <span key={e} className="text-xs">{REACTION_EMOJI_MAP[e]}</span>
+                <span key={e} className="text-sm leading-none">{REACTION_EMOJI_MAP[e]}</span>
               ))}
             </div>
-            <span
-              className="c-kicker tabular-nums"
-              style={{ fontSize: 10, opacity: 0.6 }}
-            >
+            <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "rgba(26,21,18,0.5)" }}>
               {totalReactions}
             </span>
             {(post.comment_count || 0) > 0 && (
               <>
-                <span style={{ opacity: 0.3 }} className="mx-1">·</span>
-                <span
-                  className="c-kicker tabular-nums"
-                  style={{ fontSize: 10, opacity: 0.6 }}
-                >
-                  {post.comment_count} COMMENT{post.comment_count !== 1 ? "S" : ""}
+                <span style={{ opacity: 0.35, fontSize: 10 }}>·</span>
+                <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "rgba(26,21,18,0.5)" }}>
+                  {post.comment_count} comment{post.comment_count !== 1 ? "s" : ""}
                 </span>
               </>
             )}
           </div>
         )}
 
-        {/* Action row */}
+        {/* Action row — full bleed via -mx-4 */}
         <div
-          className="flex items-center gap-0.5 pt-2"
+          className="flex items-stretch -mx-4"
           style={{ borderTop: "2px solid var(--rule-strong-c)" }}
         >
-          {reactionEmojis.map((emoji) => {
-            const isActive = userReactions.includes(emoji);
-            const count = post.reaction_counts?.[emoji] || 0;
-            const colors = REACTION_COLORS[emoji];
+          {/* Emoji reactions — flat touch targets */}
+          <div className="flex items-center flex-1 px-1">
+            {reactionEmojis.map((emoji) => {
+              const isActive = userReactions.includes(emoji);
+              const count = post.reaction_counts?.[emoji] || 0;
+              return (
+                <button
+                  key={emoji}
+                  onClick={() => isMember && onReact(post.id, emoji)}
+                  disabled={!isMember}
+                  className={`flex items-center gap-0.5 px-1.5 py-2.5 transition-all ${
+                    !isMember ? "opacity-40 cursor-default" : "active:scale-90"
+                  }`}
+                  style={isActive ? { background: "var(--gold-c)" } : undefined}
+                  aria-pressed={isActive}
+                  aria-label={`React with ${emoji}`}
+                >
+                  <span className={`text-base leading-none ${isActive ? "" : "grayscale opacity-50"}`}>
+                    {REACTION_EMOJI_MAP[emoji]}
+                  </span>
+                  {count > 0 && (
+                    <span
+                      className="c-kicker tabular-nums"
+                      style={{ fontSize: 9, color: isActive ? "var(--ink-strong)" : "rgba(26,21,18,0.5)" }}
+                    >
+                      {count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-            return (
-              <button
-                key={emoji}
-                onClick={() => isMember && onReact(post.id, emoji)}
-                disabled={!isMember}
-                className={`flex items-center gap-1 px-2 py-1.5 text-xs transition-all ${
-                  isActive ? `${colors.bg} ${colors.text} font-semibold` : ""
-                } ${!isMember ? "opacity-40 cursor-default" : "press"}`}
-                style={!isActive ? { color: "var(--ink-strong)", opacity: 0.55 } : undefined}
-              >
-                <span className={`text-sm ${isActive ? "" : "grayscale opacity-70"}`}>{REACTION_EMOJI_MAP[emoji]}</span>
-                {count > 0 && <span className="tabular-nums text-[11px]">{count}</span>}
-              </button>
-            );
-          })}
-
-          {/* Right side actions */}
-          <div className="flex items-center gap-0.5 ml-auto">
+          {/* Right group: share · comment */}
+          <div
+            className="flex items-stretch"
+            style={{ borderLeft: "2px solid var(--rule-strong-c)" }}
+          >
             {/* Share */}
             <button
               onClick={handleShare}
-              className="relative flex items-center gap-1 px-2 py-1.5 text-xs transition-all press"
-              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+              className="relative flex items-center px-3 py-2 press transition-all"
+              style={{ color: "var(--ink-strong)", borderRight: "2px solid var(--rule-strong-c)" }}
               aria-label="Share"
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -505,15 +515,10 @@ export default function GroupPostCard({
               </svg>
               {shareToast && (
                 <span
-                  className="absolute -top-8 left-1/2 -translate-x-1/2 c-kicker whitespace-nowrap px-2 py-1"
-                  style={{
-                    background: "var(--gold-c)",
-                    color: "var(--ink-strong)",
-                    border: "2px solid var(--rule-strong-c)",
-                    fontSize: 9,
-                  }}
+                  className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-1 c-kicker"
+                  style={{ background: "var(--ink-strong)", color: "var(--paper)", fontSize: 9, zIndex: 10 }}
                 >
-                  LINK COPIED
+                  COPIED
                 </span>
               )}
             </button>
@@ -521,13 +526,16 @@ export default function GroupPostCard({
             {/* Comment */}
             <button
               onClick={() => onCommentOpen(post.id)}
-              className="flex items-center gap-1.5 px-2 py-1.5 text-xs transition-all press"
-              style={{ color: "var(--ink-strong)", opacity: 0.6 }}
+              className="flex items-center gap-1.5 px-3 py-2 press transition-all"
+              style={{ color: "var(--ink-strong)" }}
+              aria-label="Open comments"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
-              <span className="tabular-nums">{post.comment_count || 0}</span>
+              <span className="c-kicker tabular-nums" style={{ fontSize: 10, color: "var(--ink-strong)" }}>
+                {post.comment_count || 0}
+              </span>
             </button>
           </div>
         </div>
