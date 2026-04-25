@@ -97,6 +97,23 @@ async function getBusiness(slug) {
   return data;
 }
 
+/**
+ * Cycle the business's existing `image_urls` array across the items so every
+ * product card renders with a real photo. Non-destructive — items that
+ * already specify their own image_url keep it.
+ */
+function withImages(items, imageUrls) {
+  if (!imageUrls || imageUrls.length === 0) return items;
+  return items.map((it, i) => ({
+    ...it,
+    image_url: it.image_url ?? imageUrls[i % imageUrls.length],
+    gallery_urls: it.gallery_urls ?? [
+      imageUrls[(i + 1) % imageUrls.length],
+      imageUrls[(i + 2) % imageUrls.length],
+    ],
+  }));
+}
+
 async function ensureMenuItems(businessId, items, options = {}) {
   for (const item of items) {
     const { data: existing } = await supabase
@@ -231,7 +248,7 @@ async function seedBizExtras() {
     accepts_orders: true,
   }).eq('id', pucker.id);
 
-  await ensureMenuItems(pucker.id, [
+  await ensureMenuItems(pucker.id, withImages([
     { name: 'Classic Lemonade',         price: 600, category: 'lemonade', description: 'Fresh-squeezed, just enough sweet.', sort_order: 1 },
     { name: 'Strawberry Lemonade',      price: 700, category: 'lemonade', description: 'Real strawberry purée muddled in.',  sort_order: 2 },
     { name: 'Mango Tajín Lemonade',     price: 750, category: 'lemonade', description: 'Mango chunks, Tajín rim. Compton-style.', sort_order: 3 },
@@ -239,7 +256,7 @@ async function seedBizExtras() {
     { name: 'Hibiscus Lemonade',        price: 700, category: 'lemonade', description: 'Floral, tart, deep red. Caffeine-free.', sort_order: 5 },
     { name: 'Pucker Up Pink',           price: 650, category: 'lemonade', description: 'Pink lemonade, the OG.',             sort_order: 6 },
     { name: 'Family Jug (64 oz)',       price: 1800, category: 'family',  description: 'Half-gallon. Pick any flavor.',      sort_order: 7 },
-  ], { allergens: [], prep_time_minutes: 5 });
+  ], pucker.image_urls), { allergens: [], prep_time_minutes: 5 });
 
   // ── FakeSmiles — retail (hats + shirts) ─────────────────────────────
   const fake = await getBusiness('fakesmiles');
@@ -252,7 +269,7 @@ async function seedBizExtras() {
     accepts_orders: true,
   }).eq('id', fake.id);
 
-  await ensureMenuItems(fake.id, [
+  await ensureMenuItems(fake.id, withImages([
     { name: 'FakeSmiles Logo Tee — Black',   price: 3500, category: 'shirts', description: '100% cotton. Front chest logo.',   sku: 'FS-TEE-BLK', stock_count: 40, sort_order: 1 },
     { name: 'FakeSmiles Logo Tee — White',   price: 3500, category: 'shirts', description: '100% cotton. Front chest logo.',   sku: 'FS-TEE-WHT', stock_count: 35, sort_order: 2 },
     { name: 'Hub City Heavyweight Hoodie',   price: 7500, category: 'shirts', description: '12 oz hoodie. Embroidered chest.', sku: 'FS-HOOD-01', stock_count: 22, sort_order: 3 },
@@ -261,7 +278,30 @@ async function seedBizExtras() {
     { name: 'Dad Hat — Tan',                 price: 3000, category: 'hats',   description: 'Unstructured, curved brim. Tan colorway.', sku: 'FS-HAT-TAN', stock_count: 45, sort_order: 6 },
     { name: 'Trucker — Black/Mesh',          price: 3200, category: 'hats',   description: 'High-crown mesh-back trucker.',     sku: 'FS-HAT-TRK', stock_count: 30, sort_order: 7 },
     { name: 'Beanie — Embroidered',          price: 2800, category: 'hats',   description: 'Cuffed beanie, embroidered logo.',  sku: 'FS-HAT-BNY', stock_count: 38, sort_order: 8 },
-  ]);
+  ], fake.image_urls));
+
+  // ── BFlyy LA — retail (women's streetwear) ──────────────────────────
+  const bflyy = await getBusiness('bflyy-la');
+  console.log('  → BFlyy LA (retail · women\'s streetwear)');
+  await supabase.from('businesses').update({
+    category: 'retail',
+    business_type: 'retail',
+    business_sub_type: 'general',
+    description: 'BFlyy LA — women\'s streetwear out of Los Angeles. Statement fits, soft basics, the city in every stitch.',
+    accepts_orders: true,
+  }).eq('id', bflyy.id);
+
+  await ensureMenuItems(bflyy.id, withImages([
+    { name: 'BFlyy Crop Tee — Cream',          price: 3800, category: 'tops',       description: 'Boxy crop, embroidered BFlyy script.',     sku: 'BF-CROP-CR',  stock_count: 32, sort_order: 1 },
+    { name: 'BFlyy Crop Tee — Black',          price: 3800, category: 'tops',       description: 'Boxy crop, embroidered BFlyy script.',     sku: 'BF-CROP-BK',  stock_count: 30, sort_order: 2 },
+    { name: 'Oversized Logo Tee',              price: 4200, category: 'tops',       description: 'Drop-shoulder, midweight cotton.',         sku: 'BF-OVER-01',  stock_count: 28, sort_order: 3 },
+    { name: 'BFlyy Hoodie — Heavyweight',      price: 8500, category: 'tops',       description: '14 oz fleece hoodie, kangaroo pocket.',    sku: 'BF-HOOD-01',  stock_count: 22, sort_order: 4 },
+    { name: 'Track Set — Two-Piece',           price: 11500, category: 'sets',      description: 'Cropped quarter-zip + flare track pants.', sku: 'BF-SET-01',   stock_count: 18, sort_order: 5 },
+    { name: 'Lounge Short Set',                price: 6800, category: 'sets',       description: 'Ribbed crop top + biker shorts.',          sku: 'BF-SHORT-01', stock_count: 24, sort_order: 6 },
+    { name: 'BFlyy Trucker Hat',               price: 3200, category: 'accessories', description: 'High-crown trucker, mesh back.',          sku: 'BF-HAT-01',   stock_count: 40, sort_order: 7 },
+    { name: 'BFlyy Tote — Canvas',             price: 2800, category: 'accessories', description: '14 oz canvas tote, gold script print.',  sku: 'BF-TOTE-01',  stock_count: 50, sort_order: 8 },
+    { name: 'Layered Chain Necklace',          price: 4500, category: 'accessories', description: '18k-plated double-strand, BFlyy charm.',   sku: 'BF-NECK-01',  stock_count: 25, sort_order: 9 },
+  ], bflyy.image_urls));
 
   // ── Glamorous Mane — beauty · hair stylist with bookings ────────────
   const glam = await getBusiness('glamorous-mane');
