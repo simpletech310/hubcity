@@ -150,9 +150,15 @@ export async function POST(request: Request) {
       { idempotencyKey }
     );
 
+    // Persist both the Stripe intent id AND the cents-amount we charged so
+    // the booking detail can show "$X paid · $Y due at appointment" without
+    // re-deriving the deposit from a possibly-changed services row.
     await supabase
       .from("bookings")
-      .update({ stripe_payment_intent_id: paymentIntent.id })
+      .update({
+        stripe_payment_intent_id: paymentIntent.id,
+        deposit_paid_cents: chargeAmount,
+      })
       .eq("id", booking.id);
 
     await cacheIntent(supabase, {

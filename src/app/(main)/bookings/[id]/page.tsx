@@ -14,6 +14,15 @@ type BookingRow = {
   status: string;
   price: number | null;
   stripe_payment_intent_id: string | null;
+  deposit_paid_cents: number | null;
+  balance_paid_cents: number;
+  balance_paid_at: string | null;
+  balance_payment_method:
+    | "platform"
+    | "cash"
+    | "card_at_appointment"
+    | "other"
+    | null;
   notes: string | null;
   staff_id: string | null;
   staff_name: string | null;
@@ -104,8 +113,10 @@ export default async function BookingDetailPage({
   if (!bookingRaw) notFound();
   const booking = bookingRaw as BookingRow;
 
-  // Look up the matching service so we can show the deposit/remaining split.
-  // We fall back to "full price" when the service was renamed or removed.
+  // Pull the matching service for the configured deposit amount. We use it
+  // ONLY as a fallback when an older booking row is missing the persisted
+  // `deposit_paid_cents` value (legacy data); new bookings store that
+  // amount at create-payment-intent time.
   const { data: serviceMatch } = await supabase
     .from("services")
     .select("id, name, price, duration, deposit_amount")
@@ -114,14 +125,20 @@ export default async function BookingDetailPage({
     .maybeSingle();
 
   const totalCents = booking.price ?? serviceMatch?.price ?? 0;
+
+  // Authoritative source of truth: stored `deposit_paid_cents`. If it's
+  // null we fall back to inferring from `services.deposit_amount` whenever
+  // a Stripe payment intent exists (legacy backfill path).
+  let depositPaidCents = booking.deposit_paid_cents ?? 0;
+  if (depositPaidCents === 0 && booking.stripe_payment_intent_id) {
+    const cfg = serviceMatch?.deposit_amount ?? 0;
+    depositPaidCents = cfg > 0 ? cfg : totalCents;
+  }
+
+  const balancePaidCents = booking.balance_paid_cents ?? 0;
+  const totalPaidCents = depositPaidCents + balancePaidCents;
+  const remainingCents = Math.max(0, totalCents - totalPaidCents);
   const depositConfigured = serviceMatch?.deposit_amount ?? 0;
-  // Stripe charge captured at booking time = deposit if configured, else full price.
-  const depositPaidCents = booking.stripe_payment_intent_id
-    ? depositConfigured > 0
-      ? depositConfigured
-      : totalCents
-    : 0;
-  const remainingCents = Math.max(0, totalCents - depositPaidCents);
 
   const status = booking.status;
   const tone = STATUS_TONE[status] ?? STATUS_TONE.pending;
@@ -367,17 +384,48 @@ export default async function BookingDetailPage({
           style={{ padding: 0, background: "var(--paper)", overflow: "hidden" }}
         >
           <PayRow label="Service total" value={dollars(totalCents)} />
-          <PayRow
-            label={booking.stripe_payment_intent_id ? "Deposit paid" : "Deposit due"}
-            value={
-              booking.stripe_payment_intent_id
-                ? `− ${dollars(depositPaidCents)}`
-                : depositConfigured > 0
+          {/* Deposit row: paid if we have a deposit on file, otherwise due. */}
+          {depositPaidCents > 0 ? (
+            <PayRow
+              label="Deposit paid"
+              value={`− ${dollars(depositPaidCents)}`}
+              tone="credit"
+              meta={
+                booking.stripe_payment_intent_id
+                  ? `RECEIPT · ${booking.stripe_payment_intent_id.slice(-6).toUpperCase()}`
+                  : "PAID"
+              }
+            />
+          ) : (
+            <PayRow
+              label={depositConfigured > 0 ? "Deposit due" : "Total due"}
+              value={
+                depositConfigured > 0
                   ? dollars(depositConfigured)
                   : dollars(totalCents)
-            }
-            tone={booking.stripe_payment_intent_id ? "credit" : "due"}
-          />
+              }
+              tone="due"
+            />
+          )}
+
+          {/* Balance row: only render if a balance has been settled. */}
+          {balancePaidCents > 0 && (
+            <PayRow
+              label="Balance paid at appointment"
+              value={`− ${dollars(balancePaidCents)}`}
+              tone="credit"
+              meta={
+                booking.balance_payment_method
+                  ? `${methodLabel(booking.balance_payment_method)}${booking.balance_paid_at ? ` · ${new Date(booking.balance_paid_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }).toUpperCase()}` : ""}`
+                  : booking.balance_paid_at
+                    ? new Date(booking.balance_paid_at)
+                        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+                        .toUpperCase()
+                    : undefined
+              }
+            />
+          )}
+
           <div
             style={{
               borderTop: "2px solid var(--rule-strong-c)",
@@ -409,11 +457,13 @@ export default async function BookingDetailPage({
             </div>
             <p
               className="c-serif-it"
-              style={{ fontSize: 12, color: "rgba(243,238,220,0.7)", maxWidth: 140, textAlign: "right" }}
+              style={{ fontSize: 12, color: "rgba(243,238,220,0.7)", maxWidth: 150, textAlign: "right" }}
             >
               {remainingCents > 0
                 ? "Bring a card or cash to settle this balance at your appointment."
-                : "No further payment needed."}
+                : balancePaidCents > 0
+                  ? "Settled at your appointment. Show this confirmation to the front desk."
+                  : "No further payment needed."}
             </p>
           </div>
         </div>
@@ -484,10 +534,12 @@ function PayRow({
   label,
   value,
   tone,
+  meta,
 }: {
   label: string;
   value: string;
   tone?: "credit" | "due";
+  meta?: string;
 }) {
   return (
     <div
@@ -497,28 +549,53 @@ function PayRow({
         alignItems: "baseline",
         justifyContent: "space-between",
         borderBottom: "1px solid var(--rule-c)",
+        gap: 12,
       }}
     >
-      <span
-        className="c-kicker"
-        style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.85 }}
-      >
-        {label}
-      </span>
+      <div style={{ minWidth: 0 }}>
+        <div
+          className="c-kicker"
+          style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.85 }}
+        >
+          {label}
+        </div>
+        {meta && (
+          <div
+            className="c-meta"
+            style={{
+              fontSize: 9,
+              marginTop: 3,
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: "var(--ink-mute)",
+            }}
+          >
+            {meta}
+          </div>
+        )}
+      </div>
       <span
         style={{
           fontFamily: "var(--font-archivo), Archivo, sans-serif",
           fontWeight: 800,
           fontSize: 16,
           fontVariantNumeric: "tabular-nums",
-          color:
-            tone === "credit"
-              ? "var(--gold-c)"
-              : "var(--ink-strong)",
+          color: tone === "credit" ? "var(--gold-c)" : "var(--ink-strong)",
+          whiteSpace: "nowrap",
         }}
       >
         {value}
       </span>
     </div>
   );
+}
+
+function methodLabel(method: string): string {
+  switch (method) {
+    case "platform": return "VIA APP";
+    case "cash": return "CASH";
+    case "card_at_appointment": return "CARD ON-SITE";
+    case "other": return "PAID";
+    default: return method.toUpperCase();
+  }
 }

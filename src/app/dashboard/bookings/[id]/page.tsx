@@ -6,6 +6,7 @@ import Badge from "@/components/ui/Badge";
 import type { Booking } from "@/types/database";
 import BookingStatusActions from "./BookingStatusActions";
 import BookingRefundButton from "./BookingRefundButton";
+import MarkBalancePaid from "./MarkBalancePaid";
 
 function formatCents(cents: number) {
   return `$${(cents / 100).toFixed(2)}`;
@@ -185,31 +186,89 @@ export default async function BookingDetailPage({
       )}
 
       {/* Price & Payment */}
-      <Card className="glass-card-elevated">
-        <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
-          Payment
-        </h3>
-        <div className="space-y-1.5 text-sm">
-          <div className="flex justify-between">
-            <span className="text-txt-secondary">Price</span>
-            <span className="font-semibold text-gold">
-              {typedBooking.price !== null ? formatCents(typedBooking.price) : "Free"}
-            </span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-txt-secondary">Method</span>
-            <span>{typedBooking.stripe_payment_intent_id ? "Stripe" : "N/A"}</span>
-          </div>
-          {typedBooking.stripe_payment_intent_id && (
-            <div className="flex justify-between">
-              <span className="text-txt-secondary">Payment ID</span>
-              <span className="text-xs text-txt-secondary font-mono">
-                {typedBooking.stripe_payment_intent_id.slice(0, 8)}...{typedBooking.stripe_payment_intent_id.slice(-4)}
-              </span>
+      {(() => {
+        const total = typedBooking.price ?? 0;
+        const depositPaid =
+          (typedBooking as Booking & { deposit_paid_cents?: number | null })
+            .deposit_paid_cents ?? 0;
+        const balancePaid =
+          (typedBooking as Booking & { balance_paid_cents?: number | null })
+            .balance_paid_cents ?? 0;
+        const balanceMethod = (
+          typedBooking as Booking & { balance_payment_method?: string | null }
+        ).balance_payment_method;
+        const balancePaidAt = (
+          typedBooking as Booking & { balance_paid_at?: string | null }
+        ).balance_paid_at;
+        const remaining = Math.max(0, total - depositPaid - balancePaid);
+        return (
+          <Card className="glass-card-elevated">
+            <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+              Payment
+            </h3>
+            <div className="space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-txt-secondary">Service total</span>
+                <span className="font-semibold">
+                  {total > 0 ? formatCents(total) : "Free"}
+                </span>
+              </div>
+              {depositPaid > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-txt-secondary">Deposit paid</span>
+                  <span className="font-semibold text-gold">
+                    − {formatCents(depositPaid)}
+                  </span>
+                </div>
+              )}
+              {balancePaid > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-txt-secondary">
+                    Balance paid
+                    {balanceMethod ? ` · ${balanceMethod.replace(/_/g, " ")}` : ""}
+                    {balancePaidAt
+                      ? ` · ${new Date(balancePaidAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}`
+                      : ""}
+                  </span>
+                  <span className="font-semibold text-gold">
+                    − {formatCents(balancePaid)}
+                  </span>
+                </div>
+              )}
+              <div
+                className="flex justify-between pt-2 mt-1"
+                style={{ borderTop: "1px solid var(--border-subtle, rgba(255,255,255,0.08))" }}
+              >
+                <span className="font-semibold">
+                  {remaining > 0 ? "Due at appointment" : "Paid in full"}
+                </span>
+                <span className="font-bold text-gold">{formatCents(remaining)}</span>
+              </div>
+              {typedBooking.stripe_payment_intent_id && (
+                <div className="flex justify-between text-xs text-txt-secondary pt-1">
+                  <span>Stripe receipt</span>
+                  <span className="font-mono">
+                    {typedBooking.stripe_payment_intent_id.slice(0, 8)}…{typedBooking.stripe_payment_intent_id.slice(-4)}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-      </Card>
+
+            <div className="mt-4">
+              <MarkBalancePaid
+                bookingId={typedBooking.id}
+                totalCents={total}
+                depositPaidCents={depositPaid}
+                balancePaidCents={balancePaid}
+                bookingStatus={typedBooking.status}
+              />
+            </div>
+          </Card>
+        );
+      })()}
 
       {/* Timeline */}
       <Card className="glass-card-elevated">

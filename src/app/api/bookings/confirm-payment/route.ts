@@ -36,7 +36,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Verify payment with Stripe
+    // Verify payment with Stripe and capture the actual amount charged so
+    // we always have an authoritative `deposit_paid_cents` regardless of
+    // whether the create-payment-intent step recorded it.
+    let amountReceived: number | null = null;
     if (booking.stripe_payment_intent_id) {
       const stripe = getStripe();
       const paymentIntent = await stripe.paymentIntents.retrieve(
@@ -49,12 +52,19 @@ export async function POST(request: Request) {
           { status: 400 }
         );
       }
+      amountReceived = paymentIntent.amount_received ?? paymentIntent.amount ?? null;
     }
 
-    // Update booking to confirmed
+    // Update booking to confirmed + persist deposit amount.
+    const update: {
+      status: string;
+      deposit_paid_cents?: number;
+    } = { status: "confirmed" };
+    if (amountReceived != null) update.deposit_paid_cents = amountReceived;
+
     const { error: updateError } = await supabase
       .from("bookings")
-      .update({ status: "confirmed" })
+      .update(update)
       .eq("id", booking_id);
 
     if (updateError) throw updateError;
