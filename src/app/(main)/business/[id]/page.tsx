@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessReview } from "@/types/database";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
 import ReviewSection from "./ReviewSection";
+import BusinessTabs from "./BusinessTabs";
 import HeroGallery from "@/components/business/HeroGallery";
 import ShareQrButton from "@/components/business/ShareQrButton";
 import OpenNowBadge from "@/components/business/OpenNowBadge";
@@ -598,31 +599,12 @@ export default async function BusinessDetailPage({
         </aside>
       )}
 
-      {/* ── Tab strip (WORK · SERVICES · REVIEWS · HOURS) ── */}
-      <div style={{ padding: "0 18px", borderTop: "3px solid var(--rule-strong-c)" }}>
-        <div style={{ display: "flex" }}>
-          {[
-            { label: "WORK", active: true },
-            { label: "SERVICES", active: false },
-            { label: "REVIEWS", active: false },
-            { label: "HOURS", active: false },
-          ].map((t) => (
-            <div
-              key={t.label}
-              className="c-ui"
-              style={{
-                padding: "12px 14px",
-                fontSize: 11,
-                borderBottom: t.active ? "4px solid var(--rule-strong-c)" : "none",
-                color: t.active ? "var(--ink-strong)" : "var(--ink-mute)",
-              }}
-            >
-              {t.label}
-            </div>
-          ))}
-        </div>
-      </div>
-
+      {/* ── Tabs (WORK · REVIEWS · HOURS). The Services tab was retired —
+            services + bookings still render inside the WORK content below. ── */}
+      <BusinessTabs
+        showReviews={true}
+        showHours={!!(biz.hours && Object.keys(biz.hours).length > 0)}
+        work={(<>
       {/* ── WORK · 3-col photo grid with 2px ink borders ── */}
       {heroImages.length > 1 && (
         <div style={{ padding: "14px 18px 24px" }}>
@@ -1158,6 +1140,8 @@ export default async function BusinessDetailPage({
         </section>
       )}
 
+        </>)}
+        reviews={(<>
       {/* ── Featured Reviews · no cards, rules between ── */}
       {typedFeatured.length > 0 && (
         <section style={{ padding: "0 18px 24px" }}>
@@ -1241,6 +1225,8 @@ export default async function BusinessDetailPage({
         <ReviewSection businessId={biz.id} />
       </div>
 
+        </>)}
+        hours={(<>
       {/* ── Hours · ink block ── */}
       {biz.hours && Object.keys(biz.hours).length > 0 && (
         <section className="c-ink-block" style={{ padding: "24px 18px 28px" }}>
@@ -1291,6 +1277,9 @@ export default async function BusinessDetailPage({
           </div>
         </section>
       )}
+
+        </>)}
+      />
 
       {/* ── Related rail · Also in the Issue ── */}
       <section style={{ padding: "24px 0 40px" }}>
