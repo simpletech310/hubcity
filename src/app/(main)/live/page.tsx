@@ -95,7 +95,7 @@ export default async function LivePage({
     ? await supabase
         .from("scheduled_broadcasts")
         .select(
-          "id, channel_id, video_id, starts_at, ends_at, position, is_ad_slot, video:channel_videos(id, title, mux_playback_id, duration, show_id, show:shows(id, slug, title, poster_url, tagline))"
+          "id, channel_id, video_id, starts_at, ends_at, position, is_ad_slot, video:channel_videos(id, title, description, episode_number, thumbnail_url, mux_playback_id, duration, show_id, show:shows(id, slug, title, poster_url, tagline))"
         )
         .eq("channel_id", liveChannelRow.id)
         .gte("ends_at", nowIso)

@@ -141,7 +141,7 @@ export default function LiveSimulatedPlayer({
   const upcoming = useMemo(() => {
     return schedule
       .slice(currentIndex + 1)
-      .filter((b) => !b.is_ad_slot && b.video?.show)
+      .filter((b) => !b.is_ad_slot && b.video)
       .slice(0, 5);
   }, [schedule, currentIndex]);
 
@@ -198,12 +198,12 @@ export default function LiveSimulatedPlayer({
           />
           CULTURE TV · LIVE
         </span>
-        {phase === "content" && currentShow && (
+        {phase === "content" && currentVideo && (
           <span
             className="c-kicker truncate"
             style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
           >
-            ON AIR · {currentShow.title.toUpperCase()}
+            ON AIR · {(currentShow?.title ?? currentVideo.title).toUpperCase()}
             {currentBroadcast.ends_at && ` · UNTIL ${fmtAirtime(currentBroadcast.ends_at).toUpperCase()}`}
           </span>
         )}
@@ -253,9 +253,9 @@ export default function LiveSimulatedPlayer({
       </div>
 
       {/* ── Now Playing — newsprint show card ─────────────────── */}
-      {phase === "content" && currentShow && (
+      {phase === "content" && currentVideo && (
         <Link
-          href={`/live/shows/${currentShow.slug}`}
+          href={`/live/watch/${currentVideo.id}`}
           className="press"
           style={{
             display: "flex",
@@ -275,10 +275,10 @@ export default function LiveSimulatedPlayer({
               border: "2px solid var(--rule-strong-c)",
             }}
           >
-            {currentShow.poster_url ? (
+            {currentShow?.poster_url || currentVideo.thumbnail_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={currentShow.poster_url}
+                src={currentShow?.poster_url ?? currentVideo.thumbnail_url ?? ""}
                 alt=""
                 className="w-full h-full object-cover"
               />
@@ -306,9 +306,9 @@ export default function LiveSimulatedPlayer({
                 letterSpacing: "0.005em",
               }}
             >
-              {currentShow.title}
+              {currentShow?.title ?? currentVideo.title}
             </p>
-            {currentShow.tagline && (
+            {currentShow ? (
               <p
                 className="c-serif-it mt-1"
                 style={{
@@ -321,21 +321,40 @@ export default function LiveSimulatedPlayer({
                   overflow: "hidden",
                 }}
               >
-                {currentShow.tagline}
+                {currentVideo.episode_number != null
+                  ? `Ep ${currentVideo.episode_number} · ${currentVideo.title}`
+                  : currentVideo.title}
               </p>
+            ) : (
+              currentVideo.description && (
+                <p
+                  className="c-serif-it mt-1"
+                  style={{
+                    fontSize: 13,
+                    color: "var(--ink-strong)",
+                    opacity: 0.85,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {currentVideo.description}
+                </p>
+              )
             )}
             <div
               className="c-kicker mt-2"
               style={{ fontSize: 9, color: "var(--gold-c)" }}
             >
-              SHOW DETAILS →
+              WATCH FULL PAGE →
             </div>
           </div>
         </Link>
       )}
 
-      {/* ── Up Next — newsprint poster strip ──────────────────── */}
-      {upcoming.length > 0 && (
+      {/* ── Up Next — featured tile + poster strip ────────────── */}
+      {upcoming.length > 0 ? (
         <section className="px-[18px] pt-4 pb-1">
           <div className="flex items-baseline justify-between mb-2">
             <div className="c-kicker">§ UP NEXT</div>
@@ -347,30 +366,42 @@ export default function LiveSimulatedPlayer({
             </span>
           </div>
           <div className="c-rule mb-3" />
-          <div
-            className="flex gap-3 overflow-x-auto pb-1"
-            style={{ scrollSnapType: "x mandatory" }}
-          >
-            {upcoming.map((b) => (
+
+          {/* Featured first item — wide row */}
+          {(() => {
+            const next = upcoming[0];
+            const nv = next.video;
+            if (!nv) return null;
+            const ns = nv.show;
+            const teaser = ns?.tagline ?? nv.description ?? null;
+            return (
               <Link
-                key={b.id}
-                href={b.video?.show ? `/live/shows/${b.video.show.slug}` : "#"}
-                className="press shrink-0"
-                style={{ width: 132, scrollSnapAlign: "start" }}
+                key={next.id}
+                href={`/live/watch/${nv.id}`}
+                className="press"
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  padding: 10,
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                  marginBottom: 14,
+                }}
               >
                 <div
                   style={{
-                    aspectRatio: "2 / 3",
+                    width: 86,
+                    height: 114,
+                    flexShrink: 0,
                     overflow: "hidden",
                     background: "var(--ink-strong)",
                     border: "2px solid var(--rule-strong-c)",
-                    marginBottom: 6,
                   }}
                 >
-                  {b.video?.show?.poster_url ? (
+                  {ns?.poster_url || nv.thumbnail_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={b.video.show.poster_url}
+                      src={ns?.poster_url ?? nv.thumbnail_url ?? ""}
                       alt=""
                       className="w-full h-full object-cover"
                     />
@@ -379,28 +410,144 @@ export default function LiveSimulatedPlayer({
                       className="w-full h-full flex items-center justify-center"
                       style={{ color: "var(--gold-c)" }}
                     >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                         <polygon points="6,3 20,12 6,21" />
                       </svg>
                     </div>
                   )}
                 </div>
-                <p
-                  className="c-kicker"
-                  style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
-                >
-                  {fmtAirtime(b.starts_at).toUpperCase()}
-                </p>
-                <p
-                  className="c-card-t truncate"
-                  style={{ fontSize: 12, color: "var(--ink-strong)", marginTop: 2 }}
-                >
-                  {b.video?.show?.title || b.video?.title}
-                </p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span
+                    className="inline-block"
+                    style={{
+                      background: "var(--gold-c)",
+                      color: "var(--ink-strong)",
+                      padding: "2px 7px",
+                      fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                      fontWeight: 800,
+                      fontSize: 9,
+                      letterSpacing: "0.16em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    NEXT · {fmtAirtime(next.starts_at).toUpperCase()}
+                  </span>
+                  <p
+                    className="c-card-t mt-1.5"
+                    style={{
+                      fontSize: 15,
+                      color: "var(--ink-strong)",
+                      lineHeight: 1.15,
+                      letterSpacing: "0.005em",
+                    }}
+                  >
+                    {ns?.title ?? nv.title}
+                  </p>
+                  {teaser && (
+                    <p
+                      className="c-serif-it mt-1"
+                      style={{
+                        fontSize: 12,
+                        color: "var(--ink-strong)",
+                        opacity: 0.85,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {teaser}
+                    </p>
+                  )}
+                </div>
               </Link>
-            ))}
-          </div>
+            );
+          })()}
+
+          {/* Smaller poster strip for items 2..N */}
+          {upcoming.length > 1 && (
+            <>
+              <div className="c-kicker mb-2" style={{ fontSize: 10, opacity: 0.7 }}>
+                § LATER
+              </div>
+              <div
+                className="flex gap-3 overflow-x-auto pb-1"
+                style={{ scrollSnapType: "x mandatory" }}
+              >
+                {upcoming.slice(1).map((b) => {
+                  if (!b.video) return null;
+                  const v = b.video;
+                  const s = v.show;
+                  return (
+                    <Link
+                      key={b.id}
+                      href={`/live/watch/${v.id}`}
+                      className="press shrink-0"
+                      style={{ width: 116, scrollSnapAlign: "start" }}
+                    >
+                      <div
+                        style={{
+                          aspectRatio: "2 / 3",
+                          overflow: "hidden",
+                          background: "var(--ink-strong)",
+                          border: "2px solid var(--rule-strong-c)",
+                          marginBottom: 6,
+                        }}
+                      >
+                        {s?.poster_url || v.thumbnail_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={s?.poster_url ?? v.thumbnail_url ?? ""}
+                            alt=""
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div
+                            className="w-full h-full flex items-center justify-center"
+                            style={{ color: "var(--gold-c)" }}
+                          >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                              <polygon points="6,3 20,12 6,21" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      <p
+                        className="c-kicker"
+                        style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+                      >
+                        {fmtAirtime(b.starts_at).toUpperCase()}
+                      </p>
+                      <p
+                        className="c-card-t truncate"
+                        style={{ fontSize: 12, color: "var(--ink-strong)", marginTop: 2 }}
+                      >
+                        {s?.title ?? v.title}
+                      </p>
+                    </Link>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </section>
+      ) : (
+        phase === "content" && (
+          <section className="px-[18px] pt-4 pb-3">
+            <div
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+                padding: "16px 14px",
+                textAlign: "center",
+              }}
+            >
+              <div className="c-kicker" style={{ fontSize: 10, opacity: 0.7 }}>
+                § PROGRAMMING RESUMES SHORTLY
+              </div>
+            </div>
+          </section>
+        )
       )}
     </div>
   );
