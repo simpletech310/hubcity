@@ -212,7 +212,7 @@ export default function ReelsViewer({
             }}
           />
           <span className="c-kicker" style={{ fontSize: 10 }}>
-            REELS
+            MOMENTS
           </span>
         </div>
         <div style={{ width: 40, height: 40 }} />
