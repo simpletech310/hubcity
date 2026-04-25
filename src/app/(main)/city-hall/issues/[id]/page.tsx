@@ -177,14 +177,14 @@ export default function IssueDetailPage() {
                   />
                 )}
               </div>
-              <h1 className="font-heading text-lg font-bold leading-snug">{issue.title}</h1>
+              <h1 className="font-heading text-lg font-bold leading-snug" style={{ color: "var(--ink-strong)" }}>{issue.title}</h1>
             </div>
           </div>
         </Card>
 
         {/* Progress Timeline */}
         <div className="mb-5">
-          <h2 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold c-meta uppercase tracking-wider mb-3">
             Status Timeline
           </h2>
           <div className="space-y-0">
@@ -209,7 +209,7 @@ export default function IssueDetailPage() {
                     <div
                       className={`w-4 h-4 rounded-full border-2 ${isCurrent ? "scale-125" : ""}`}
                       style={{
-                        borderColor: isActive ? color : "rgba(255,255,255,0.1)",
+                        borderColor: isActive ? color : "var(--rule-strong-c)",
                         backgroundColor: isActive ? color : "transparent",
                       }}
                     />
@@ -217,7 +217,7 @@ export default function IssueDetailPage() {
                       <div
                         className="w-0.5 h-8"
                         style={{
-                          backgroundColor: i < currentStep ? color : "rgba(255,255,255,0.06)",
+                          backgroundColor: i < currentStep ? color : "var(--rule-strong-c)",
                         }}
                       />
                     )}
@@ -227,7 +227,7 @@ export default function IssueDetailPage() {
                       {STATUS_LABELS[step]}
                     </p>
                     {isActive && timestamps[step] && (
-                      <p className="text-[11px] text-txt-secondary">
+                      <p className="text-[11px] c-meta">
                         {formatDate(timestamps[step])}
                       </p>
                     )}
@@ -241,7 +241,7 @@ export default function IssueDetailPage() {
         {/* Details */}
         {issue.description && (
           <Card className="mb-4">
-            <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold c-meta uppercase tracking-wider mb-2">
               Description
             </h3>
             <p className="text-sm whitespace-pre-wrap">{issue.description}</p>
@@ -251,7 +251,7 @@ export default function IssueDetailPage() {
         {/* Location */}
         {issue.location_text && (
           <Card className="mb-4">
-            <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold c-meta uppercase tracking-wider mb-2">
               Location
             </h3>
             <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function IssueDetailPage() {
               <p className="text-sm">{issue.location_text}</p>
             </div>
             {issue.district && (
-              <p className="text-xs text-txt-secondary mt-1 ml-7">
+              <p className="text-xs c-meta mt-1 ml-7">
                 District {issue.district}
               </p>
             )}
@@ -276,7 +276,7 @@ export default function IssueDetailPage() {
         {/* Department */}
         {issue.assigned_department && (
           <Card className="mb-4">
-            <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+            <h3 className="text-xs font-semibold c-meta uppercase tracking-wider mb-2">
               Assigned Department
             </h3>
             <p className="text-sm font-semibold">{issue.assigned_department}</p>
@@ -303,7 +303,7 @@ export default function IssueDetailPage() {
 
           return (
             <Card className={`mb-4 ${isOverdue ? "border-coral/30" : isUrgent ? "border-gold/30" : ""}`}>
-              <h3 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-semibold c-meta uppercase tracking-wider mb-2">
                 Expected Resolution
               </h3>
               <div className="flex items-center justify-between">
@@ -316,7 +316,7 @@ export default function IssueDetailPage() {
                 />
               </div>
               {issue.sla_hours && (
-                <p className="text-[11px] text-txt-secondary mt-1">
+                <p className="text-[11px] c-meta mt-1">
                   SLA: {issue.sla_hours < 24 ? `${issue.sla_hours} hours` : `${Math.round(issue.sla_hours / 24)} days`}
                 </p>
               )}
@@ -332,7 +332,7 @@ export default function IssueDetailPage() {
             </h3>
             <p className="text-sm">{issue.resolution_notes}</p>
             {issue.resolved_at && (
-              <p className="text-xs text-txt-secondary mt-2">
+              <p className="text-xs c-meta mt-2">
                 Resolved {formatDate(issue.resolved_at)}
               </p>
             )}
@@ -358,12 +358,12 @@ export default function IssueDetailPage() {
 
         {/* Updates / Comments Section */}
         <div className="mt-8">
-          <h2 className="text-xs font-semibold text-txt-secondary uppercase tracking-wider mb-4">
+          <h2 className="text-xs font-semibold c-meta uppercase tracking-wider mb-4">
             Updates & Comments
           </h2>
 
           {comments.length === 0 && (
-            <p className="text-sm text-txt-secondary mb-4">
+            <p className="text-sm c-meta mb-4">
               No updates yet. Be the first to comment.
             </p>
           )}
@@ -382,7 +382,7 @@ export default function IssueDetailPage() {
                       className="w-8 h-8 rounded-full object-cover flex-shrink-0"
                     />
                   ) : (
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0 text-sm font-bold">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-sm font-bold" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}>
                       {comment.author?.display_name?.[0]?.toUpperCase() || "?"}
                     </div>
                   )}
@@ -399,7 +399,7 @@ export default function IssueDetailPage() {
                       )}
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{comment.body}</p>
-                    <p className="text-[11px] text-txt-secondary mt-1.5">
+                    <p className="text-[11px] c-meta mt-1.5">
                       {formatDate(comment.created_at)}
                     </p>
                   </div>
@@ -415,7 +415,7 @@ export default function IssueDetailPage() {
               onChange={(e) => setCommentBody(e.target.value)}
               placeholder="Add an update or comment..."
               rows={3}
-              className="w-full bg-transparent text-sm resize-none outline-none placeholder:text-txt-secondary/50 mb-3"
+              className="w-full bg-transparent text-sm resize-none outline-none placeholder:text-[color:var(--ink-mute)] mb-3"
             />
             <div className="flex justify-end">
               <Button

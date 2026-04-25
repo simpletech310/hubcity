@@ -223,16 +223,16 @@ function SkeletonCards() {
       {[1, 2, 3].map((i) => (
         <div key={i} className="c-frame p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
           <div className="animate-pulse flex gap-3">
-            <div className="w-1 rounded-full bg-white/10 self-stretch" />
+            <div className="w-1 rounded-full self-stretch" style={{ background: "var(--rule-strong-c)" }} />
             <div className="flex-1 space-y-3">
               <div className="flex justify-between">
-                <div className="h-4 bg-white/10 rounded w-28" />
-                <div className="h-4 bg-white/10 rounded w-16" />
+                <div className="h-4 rounded w-28" style={{ background: "var(--paper-soft)" }} />
+                <div className="h-4 rounded w-16" style={{ background: "var(--paper-soft)" }} />
               </div>
-              <div className="h-3 bg-white/10 rounded w-40" />
+              <div className="h-3 rounded w-40" style={{ background: "var(--paper-soft)" }} />
               <div className="flex justify-between items-center">
-                <div className="h-3 bg-white/10 rounded w-20" />
-                <div className="h-8 bg-white/10 rounded-full w-24" />
+                <div className="h-3 rounded w-20" style={{ background: "var(--paper-soft)" }} />
+                <div className="h-8 rounded-full w-24" style={{ background: "var(--paper-soft)" }} />
               </div>
             </div>
           </div>
@@ -452,7 +452,7 @@ export default function TicketSelectionPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-sm truncate">{event.title}</p>
-                <p className="text-xs text-txt-secondary mt-0.5">
+                <p className="text-xs mt-0.5" style={{ color: "var(--ink-mute)" }}>
                   {formattedDate}{formattedTime ? ` · ${formattedTime}` : ""}
                 </p>
                 {event.location_name && (
@@ -506,7 +506,7 @@ export default function TicketSelectionPage() {
             >
               <Icon name="ticket" size={30} />
             </div>
-            <p className="text-txt-secondary text-sm">No tickets available for this event.</p>
+            <p className="text-sm" style={{ color: "var(--ink-mute)" }}>No tickets available for this event.</p>
           </div>
         )}
 
@@ -596,7 +596,7 @@ export default function TicketSelectionPage() {
                           </p>
                         </div>
                         {section?.description && (
-                          <p className="text-[11px] text-txt-secondary mt-1 ml-5">
+                          <p className="text-[11px] mt-1 ml-5" style={{ color: "var(--ink-mute)" }}>
                             {section.description}
                           </p>
                         )}
@@ -605,7 +605,7 @@ export default function TicketSelectionPage() {
                         <p className="text-lg font-bold" style={{ color: sectionColor }}>
                           {formatCents(cfg.price)}
                         </p>
-                        <p className="text-[10px] text-txt-secondary">per ticket</p>
+                        <p className="text-[10px]" style={{ color: "var(--ink-mute)" }}>per ticket</p>
                       </div>
                     </div>
 
@@ -658,8 +658,8 @@ export default function TicketSelectionPage() {
 
                     {/* Selected quantity subtotal */}
                     {qty > 0 && (
-                      <div className="mt-3 ml-5 pt-2.5 border-t border-border-subtle flex items-center justify-between">
-                        <span className="text-xs text-txt-secondary">{qty} {qty === 1 ? "ticket" : "tickets"} selected</span>
+                      <div className="mt-3 ml-5 pt-2.5 flex items-center justify-between" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
+                        <span className="text-xs" style={{ color: "var(--ink-mute)" }}>{qty} {qty === 1 ? "ticket" : "tickets"} selected</span>
                         <span className="text-sm font-bold" style={{ color: sectionColor }}>
                           {formatCents(cfg.price * qty)}
                         </span>

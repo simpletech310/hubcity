@@ -96,23 +96,23 @@ export function WeatherWidget() {
           {/* Temp + Description */}
           <div className="flex-1 min-w-0">
             <div className="flex items-baseline gap-2 mb-0.5">
-              <span className="font-heading text-[36px] font-bold leading-none text-white">
+              <span className="font-heading text-[36px] font-bold leading-none" style={{ color: "var(--ink-strong)" }}>
                 {Math.round(weather.temp)}&deg;
               </span>
-              <span className="text-[13px] text-white/40">
+              <span className="text-[13px]" style={{ color: "var(--ink-mute)" }}>
                 Feels {Math.round(weather.feels_like)}&deg;
               </span>
             </div>
-            <p className="text-[13px] text-white/60 capitalize mb-2">{weather.description}</p>
+            <p className="text-[13px] capitalize mb-2" style={{ color: "var(--ink-soft)" }}>{weather.description}</p>
 
             {/* Detail pills */}
             <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-white/50 bg-white/[0.04] rounded-full px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1" style={{ color: "var(--ink-mute)", background: "var(--paper-warm)" }}>
                 <Icon name="rain" size={12} className="text-cyan" />
                 {weather.humidity}% humidity
               </span>
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-white/50 bg-white/[0.04] rounded-full px-2.5 py-1">
-                <Icon name="wind" size={12} className="text-white/40" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] rounded-full px-2.5 py-1" style={{ color: "var(--ink-mute)", background: "var(--paper-warm)" }}>
+                <Icon name="wind" size={12} style={{ color: "var(--ink-mute)" }} />
                 {weather.wind_speed} mph
               </span>
             </div>
@@ -125,27 +125,27 @@ export function WeatherWidget() {
         {/* AQI Card */}
         {aqi && aqiStyle && (
           <div className={`rounded-2xl border p-4 ${aqiStyle.bg} ${aqiStyle.border}`}>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-1">Air Quality</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--ink-mute)" }}>Air Quality</p>
             <p className={`font-heading text-[22px] font-bold leading-tight ${aqiStyle.text}`}>
               {aqi.category}
             </p>
             <div className="flex items-center gap-2 mt-1.5">
-              <span className="text-[11px] text-white/40">PM2.5: {aqi.pm25?.toFixed(1)}</span>
-              <span className="text-[11px] text-white/40">PM10: {aqi.pm10?.toFixed(1)}</span>
+              <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>PM2.5: {aqi.pm25?.toFixed(1)}</span>
+              <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>PM10: {aqi.pm10?.toFixed(1)}</span>
             </div>
           </div>
         )}
 
         {/* Current Conditions Card */}
-        <div className="rounded-2xl bg-white/[0.03] border border-white/[0.06] p-4">
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-1">{cityLabel}</p>
-          <p className="font-heading text-[14px] font-bold text-white leading-tight mb-1">
+        <div className="rounded-2xl p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "var(--ink-mute)" }}>{cityLabel}</p>
+          <p className="font-heading text-[14px] font-bold leading-tight mb-1" style={{ color: "var(--ink-strong)" }}>
             {new Date().toLocaleDateString("en-US", { weekday: "long" })}
           </p>
-          <p className="text-[12px] text-white/50">
+          <p className="text-[12px]" style={{ color: "var(--ink-soft)" }}>
             {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </p>
-          <p className="text-[11px] text-white/30 mt-1">
+          <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>
             {new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
           </p>
         </div>
@@ -153,19 +153,19 @@ export function WeatherWidget() {
 
       {/* 5-Day Forecast */}
       {weather.forecast && weather.forecast.length > 0 && (
-        <div className="glass-card-elevated rounded-2xl p-4">
-          <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-3">5-Day Forecast</p>
+        <div className="glass-card-elevated p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "var(--ink-mute)" }}>5-Day Forecast</p>
           <div className="flex justify-between">
             {weather.forecast.map((day) => {
               const dayIcon = WEATHER_ICON_MAP[day.icon] || "sun";
               return (
                 <div key={day.day} className="flex flex-col items-center gap-1.5">
-                  <span className="text-[11px] text-white/50 font-medium">{day.day}</span>
-                  <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center">
+                  <span className="text-[11px] font-medium" style={{ color: "var(--ink-soft)" }}>{day.day}</span>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "var(--paper-warm)" }}>
                     <Icon name={dayIcon} size={16} className="text-gold/70" />
                   </div>
-                  <span className="text-[12px] font-semibold text-white">{Math.round(day.temp_max)}&deg;</span>
-                  <span className="text-[10px] text-white/30">{Math.round(day.temp_min)}&deg;</span>
+                  <span className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>{Math.round(day.temp_max)}&deg;</span>
+                  <span className="text-[10px]" style={{ color: "var(--ink-mute)" }}>{Math.round(day.temp_min)}&deg;</span>
                 </div>
               );
             })}

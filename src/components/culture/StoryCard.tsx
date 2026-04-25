@@ -28,10 +28,11 @@ export default function StoryCard({ post, author }: StoryCardProps) {
   return (
     <Link
       href={`/culture/stories/${post.id}`}
-      className="group flex flex-col md:flex-row min-w-[300px] bg-card rounded-2xl border border-border-subtle overflow-hidden card-glow transition-all duration-300 hover:border-gold/20"
+      className="group flex flex-col md:flex-row min-w-[300px] bg-card overflow-hidden card-glow transition-all duration-300 hover:border-gold/20"
+      style={{ border: "2px solid var(--rule-strong-c)" }}
     >
       {/* Hero image */}
-      <div className="md:w-48 lg:w-56 shrink-0 aspect-[16/9] md:aspect-auto relative overflow-hidden bg-gradient-to-br from-purple-900/40 to-gold/20">
+      <div className="md:w-48 lg:w-56 shrink-0 aspect-[16/9] md:aspect-auto relative overflow-hidden" style={{ background: "var(--paper-warm)" }}>
         {post.story_image_url ? (
           <img
             src={post.story_image_url}
@@ -48,7 +49,7 @@ export default function StoryCard({ post, author }: StoryCardProps) {
       {/* Content */}
       <div className="p-4 md:p-5 flex flex-col justify-between flex-1 min-w-0">
         <div>
-          <h3 className="font-display text-lg text-text-primary leading-snug line-clamp-2">
+          <h3 className="font-display text-lg leading-snug line-clamp-2" style={{ color: "var(--ink-strong)" }}>
             {headline}
           </h3>
         </div>
@@ -60,20 +61,21 @@ export default function StoryCard({ post, author }: StoryCardProps) {
                 <img
                   src={author.avatar_url}
                   alt=""
-                  className="w-6 h-6 rounded-full object-cover border border-border-subtle"
+                  className="w-6 h-6 rounded-full object-cover"
+                  style={{ border: "2px solid var(--rule-strong-c)" }}
                 />
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gold/20 flex items-center justify-center text-[10px] text-gold font-bold">
                   {(author.display_name || "?")[0]}
                 </div>
               )}
-              <span className="text-xs text-text-secondary truncate">
+              <span className="text-xs truncate" style={{ color: "var(--ink-mute)" }}>
                 {author.display_name}
               </span>
             </div>
           )}
           {post.read_time_minutes && (
-            <span className="shrink-0 text-[11px] text-warm-gray px-2 py-0.5 rounded-full bg-white/5 border border-border-subtle">
+            <span className="shrink-0 text-[11px] px-2 py-0.5 rounded-full" style={{ color: "var(--ink-soft)", background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
               {post.read_time_minutes} min read
             </span>
           )}

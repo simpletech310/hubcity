@@ -26,16 +26,14 @@ export default function OfficialCard({ official, compact = false }: OfficialCard
   return (
     <Link
       href={`/officials/${official.id}`}
-      className={`group block rounded-2xl border border-zinc-800 bg-zinc-900 transition-all hover:border-gold/30 hover:bg-zinc-900/80 ${
-        compact ? "p-3" : "p-4"
-      }`}
+      className={`group block transition-all ${compact ? "p-3" : "p-4"}`}
+      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
     >
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <div
-          className={`shrink-0 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 ring-2 ring-white/[0.06] flex items-center justify-center overflow-hidden ${
-            compact ? "w-10 h-10" : "w-14 h-14"
-          }`}
+          className={`shrink-0 rounded-full flex items-center justify-center overflow-hidden ${compact ? "w-10 h-10" : "w-14 h-14"}`}
+          style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
         >
           {official.photo_url ? (
             <Image
@@ -60,9 +58,8 @@ export default function OfficialCard({ official, compact = false }: OfficialCard
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3
-              className={`font-bold text-white truncate ${
-                compact ? "text-[13px]" : "text-[15px]"
-              }`}
+              className={`font-bold truncate ${compact ? "text-[13px]" : "text-[15px]"}`}
+              style={{ color: "var(--ink-strong)" }}
             >
               {official.name}
             </h3>
@@ -73,7 +70,7 @@ export default function OfficialCard({ official, compact = false }: OfficialCard
             )}
           </div>
 
-          <p className="text-[12px] text-white/50 truncate">{official.title}</p>
+          <p className="text-[12px] c-meta truncate">{official.title}</p>
 
           {/* Badges row */}
           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
@@ -93,7 +90,7 @@ export default function OfficialCard({ official, compact = false }: OfficialCard
 
             {/* Party */}
             {official.party && !compact && (
-              <span className="text-[10px] text-white/30">{official.party}</span>
+              <span className="text-[10px] c-meta">{official.party}</span>
             )}
           </div>
 

@@ -74,7 +74,7 @@ export default async function MyBookingsPage() {
       <div className="px-5 pt-5 space-y-3">
         {bookingList.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-txt-secondary text-sm mb-4">
+            <p className="c-meta text-sm mb-4">
               No bookings yet.
             </p>
             <Link href="/business">
@@ -91,17 +91,17 @@ export default async function MyBookingsPage() {
                   <h3 className="text-[13px] font-bold">
                     {booking.service_name}
                   </h3>
-                  <p className="text-[11px] text-txt-secondary mt-0.5">
+                  <p className="text-[11px] c-meta mt-0.5">
                     {booking.business?.name}
                   </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs text-txt-secondary">
+                    <span className="text-xs c-meta">
                       {new Date(booking.date + "T00:00:00").toLocaleDateString(
                         "en-US",
                         { month: "short", day: "numeric", year: "numeric" }
                       )}
                     </span>
-                    <span className="text-xs text-txt-secondary">
+                    <span className="text-xs c-meta">
                       {booking.start_time}
                     </span>
                   </div>

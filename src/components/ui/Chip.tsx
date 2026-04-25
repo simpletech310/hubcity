@@ -28,10 +28,10 @@ export default function Chip({
         ${
           active
             ? "glass-chip-active text-gold-light"
-            : "glass-chip text-txt-secondary hover:text-white hover:bg-white/[0.1]"
+            : "glass-chip hover:bg-black/[0.08]"
         }
       `}
-      style={active && color ? { backgroundColor: color } : undefined}
+      style={active && color ? { backgroundColor: color } : (!active ? { color: "var(--ink-mute)" } : undefined)}
     >
       {iconName ? <Icon name={iconName} size={16} /> : icon}
       {label}

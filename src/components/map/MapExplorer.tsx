@@ -252,17 +252,17 @@ export default function MapExplorer({
       style={{ height: "calc(100dvh - 64px - 80px)" }}
     >
       {/* ── Top bar ── */}
-      <div className="shrink-0 bg-deep border-b border-border-subtle px-4 pt-3 pb-2 space-y-2.5 z-30 relative">
+      <div className="shrink-0 px-4 pt-3 pb-2 space-y-2.5 z-30 relative" style={{ background: "var(--paper)", borderBottom: "2px solid var(--rule-strong-c)" }}>
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-heading font-bold text-[17px] leading-tight flex items-center gap-2">
+            <h1 className="font-heading font-bold text-[17px] leading-tight flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
               <span className="text-gold">
                 <Icon name="pin" size={16} className="text-gold" />
               </span>
               Explore Compton
             </h1>
-            <p className="text-[11px] text-warm-gray mt-0.5">
+            <p className="text-[11px] c-meta mt-0.5">
               {aiHighlightIds.size > 0
                 ? `${aiHighlightIds.size} AI results`
                 : `${totalPoints} locations across Compton`}
@@ -295,8 +295,9 @@ export default function MapExplorer({
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-colors ${
                 showList
                   ? "bg-gold/15 text-gold border border-gold/30"
-                  : "bg-white/5 text-warm-gray border border-border-subtle"
+                  : "c-meta"
               }`}
+              style={showList ? undefined : { background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
             >
               {showList ? (
                 <>
@@ -360,7 +361,8 @@ export default function MapExplorer({
               if (e.key === "Enter") handleAiSearch();
             }}
             placeholder="Ask AI — &quot;burritos&quot;, &quot;free food&quot;, &quot;best parks&quot;..."
-            className="w-full pl-10 pr-12 py-2.5 bg-white/[0.04] border border-gold/20 rounded-xl text-[13px] text-txt-primary placeholder:text-muted-gray focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full pl-10 pr-12 py-2.5 border border-gold/20 text-[13px] placeholder:text-[var(--ink-mute)] focus:outline-none focus:border-gold/40 transition-colors"
+            style={{ background: "var(--paper-warm)" }}
           />
           {aiQuery ? (
             <button
@@ -382,7 +384,7 @@ export default function MapExplorer({
 
           {/* Suggested queries dropdown */}
           {showSuggestions && !aiQuery && (
-            <div className="absolute left-0 right-0 top-full mt-1 bg-deep border border-border-subtle rounded-xl shadow-xl z-40 overflow-hidden">
+            <div className="absolute left-0 right-0 top-full mt-1 shadow-xl z-40 overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
               <p className="px-3 pt-2.5 pb-1.5 text-[10px] font-semibold text-gold/60 uppercase tracking-wider">
                 Try asking
               </p>
@@ -395,7 +397,7 @@ export default function MapExplorer({
                     setShowSuggestions(false);
                     handleAiSearch(q);
                   }}
-                  className="w-full text-left px-3 py-2 text-[12px] text-white/70 hover:bg-white/[0.04] transition-colors flex items-center gap-2"
+                  className="w-full text-left px-3 py-2 text-[12px] c-meta hover:bg-[var(--paper-warm)] transition-colors flex items-center gap-2"
                 >
                   <svg
                     width="12"
@@ -424,8 +426,9 @@ export default function MapExplorer({
               className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                 activeCategory === "all"
                   ? "bg-gold text-midnight"
-                  : "bg-white/[0.06] text-warm-gray border border-border-subtle"
+                  : "c-meta"
               }`}
+              style={activeCategory !== "all" ? { background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" } : undefined}
             >
               All
               <span className="opacity-60">{totalPoints}</span>
@@ -437,12 +440,12 @@ export default function MapExplorer({
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all ${
                   activeCategory === type
                     ? "text-midnight"
-                    : "bg-white/[0.06] text-warm-gray border border-border-subtle"
+                    : "c-meta"
                 }`}
                 style={
                   activeCategory === type
                     ? { backgroundColor: MAP_POINT_COLORS[type] }
-                    : undefined
+                    : { background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }
                 }
               >
                 <span className="text-xs">{CATEGORY_ICONS[type]}</span>
@@ -462,24 +465,25 @@ export default function MapExplorer({
           /* ── List View ── */
           <div
             ref={listRef}
-            className="absolute inset-0 bg-deep overflow-y-auto z-20"
+            className="absolute inset-0 overflow-y-auto z-20"
+            style={{ background: "var(--paper)" }}
           >
             {sortedListPoints.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-5">
-                <div className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-3">
+                <div className="w-14 h-14 flex items-center justify-center mb-3" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                   <span className="text-2xl">
                     <Icon name="search" size={24} />
                   </span>
                 </div>
-                <p className="text-sm text-warm-gray font-medium">
+                <p className="text-sm c-meta font-medium">
                   No results found
                 </p>
-                <p className="text-[12px] text-muted-gray mt-1">
+                <p className="text-[12px] c-meta mt-1">
                   Try a different search or category
                 </p>
               </div>
             ) : (
-              <div className="divide-y divide-border-subtle">
+              <div className="divide-y" style={{ borderColor: "var(--rule-strong-c)" }}>
                 {sortedListPoints.map((point) => {
                   const link =
                     typeof point.metadata?.link === "string"
@@ -488,7 +492,7 @@ export default function MapExplorer({
                   const inner = (
                     <div className="flex items-start gap-3 px-4 py-3">
                       <div
-                        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
+                        className="w-9 h-9 flex items-center justify-center shrink-0 mt-0.5"
                         style={{
                           backgroundColor: `${MAP_POINT_COLORS[point.type]}15`,
                         }}
@@ -502,12 +506,12 @@ export default function MapExplorer({
                           {point.name}
                         </p>
                         {typeof point.metadata?.address === "string" && (
-                          <p className="text-[11px] text-warm-gray truncate mt-0.5">
+                          <p className="text-[11px] c-meta truncate mt-0.5">
                             {point.metadata.address}
                           </p>
                         )}
                         {typeof point.metadata?.description === "string" && (
-                          <p className="text-[11px] text-muted-gray truncate mt-0.5">
+                          <p className="text-[11px] c-meta truncate mt-0.5">
                             {point.metadata.description}
                           </p>
                         )}
@@ -540,14 +544,14 @@ export default function MapExplorer({
                     <Link
                       key={point.id}
                       href={link}
-                      className="block hover:bg-white/[0.02] transition-colors"
+                      className="block hover:bg-[var(--paper-warm)] transition-colors"
                     >
                       {inner}
                     </Link>
                   ) : (
                     <div
                       key={point.id}
-                      className="hover:bg-white/[0.02] transition-colors cursor-pointer"
+                      className="hover:bg-[var(--paper-warm)] transition-colors cursor-pointer"
                       onClick={() => handleListItemClick(point)}
                     >
                       {inner}
@@ -570,8 +574,8 @@ export default function MapExplorer({
 
             {/* Result count pill — show when no AI panel and no selection */}
             {!selectedPoint && !showAiPanel && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-deep/90 backdrop-blur-lg border border-border-subtle rounded-full px-4 py-2 shadow-xl">
-                <p className="text-[11px] text-warm-gray whitespace-nowrap">
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 backdrop-blur-lg rounded-full px-4 py-2 shadow-xl" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                <p className="text-[11px] c-meta whitespace-nowrap">
                   <span className="text-gold font-bold">
                     {filteredPoints.length}
                   </span>{" "}
@@ -590,7 +594,7 @@ export default function MapExplorer({
         {/* ── AI Response Panel ── */}
         {showAiPanel && !showList && (
           <div className="absolute bottom-0 left-0 right-0 z-30 animate-slide-up">
-            <div className="mx-3 mb-3 bg-deep border border-gold/20 rounded-2xl shadow-2xl overflow-hidden max-h-[45vh]">
+            <div className="mx-3 mb-3 shadow-2xl overflow-hidden max-h-[45vh]" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
               {/* Gold accent */}
               <div className="h-1 bg-gradient-to-r from-gold via-gold/50 to-transparent" />
 
@@ -618,7 +622,8 @@ export default function MapExplorer({
                   </div>
                   <button
                     onClick={clearAiResults}
-                    className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center"
+                    className="w-6 h-6 rounded-full flex items-center justify-center"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                   >
                     <svg
                       width="10"
@@ -637,7 +642,7 @@ export default function MapExplorer({
                 {aiLoading && (
                   <div className="flex items-center gap-3 py-4">
                     <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                    <span className="text-[12px] text-warm-gray">
+                    <span className="text-[12px] c-meta">
                       Searching Compton for you...
                     </span>
                   </div>
@@ -646,7 +651,7 @@ export default function MapExplorer({
                 {/* AI Message */}
                 {!aiLoading && aiMessage && (
                   <div className="overflow-y-auto max-h-[30vh] space-y-3">
-                    <p className="text-[13px] text-white/85 leading-relaxed whitespace-pre-wrap">
+                    <p className="text-[13px] leading-relaxed whitespace-pre-wrap" style={{ color: "var(--ink-mute)" }}>
                       {aiMessage}
                     </p>
 
@@ -672,7 +677,8 @@ export default function MapExplorer({
                                 ]);
                                 setMapZoom(16);
                               }}
-                              className="shrink-0 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/[0.04] border border-border-subtle hover:border-gold/20 transition-colors"
+                              className="shrink-0 flex items-center gap-2 px-3 py-2 hover:border-gold/20 transition-colors"
+                              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                             >
                               <div
                                 className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
@@ -685,10 +691,10 @@ export default function MapExplorer({
                                 </span>
                               </div>
                               <div className="text-left min-w-0">
-                                <p className="text-[11px] font-semibold text-white truncate max-w-[120px]">
+                                <p className="text-[11px] font-semibold truncate max-w-[120px]" style={{ color: "var(--ink-strong)" }}>
                                   {mapPoint.name}
                                 </p>
-                                <p className="text-[9px] text-warm-gray">
+                                <p className="text-[9px] c-meta">
                                   {MAP_POINT_LABELS[mapPoint.type]}
                                 </p>
                               </div>
@@ -707,7 +713,7 @@ export default function MapExplorer({
         {/* ── Detail Card (overlay on map) ── */}
         {selectedPoint && !showList && !showAiPanel && (
           <div className="absolute bottom-0 left-0 right-0 z-30 animate-slide-up">
-            <div className="mx-3 mb-3 bg-deep border border-border-subtle rounded-2xl shadow-2xl overflow-hidden">
+            <div className="mx-3 mb-3 shadow-2xl overflow-hidden" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
               {/* Color accent */}
               <div
                 className="h-1"
@@ -734,7 +740,7 @@ export default function MapExplorer({
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <h3 className="font-heading font-bold text-[14px] truncate">
+                      <h3 className="font-heading font-bold text-[14px] truncate" style={{ color: "var(--ink-strong)" }}>
                         {selectedPoint.name}
                       </h3>
                       <span
@@ -748,13 +754,13 @@ export default function MapExplorer({
                       </span>
                     </div>
                     {typeof selectedPoint.metadata?.address === "string" && (
-                      <p className="text-[12px] text-warm-gray truncate">
+                      <p className="text-[12px] c-meta truncate">
                         {selectedPoint.metadata.address}
                       </p>
                     )}
                     {typeof selectedPoint.metadata?.description ===
                       "string" && (
-                      <p className="text-[11px] text-muted-gray mt-0.5 line-clamp-2">
+                      <p className="text-[11px] c-meta mt-0.5 line-clamp-2">
                         {selectedPoint.metadata.description}
                       </p>
                     )}
@@ -772,7 +778,8 @@ export default function MapExplorer({
                   {/* Close */}
                   <button
                     onClick={() => setSelectedPoint(null)}
-                    className="w-7 h-7 rounded-full bg-white/5 flex items-center justify-center shrink-0"
+                    className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     aria-label="Close"
                   >
                     <svg
@@ -817,7 +824,8 @@ export default function MapExplorer({
                       href={`https://maps.google.com/?q=${encodeURIComponent(selectedPoint.metadata.address)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg bg-white/5 border border-border-subtle text-[12px] font-semibold text-warm-gray"
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 text-[12px] font-semibold c-meta"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     >
                       <svg
                         width="12"

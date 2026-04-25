@@ -95,7 +95,7 @@ export default function FeedBannerAd({
         <div className="flex gap-3">
           {/* Business image */}
           {ad.image_url && (
-            <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border-subtle bg-white/5">
+            <div className="w-16 h-16 overflow-hidden shrink-0" style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}>
               <img
                 src={ad.image_url}
                 alt={ad.business_name}
@@ -106,14 +106,14 @@ export default function FeedBannerAd({
 
           {/* Text content */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate">
+            <h3 className="font-heading font-bold text-[13px] mb-0.5 truncate" style={{ color: "var(--ink-strong)" }}>
               {ad.business_name}
             </h3>
-            <p className="text-[12px] text-txt-secondary leading-relaxed line-clamp-2 mb-2.5">
+            <p className="text-[12px] leading-relaxed line-clamp-2 mb-2.5" style={{ color: "var(--ink-mute)" }}>
               {ad.headline}
             </p>
             {ad.body_text && (
-              <p className="text-[11px] text-txt-secondary/70 line-clamp-1 mb-2">
+              <p className="text-[11px] line-clamp-1 mb-2" style={{ color: "var(--ink-mute)", opacity: 0.7 }}>
                 {ad.body_text}
               </p>
             )}
@@ -123,7 +123,7 @@ export default function FeedBannerAd({
         {/* CTA button */}
         <button
           onClick={handleCtaClick}
-          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gold/10 border border-gold/20 text-gold font-bold text-[12px] press hover:bg-gold/15 transition-colors"
+          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 bg-gold/10 border border-gold/20 text-gold font-bold text-[12px] press hover:bg-gold/15 transition-colors"
         >
           {ad.cta_text || "Learn More"}
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -132,7 +132,7 @@ export default function FeedBannerAd({
         </button>
 
         {/* Subtle "Ad" disclaimer */}
-        <p className="text-[8px] text-txt-secondary/40 text-center mt-2">
+        <p className="text-[8px] text-center mt-2" style={{ color: "var(--ink-mute)", opacity: 0.4 }}>
           Ad &bull; {ad.business_name}
         </p>
       </Card>

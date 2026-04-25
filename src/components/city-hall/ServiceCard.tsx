@@ -12,11 +12,11 @@ export default function ServiceCard({ service, departmentName }: ServiceCardProp
     <Card hover>
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0 mr-3">
-          <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1">
+          <h3 className="font-heading font-bold text-[13px] mb-0.5 line-clamp-1" style={{ color: "var(--ink-strong)" }}>
             {service.name}
           </h3>
           {departmentName && (
-            <p className="text-[11px] text-txt-secondary font-medium truncate">
+            <p className="text-[11px] c-meta font-medium truncate">
               {departmentName}
             </p>
           )}
@@ -26,7 +26,7 @@ export default function ServiceCard({ service, departmentName }: ServiceCardProp
         )}
       </div>
       {service.description && (
-        <p className="text-[12px] text-txt-secondary leading-relaxed mb-3 line-clamp-2">
+        <p className="text-[12px] c-meta leading-relaxed mb-3 line-clamp-2">
           {service.description}
         </p>
       )}

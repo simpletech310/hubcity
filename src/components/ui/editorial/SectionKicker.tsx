@@ -13,9 +13,10 @@ export default function SectionKicker({
     <span
       className={clsx(
         "text-[10px] font-bold uppercase tracking-editorial leading-none",
-        tone === "gold" ? "text-gold" : "text-white/50",
+        tone === "gold" ? "text-gold" : "",
         className
       )}
+      style={tone === "muted" ? { color: "var(--ink-strong)", opacity: 0.5 } : undefined}
     >
       {children}
     </span>

@@ -33,10 +33,11 @@ export default function FeatureSpread({
   return (
     <article
       className={clsx(
-        "relative border-t border-white/[0.06]",
-        first && "border-t-0",
+        "relative",
+        first ? "" : "",
         className
       )}
+      style={first ? undefined : { borderTop: "2px solid var(--rule-strong-c)" }}
     >
       <div className="px-5 pt-8 pb-4 flex items-end justify-between">
         <div className="flex items-baseline gap-3 min-w-0">
@@ -48,7 +49,10 @@ export default function FeatureSpread({
           )}
         </div>
         {total !== undefined && (
-          <div className="text-[10px] font-bold tracking-editorial uppercase text-white/25 tabular-nums">
+          <div
+            className="text-[10px] font-bold tracking-editorial uppercase tabular-nums"
+            style={{ color: "var(--ink-strong)", opacity: 0.3 }}
+          >
             {String(index).padStart(2, "0")} / {String(total).padStart(2, "0")}
           </div>
         )}

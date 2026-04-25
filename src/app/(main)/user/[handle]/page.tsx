@@ -477,7 +477,7 @@ export default async function PublicProfilePage({
             <EditorialNumber n={sectionIndex("posts")} size="md" />
             <SectionKicker tone="muted">Posts</SectionKicker>
           </div>
-          <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+          <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
             {postCount ?? userPosts.length}
           </span>
         </div>
@@ -525,7 +525,7 @@ export default async function PublicProfilePage({
                 <EditorialNumber n={sectionIndex("events")} size="md" />
                 <SectionKicker tone="muted">Upcoming Events</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
                 {events.length}
               </span>
             </div>
@@ -596,7 +596,7 @@ export default async function PublicProfilePage({
                 <EditorialNumber n={sectionIndex("deals")} size="md" />
                 <SectionKicker tone="muted">Deals &amp; Coupons</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
                 {deals.length}
               </span>
             </div>
@@ -618,7 +618,7 @@ export default async function PublicProfilePage({
                 <EditorialNumber n={sectionIndex("resources")} size="md" />
                 <SectionKicker tone="muted">Resources</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 tabular-nums">
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
                 {ownedResources.length}
               </span>
             </div>
@@ -637,8 +637,8 @@ export default async function PublicProfilePage({
           <section className="px-5">
             <div className="mb-3 flex items-baseline gap-3">
               <SectionKicker tone="gold">Plates</SectionKicker>
-              <span className="block h-px flex-1 bg-white/[0.06]" />
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase text-ivory/40 flex items-center gap-1.5">
+              <span className="block h-px flex-1" style={{ background: "var(--rule-strong-c)" }} />
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase flex items-center gap-1.5" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
                 <Icon name="photo" size={12} className="text-gold" />
                 Gallery
               </span>
@@ -655,12 +655,12 @@ export default async function PublicProfilePage({
 
       {/* --- Colophon / close --- */}
       <IssueDivider label="END" />
-      <div className="px-6 pb-2 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase text-ivory/40">
+      <div className="px-6 pb-2 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase" style={{ color: "var(--ink-strong)", opacity: 0.4 }}>
         <span className="flex items-center gap-2">
           <Icon name={roleIcon} size={12} className="text-gold" />
           {roleLabel}
         </span>
-        <span className="tabular-nums text-ivory/30">@{profile.handle}</span>
+        <span className="tabular-nums">@{profile.handle}</span>
       </div>
     </div>
   );

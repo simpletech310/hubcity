@@ -54,7 +54,7 @@ export default function Select({
   return (
     <div ref={containerRef} className="relative">
       {label && (
-        <label className="block text-xs font-medium text-txt-secondary mb-1.5">
+        <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--ink-mute)" }}>
           {label}
         </label>
       )}
@@ -65,13 +65,17 @@ export default function Select({
         className={clsx(
           "w-full flex items-center justify-between gap-2",
           "px-4 py-2.5 rounded-xl text-sm",
-          "bg-deep border border-border-subtle",
-          "text-txt-primary transition-colors cursor-pointer",
-          "hover:border-gold/30 focus:outline-none focus:border-gold/40",
+          "transition-colors cursor-pointer",
+          "focus:outline-none",
           isOpen && "border-gold/40"
         )}
+        style={{
+          background: "var(--paper)",
+          color: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
-        <span className={clsx(!selected && "text-txt-secondary")}>
+        <span style={!selected ? { color: "var(--ink-mute)" } : undefined}>
           {selected ? selected.label : placeholder}
         </span>
 
@@ -84,7 +88,8 @@ export default function Select({
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-          className="text-txt-secondary flex-shrink-0"
+          className="flex-shrink-0"
+          style={{ color: "var(--ink-mute)" }}
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.2 }}
         >
@@ -97,9 +102,13 @@ export default function Select({
           <motion.ul
             className={clsx(
               "absolute z-50 mt-1.5 w-full",
-              "bg-deep border border-border-subtle rounded-xl",
+              "rounded-xl",
               "shadow-2xl overflow-hidden py-1"
             )}
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
             initial={{ opacity: 0, y: -8, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.96 }}
@@ -119,7 +128,7 @@ export default function Select({
                       "w-full text-left px-4 py-2.5 text-sm transition-colors cursor-pointer",
                       isSelected
                         ? "text-gold bg-gold/5"
-                        : "text-txt-primary hover:bg-white/5"
+                        : "hover:bg-black/5"
                     )}
                   >
                     {option.label}

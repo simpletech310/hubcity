@@ -77,7 +77,7 @@ export default function WeatherBar() {
 
   if (loading) {
     return (
-      <div className="glass-card-elevated glass-inner-light rounded-2xl p-3 animate-pulse">
+      <div className="glass-card-elevated glass-inner-light p-3 animate-pulse">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-white/5" />
           <div className="flex-1 flex items-center gap-3">
@@ -96,17 +96,17 @@ export default function WeatherBar() {
 
   return (
     <Link href="/city-data" className="block press">
-      <div className="glass-card-elevated glass-inner-light rounded-2xl p-3">
+      <div className="glass-card-elevated glass-inner-light p-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center shrink-0">
             <Icon name={iconName} size={18} className="text-gold" />
           </div>
 
           <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <span className="font-heading text-[18px] font-bold leading-none">
+            <span className="font-heading text-[18px] font-bold leading-none" style={{ color: "var(--ink-strong)" }}>
               {Math.round(weather.temp)}&deg;
             </span>
-            <span className="text-[12px] text-warm-gray capitalize truncate">
+            <span className="text-[12px] capitalize truncate" style={{ color: "var(--ink-soft)" }}>
               {weather.description}
             </span>
           </div>

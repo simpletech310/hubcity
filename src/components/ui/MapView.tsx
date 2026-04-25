@@ -186,11 +186,11 @@ export default function MapView({
   if (!MAPBOX_TOKEN) {
     return (
       <div
-        className={`flex items-center justify-center bg-deep border border-border-subtle rounded-2xl ${className}`}
-        style={{ height }}
+        className={`flex items-center justify-center ${className}`}
+        style={{ height, background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
       >
         <div className="text-center p-6">
-          <p className="text-txt-secondary text-sm">
+          <p className="text-sm" style={{ color: "var(--ink-mute)" }}>
             Map unavailable — NEXT_PUBLIC_MAPBOX_TOKEN not configured.
           </p>
         </div>
@@ -306,8 +306,8 @@ export default function MapView({
             closeButton={false}
             className="map-popup"
           >
-            <div className="bg-deep border border-border-subtle rounded-xl p-3 min-w-[160px] shadow-xl">
-              <p className="text-txt-primary text-sm font-semibold font-heading leading-tight">
+            <div className="rounded-xl p-3 min-w-[160px] shadow-xl" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+              <p className="text-sm font-semibold font-heading leading-tight" style={{ color: "var(--ink-strong)" }}>
                 {popupPoint.name}
               </p>
               <span

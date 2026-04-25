@@ -23,7 +23,7 @@ export default function TipJar({
 
   if (!stripeAccountId) {
     return (
-      <p className="text-[12px] text-txt-secondary text-center py-2">
+      <p className="text-[12px] text-center py-2" style={{ color: "var(--ink-mute)" }}>
         Creator hasn&apos;t set up tips yet
       </p>
     );
@@ -79,7 +79,7 @@ export default function TipJar({
   }
 
   return (
-    <div className="rounded-2xl bg-white/[0.04] border border-gold/15 p-4 space-y-3">
+    <div className="border border-gold/15 p-4 space-y-3" style={{ background: "var(--paper)" }}>
       {/* Header */}
       <p className="font-heading font-bold text-sm text-gold">Send a Tip 💛</p>
 
@@ -95,11 +95,12 @@ export default function TipJar({
                 setCustomAmount("");
                 setError("");
               }}
-              className={`px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all press ${
+              className={`px-3 py-1.5 text-[12px] font-semibold border transition-all press ${
                 isSelected
                   ? "bg-gold/20 text-gold border-gold/50"
-                  : "bg-white/[0.04] text-txt-secondary border-white/10 hover:border-gold/30 hover:text-white"
+                  : "hover:border-gold/30"
               }`}
+              style={!isSelected ? { background: "var(--paper-soft)", color: "var(--ink-mute)", borderColor: "var(--rule-c)" } : undefined}
             >
               ${amt}
             </button>
@@ -108,7 +109,7 @@ export default function TipJar({
 
         {/* Custom amount input */}
         <div className="relative">
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] text-txt-secondary pointer-events-none">
+          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[12px] pointer-events-none" style={{ color: "var(--ink-mute)" }}>
             $
           </span>
           <input
@@ -122,11 +123,12 @@ export default function TipJar({
               setSelectedAmount(null);
               setError("");
             }}
-            className={`w-20 pl-5 pr-2 py-1.5 rounded-full text-[12px] font-semibold border bg-white/[0.04] text-white placeholder-txt-secondary/50 focus:outline-none transition-all ${
+            className={`w-20 pl-5 pr-2 py-1.5 text-[12px] font-semibold border focus:outline-none transition-all ${
               customAmount !== ""
                 ? "border-gold/50 bg-gold/10"
-                : "border-white/10 focus:border-gold/30"
+                : "focus:border-gold/30"
             }`}
+            style={customAmount === "" ? { background: "var(--paper-soft)", color: "var(--ink-strong)", borderColor: "var(--rule-c)" } : undefined}
           />
         </div>
       </div>
@@ -138,10 +140,11 @@ export default function TipJar({
           onChange={(e) => setMessage(e.target.value.slice(0, 140))}
           placeholder="Leave a message (optional)"
           rows={2}
-          className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-3 py-2 text-[12px] text-white placeholder-txt-secondary/50 resize-none focus:outline-none focus:border-gold/30 transition-colors"
+          className="w-full px-3 py-2 text-[12px] resize-none focus:outline-none focus:border-gold/30 transition-colors"
+          style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-c)", color: "var(--ink-strong)" }}
         />
         {message.length > 0 && (
-          <p className="text-[10px] text-txt-secondary text-right mt-0.5">
+          <p className="text-[10px] text-right mt-0.5" style={{ color: "var(--ink-mute)" }}>
             {message.length}/140
           </p>
         )}
@@ -154,7 +157,7 @@ export default function TipJar({
       <button
         onClick={handleTip}
         disabled={loading || !amountCents || amountCents < 100}
-        className="w-full py-2.5 rounded-xl text-sm font-bold press transition-all bg-gradient-to-r from-gold to-gold-light text-midnight disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full py-2.5 text-sm font-bold press transition-all bg-gradient-to-r from-gold to-gold-light text-midnight disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {loading ? (
           <>

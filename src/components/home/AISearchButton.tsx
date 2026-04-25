@@ -11,7 +11,8 @@ export default function AISearchButton() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center gap-3 bg-white/[0.04] border border-border-subtle rounded-2xl px-4 py-4 text-left press group hover:border-gold/20 transition-all relative overflow-hidden"
+        className="w-full flex items-center gap-3 px-4 py-4 text-left press group hover:border-gold/20 transition-all relative overflow-hidden"
+        style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
       >
         {/* Subtle gradient sweep */}
         <div className="absolute inset-0 bg-gradient-to-r from-gold/[0.03] via-transparent to-hc-purple/[0.03] opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -23,10 +24,10 @@ export default function AISearchButton() {
           </svg>
         </div>
         <div className="relative flex-1">
-          <span className="text-sm text-txt-secondary">
+          <span className="text-sm" style={{ color: "var(--ink-mute)" }}>
             Ask Culture AI anything...
           </span>
-          <span className="block text-[10px] text-txt-secondary/60 mt-0.5">
+          <span className="block text-[10px] mt-0.5" style={{ color: "var(--ink-mute)", opacity: 0.6 }}>
             &ldquo;Best food near Rosecrans&rdquo; &ldquo;Youth programs&rdquo;
           </span>
         </div>

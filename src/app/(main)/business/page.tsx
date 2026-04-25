@@ -198,13 +198,13 @@ function SectionHead({
         <span className="font-display text-gold text-[22px] leading-none tabular-nums">
           № {num}
         </span>
-        <span className="text-[10px] font-bold tracking-editorial uppercase text-white/50">
+        <span className="text-[10px] font-bold tracking-editorial uppercase" style={{ color: "var(--ink-mute)" }}>
           {kicker}
         </span>
         <span className="ml-auto rule-hairline flex-1 self-center" />
         {meta && <span className="shrink-0">{meta}</span>}
       </div>
-      {sub && <p className="text-[11px] text-ivory/40 mt-1">{sub}</p>}
+      {sub && <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>{sub}</p>}
     </div>
   );
 }
@@ -387,7 +387,7 @@ export default function BusinessPage() {
       {loading ? (
         <div className="px-5 space-y-3">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton h-28 rounded-2xl" />
+            <div key={i} className="skeleton h-28" />
           ))}
         </div>
       ) : (
@@ -405,7 +405,6 @@ export default function BusinessPage() {
                   aspect="3/2"
                   image={editorsPick.image_urls?.[0] ?? null}
                   alt={editorsPick.name}
-                  className="rounded-2xl"
                 >
                   <div className="absolute inset-x-0 bottom-0 p-5 z-10">
                     <div className="flex items-center gap-2 mb-2">
@@ -481,19 +480,19 @@ export default function BusinessPage() {
                     className="shrink-0 w-[170px] animate-slide-in press"
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
-                    <div className="rounded-2xl panel-editorial p-4 hover:border-gold/30 transition-colors h-full">
-                      <div className="w-10 h-10 rounded-xl border border-gold/20 bg-ink flex items-center justify-center mb-3">
-                        <Icon name={biz.iconName} size={18} className="text-gold" />
+                    <div className="p-4 h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+                      <div className="w-10 h-10 flex items-center justify-center mb-3" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                        <Icon name={biz.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                       </div>
-                      <h3 className="font-display text-[15px] leading-tight text-white truncate mb-0.5">
+                      <h3 className="font-display text-[15px] leading-tight truncate mb-0.5" style={{ color: "var(--ink-strong)" }}>
                         {biz.name}
                       </h3>
-                      <p className="text-[10px] text-ivory/55 line-clamp-1 mb-2.5">{biz.tagline}</p>
+                      <p className="text-[10px] line-clamp-1 mb-2.5" style={{ color: "var(--ink-mute)" }}>{biz.tagline}</p>
                       <div className="flex items-baseline gap-1">
-                        <span className="font-display text-gold text-[18px] leading-none tabular-nums">
+                        <span className="font-display text-[18px] leading-none tabular-nums" style={{ color: "var(--gold-c)" }}>
                           {biz.stat}
                         </span>
-                        <span className="text-[9px] uppercase tracking-editorial-tight text-ivory/45 font-semibold">
+                        <span className="text-[9px] uppercase tracking-editorial-tight font-semibold" style={{ color: "var(--ink-mute)" }}>
                           {biz.statLabel}
                         </span>
                       </div>
@@ -537,27 +536,28 @@ export default function BusinessPage() {
                   .map((deal) => (
                     <div
                       key={deal.id}
-                      className="rounded-2xl panel-editorial p-3.5 hover:border-gold/30 transition-colors"
+                      className="p-3.5 transition-colors"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center shrink-0">
-                          <Icon name={deal.iconName} size={16} className="text-gold" />
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                          <Icon name={deal.iconName} size={16} style={{ color: "var(--gold-c)" }} />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[10px] text-ivory/45 uppercase tracking-editorial-tight font-semibold truncate">
+                          <p className="text-[10px] uppercase tracking-editorial-tight font-semibold truncate" style={{ color: "var(--ink-mute)" }}>
                             {deal.businessName}
                           </p>
-                          <p className="font-display text-[14px] leading-tight text-white truncate">
+                          <p className="font-display text-[14px] leading-tight truncate" style={{ color: "var(--ink-strong)" }}>
                             {deal.title}
                           </p>
                         </div>
                         <div className="shrink-0 text-right">
-                          <div className="px-2.5 py-1 rounded-lg bg-ink border border-gold/30 border-dashed">
-                            <p className="text-[11px] font-bold text-gold font-mono tracking-wider">
+                          <div className="px-2.5 py-1" style={{ background: "var(--paper)", border: "2px dashed var(--rule-strong-c)" }}>
+                            <p className="text-[11px] font-bold font-mono tracking-wider" style={{ color: "var(--gold-c)" }}>
                               {deal.promoCode}
                             </p>
                           </div>
-                          <p className="text-[8px] text-ivory/40 mt-0.5 uppercase tracking-editorial-tight">
+                          <p className="text-[8px] mt-0.5 uppercase tracking-editorial-tight" style={{ color: "var(--ink-mute)" }}>
                             Valid til {deal.validUntil}
                           </p>
                         </div>
@@ -600,16 +600,17 @@ export default function BusinessPage() {
                     <button
                       key={badge}
                       onClick={() => setSearch(badge.replace(/_/g, " "))}
-                      className="shrink-0 rounded-xl panel-editorial px-3 py-2.5 flex items-center gap-2 press hover:border-gold/30 transition-colors"
+                      className="shrink-0 px-3 py-2.5 flex items-center gap-2 press transition-colors"
+                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                     >
-                      <div className="w-7 h-7 rounded-md border border-gold/20 bg-ink flex items-center justify-center shrink-0">
-                        <Icon name={badgeIcons[badge] || "tag"} size={14} className="text-gold" />
+                      <div className="w-7 h-7 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                        <Icon name={badgeIcons[badge] || "tag"} size={14} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <div className="text-left">
-                        <p className="text-[11px] font-bold text-white leading-tight">
+                        <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>
                           {formatBadgeLabel(badge)}
                         </p>
-                        <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold">
+                        <p className="text-[9px] uppercase tracking-editorial-tight font-semibold" style={{ color: "var(--ink-mute)" }}>
                           {count} business{count !== 1 ? "es" : ""}
                         </p>
                       </div>
@@ -636,16 +637,17 @@ export default function BusinessPage() {
                           setActiveCategory(cat.value);
                           setQuickFilter(null);
                         }}
-                        className="group rounded-xl panel-editorial p-3 flex items-center gap-3 press hover:border-gold/30 transition-colors text-left"
+                        className="group p-3 flex items-center gap-3 press transition-colors text-left"
+                        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
                       >
-                        <div className="w-10 h-10 rounded-lg border border-gold/15 bg-ink flex items-center justify-center shrink-0 group-hover:border-gold/40 transition-colors">
-                          <Icon name={cat.iconName} size={18} className="text-gold" />
+                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                          <Icon name={cat.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-display text-[14px] leading-tight text-white truncate">
+                          <p className="font-display text-[14px] leading-tight truncate" style={{ color: "var(--ink-strong)" }}>
                             {cat.label}
                           </p>
-                          <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold mt-0.5">
+                          <p className="text-[9px] uppercase tracking-editorial-tight font-semibold mt-0.5" style={{ color: "var(--ink-mute)" }}>
                             {count} listed
                           </p>
                         </div>
@@ -659,29 +661,29 @@ export default function BusinessPage() {
           {/* ── № 09 · Why Shop Local ─────────────────────────────── */}
           {activeCategory === "all" && !search && !quickFilter && (
             <section className="px-5 mb-6">
-              <div className="rounded-2xl panel-editorial p-5">
+              <div className="p-5" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
-                    <Icon name="heart-pulse" size={20} className="text-gold" />
+                  <div className="w-11 h-11 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                    <Icon name="heart-pulse" size={20} style={{ color: "var(--gold-c)" }} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-gold uppercase tracking-editorial font-bold mb-1">
+                    <p className="text-[10px] uppercase tracking-editorial font-bold mb-1" style={{ color: "var(--gold-c)" }}>
                       Essay · Why Shop Local
                     </p>
-                    <h3 className="font-display text-[18px] leading-tight text-white mb-2">
+                    <h3 className="font-display text-[18px] leading-tight mb-2" style={{ color: "var(--ink-strong)" }}>
                       Every dollar is a vote for the block.
                     </h3>
                     <ul className="space-y-1.5">
-                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
-                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
                         <span>68¢ of every $1 stays in {activeCity?.name ?? "your city"}</span>
                       </li>
-                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
-                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
                         <span>Creates 2× more local jobs than chains</span>
                       </li>
-                      <li className="flex items-start gap-2 text-[11px] text-ivory/70 leading-relaxed">
-                        <span className="text-gold mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
+                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
                         <span>Builds a stronger, self-sufficient community</span>
                       </li>
                     </ul>
@@ -739,11 +741,11 @@ export default function BusinessPage() {
 
               {filtered.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 rounded-2xl border border-gold/20 bg-ink mx-auto mb-4 flex items-center justify-center">
-                    <Icon name="search" size={28} className="text-gold/60" />
+                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+                    <Icon name="search" size={28} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="font-display text-[17px] text-white mb-1">No businesses found</p>
-                  <p className="text-[11px] text-ivory/50">Try a different search or category</p>
+                  <p className="font-display text-[17px] mb-1" style={{ color: "var(--ink-strong)" }}>No businesses found</p>
+                  <p className="text-[11px]" style={{ color: "var(--ink-mute)" }}>Try a different search or category</p>
                 </div>
               )}
             </div>
@@ -751,20 +753,20 @@ export default function BusinessPage() {
 
           {/* ── Promote / Own a Business CTAs ─────────────────────── */}
           <div className="px-5 mt-8 mb-3">
-            <div className="rounded-2xl panel-editorial p-5 hover:border-gold/30 transition-colors">
+            <div className="p-5 transition-colors" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
-                  <Icon name="megaphone" size={22} className="text-gold" />
+                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <Icon name="megaphone" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-[17px] leading-tight text-white">
+                  <p className="font-display text-[17px] leading-tight" style={{ color: "var(--ink-strong)" }}>
                     Promote Your Business
                   </p>
-                  <p className="text-[11px] text-ivory/55 mt-0.5">
-                    Run deals, get featured & reach all of {activeCity?.name ?? "your city"}
+                  <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
+                    Run deals, get featured &amp; reach all of {activeCity?.name ?? "your city"}
                   </p>
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
+                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
                   Start
                   <Icon name="arrow-right-thin" size={11} />
                 </span>
@@ -773,20 +775,20 @@ export default function BusinessPage() {
           </div>
 
           <div className="px-5 mb-4">
-            <div className="rounded-2xl panel-editorial p-5 hover:border-gold/30 transition-colors">
+            <div className="p-5 transition-colors" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl border border-gold/25 bg-ink flex items-center justify-center shrink-0">
-                  <Icon name="store" size={22} className="text-gold" />
+                <div className="w-12 h-12 flex items-center justify-center shrink-0" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                  <Icon name="store" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-[17px] leading-tight text-white">
+                  <p className="font-display text-[17px] leading-tight" style={{ color: "var(--ink-strong)" }}>
                     Own a Business in {activeCity?.name ?? "Your City"}?
                   </p>
-                  <p className="text-[11px] text-ivory/55 mt-0.5">
-                    Get listed, earn city badges & connect with customers
+                  <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
+                    Get listed, earn city badges &amp; connect with customers
                   </p>
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
+                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
                   Apply
                   <Icon name="arrow-right-thin" size={11} />
                 </span>
@@ -810,34 +812,34 @@ function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
       className="shrink-0 w-[220px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="rounded-2xl panel-editorial overflow-hidden hover:border-gold/30 transition-colors h-full">
+      <div className="overflow-hidden h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 rounded-lg border border-gold/20 bg-ink flex items-center justify-center">
-              <Icon name={deal.iconName} size={18} className="text-gold" />
+            <div className="w-10 h-10 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+              <Icon name={deal.iconName} size={18} style={{ color: "var(--gold-c)" }} />
             </div>
             <Tag tone="coral" size="xs">{deal.discount}</Tag>
           </div>
 
-          <h3 className="font-display text-[15px] leading-tight text-white mb-1 line-clamp-2">
+          <h3 className="font-display text-[15px] leading-tight mb-1 line-clamp-2" style={{ color: "var(--ink-strong)" }}>
             {deal.title}
           </h3>
-          <p className="text-[10px] text-ivory/55 mb-2 line-clamp-2 leading-relaxed">
+          <p className="text-[10px] mb-2 line-clamp-2 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
             {deal.description}
           </p>
 
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[9px] text-ivory/45 uppercase tracking-editorial-tight font-semibold truncate">
+            <p className="text-[9px] uppercase tracking-editorial-tight font-semibold truncate" style={{ color: "var(--ink-mute)" }}>
               {deal.businessName}
             </p>
-            <p className="text-[9px] text-ivory/45 font-semibold shrink-0 tabular-nums">
+            <p className="text-[9px] font-semibold shrink-0 tabular-nums" style={{ color: "var(--ink-mute)" }}>
               {deal.validUntil}
             </p>
           </div>
 
           {deal.promoCode && (
-            <div className="mt-3 px-2 py-1.5 rounded-md bg-ink border border-gold/30 border-dashed text-center">
-              <span className="text-[10px] font-bold text-gold font-mono tracking-wider">
+            <div className="mt-3 px-2 py-1.5 text-center" style={{ background: "var(--paper)", border: "2px dashed var(--rule-strong-c)" }}>
+              <span className="text-[10px] font-bold font-mono tracking-wider" style={{ color: "var(--gold-c)" }}>
                 {deal.promoCode}
               </span>
             </div>
@@ -861,9 +863,9 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
       className="shrink-0 w-[230px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="rounded-2xl panel-editorial overflow-hidden hover:border-gold/30 transition-colors h-full">
-        {/* Image / Ink fallback */}
-        <div className="aspect-video relative overflow-hidden bg-ink border-b border-white/[0.06]">
+      <div className="overflow-hidden h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+        {/* Image fallback */}
+        <div className="aspect-video relative overflow-hidden" style={{ background: "var(--ink-strong)", borderBottom: "2px solid var(--rule-strong-c)" }}>
           {biz.image_urls?.[0] ? (
             <>
               <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
@@ -871,8 +873,8 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
             </>
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-14 h-14 rounded-xl border border-gold/20 bg-black/50 flex items-center justify-center">
-                <Icon name={iconName} size={24} className="text-gold" />
+              <div className="w-14 h-14 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                <Icon name={iconName} size={24} style={{ color: "var(--gold-c)" }} />
               </div>
             </div>
           )}
@@ -884,7 +886,7 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
           </div>
 
           {biz.rating_avg > 0 && (
-            <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm rounded-lg px-2 py-0.5 flex items-center gap-1 border border-gold/20">
+            <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 border border-gold/20">
               <Icon name="star" size={11} className="text-gold" />
               <span className="text-[10px] font-bold text-gold tabular-nums">
                 {Number(biz.rating_avg).toFixed(1)}
@@ -895,10 +897,10 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
 
         {/* Info */}
         <div className="p-3">
-          <h3 className="font-display text-[15px] leading-tight text-white mb-0.5 truncate">
+          <h3 className="font-display text-[15px] leading-tight mb-0.5 truncate" style={{ color: "var(--ink-strong)" }}>
             {biz.name}
           </h3>
-          <p className="text-[10px] text-ivory/55 mb-2.5 line-clamp-1 leading-relaxed">
+          <p className="text-[10px] mb-2.5 line-clamp-1 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
             {biz.description}
           </p>
 
@@ -965,19 +967,20 @@ function BusinessRow({ biz }: { biz: Business }) {
   return (
     <Link
       href={`/business/${biz.slug}`}
-      className="group block rounded-2xl panel-editorial press hover:border-gold/30 transition-colors overflow-hidden"
+      className="group block press transition-colors overflow-hidden"
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
     >
       <div className="flex items-stretch">
         {/* Image / ink side panel with gold icon well */}
-        <div className="w-[96px] shrink-0 relative bg-ink border-r border-white/[0.06] flex items-center justify-center">
+        <div className="w-[96px] shrink-0 relative flex items-center justify-center" style={{ background: "var(--ink-strong)", borderRight: "2px solid var(--rule-strong-c)" }}>
           {biz.image_urls?.[0] ? (
             <Image src={biz.image_urls[0]} alt={biz.name} fill className="object-cover" />
           ) : (
             <div className="flex flex-col items-center gap-2 py-2">
-              <div className="w-11 h-11 rounded-xl border border-gold/20 bg-black/40 flex items-center justify-center">
-                <Icon name={iconName} size={20} className="text-gold" />
+              <div className="w-11 h-11 flex items-center justify-center" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+                <Icon name={iconName} size={20} style={{ color: "var(--gold-c)" }} />
               </div>
-              <span className="text-[8px] font-bold uppercase tracking-editorial-tight text-gold/70">
+              <span className="text-[8px] font-bold uppercase tracking-editorial-tight" style={{ color: "var(--gold-c)" }}>
                 {biz.category}
               </span>
             </div>
@@ -993,7 +996,7 @@ function BusinessRow({ biz }: { biz: Business }) {
         <div className="flex-1 min-w-0 p-3.5">
           {/* Name + Rating */}
           <div className="flex items-start justify-between gap-2 mb-0.5">
-            <h3 className="font-display text-[17px] leading-tight text-white group-hover:text-gold transition-colors truncate">
+            <h3 className="font-display text-[17px] leading-tight group-hover:text-gold transition-colors truncate" style={{ color: "var(--ink-strong)" }}>
               {biz.name}
             </h3>
             {biz.rating_avg > 0 && (
@@ -1007,11 +1010,11 @@ function BusinessRow({ biz }: { biz: Business }) {
           </div>
 
           {/* Category · City meta */}
-          <p className="text-[11px] text-ivory/55 mb-1.5 truncate">
+          <p className="text-[11px] mb-1.5 truncate" style={{ color: "var(--ink-mute)" }}>
             <span className="uppercase tracking-editorial-tight font-semibold">{biz.category}</span>
             {biz.city?.name && (
               <>
-                <span className="mx-1.5 text-ivory/25">·</span>
+                <span className="mx-1.5" style={{ color: "var(--ink-faint)" }}>·</span>
                 <span>{biz.city.name}</span>
               </>
             )}
@@ -1019,7 +1022,7 @@ function BusinessRow({ biz }: { biz: Business }) {
 
           {/* Description */}
           {biz.description && (
-            <p className="text-[11px] text-ivory/50 mb-2 line-clamp-1 leading-relaxed">
+            <p className="text-[11px] mb-2 line-clamp-1 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
               {biz.description}
             </p>
           )}
@@ -1037,7 +1040,7 @@ function BusinessRow({ biz }: { biz: Business }) {
               </Tag>
             )}
             {biz.address && (
-              <span className="text-[9px] text-ivory/45 truncate inline-flex items-center gap-1">
+              <span className="text-[9px] truncate inline-flex items-center gap-1" style={{ color: "var(--ink-mute)" }}>
                 <Icon name="pin" size={10} className="text-gold/60" />
                 {biz.address.split(",")[0]}
               </span>
@@ -1065,7 +1068,7 @@ function BusinessRow({ biz }: { biz: Business }) {
 
             <span className="ml-auto shrink-0">
               {biz.accepts_orders || biz.accepts_bookings ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
                   <Icon name={biz.accepts_orders ? "cart" : "calendar"} size={11} />
                   {biz.accepts_orders ? "Order" : "Book"}
                   <Icon name="arrow-right-thin" size={11} />

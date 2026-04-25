@@ -69,7 +69,7 @@ export default async function OrderTrackingPage({
             {o.type === "delivery" ? "Delivering from" : "Pickup from"}
           </h2>
           <p className="text-sm">{o.business?.name}</p>
-          <p className="text-xs text-txt-secondary mt-0.5">
+          <p className="text-xs c-meta mt-0.5">
             {o.business?.address}
           </p>
         </Card>
@@ -84,10 +84,10 @@ export default async function OrderTrackingPage({
                 className="flex items-center justify-between text-sm"
               >
                 <div className="flex items-center gap-2">
-                  <span className="text-txt-secondary">{item.quantity}x</span>
+                  <span className="c-meta">{item.quantity}x</span>
                   <span>{item.name}</span>
                 </div>
-                <span className="text-txt-secondary">
+                <span className="c-meta">
                   ${((item.price * item.quantity) / 100).toFixed(2)}
                 </span>
               </div>
@@ -100,20 +100,20 @@ export default async function OrderTrackingPage({
           <h2 className="text-sm font-bold mb-3">Summary</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-txt-secondary">Subtotal</span>
+              <span className="c-meta">Subtotal</span>
               <span>${(o.subtotal / 100).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-txt-secondary">Tax</span>
+              <span className="c-meta">Tax</span>
               <span>${(o.tax / 100).toFixed(2)}</span>
             </div>
             {o.tip > 0 && (
               <div className="flex justify-between">
-                <span className="text-txt-secondary">Tip</span>
+                <span className="c-meta">Tip</span>
                 <span>${(o.tip / 100).toFixed(2)}</span>
               </div>
             )}
-            <div className="border-t border-border-subtle pt-2 flex justify-between font-bold">
+            <div className="pt-2 flex justify-between font-bold" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
               <span>Total</span>
               <span className="text-gold">
                 ${(o.total / 100).toFixed(2)}
@@ -125,7 +125,7 @@ export default async function OrderTrackingPage({
         {/* Time */}
         <Card>
           <div className="flex justify-between text-sm">
-            <span className="text-txt-secondary">Order Placed</span>
+            <span className="c-meta">Order Placed</span>
             <span>
               {new Date(o.created_at).toLocaleString("en-US", {
                 month: "short",

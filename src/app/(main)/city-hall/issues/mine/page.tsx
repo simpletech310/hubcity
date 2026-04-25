@@ -91,7 +91,7 @@ export default function MyReportedIssuesPage() {
             <div className="text-center py-8">
               <p className="text-3xl mb-3"><Icon name="document" size={28} /></p>
               <p className="text-sm font-semibold">No issues reported yet</p>
-              <p className="text-xs text-txt-secondary mt-1">
+              <p className="text-xs c-meta mt-1">
                 See a problem in Compton? Report it and track its progress here.
               </p>
               <Link href="/city-hall/issues/new" className="c-btn c-btn-primary c-btn-sm mt-4">
@@ -124,7 +124,7 @@ export default function MyReportedIssuesPage() {
                           {issue.title}
                         </p>
                         {issue.location_text && (
-                          <p className="text-xs text-txt-secondary truncate">
+                          <p className="text-xs c-meta truncate">
                             <Icon name="pin" size={16} /> {issue.location_text}
                           </p>
                         )}
@@ -144,13 +144,13 @@ export default function MyReportedIssuesPage() {
                         className="h-1 flex-1 rounded-full"
                         style={{
                           backgroundColor:
-                            i <= stepIndex ? statusCfg.color : "rgba(255,255,255,0.06)",
+                            i <= stepIndex ? statusCfg.color : "var(--rule-strong-c)",
                         }}
                       />
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-txt-secondary">
+                  <div className="flex items-center justify-between text-xs c-meta">
                     <div className="flex items-center gap-3">
                       <span><Icon name="heart-pulse" size={16} /> {issue.upvote_count}</span>
                       {issue.district && <span>District {issue.district}</span>}

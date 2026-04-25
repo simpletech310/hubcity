@@ -112,7 +112,7 @@ export default function OrderTracker({
           />
         </div>
         {businessName && (
-          <p className="text-sm text-txt-secondary">{businessName}</p>
+          <p className="text-sm" style={{ color: "var(--ink-mute)" }}>{businessName}</p>
         )}
       </div>
 
@@ -128,9 +128,8 @@ export default function OrderTracker({
                   <div className="flex items-center w-full">
                     {i > 0 && (
                       <div
-                        className={`flex-1 h-0.5 ${
-                          isActive ? "bg-gold" : "bg-white/10"
-                        }`}
+                        className={`flex-1 h-0.5 ${isActive ? "bg-gold" : ""}`}
+                        style={!isActive ? { background: "var(--rule-c)" } : undefined}
                       />
                     )}
                     <div
@@ -139,21 +138,20 @@ export default function OrderTracker({
                           ? "bg-gold border-gold shadow-lg shadow-gold/30"
                           : isActive
                           ? "bg-gold/60 border-gold/60"
-                          : "bg-white/5 border-white/20"
+                          : ""
                       }`}
+                      style={(!isCurrent && !isActive) ? { background: "var(--paper-soft)", borderColor: "var(--rule-c)" } : undefined}
                     />
                     {i < statusSteps.length - 1 && (
                       <div
-                        className={`flex-1 h-0.5 ${
-                          i < currentStepIndex ? "bg-gold" : "bg-white/10"
-                        }`}
+                        className={`flex-1 h-0.5 ${i < currentStepIndex ? "bg-gold" : ""}`}
+                        style={i >= currentStepIndex ? { background: "var(--rule-c)" } : undefined}
                       />
                     )}
                   </div>
                   <span
-                    className={`text-[9px] mt-1.5 font-semibold ${
-                      isActive ? "text-gold" : "text-txt-secondary"
-                    }`}
+                    className={`text-[9px] mt-1.5 font-semibold ${isActive ? "text-gold" : ""}`}
+                    style={!isActive ? { color: "var(--ink-mute)" } : undefined}
                   >
                     {statusLabels[step]}
                   </span>

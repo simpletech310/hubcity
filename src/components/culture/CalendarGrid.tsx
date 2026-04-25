@@ -77,19 +77,21 @@ export default function CalendarGrid({
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={handlePrev}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors text-text-secondary"
+          className="p-2 rounded-lg hover:bg-black/[0.06] transition-colors"
+          style={{ color: "var(--ink-mute)" }}
           aria-label="Previous month"
         >
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <path d="M13 5l-5 5 5 5" />
           </svg>
         </button>
-        <h3 className="font-heading font-bold text-lg text-text-primary">
+        <h3 className="font-heading font-bold text-lg" style={{ color: "var(--ink-strong)" }}>
           {MONTH_NAMES[month]} {year}
         </h3>
         <button
           onClick={handleNext}
-          className="p-2 rounded-lg hover:bg-white/5 transition-colors text-text-secondary"
+          className="p-2 rounded-lg hover:bg-black/[0.06] transition-colors"
+          style={{ color: "var(--ink-mute)" }}
           aria-label="Next month"
         >
           <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -103,7 +105,8 @@ export default function CalendarGrid({
         {DAY_LABELS.map((label) => (
           <div
             key={label}
-            className="text-center text-[11px] font-semibold text-warm-gray py-2"
+            className="text-center text-[11px] font-semibold py-2"
+            style={{ color: "var(--ink-soft)" }}
           >
             {label}
           </div>
@@ -111,7 +114,7 @@ export default function CalendarGrid({
       </div>
 
       {/* Day cells */}
-      <div className="grid grid-cols-7 gap-px bg-border-subtle rounded-xl overflow-hidden">
+      <div className="grid grid-cols-7 gap-px overflow-hidden" style={{ background: "var(--rule-strong-c)" }}>
         {cells.map((day, i) => {
           const isToday = isCurrentMonth && day === today.getDate();
           const dayEvents = day ? eventsByDay.get(day) : undefined;
@@ -120,9 +123,10 @@ export default function CalendarGrid({
             <div
               key={i}
               className={clsx(
-                "bg-royal min-h-[48px] md:min-h-[64px] p-1.5 relative",
+                "min-h-[48px] md:min-h-[64px] p-1.5 relative",
                 !day && "opacity-30"
               )}
+              style={{ background: "var(--paper)" }}
             >
               {day && (
                 <>
@@ -131,8 +135,9 @@ export default function CalendarGrid({
                       "text-xs font-medium inline-flex items-center justify-center w-6 h-6 rounded-full",
                       isToday
                         ? "ring-2 ring-gold text-gold font-bold"
-                        : "text-text-secondary"
+                        : ""
                     )}
+                    style={!isToday ? { color: "var(--ink-mute)" } : undefined}
                   >
                     {day}
                   </span>

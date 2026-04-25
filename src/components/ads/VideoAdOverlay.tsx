@@ -138,7 +138,7 @@ export default function VideoAdOverlay({
           /* Image / text card fallback */
           <div className="max-w-md mx-auto px-6 text-center">
             {ad.image_url && (
-              <div className="w-full aspect-video rounded-2xl overflow-hidden mb-5 border border-border-subtle">
+              <div className="w-full aspect-video overflow-hidden mb-5" style={{ border: "2px solid var(--rule-strong-c)" }}>
                 <img
                   src={ad.image_url}
                   alt={ad.business_name}

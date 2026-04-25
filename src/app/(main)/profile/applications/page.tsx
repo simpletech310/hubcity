@@ -71,7 +71,7 @@ export default async function MyApplicationsPage() {
       <div className="px-5 space-y-3">
         {appList.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-txt-secondary text-sm mb-4">
+            <p className="c-meta text-sm mb-4">
               No applications yet.
             </p>
             <Link href="/resources">
@@ -89,11 +89,11 @@ export default async function MyApplicationsPage() {
                     {app.resource?.name ?? "Resource"}
                   </h3>
                   {app.resource?.organization && (
-                    <p className="text-[11px] text-txt-secondary mt-0.5">
+                    <p className="text-[11px] c-meta mt-0.5">
                       {app.resource.organization}
                     </p>
                   )}
-                  <p className="text-xs text-txt-secondary mt-1.5">
+                  <p className="text-xs c-meta mt-1.5">
                     Applied{" "}
                     {new Date(app.created_at).toLocaleDateString("en-US", {
                       month: "short",

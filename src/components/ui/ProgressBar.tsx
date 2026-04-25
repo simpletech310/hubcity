@@ -24,7 +24,7 @@ export default function ProgressBar({
     <div className="w-full">
       {showLabel && (
         <div className="flex justify-end mb-1">
-          <span className="text-xs font-medium text-txt-secondary">
+          <span className="text-xs font-medium" style={{ color: "var(--ink-mute)" }}>
             {Math.round(clamped)}%
           </span>
         </div>

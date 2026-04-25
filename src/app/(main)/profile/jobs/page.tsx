@@ -60,7 +60,7 @@ export default async function MyJobApplicationsPage() {
           <div className="text-center py-16">
             <span className="text-5xl block mb-3"><Icon name="briefcase" size={28} /></span>
             <p className="text-sm font-medium mb-1">No applications yet</p>
-            <p className="text-xs text-txt-secondary mb-4">
+            <p className="text-xs c-meta mb-4">
               Browse the job board to find opportunities.
             </p>
             <Link href="/jobs">
@@ -82,11 +82,11 @@ export default async function MyJobApplicationsPage() {
                       {app.job_listing?.title ?? "Job"}
                     </h3>
                     {app.job_listing?.business?.name && (
-                      <p className="text-[11px] text-txt-secondary mt-0.5">
+                      <p className="text-[11px] c-meta mt-0.5">
                         {app.job_listing.business.name}
                       </p>
                     )}
-                    <p className="text-xs text-txt-secondary mt-1.5">
+                    <p className="text-xs c-meta mt-1.5">
                       Applied{" "}
                       {new Date(app.created_at).toLocaleDateString("en-US", {
                         month: "short",

@@ -27,8 +27,8 @@ const variantStyles: Record<BadgeVariant, string> = {
   coral: "bg-coral/10 text-coral border-coral/25",
   cyan: "bg-cyan/10 text-cyan border-cyan/25",
   pink: "bg-gold/10 text-gold border-gold/25",
-  purple: "bg-white/[0.04] text-ivory/80 border-white/10",
-  blue: "bg-white/[0.04] text-ivory/80 border-white/10",
+  purple: "bg-black/[0.04] border-black/10",
+  blue: "bg-black/[0.04] border-black/10",
 };
 
 export default function Badge({
@@ -47,6 +47,7 @@ export default function Badge({
         ${size === "sm" ? "px-2.5 py-0.5 text-[9px]" : "px-3 py-1 text-[10px]"}
         ${shine ? "badge-shine" : ""}
       `}
+      style={(variant === "purple" || variant === "blue") ? { color: "var(--ink-strong)" } : undefined}
     >
       {iconName ? <Icon name={iconName} size={size === "sm" ? 10 : 12} /> : icon}
       {label}

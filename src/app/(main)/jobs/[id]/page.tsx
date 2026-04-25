@@ -179,7 +179,7 @@ export default async function JobDetailPage({
             )}
           </div>
           <div>
-            <p className="text-sm text-txt-secondary">
+            <p className="text-sm c-meta">
               {orgIcon && <span className="mr-1">{orgIcon}</span>}
               {business?.slug ? (
                 <Link
@@ -192,7 +192,7 @@ export default async function JobDetailPage({
                 displayName
               )}
             </p>
-            <h1 className="font-heading text-xl font-bold leading-tight">
+            <h1 className="font-heading text-xl font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>
               {listing.title}
             </h1>
           </div>
@@ -215,12 +215,12 @@ export default async function JobDetailPage({
         {/* Details */}
         <div className="space-y-2 mb-5">
           {(listing.location || business?.address) && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
+            <div className="flex items-center gap-2 text-sm c-meta">
               <span><Icon name="pin" size={16} /></span>
               <span>{listing.location || business?.address?.split(",")[0]}</span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm text-txt-secondary">
+          <div className="flex items-center gap-2 text-sm c-meta">
             <span><Icon name="calendar" size={16} /></span>
             <span>
               Posted{" "}
@@ -247,18 +247,18 @@ export default async function JobDetailPage({
               </span>
             </div>
           )}
-          <div className="flex items-center gap-2 text-sm text-txt-secondary">
+          <div className="flex items-center gap-2 text-sm c-meta">
             <span><Icon name="document" size={16} /></span>
             <span>{listing.application_count} application{listing.application_count !== 1 ? "s" : ""}</span>
           </div>
           {listing.contact_email && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
+            <div className="flex items-center gap-2 text-sm c-meta">
               <span><Icon name="mail" size={16} /></span>
               <span>{listing.contact_email}</span>
             </div>
           )}
           {listing.contact_phone && (
-            <div className="flex items-center gap-2 text-sm text-txt-secondary">
+            <div className="flex items-center gap-2 text-sm c-meta">
               <span><Icon name="phone" size={16} /></span>
               <span>{listing.contact_phone}</span>
             </div>
@@ -278,12 +278,12 @@ export default async function JobDetailPage({
               {poster.avatar_url ? (
                 <img src={poster.avatar_url} alt="" className="w-full h-full object-cover" />
               ) : (
-                <span className="text-[10px] font-bold text-txt-secondary">
+                <span className="text-[10px] font-bold c-meta">
                   {poster.display_name?.[0]?.toUpperCase() ?? "?"}
                 </span>
               )}
             </div>
-            <p className="text-[11px] text-txt-secondary">
+            <p className="text-[11px] c-meta">
               Posted by <span className="font-medium" style={{ color: "var(--ink-strong)" }}>{poster.display_name}</span>
             </p>
           </div>
@@ -295,8 +295,8 @@ export default async function JobDetailPage({
 
       {/* Description */}
       <div className="px-5 mb-5">
-        <h2 className="font-heading font-bold text-base mb-2">Description</h2>
-        <div className="text-sm text-txt-secondary leading-relaxed whitespace-pre-line">
+        <h2 className="font-heading font-bold text-base mb-2" style={{ color: "var(--ink-strong)" }}>Description</h2>
+        <div className="text-sm c-meta leading-relaxed whitespace-pre-line">
           {listing.description}
         </div>
       </div>
@@ -306,10 +306,10 @@ export default async function JobDetailPage({
         <>
           <div className="divider-subtle mx-5 mb-5" />
           <div className="px-5 mb-5">
-            <h2 className="font-heading font-bold text-base mb-2">
+            <h2 className="font-heading font-bold text-base mb-2" style={{ color: "var(--ink-strong)" }}>
               Requirements
             </h2>
-            <div className="text-sm text-txt-secondary leading-relaxed whitespace-pre-line">
+            <div className="text-sm c-meta leading-relaxed whitespace-pre-line">
               {listing.requirements}
             </div>
           </div>

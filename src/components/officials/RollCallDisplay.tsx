@@ -41,7 +41,7 @@ function getInitials(name: string): string {
 export default function RollCallDisplay({ rolls }: RollCallDisplayProps) {
   if (rolls.length === 0) {
     return (
-      <p className="text-sm text-white/40 py-2">No roll call data available.</p>
+      <p className="text-sm c-meta py-2">No roll call data available.</p>
     );
   }
 
@@ -55,13 +55,13 @@ export default function RollCallDisplay({ rolls }: RollCallDisplayProps) {
         return (
           <div
             key={`${roll.official_name}-${i}`}
-            className="flex items-center gap-2.5 rounded-xl px-3 py-2 hover:bg-white/[0.03] transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 transition-colors" style={{ borderBottom: "1px solid var(--rule-strong-c)" }}
           >
             {/* Position dot */}
             <span className={`w-2 h-2 rounded-full shrink-0 ${dotColor}`} />
 
             {/* Avatar */}
-            <div className="w-7 h-7 rounded-full bg-gradient-to-br from-gold/20 to-gold/5 ring-1 ring-white/[0.06] flex items-center justify-center overflow-hidden shrink-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0" style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-strong-c)" }}>
               {roll.photo_url ? (
                 <Image
                   src={roll.photo_url}
@@ -79,18 +79,18 @@ export default function RollCallDisplay({ rolls }: RollCallDisplayProps) {
 
             {/* Name + position */}
             <div className="flex-1 min-w-0">
-              <span className="text-[12px] font-medium text-white/80 truncate block">
+              <span className="text-[12px] font-medium truncate block" style={{ color: "var(--ink-mute)" }}>
                 {roll.official_name}
               </span>
               {roll.notes && (
-                <span className="text-[10px] text-white/30 italic truncate block">
+                <span className="text-[10px] c-meta italic truncate block">
                   {roll.notes}
                 </span>
               )}
             </div>
 
             {/* Position label */}
-            <span className="text-[10px] font-semibold text-white/40 uppercase tracking-wide shrink-0">
+            <span className="text-[10px] font-semibold c-meta uppercase tracking-wide shrink-0">
               {label}
             </span>
           </div>

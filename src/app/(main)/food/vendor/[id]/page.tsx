@@ -568,21 +568,21 @@ export default async function VendorDetailPage({
         <div className="px-5">
           <Link
             href={`/business/${biz.slug || biz.id}/order`}
-            className="block w-full text-center py-3.5 rounded-xl bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors uppercase tracking-[0.14em]"
+            className="block w-full text-center py-3.5 bg-gold text-midnight font-bold text-sm press hover:bg-gold-light transition-colors uppercase tracking-[0.14em]"
           >
             Order Now
           </Link>
-          <p className="mt-3 text-center text-[10px] uppercase tracking-editorial text-ivory/40">
+          <p className="mt-3 text-center text-[10px] uppercase tracking-editorial" style={{ color: "var(--ink-mute)" }}>
             Delivered to your table. Straight from the kitchen.
           </p>
         </div>
       ) : (
-        <div className="px-6 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase text-ivory/40">
+        <div className="px-6 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase" style={{ color: "var(--ink-mute)" }}>
           <span className="flex items-center gap-2">
             <Icon name="truck" size={12} className="text-gold" />
             {categoryLabel}
           </span>
-          <span className="tabular-nums text-ivory/30">
+          <span className="tabular-nums" style={{ color: "var(--ink-soft)" }}>
             {biz.slug ? `@${biz.slug}` : ""}
           </span>
         </div>

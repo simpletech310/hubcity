@@ -26,9 +26,10 @@ export default function MuralCard({ mural }: MuralCardProps) {
   return (
     <Link
       href={`/culture/murals/${mural.slug || mural.id}`}
-      className="group block bg-card rounded-2xl border border-border-subtle overflow-hidden card-glow transition-all duration-300 hover:border-gold/20"
+      className="group block bg-card overflow-hidden card-glow transition-all duration-300 hover:border-gold/20"
+      style={{ border: "2px solid var(--rule-strong-c)" }}
     >
-      <div className="aspect-[4/3] relative overflow-hidden bg-gradient-to-br from-purple-900/40 to-gold/20">
+      <div className="aspect-[4/3] relative overflow-hidden" style={{ background: "var(--paper-warm)" }}>
         {imageUrl ? (
           <img
             src={imageUrl}
@@ -42,15 +43,15 @@ export default function MuralCard({ mural }: MuralCardProps) {
         )}
       </div>
       <div className="p-4">
-        <h3 className="font-heading font-bold text-text-primary truncate">
+        <h3 className="font-heading font-bold truncate" style={{ color: "var(--ink-strong)" }}>
           {mural.title}
         </h3>
         {mural.artist_name && (
-          <p className="text-sm text-text-secondary mt-1">
+          <p className="text-sm mt-1" style={{ color: "var(--ink-mute)" }}>
             by {mural.artist_name}
           </p>
         )}
-        <div className="flex items-center gap-3 mt-2 text-xs text-warm-gray">
+        <div className="flex items-center gap-3 mt-2 text-xs" style={{ color: "var(--ink-soft)" }}>
           {mural.location && <span>{mural.location}</span>}
           {mural.year && <span>{mural.year}</span>}
         </div>

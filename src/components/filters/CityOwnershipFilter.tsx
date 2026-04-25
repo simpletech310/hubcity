@@ -53,7 +53,7 @@ export default function CityOwnershipFilter({
     <div className="space-y-3">
       {/* City row */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.18em] text-txt-secondary font-bold mb-2 px-5">
+        <p className="text-[10px] uppercase tracking-[0.18em] font-bold mb-2 px-5" style={{ color: "var(--ink-mute)" }}>
           City
         </p>
         <div className="flex gap-2 px-5 overflow-x-auto scrollbar-hide pb-1">
@@ -77,7 +77,7 @@ export default function CityOwnershipFilter({
 
       {/* Ownership row */}
       <div>
-        <p className="text-[10px] uppercase tracking-[0.18em] text-txt-secondary font-bold mb-2 px-5">
+        <p className="text-[10px] uppercase tracking-[0.18em] font-bold mb-2 px-5" style={{ color: "var(--ink-mute)" }}>
           Ownership
         </p>
         <div className="flex gap-2 px-5 overflow-x-auto scrollbar-hide pb-1">

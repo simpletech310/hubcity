@@ -214,14 +214,14 @@ function EpisodeCard({ podcast }: { podcast: PodcastWithChannel }) {
           {/* Info */}
           <div className="flex-1 min-w-0 py-0.5">
             <div className="flex items-start justify-between gap-2 mb-1">
-              <h3 className="font-heading font-bold text-[13px] line-clamp-2 leading-tight">
+              <h3 className="font-heading font-bold text-[13px] line-clamp-2 leading-tight" style={{ color: "var(--ink-strong)" }}>
                 {podcast.title}
               </h3>
             </div>
 
             {/* Channel name as host */}
             {podcast.channel?.name && (
-              <p className="text-[11px] text-txt-secondary font-medium truncate mb-2">
+              <p className="text-[11px] font-medium truncate mb-2" style={{ color: "var(--ink-mute)" }}>
                 {podcast.channel.name}
               </p>
             )}
@@ -229,17 +229,17 @@ function EpisodeCard({ podcast }: { podcast: PodcastWithChannel }) {
             {/* Bottom meta row */}
             <div className="flex items-center gap-2 flex-wrap">
               {podcast.episode_number && (
-                <span className="text-[10px] text-txt-secondary font-semibold">
+                <span className="text-[10px] font-semibold" style={{ color: "var(--ink-mute)" }}>
                   EP {podcast.episode_number}
                   {podcast.season_number > 1
                     ? ` / S${podcast.season_number}`
                     : ""}
                 </span>
               )}
-              <span className="text-[10px] text-txt-secondary">
+              <span className="text-[10px]" style={{ color: "var(--ink-mute)" }}>
                 {formatDuration(podcast.duration)}
               </span>
-              <span className="text-[10px] text-txt-secondary flex items-center gap-0.5">
+              <span className="text-[10px] flex items-center gap-0.5" style={{ color: "var(--ink-mute)" }}>
                 <svg
                   width="10"
                   height="10"

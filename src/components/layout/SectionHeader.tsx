@@ -28,12 +28,13 @@ export default function SectionHeader({
           {icon}
           <h2
             className={`font-heading font-bold tracking-tight ${compact ? "text-base" : "text-[20px]"}`}
+            style={{ color: "var(--ink-strong)" }}
           >
             {title}
           </h2>
         </div>
         {subtitle && (
-          <p className="text-[13px] text-warm-gray mt-0.5">{subtitle}</p>
+          <p className="text-[13px] mt-0.5" style={{ color: "var(--ink-soft)" }}>{subtitle}</p>
         )}
       </div>
       {linkText && linkHref && (

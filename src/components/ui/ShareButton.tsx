@@ -60,11 +60,12 @@ export default function ShareButton({
       <button
         onClick={handleShare}
         className={clsx(
-          "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm",
-          "text-txt-secondary hover:text-txt-primary hover:bg-white/5",
+          "inline-flex items-center gap-1.5 px-3 py-2 text-sm",
+          "hover:bg-black/[0.06]",
           "transition-colors press cursor-pointer",
           className
         )}
+        style={{ color: "var(--ink-mute)" }}
         aria-label="Share"
       >
         <svg
@@ -86,7 +87,7 @@ export default function ShareButton({
 
       {/* Copied tooltip */}
       {copied && (
-        <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg bg-deep border border-border-subtle text-xs text-gold font-medium whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-bottom-1">
+        <span className="absolute -top-9 left-1/2 -translate-x-1/2 px-3 py-1.5 text-xs text-gold font-medium whitespace-nowrap shadow-lg animate-in fade-in slide-in-from-bottom-1" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
           Link copied!
         </span>
       )}

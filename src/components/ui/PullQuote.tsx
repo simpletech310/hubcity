@@ -27,9 +27,10 @@ export default function PullQuote({
       <div className="min-w-0">
         <p
           className={clsx(
-            "font-display italic text-ivory/90 leading-snug",
+            "font-display italic leading-snug",
             sizeClass[size]
           )}
+          style={{ color: "var(--ink-strong)" }}
         >
           &ldquo;{quote}&rdquo;
         </p>

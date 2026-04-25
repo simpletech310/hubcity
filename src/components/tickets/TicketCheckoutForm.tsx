@@ -67,7 +67,7 @@ function CheckoutInner({
       <Card>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-txt-secondary uppercase tracking-wide font-semibold">
+            <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: "var(--ink-mute)" }}>
               Order
             </p>
             <p className="text-xs font-mono text-gold">{orderNumber}</p>
@@ -82,7 +82,7 @@ function CheckoutInner({
       </Card>
 
       {/* Stripe Payment Element */}
-      <div className="rounded-2xl overflow-hidden">
+      <div className="overflow-hidden">
         <PaymentElement
           options={{
             layout: "tabs",
@@ -91,7 +91,7 @@ function CheckoutInner({
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-coral/10 border border-coral/20">
+        <div className="p-3 bg-coral/10 border border-coral/20">
           <p className="text-coral text-sm">{error}</p>
         </div>
       )}
@@ -106,7 +106,7 @@ function CheckoutInner({
         Pay {formatCents(total)}
       </Button>
 
-      <p className="text-center text-xs text-txt-secondary">
+      <p className="text-center text-xs" style={{ color: "var(--ink-mute)" }}>
         Secured by Stripe. Your payment info is never stored by Culture.
       </p>
     </form>
@@ -155,8 +155,8 @@ export default function TicketCheckoutForm({
       }}
     >
       <div className="mb-5">
-        <h2 className="font-heading font-bold text-lg">Complete Payment</h2>
-        <p className="text-sm text-txt-secondary">Enter your payment details below</p>
+        <h2 className="font-heading font-bold text-lg" style={{ color: "var(--ink-strong)" }}>Complete Payment</h2>
+        <p className="text-sm" style={{ color: "var(--ink-mute)" }}>Enter your payment details below</p>
       </div>
       <CheckoutInner
         orderId={orderId}

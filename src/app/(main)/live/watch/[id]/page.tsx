@@ -20,13 +20,13 @@ export default async function VideoWatchPage({
   if (!video) {
     return (
       <div className="animate-fade-in px-5 pt-20 text-center">
-        <div className="w-16 h-16 bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-txt-secondary">
+        <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="c-meta">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
         </div>
-        <h2 className="font-heading font-bold text-lg mb-1">Video Not Found</h2>
-        <p className="text-sm text-txt-secondary">This video doesn&apos;t exist or has been removed.</p>
+        <h2 className="font-heading font-bold text-lg mb-1" style={{ color: "var(--ink-strong)" }}>Video Not Found</h2>
+        <p className="text-sm c-meta">This video doesn&apos;t exist or has been removed.</p>
       </div>
     );
   }

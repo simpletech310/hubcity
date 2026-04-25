@@ -143,7 +143,7 @@ export default async function ResourceDetailPage({
                 <Tag tone={status.tone} size="xs">{status.label}</Tag>
                 {res.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
               </div>
-              <h1 className="font-display text-[34px] sm:text-[42px] leading-[0.98] tracking-tight text-ivory">
+              <h1 className="font-display text-[34px] sm:text-[42px] leading-[0.98] tracking-tight" style={{ color: "var(--ink-strong)" }}>
                 {res.name}
               </h1>
               <div className="mt-4 h-px w-14 bg-gold" />

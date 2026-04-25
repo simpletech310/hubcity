@@ -769,7 +769,7 @@ export default function FoodPage() {
         <div className="mb-6 animate-fade-in space-y-5">
           {/* ─── Category Tabs (editorial, no per-category colors) ─── */}
           <div>
-            <p className="text-[10px] uppercase tracking-[0.18em] text-txt-secondary font-bold mb-2 px-5">
+            <p className="text-[10px] uppercase tracking-[0.18em] font-bold mb-2 px-5" style={{ color: "var(--ink-mute)" }}>
               Type
             </p>
             <div className="c-noscroll flex gap-1.5 px-5 overflow-x-auto pb-1">

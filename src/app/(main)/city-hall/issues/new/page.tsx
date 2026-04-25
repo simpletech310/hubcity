@@ -305,7 +305,7 @@ export default function ReportIssuePage() {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={selectedType ? "Auto-generated, but you can edit" : "Select a type first"}
-            className="w-full px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all"
+            className="w-full px-4 py-3 text-sm placeholder:text-[color:var(--ink-mute)] focus:outline-none transition-all"
             style={{
               background: "var(--paper)",
               border: "2px solid var(--rule-strong-c)",
@@ -325,7 +325,7 @@ export default function ReportIssuePage() {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Describe the issue in detail..."
             rows={4}
-            className="w-full px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all resize-none"
+            className="w-full px-4 py-3 text-sm placeholder:text-[color:var(--ink-mute)] focus:outline-none transition-all resize-none"
             style={{
               background: "var(--paper)",
               border: "2px solid var(--rule-strong-c)",
@@ -415,7 +415,7 @@ export default function ReportIssuePage() {
               value={locationText}
               onChange={(e) => setLocationText(e.target.value)}
               placeholder="e.g. Compton Blvd near Central Ave"
-              className="flex-1 px-4 py-3 text-sm placeholder:text-txt-secondary/50 focus:outline-none transition-all"
+              className="flex-1 px-4 py-3 text-sm placeholder:text-[color:var(--ink-mute)] focus:outline-none transition-all"
               style={{
                 background: "var(--paper)",
                 border: "2px solid var(--rule-strong-c)",
@@ -474,7 +474,7 @@ export default function ReportIssuePage() {
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-txt-secondary mt-1.5">
+          <p className="text-[10px] c-meta mt-1.5">
             Not sure? Leave blank and we&apos;ll figure it out.
           </p>
         </div>
@@ -511,7 +511,7 @@ export default function ReportIssuePage() {
           Submit Report
         </Button>
 
-        <p className="text-[10px] text-txt-secondary text-center pb-4">
+        <p className="text-[10px] c-meta text-center pb-4">
           Reports are public and help the city prioritize improvements.
         </p>
       </div>

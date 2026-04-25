@@ -70,7 +70,7 @@ export default function SaveButton({
   const sizeClasses =
     size === "sm"
       ? "w-9 h-9 rounded-xl text-base"
-      : "w-12 h-12 rounded-2xl text-lg";
+      : "w-12 h-12 text-lg";
 
   return (
     <button
@@ -79,8 +79,9 @@ export default function SaveButton({
       className={`${sizeClasses} shrink-0 border flex items-center justify-center press transition-all ${
         saved
           ? "bg-gold/15 border-gold/30 text-gold shadow-sm shadow-gold/10"
-          : "bg-card border-border-subtle text-txt-secondary hover:border-gold/20 hover:text-gold"
+          : "bg-card border-border-subtle hover:border-gold/20 hover:text-gold"
       } ${loading ? "opacity-60" : ""}`}
+      style={!saved ? { color: "var(--ink-mute)" } : undefined}
       title={saved ? "Unsave" : "Save"}
     >
       <Icon name="bookmark" size={size === "sm" ? 16 : 20} />

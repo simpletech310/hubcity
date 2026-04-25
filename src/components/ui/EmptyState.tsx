@@ -43,10 +43,10 @@ export default function EmptyState({
         </span>
       ) : null}
 
-      <h3 className="text-lg font-semibold text-txt-primary mb-1">{title}</h3>
+      <h3 className="text-lg font-semibold mb-1" style={{ color: "var(--ink-strong)" }}>{title}</h3>
 
       {description && (
-        <p className="text-sm text-txt-secondary max-w-xs">{description}</p>
+        <p className="text-sm max-w-xs" style={{ color: "var(--ink-mute)" }}>{description}</p>
       )}
 
       {action && (

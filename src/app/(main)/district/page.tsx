@@ -367,7 +367,7 @@ export default async function DistrictPage() {
               </div>
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-gold">Sign in to see your district</p>
-                <p className="text-[11px] text-white/40 mt-0.5">Get personalized content for your area</p>
+                <p className="text-[11px] c-meta mt-0.5">Get personalized content for your area</p>
               </div>
               <Icon name="chevron-right" size={14} className="text-gold/50" />
             </div>
@@ -387,7 +387,7 @@ export default async function DistrictPage() {
               </div>
               <div className="flex-1">
                 <p className="text-[13px] font-semibold text-gold">Set your district</p>
-                <p className="text-[11px] text-white/40 mt-0.5">Add your address in profile to see district-specific content</p>
+                <p className="text-[11px] c-meta mt-0.5">Add your address in profile to see district-specific content</p>
               </div>
               <Icon name="chevron-right" size={14} className="text-gold/50" />
             </div>
@@ -481,7 +481,7 @@ export default async function DistrictPage() {
                       <Icon name="graduation" size={18} className="text-emerald" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-white truncate">{school.school_name}</p>
+                      <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{school.school_name}</p>
                       <div className="flex items-center gap-2 mt-1">
                         {school.school_type && (
                           <span className="text-[9px] font-semibold text-emerald bg-emerald/10 rounded-full px-2 py-0.5 capitalize">
@@ -489,7 +489,7 @@ export default async function DistrictPage() {
                           </span>
                         )}
                         {school.grades && (
-                          <span className="text-[9px] text-white/30">
+                          <span className="text-[9px] c-meta">
                             Grades {school.grades}
                           </span>
                         )}
@@ -549,14 +549,14 @@ export default async function DistrictPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white line-clamp-2">{vote.title}</p>
+                        <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{vote.title}</p>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
                             vote.result === "passed" || vote.result === "approved"
                               ? "text-emerald bg-emerald/10"
                               : vote.result === "failed" || vote.result === "denied"
                               ? "text-coral bg-coral/10"
-                              : "text-white/50 bg-white/5"
+                              : "c-meta"
                           }`}>
                             {vote.result}
                           </span>
@@ -569,19 +569,19 @@ export default async function DistrictPage() {
                           }`}>
                             {vote.impact_level} impact
                           </span>
-                          <span className="text-[10px] text-white/25">
+                          <span className="text-[10px] c-meta">
                             {new Date(vote.vote_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </span>
                         </div>
                         {userCouncilRoll && (
                           <p className="text-[11px] mt-1.5">
-                            <span className="text-white/40">Your rep voted: </span>
+                            <span className="c-meta">Your rep voted: </span>
                             <span className={`font-semibold ${
                               userCouncilRoll.position === "aye"
                                 ? "text-emerald"
                                 : userCouncilRoll.position === "nay"
                                 ? "text-coral"
-                                : "text-white/50"
+                                : "c-meta"
                             }`}>
                               {userCouncilRoll.position}
                             </span>
@@ -640,14 +640,14 @@ export default async function DistrictPage() {
                         />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white line-clamp-2">{action.title}</p>
+                        <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{action.title}</p>
                         <div className="flex items-center gap-2 mt-1.5">
                           <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${
                             action.result === "passed" || action.result === "approved"
                               ? "text-emerald bg-emerald/10"
                               : action.result === "failed" || action.result === "denied"
                               ? "text-coral bg-coral/10"
-                              : "text-white/50 bg-white/5"
+                              : "c-meta"
                           }`}>
                             {action.result}
                           </span>
@@ -660,19 +660,19 @@ export default async function DistrictPage() {
                           }`}>
                             {action.impact_level} impact
                           </span>
-                          <span className="text-[10px] text-white/25">
+                          <span className="text-[10px] c-meta">
                             {new Date(action.action_date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                           </span>
                         </div>
                         {userTrusteeRoll && (
                           <p className="text-[11px] mt-1.5">
-                            <span className="text-white/40">Your trustee voted: </span>
+                            <span className="c-meta">Your trustee voted: </span>
                             <span className={`font-semibold ${
                               userTrusteeRoll.position === "aye"
                                 ? "text-emerald"
                                 : userTrusteeRoll.position === "nay"
                                 ? "text-coral"
-                                : "text-white/50"
+                                : "c-meta"
                             }`}>
                               {userTrusteeRoll.position}
                             </span>
@@ -730,15 +730,15 @@ export default async function DistrictPage() {
                       <div className="w-7 h-7 rounded-lg bg-cyan/10 flex items-center justify-center">
                         <Icon name="graduation" size={14} className="text-cyan" />
                       </div>
-                      <p className="text-[12px] font-semibold text-white">Your Schools</p>
+                      <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Your Schools</p>
                     </div>
                     <div className="space-y-2 pl-9">
                       {elementary.length > 0 && (
                         <div>
                           <p className="text-[10px] font-semibold text-cyan/70 uppercase tracking-wider mb-1">Elementary</p>
                           {elementary.map((s) => (
-                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] text-white/70 hover:text-white transition-colors py-0.5 press">
-                              {s.name} {s.mascot && <span className="text-white/30">· {s.mascot}</span>}
+                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] c-meta hover:text-[var(--ink-strong)] transition-colors py-0.5 press">
+                              {s.name} {s.mascot && <span className="c-meta">· {s.mascot}</span>}
                             </Link>
                           ))}
                         </div>
@@ -747,8 +747,8 @@ export default async function DistrictPage() {
                         <div>
                           <p className="text-[10px] font-semibold text-cyan/70 uppercase tracking-wider mb-1">Middle School</p>
                           {middle.map((s) => (
-                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] text-white/70 hover:text-white transition-colors py-0.5 press">
-                              {s.name} {s.mascot && <span className="text-white/30">· {s.mascot}</span>}
+                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] c-meta hover:text-[var(--ink-strong)] transition-colors py-0.5 press">
+                              {s.name} {s.mascot && <span className="c-meta">· {s.mascot}</span>}
                             </Link>
                           ))}
                         </div>
@@ -757,8 +757,8 @@ export default async function DistrictPage() {
                         <div>
                           <p className="text-[10px] font-semibold text-cyan/70 uppercase tracking-wider mb-1">High School</p>
                           {high.map((s) => (
-                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] text-white/70 hover:text-white transition-colors py-0.5 press">
-                              {s.name} {s.mascot && <span className="text-white/30">· {s.mascot}</span>}
+                            <Link key={s.id} href={`/schools/${s.slug || s.id}`} className="block text-[12px] c-meta hover:text-[var(--ink-strong)] transition-colors py-0.5 press">
+                              {s.name} {s.mascot && <span className="c-meta">· {s.mascot}</span>}
                             </Link>
                           ))}
                         </div>
@@ -775,12 +775,12 @@ export default async function DistrictPage() {
                     <div className="w-7 h-7 rounded-lg bg-emerald/10 flex items-center justify-center">
                       <Icon name="tree" size={14} className="text-emerald" />
                     </div>
-                    <p className="text-[12px] font-semibold text-white">Your Parks</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Your Parks</p>
                   </div>
                   <div className="space-y-2 pl-9">
                     {parksList.slice(0, 5).map((park) => (
                       <Link key={park.id} href={`/parks/${park.slug || park.id}`} className="block py-0.5 press">
-                        <p className="text-[12px] text-white/70 hover:text-white transition-colors">{park.name}</p>
+                        <p className="text-[12px] c-meta hover:text-[var(--ink-strong)] transition-colors">{park.name}</p>
                         {park.amenities && park.amenities.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-0.5">
                             {park.amenities.slice(0, 5).map((a: string) => (
@@ -789,7 +789,7 @@ export default async function DistrictPage() {
                               </span>
                             ))}
                             {park.amenities.length > 5 && (
-                              <span className="text-[8px] text-white/20">+{park.amenities.length - 5} more</span>
+                              <span className="text-[8px] c-meta">+{park.amenities.length - 5} more</span>
                             )}
                           </div>
                         )}
@@ -806,18 +806,18 @@ export default async function DistrictPage() {
                     <div className="w-7 h-7 rounded-lg bg-hc-purple/10 flex items-center justify-center">
                       <Icon name="calendar" size={14} className="text-gold" />
                     </div>
-                    <p className="text-[12px] font-semibold text-white">Park Programs</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Park Programs</p>
                   </div>
                   <div className="space-y-1.5 pl-9">
                     {parkPrograms.slice(0, 5).map((prog: { id: string; name: string; age_range: string | null; schedule: string | null; parks: { name: string } | { name: string }[] | null }) => {
                       const parkName = Array.isArray(prog.parks) ? prog.parks[0]?.name : prog.parks?.name;
                       return (
                         <div key={prog.id} className="py-0.5">
-                          <p className="text-[12px] text-white/70">{prog.name}</p>
-                          <div className="flex items-center gap-2 text-[10px] text-white/30 mt-0.5">
+                          <p className="text-[12px]" style={{ color: "var(--ink-mute)" }}>{prog.name}</p>
+                          <div className="flex items-center gap-2 text-[10px] c-meta mt-0.5">
                             {parkName && <span>{parkName}</span>}
-                            {prog.age_range && <><span className="text-white/10">·</span><span>{prog.age_range}</span></>}
-                            {prog.schedule && <><span className="text-white/10">·</span><span>{prog.schedule}</span></>}
+                            {prog.age_range && <><span className="c-meta">·</span><span>{prog.age_range}</span></>}
+                            {prog.schedule && <><span className="c-meta">·</span><span>{prog.schedule}</span></>}
                           </div>
                         </div>
                       );
@@ -833,18 +833,18 @@ export default async function DistrictPage() {
                     <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
                       <Icon name="heart-pulse" size={14} className="text-gold" />
                     </div>
-                    <p className="text-[12px] font-semibold text-white">Community Programs</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Community Programs</p>
                   </div>
                   <div className="space-y-1.5 pl-9">
                     {districtPrograms.slice(0, 5).map((prog: { id: string; title: string; category: string; schedule: string | null; location_name: string | null }) => (
                       <div key={prog.id} className="py-0.5">
                         <div className="flex items-center gap-2">
-                          <p className="text-[12px] text-white/70">{prog.title}</p>
+                          <p className="text-[12px]" style={{ color: "var(--ink-mute)" }}>{prog.title}</p>
                           <span className="text-[8px] font-semibold text-gold/60 bg-gold/8 rounded-full px-1.5 py-0.5 capitalize">{prog.category}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] text-white/30 mt-0.5">
+                        <div className="flex items-center gap-2 text-[10px] c-meta mt-0.5">
                           {prog.location_name && <span>{prog.location_name}</span>}
-                          {prog.schedule && <><span className="text-white/10">·</span><span>{prog.schedule}</span></>}
+                          {prog.schedule && <><span className="c-meta">·</span><span>{prog.schedule}</span></>}
                         </div>
                       </div>
                     ))}
@@ -859,9 +859,9 @@ export default async function DistrictPage() {
                     <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
                       <Icon name="pin" size={14} className="text-gold" />
                     </div>
-                    <p className="text-[12px] font-semibold text-white">Community Programs</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Community Programs</p>
                   </div>
-                  <p className="text-[11px] text-white/50 pl-9 mb-2">
+                  <p className="text-[11px] c-meta pl-9 mb-2">
                     Verify your address to see council-run programs, workshops, and events for your district.
                   </p>
                   <Link
@@ -880,9 +880,9 @@ export default async function DistrictPage() {
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${districtColor?.accent}15` }}>
                       <Icon name="users" size={14} style={{ color: districtColor?.accent }} />
                     </div>
-                    <p className="text-[12px] font-semibold text-white">Your Council Member</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>Your Council Member</p>
                   </div>
-                  <p className="text-[12px] text-white/60 pl-9">
+                  <p className="text-[12px] c-meta pl-9">
                     {councilMember.display_name} represents District {userDistrict}
                   </p>
                 </div>
@@ -894,11 +894,11 @@ export default async function DistrictPage() {
                   <div className="w-7 h-7 rounded-lg bg-gold/10 flex items-center justify-center">
                     <Icon name="phone" size={14} className="text-gold" />
                   </div>
-                  <p className="text-[12px] font-semibold text-white">City Hall</p>
+                  <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>City Hall</p>
                 </div>
-                <p className="text-[12px] text-white/60 pl-9">
+                <p className="text-[12px] c-meta pl-9">
                   <a href="tel:3106035700" className="text-gold press">(310) 603-5700</a>
-                  <span className="text-white/20 mx-2">·</span>
+                  <span className="c-meta mx-2">·</span>
                   205 S Willowbrook Ave, Compton
                 </p>
               </div>
@@ -951,13 +951,13 @@ export default async function DistrictPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-0.5">
-                          <p className="text-[12px] font-semibold text-white truncate">{alert.title}</p>
+                          <p className="text-[12px] font-semibold" style={{ color: "var(--ink-strong)" }}>{alert.title}</p>
                           <span className={`text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full ${style.bg} ${style.color}`}>
                             {alert.severity ?? "info"}
                           </span>
                         </div>
                         {alert.body && (
-                          <p className="text-[11px] text-white/40 line-clamp-2">{alert.body}</p>
+                          <p className="text-[11px] c-meta line-clamp-2">{alert.body}</p>
                         )}
                       </div>
                     </div>
@@ -986,7 +986,7 @@ export default async function DistrictPage() {
         {/* ── Upcoming Events ────────────────────────── */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">
+            <p className="c-kicker" style={{ opacity: 0.65 }}>
               {userDistrict ? "Events in Your District" : "Upcoming Events"}
             </p>
             <Link href="/events" className="c-meta" style={{ color: "var(--gold-c)", fontSize: 10 }}>
@@ -1008,22 +1008,22 @@ export default async function DistrictPage() {
                         <p className="text-[9px] text-gold font-bold uppercase leading-none">
                           {date.toLocaleDateString("en-US", { month: "short" })}
                         </p>
-                        <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
+                        <p className="text-[18px] font-heading font-bold leading-none mt-0.5" style={{ color: "var(--ink-strong)" }}>
                           {date.getDate()}
                         </p>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[13px] font-semibold text-white truncate">{event.title}</p>
+                        <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{event.title}</p>
                         {event.location_name && (
-                          <p className="text-[11px] text-white/40 truncate mt-0.5">{event.location_name}</p>
+                          <p className="text-[11px] c-meta truncate mt-0.5">{event.location_name}</p>
                         )}
                         {event.category && (
-                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
+                          <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-gold/10 rounded-full px-2 py-0.5">
                             {event.category}
                           </span>
                         )}
                       </div>
-                      <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                      <Icon name="chevron-right" size={14} className="shrink-0" style={{ color: "var(--ink-mute)" }} />
                     </div>
                   </Link>
                 );
@@ -1065,9 +1065,9 @@ export default async function DistrictPage() {
                       <Icon name="graduation" size={18} className="text-cyan" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-white truncate">{school.name}</p>
+                      <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{school.name}</p>
                       {school.address && (
-                        <p className="text-[11px] text-white/40 truncate mt-0.5">{school.address}</p>
+                        <p className="text-[11px] c-meta truncate mt-0.5">{school.address}</p>
                       )}
                       <div className="flex items-center gap-2 mt-1">
                         {school.level && (
@@ -1076,13 +1076,13 @@ export default async function DistrictPage() {
                           </span>
                         )}
                         {school.mascot && (
-                          <span className="text-[9px] text-white/30">
+                          <span className="text-[9px] c-meta">
                             {school.mascot}
                           </span>
                         )}
                       </div>
                     </div>
-                    <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                    <Icon name="chevron-right" size={14} className="shrink-0" style={{ color: "var(--ink-mute)" }} />
                   </div>
                 </Link>
               ))}
@@ -1113,9 +1113,9 @@ export default async function DistrictPage() {
                       <Icon name="tree" size={18} className="text-emerald" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-white truncate">{park.name}</p>
+                      <p className="text-[13px] font-semibold" style={{ color: "var(--ink-strong)" }}>{park.name}</p>
                       {park.address && (
-                        <p className="text-[11px] text-white/40 truncate mt-0.5">{park.address}</p>
+                        <p className="text-[11px] c-meta truncate mt-0.5">{park.address}</p>
                       )}
                       {park.amenities && park.amenities.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1.5">
@@ -1128,14 +1128,14 @@ export default async function DistrictPage() {
                             </span>
                           ))}
                           {park.amenities.length > 4 && (
-                            <span className="text-[8px] text-white/30 self-center">
+                            <span className="text-[8px] c-meta self-center">
                               +{park.amenities.length - 4}
                             </span>
                           )}
                         </div>
                       )}
                     </div>
-                    <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+                    <Icon name="chevron-right" size={14} className="shrink-0" style={{ color: "var(--ink-mute)" }} />
                   </div>
                 </Link>
               ))}
@@ -1205,8 +1205,8 @@ export default async function DistrictPage() {
                           <p className="text-[12px] font-bold truncate">{author?.display_name ?? "City Official"}</p>
                           <span className="text-[8px] font-bold text-gold bg-gold/10 rounded-full px-1.5 py-0.5">Official</span>
                         </div>
-                        <p className="text-[12px] text-white/50 line-clamp-2">{post.body}</p>
-                        <p className="text-[10px] text-white/30 mt-1">
+                        <p className="text-[12px] c-meta line-clamp-2">{post.body}</p>
+                        <p className="text-[10px] c-meta mt-1">
                           {new Date(post.created_at).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -1299,7 +1299,7 @@ function CouncilCard({
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <p className="text-[14px] font-semibold text-white truncate">{name}</p>
+            <p className="text-[14px] font-semibold truncate" style={{ color: "var(--ink-strong)" }}>{name}</p>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" style={{ color: accentColor }}>
               <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
@@ -1309,10 +1309,10 @@ function CouncilCard({
             {title}
           </p>
           {bio && (
-            <p className="text-[11px] text-white/40 mt-1.5 line-clamp-2 leading-relaxed">{bio}</p>
+            <p className="text-[11px] c-meta mt-1.5 line-clamp-2 leading-relaxed">{bio}</p>
           )}
         </div>
-        <Icon name="chevron-right" size={14} className="text-white/20 shrink-0 mt-1" />
+        <Icon name="chevron-right" size={14} className="shrink-0 mt-1" style={{ color: "var(--ink-mute)" }} />
       </div>
     </Link>
   );

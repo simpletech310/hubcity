@@ -35,12 +35,12 @@ export default function StripeOnboardCard({ initial }: { initial: Status }) {
     return (
       <Card>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald/15 flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 bg-emerald/15 flex items-center justify-center shrink-0">
             <Icon name="check" size={20} className="text-emerald" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold">Stripe connected</p>
-            <p className="text-[11px] text-txt-secondary">
+            <p className="text-[11px]" style={{ color: "var(--ink-mute)" }}>
               {status.charges_enabled ? "Charges enabled" : "Charges pending"} ·{" "}
               {status.payouts_enabled ? "Payouts enabled" : "Payouts pending"}
             </p>
@@ -53,7 +53,7 @@ export default function StripeOnboardCard({ initial }: { initial: Status }) {
   return (
     <Card glow>
       <div className="flex items-start gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 bg-gold/15 flex items-center justify-center shrink-0">
           <Icon name="dollar" size={20} className="text-gold" />
         </div>
         <div className="flex-1 min-w-0">

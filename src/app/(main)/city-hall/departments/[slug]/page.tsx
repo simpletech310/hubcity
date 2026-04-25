@@ -151,7 +151,7 @@ export default async function DepartmentDetailPage({
         {services.length === 0 && (
           <div className="text-center py-10 mb-6">
             <span className="block mb-2"><Icon name="document" size={36} /></span>
-            <p className="text-sm text-txt-secondary">
+            <p className="text-sm c-meta">
               No services listed for this department yet.
             </p>
           </div>

@@ -120,7 +120,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
         {/* Back button overlay */}
         <div className="absolute top-4 left-4 z-10">
           <Link href="/parks" className="w-8 h-8 rounded-full flex items-center justify-center press" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
-            <Icon name="back" size={16} className="text-white" />
+            <Icon name="back" size={16} style={{ color: "var(--ink-strong)" }} />
           </Link>
         </div>
 
@@ -363,7 +363,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-[13px] font-semibold text-white truncate">{event.title}</h3>
+                      <h3 className="text-[13px] font-semibold truncate" style={{ color: "var(--ink-strong)" }}>{event.title}</h3>
                       <p className="text-[11px] text-black/50 mt-0.5">
                         {new Date(event.start_date).toLocaleDateString("en-US", {
                           weekday: "short",
@@ -433,7 +433,7 @@ export default async function ParkDetailPage({ params }: { params: Promise<{ id:
           >
             <Icon name="tree" size={20} className="text-emerald" />
           </div>
-          <p className="font-heading text-[14px] font-bold text-white mb-1">{park.name}</p>
+          <p className="font-heading text-[14px] font-bold mb-1" style={{ color: "var(--ink-strong)" }}>{park.name}</p>
           {park.address && <p className="text-[11px] text-black/50 mb-3">{park.address}</p>}
           <div className="flex justify-center gap-2">
             {park.phone && (

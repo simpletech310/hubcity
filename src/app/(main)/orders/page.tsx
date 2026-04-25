@@ -78,7 +78,7 @@ export default async function MyOrdersPage() {
       <div className="px-5 pt-5 space-y-3">
         {orderList.length === 0 ? (
           <div className="text-center py-16">
-            <p className="text-txt-secondary text-sm mb-4">
+            <p className="c-meta text-sm mb-4">
               No orders yet.
             </p>
             <Link href="/business">
@@ -96,10 +96,10 @@ export default async function MyOrdersPage() {
                     <h3 className="text-[13px] font-bold">
                       {order.business?.name ?? "Business"}
                     </h3>
-                    <p className="text-[11px] text-txt-secondary mt-0.5">
+                    <p className="text-[11px] c-meta mt-0.5">
                       {order.order_number}
                     </p>
-                    <p className="text-xs text-txt-secondary mt-1">
+                    <p className="text-xs c-meta mt-1">
                       {new Date(order.created_at).toLocaleDateString("en-US", {
                         month: "short",
                         day: "numeric",

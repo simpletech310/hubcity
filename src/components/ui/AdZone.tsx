@@ -53,18 +53,19 @@ export default function AdZone({ zone, className }: AdZoneProps) {
           body: JSON.stringify({ zone }),
         }).catch(() => {});
       }}
-      className={`block rounded-2xl overflow-hidden glass-card border border-border-subtle hover:border-gold/20 transition-all duration-300 ${className || ""}`}
+      className={`block overflow-hidden glass-card hover:border-gold/20 transition-all duration-300 ${className || ""}`}
+      style={{ border: "2px solid var(--rule-strong-c)" }}
     >
       {ad.imageUrl && (
-        <div className="aspect-[3/1] bg-white/5">
+        <div className="aspect-[3/1]" style={{ background: "var(--paper)" }}>
           <img src={ad.imageUrl} alt={ad.title || "Sponsored"} className="w-full h-full object-cover" />
         </div>
       )}
       <div className="px-4 py-3 flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <p className="text-[9px] font-heading font-semibold text-txt-secondary uppercase tracking-wider mb-0.5">Sponsored</p>
+          <p className="text-[9px] font-heading font-semibold uppercase tracking-wider mb-0.5" style={{ color: "var(--ink-mute)" }}>Sponsored</p>
           {ad.title && (
-            <p className="text-sm font-semibold text-white truncate">{ad.title}</p>
+            <p className="text-sm font-semibold truncate" style={{ color: "var(--ink-strong)" }}>{ad.title}</p>
           )}
         </div>
         <span className="text-xs font-semibold text-gold shrink-0 ml-3">

@@ -101,8 +101,8 @@ export default function CityPicker({
         aria-label={`Active city: ${triggerLabel}. Tap to change.`}
         className={
           variant === "header"
-            ? "group inline-flex items-center gap-1 text-[9px] text-txt-secondary tracking-[0.15em] uppercase leading-none mt-0.5 hover:text-white transition-colors press"
-            : "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-border-subtle text-xs text-txt-secondary hover:text-white hover:border-gold/30 transition-colors press"
+            ? "group inline-flex items-center gap-1 text-[9px] c-meta tracking-[0.15em] uppercase leading-none mt-0.5 hover:text-[var(--ink-strong)] transition-colors press"
+            : "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs c-meta hover:text-[var(--ink-strong)] hover:border-gold/30 transition-colors press"
         }
       >
         <span>{triggerLabel}</span>
@@ -137,11 +137,12 @@ export default function CityPicker({
             role="dialog"
             aria-modal="true"
             aria-label="Choose city"
-            className="relative max-w-[430px] w-full glass-card-elevated rounded-t-3xl sm:rounded-3xl px-5 pt-5 pb-8 max-h-[85vh] overflow-y-auto animate-sheet-up"
+            className="relative max-w-[430px] w-full px-5 pt-5 pb-8 max-h-[85vh] overflow-y-auto animate-sheet-up"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
           >
             {/* Handle */}
             <div className="flex justify-center mb-4 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full" style={{ background: "var(--rule-strong-c)" }} />
             </div>
 
             {/* Title row */}
@@ -150,7 +151,7 @@ export default function CityPicker({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gold mb-1">
                   Choose your city
                 </p>
-                <h2 className="font-display text-2xl text-white leading-tight">
+                <h2 className="font-display text-2xl leading-tight" style={{ color: "var(--ink-strong)" }}>
                   Where are we connecting?
                 </h2>
               </div>
@@ -158,7 +159,7 @@ export default function CityPicker({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close"
-                className="w-8 h-8 rounded-full bg-white/[0.06] border border-border-subtle flex items-center justify-center hover:bg-white/[0.12] press"
+                className="w-8 h-8 rounded-full flex items-center justify-center press" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
               >
                 <svg
                   width="12"
@@ -182,7 +183,7 @@ export default function CityPicker({
 
             {live.length > 0 && (
               <section className="mb-5">
-                <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50 mb-2">
+                <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] c-meta mb-2">
                   Live now
                 </h3>
                 <ul className="space-y-2">
@@ -194,21 +195,20 @@ export default function CityPicker({
                           type="button"
                           disabled={pending}
                           onClick={() => handleSelect(c.slug)}
-                          className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border transition-colors press disabled:opacity-50 ${
-                            isActive
-                              ? "border-gold/40 bg-gold/10"
-                              : "border-border-subtle bg-white/[0.03] hover:border-gold/20 hover:bg-white/[0.06]"
-                          }`}
+                          className="w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors press disabled:opacity-50"
+                          style={{
+                            background: isActive ? "rgba(242,169,0,0.1)" : "var(--paper-warm)",
+                            border: isActive ? "2px solid rgba(242,169,0,0.4)" : "2px solid var(--rule-strong-c)",
+                          }}
                         >
                           <div className="text-left">
                             <p
-                              className={`font-display text-lg leading-tight ${
-                                isActive ? "text-gold" : "text-white"
-                              }`}
+                              className="font-display text-lg leading-tight"
+                              style={{ color: isActive ? "var(--gold-c)" : "var(--ink-strong)" }}
                             >
                               {c.name}
                             </p>
-                            <p className="text-[11px] text-white/40 mt-0.5">
+                            <p className="text-[11px] c-meta mt-0.5">
                               {c.state}
                             </p>
                           </div>
@@ -230,7 +230,7 @@ export default function CityPicker({
 
             {comingSoon.length > 0 && (
               <section>
-                <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/50 mb-2">
+                <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] c-meta mb-2">
                   Coming soon
                 </h3>
                 <ul className="space-y-2">
@@ -238,17 +238,18 @@ export default function CityPicker({
                     <li key={c.id}>
                       <div
                         aria-disabled
-                        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-white/5 bg-white/[0.02] opacity-60 cursor-not-allowed"
+                        className="w-full flex items-center justify-between gap-3 px-4 py-3 opacity-60 cursor-not-allowed"
+                        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}
                       >
                         <div className="text-left">
-                          <p className="font-display text-lg leading-tight text-white/80">
+                          <p className="font-display text-lg leading-tight" style={{ color: "var(--ink-mute)" }}>
                             {c.name}
                           </p>
-                          <p className="text-[11px] text-white/40 mt-0.5">
+                          <p className="text-[11px] c-meta mt-0.5">
                             {c.state}
                           </p>
                         </div>
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50 px-2 py-1 rounded-full bg-white/[0.04] border border-white/10">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider c-meta px-2 py-1 rounded-full" style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-strong-c)" }}>
                           Coming soon
                         </span>
                       </div>
@@ -258,7 +259,7 @@ export default function CityPicker({
               </section>
             )}
 
-            <p className="mt-5 text-[11px] text-white/40 text-center">
+            <p className="mt-5 text-[11px] c-meta text-center">
               You can switch cities anytime. Verifying your address unlocks
               resident-only sections in your home city.
             </p>

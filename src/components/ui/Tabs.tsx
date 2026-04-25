@@ -41,15 +41,16 @@ export default function Tabs({
             className={clsx(
               "relative px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer",
               variant === "underline" && [
-                isActive ? "text-gold" : "text-txt-secondary hover:text-txt-primary",
+                isActive ? "text-gold" : "hover:opacity-80",
               ],
               variant === "pill" && [
                 "rounded-full",
                 isActive
                   ? "text-gold"
-                  : "text-txt-secondary hover:text-txt-primary",
+                  : "hover:opacity-80",
               ]
             )}
+            style={!isActive ? { color: "var(--ink-mute)" } : undefined}
           >
             {tab.label}
 

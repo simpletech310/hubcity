@@ -72,9 +72,10 @@ export default function Modal({
           <motion.div
             ref={contentRef}
             className={clsx(
-              "relative w-full bg-deep border border-border-subtle rounded-2xl shadow-2xl overflow-hidden",
+              "relative w-full bg-deep shadow-2xl overflow-hidden",
               sizeMap[size]
             )}
+            style={{ border: "2px solid var(--rule-strong-c)" }}
             variants={scaleIn}
             initial="hidden"
             animate="visible"
@@ -82,12 +83,13 @@ export default function Modal({
           >
             {title && (
               <div className="flex items-center justify-between px-5 pt-5 pb-2">
-                <h2 className="text-lg font-semibold text-txt-primary">
+                <h2 className="text-lg font-semibold" style={{ color: "var(--ink-strong)" }}>
                   {title}
                 </h2>
                 <button
                   onClick={onClose}
-                  className="p-1.5 rounded-lg text-txt-secondary hover:text-txt-primary hover:bg-white/5 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+                  style={{ color: "var(--ink-mute)" }}
                   aria-label="Close"
                 >
                   <svg

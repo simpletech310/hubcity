@@ -67,12 +67,12 @@ export default function SettingsForm({ initialPrefs }: Props) {
       </button>
 
       <div className="px-5">
-        <h1 className="font-heading text-2xl font-bold mb-1">Settings</h1>
-        <p className="text-sm text-txt-secondary mb-5">
+        <h1 className="font-heading text-2xl font-bold mb-1" style={{ color: "var(--ink-strong)" }}>Settings</h1>
+        <p className="text-sm mb-5" style={{ color: "var(--ink-mute)" }}>
           Manage your notification preferences
         </p>
 
-        <h2 className="font-heading font-semibold text-base mb-3">
+        <h2 className="font-heading font-semibold text-base mb-3" style={{ color: "var(--ink-strong)" }}>
           Notifications
         </h2>
         <div className="space-y-2 mb-6">
@@ -81,7 +81,7 @@ export default function SettingsForm({ initialPrefs }: Props) {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium">{item.label}</p>
-                  <p className="text-xs text-txt-secondary">{item.description}</p>
+                  <p className="text-xs" style={{ color: "var(--ink-mute)" }}>{item.description}</p>
                 </div>
                 <button
                   onClick={() => toggle(item.key)}

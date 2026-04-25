@@ -68,13 +68,13 @@ function StarRating({ rating }: { rating: number }) {
           height="12"
           viewBox="0 0 24 24"
           fill={star <= Math.round(rating) ? "#F2A900" : "none"}
-          stroke={star <= Math.round(rating) ? "#F2A900" : "rgba(255,255,255,0.2)"}
+          stroke={star <= Math.round(rating) ? "#F2A900" : "var(--rule-strong-c)"}
           strokeWidth="2"
         >
           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
         </svg>
       ))}
-      <span className="text-[10px] text-txt-secondary ml-1">{rating.toFixed(1)}</span>
+      <span className="text-[10px] c-meta ml-1">{rating.toFixed(1)}</span>
     </div>
   );
 }
@@ -162,7 +162,7 @@ function SchoolCard({ school }: { school: School }) {
             </div>
 
             {/* Chevron */}
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className="text-white/20 shrink-0 mt-1" strokeLinecap="round">
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 mt-1" style={{ color: "var(--ink-mute)" }} strokeLinecap="round">
               <path d="M6 4l4 4-4 4" />
             </svg>
           </div>
@@ -175,7 +175,7 @@ function SchoolCard({ school }: { school: School }) {
               </div>
             )}
             {school.enrollment != null && (
-              <span className="text-[10px] text-txt-secondary">{school.enrollment.toLocaleString()} students</span>
+              <span className="text-[10px] c-meta">{school.enrollment.toLocaleString()} students</span>
             )}
             {school.grades && (
               <span
@@ -191,7 +191,7 @@ function SchoolCard({ school }: { school: School }) {
           {school.highlights && school.highlights.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
               {school.highlights.slice(0, 3).map((h) => (
-                <span key={h} className="text-[10px] bg-white/[0.04] text-white/60 rounded-full px-2.5 py-1 border border-white/[0.06]">
+                <span key={h} className="text-[10px] rounded-full px-2.5 py-1" style={{ background: "var(--paper-warm)", border: "1px solid var(--rule-strong-c)", color: "var(--ink-mute)" }}>
                   {h}
                 </span>
               ))}
@@ -201,7 +201,7 @@ function SchoolCard({ school }: { school: School }) {
           {/* Programs preview */}
           {school.programs && school.programs.length > 0 && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-white/40">Programs:</span>
+              <span className="text-[10px] c-meta">Programs:</span>
               <div className="flex flex-wrap gap-1">
                 {school.programs.slice(0, 3).map((p, i) => (
                   <span key={p} className="text-[10px] font-medium" style={{ color: `${color}CC` }}>
@@ -209,7 +209,7 @@ function SchoolCard({ school }: { school: School }) {
                   </span>
                 ))}
                 {school.programs.length > 3 && (
-                  <span className="text-[10px] text-white/30">+{school.programs.length - 3} more</span>
+                  <span className="text-[10px] c-meta">+{school.programs.length - 3} more</span>
                 )}
               </div>
             </div>
@@ -217,7 +217,7 @@ function SchoolCard({ school }: { school: School }) {
 
           {/* Mascot & colors strip */}
           {school.mascot && (
-            <div className="mt-3 pt-3 border-t border-white/[0.04] flex items-center justify-between">
+            <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop: "1px solid var(--rule-strong-c)" }}>
               <div className="flex items-center gap-2">
                 <div
                   className="w-5 h-5 rounded-full flex items-center justify-center"
@@ -225,9 +225,9 @@ function SchoolCard({ school }: { school: School }) {
                 >
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: schoolColors[0] }} />
                 </div>
-                <span className="text-[11px] font-semibold text-white/70">{school.mascot}</span>
+                <span className="text-[11px] font-semibold" style={{ color: "var(--ink-mute)" }}>{school.mascot}</span>
                 {colorNames && (
-                  <span className="text-[10px] text-white/30">{colorNames}</span>
+                  <span className="text-[10px] c-meta">{colorNames}</span>
                 )}
               </div>
             </div>
@@ -341,12 +341,13 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
           ].map((stat) => (
             <div
               key={stat.label}
-              className="bg-card border border-border-subtle rounded-xl p-2.5 text-center"
+              className="p-2.5 text-center"
+              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
             >
               <p className="text-base font-bold font-heading" style={{ color: stat.color }}>
                 {stat.value}
               </p>
-              <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">{stat.label}</p>
+              <p className="text-[9px] c-meta uppercase tracking-wider mt-0.5">{stat.label}</p>
             </div>
           ))}
         </div>
@@ -355,7 +356,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
       {/* Search */}
       <div className="px-5 mb-4">
         <div className="relative">
-          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30" strokeLinecap="round">
+          <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "var(--ink-mute)" }} strokeLinecap="round">
             <circle cx="8" cy="8" r="6" />
             <path d="M13 13l3 3" />
           </svg>
@@ -364,12 +365,13 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
             placeholder="Search by name, program, mascot..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border border-border-subtle rounded-xl pl-11 pr-10 py-3 text-sm text-txt-primary placeholder:text-white/25 focus:outline-none focus:border-gold/40 transition-colors"
+            className="w-full pl-11 pr-10 py-3 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none transition-colors"
+            style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white transition-colors"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors" style={{ color: "var(--ink-mute)" }}
             >
               <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <path d="M4 4l8 8M12 4l-8 8" />
@@ -390,9 +392,9 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
               onClick={() => setActiveFilter(chip.value)}
               className="flex items-center gap-1.5 shrink-0 rounded-full px-4 py-2 text-[12px] font-semibold transition-all press"
               style={{
-                background: isActive ? `${color}20` : "rgba(255,255,255,0.04)",
-                color: isActive ? color : "rgba(255,255,255,0.5)",
-                border: `1px solid ${isActive ? `${color}30` : "rgba(255,255,255,0.06)"}`,
+                background: isActive ? `${color}20` : "var(--paper-warm)",
+                color: isActive ? color : "var(--ink-mute)",
+                border: `1px solid ${isActive ? `${color}30` : "var(--rule-strong-c)"}`,
               }}
             >
               {chip.label}
@@ -400,8 +402,8 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
                 <span
                   className="text-[10px] rounded-full px-1.5 py-0.5 font-bold"
                   style={{
-                    background: isActive ? `${color}30` : "rgba(255,255,255,0.06)",
-                    color: isActive ? color : "rgba(255,255,255,0.3)",
+                    background: isActive ? `${color}30` : "var(--paper-soft)",
+                    color: isActive ? color : "var(--ink-mute)",
                   }}
                 >
                   {levelCounts[chip.value as SchoolLevel]}
@@ -417,8 +419,8 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
         <section className="mb-6">
           <div className="flex items-center justify-between px-5 mb-3">
             <div>
-              <h2 className="font-heading font-bold text-base">Featured Schools</h2>
-              <p className="text-[11px] text-white/40">Schools with notable alumni & legacy</p>
+              <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>Featured Schools</h2>
+              <p className="text-[11px] c-meta">Schools with notable alumni & legacy</p>
             </div>
           </div>
           <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
@@ -432,7 +434,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
       {/* Browse by Level - visual grid */}
       {activeFilter === "all" && !searchQuery && (
         <section className="px-5 mb-6">
-          <h2 className="font-heading font-bold text-base mb-3">Browse by Level</h2>
+          <h2 className="font-heading font-bold text-base mb-3" style={{ color: "var(--ink-strong)" }}>Browse by Level</h2>
           <div className="grid grid-cols-2 gap-2.5">
             {(["high_school", "middle_school", "elementary", "college"] as SchoolLevel[]).map((level) => {
               const color = levelColors[level];
@@ -441,7 +443,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
                 <button
                   key={level}
                   onClick={() => setActiveFilter(level)}
-                  className="relative overflow-hidden rounded-xl p-4 text-left press transition-all"
+                  className="relative overflow-hidden p-4 text-left press transition-all"
                   style={{
                     background: `linear-gradient(135deg, ${color}12, ${color}05)`,
                     border: `1px solid ${color}20`,
@@ -453,8 +455,8 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
                     </svg>
                   </div>
                   <p className="font-heading font-bold text-2xl mb-0.5" style={{ color }}>{count}</p>
-                  <p className="text-[12px] font-semibold text-white/70">{levelLabels[level]}s</p>
-                  <p className="text-[10px] text-white/30 mt-0.5">
+                  <p className="text-[12px] font-semibold" style={{ color: "var(--ink-mute)" }}>{levelLabels[level]}s</p>
+                  <p className="text-[10px] c-meta mt-0.5">
                     {level === "college" ? "Community College" : `Grades ${level === "high_school" ? "9-12" : level === "middle_school" ? "6-8" : "K-5"}`}
                   </p>
                 </button>
@@ -467,7 +469,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
       {/* Results header */}
       <div className="flex items-center justify-between px-5 mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="font-heading font-bold text-base">
+          <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>
             {activeFilter === "all" && !searchQuery ? "All Schools" : `${filteredSchools.length} Results`}
           </h2>
           {activeFilter !== "all" && (
@@ -482,7 +484,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
             </button>
           )}
         </div>
-        <span className="text-[10px] text-white/30">{filteredSchools.length} schools</span>
+        <span className="text-[10px] c-meta">{filteredSchools.length} schools</span>
       </div>
 
       {/* School List */}
@@ -494,13 +496,13 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
 
           {filteredSchools.length === 0 && (
             <div className="text-center py-16">
-              <div className="w-16 h-16 rounded-2xl bg-white/[0.04] flex items-center justify-center mx-auto mb-4">
-                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/20" strokeLinecap="round" strokeLinejoin="round">
+              <div className="w-16 h-16 flex items-center justify-center mx-auto mb-4" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+                <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--ink-mute)" }} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 21V7l9-4 9 4v14M3 21h18M9 21V11h6v10" />
                 </svg>
               </div>
-              <p className="text-sm font-semibold mb-1">No schools found</p>
-              <p className="text-xs text-white/40">Try a different filter or search term</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--ink-strong)" }}>No schools found</p>
+              <p className="text-xs c-meta">Try a different filter or search term</p>
             </div>
           )}
         </div>
@@ -509,7 +511,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
       {/* Compton Promise CTA */}
       {activeFilter === "all" && !searchQuery && (
         <section className="px-5 mb-8">
-          <div className="relative overflow-hidden rounded-2xl border border-gold/20 p-5" style={{ background: "linear-gradient(135deg, rgba(242,169,0,0.08), rgba(242,169,0,0.02))" }}>
+          <div className="relative overflow-hidden p-5" style={{ background: "linear-gradient(135deg, rgba(242,169,0,0.08), rgba(242,169,0,0.02))", border: "2px solid var(--rule-strong-c)" }}>
             <div className="absolute top-0 right-0 w-24 h-24 opacity-10">
               <svg viewBox="0 0 100 100" fill="none" stroke="#F2A900" strokeWidth="1">
                 <circle cx="80" cy="20" r="40" />
@@ -524,7 +526,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
                 Compton Promise
               </span>
               <h3 className="font-heading font-bold text-lg mb-1">Free College Tuition</h3>
-              <p className="text-[12px] text-white/50 leading-relaxed mb-3">
+              <p className="text-[12px] c-meta leading-relaxed mb-3">
                 Compton College offers free tuition for all Compton Unified graduates through the Compton Promise program. Your future starts here.
               </p>
               <Link
@@ -543,7 +545,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
 
       {/* Emergency Contact */}
       <section className="px-5 mb-6">
-        <div className="bg-card border border-border-subtle rounded-xl p-4 flex items-center gap-3">
+        <div className="p-4 flex items-center gap-3" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
           <div className="w-10 h-10 rounded-full bg-hc-blue/15 flex items-center justify-center shrink-0">
             <svg width="18" height="18" fill="none" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72" />
@@ -551,7 +553,7 @@ export default function SchoolsClientPage({ schools }: { schools: School[] }) {
           </div>
           <div className="flex-1">
             <p className="text-[12px] font-bold">Compton Unified School District</p>
-            <p className="text-[11px] text-white/40">417 W Compton Blvd, Compton, CA 90220</p>
+            <p className="text-[11px] c-meta">417 W Compton Blvd, Compton, CA 90220</p>
           </div>
           <a href="tel:3106393200" className="text-[11px] text-gold font-semibold press">
             Call

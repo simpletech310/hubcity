@@ -33,16 +33,16 @@ export default function CouncilDashboardClient({
   const [feedKey, setFeedKey] = useState(0);
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28 animate-fade-in">
+    <div className="min-h-screen pb-28 animate-fade-in" style={{ background: "var(--paper)" }}>
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-midnight/80 backdrop-blur-xl border-b border-white/[0.04]">
+      <div className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: "var(--paper)", borderBottom: "2px solid var(--rule-strong-c)" }}>
         <div className="flex items-center gap-3 px-5 py-3.5">
           <Link href="/district" className="press">
-            <Icon name="back" size={20} className="text-white/60" />
+            <Icon name="back" size={20} style={{ color: "var(--ink-mute)" }} />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="font-heading text-[17px] font-bold">Council Dashboard</h1>
-            <p className="text-[11px] text-white/40">{districtName}</p>
+            <h1 className="font-heading text-[17px] font-bold" style={{ color: "var(--ink-strong)" }}>Council Dashboard</h1>
+            <p className="text-[11px] c-meta">{districtName}</p>
           </div>
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -62,8 +62,8 @@ export default function CouncilDashboardClient({
               onClick={() => setActiveTab(tab)}
               className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 ${
                 activeTab === tab
-                  ? "border-current text-white"
-                  : "border-transparent text-white/40 hover:text-white/60"
+                  ? "border-current"
+                  : "border-transparent c-meta hover:text-[var(--ink-mute)]"
               }`}
               style={activeTab === tab ? { color: districtColor, borderColor: districtColor } : undefined}
             >
@@ -98,7 +98,8 @@ export default function CouncilDashboardClient({
           <>
             <button
               onClick={() => setShowEventForm(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-colors press"
+              className="w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors press c-meta hover:text-[var(--ink-mute)]"
+            style={{ borderColor: "var(--rule-strong-c)" }}
             >
               <Icon name="plus" size={16} />
               <span className="text-xs font-semibold">Create Event</span>
@@ -120,7 +121,8 @@ export default function CouncilDashboardClient({
           <>
             <button
               onClick={() => setShowProgramForm(true)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-colors press"
+              className="w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors press c-meta hover:text-[var(--ink-mute)]"
+            style={{ borderColor: "var(--rule-strong-c)" }}
             >
               <Icon name="plus" size={16} />
               <span className="text-xs font-semibold">Create Program</span>
@@ -177,7 +179,7 @@ function EventsList({ district }: { district: number }) {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-2xl bg-white/[0.03] animate-pulse" />
+          <div key={i} className="h-20 animate-pulse" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }} />
         ))}
       </div>
     );
@@ -185,10 +187,10 @@ function EventsList({ district }: { district: number }) {
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-        <Icon name="calendar" size={28} className="text-white/10 mx-auto mb-2" />
-        <p className="text-xs text-txt-secondary">No upcoming events</p>
-        <p className="text-[10px] text-txt-secondary mt-1">Create an event for your district</p>
+      <div className="text-center py-10" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+        <Icon name="calendar" size={28} className="c-meta mx-auto mb-2" />
+        <p className="text-xs c-meta">No upcoming events</p>
+        <p className="text-[10px] c-meta mt-1">Create an event for your district</p>
       </div>
     );
   }
@@ -201,21 +203,22 @@ function EventsList({ district }: { district: number }) {
           <Link
             key={event.id}
             href={`/events/${event.id}`}
-            className="block glass-card-elevated rounded-2xl p-3.5 press hover:border-gold/20 transition-colors"
+            className="block p-3.5 press hover:border-gold/20 transition-colors"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-14 rounded-xl bg-gradient-to-br from-hc-purple/15 to-hc-purple/5 border border-gold/10 flex flex-col items-center justify-center shrink-0">
+              <div className="w-12 h-14 flex flex-col items-center justify-center shrink-0" style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)" }}>
                 <p className="text-[9px] text-gold font-bold uppercase leading-none">
                   {date.toLocaleDateString("en-US", { month: "short" })}
                 </p>
-                <p className="text-[18px] font-heading font-bold text-white leading-none mt-0.5">
+                <p className="text-[18px] font-heading font-bold leading-none mt-0.5" style={{ color: "var(--ink-strong)" }}>
                   {date.getDate()}
                 </p>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold text-white truncate">{event.title}</p>
+                <p className="text-[13px] font-semibold truncate" style={{ color: "var(--ink-strong)" }}>{event.title}</p>
                 {event.location_name && (
-                  <p className="text-[11px] text-white/40 truncate mt-0.5">{event.location_name}</p>
+                  <p className="text-[11px] c-meta truncate mt-0.5">{event.location_name}</p>
                 )}
                 {event.category && (
                   <span className="inline-block mt-1.5 text-[9px] font-semibold text-gold bg-hc-purple/10 rounded-full px-2 py-0.5">
@@ -223,7 +226,7 @@ function EventsList({ district }: { district: number }) {
                   </span>
                 )}
               </div>
-              <Icon name="chevron-right" size={14} className="text-white/20 shrink-0" />
+              <Icon name="chevron-right" size={14} className="shrink-0" style={{ color: "var(--ink-mute)" }} />
             </div>
           </Link>
         );
@@ -274,7 +277,7 @@ function ProgramsList({ district }: { district: number }) {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-2xl bg-white/[0.03] animate-pulse" />
+          <div key={i} className="h-24 animate-pulse" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }} />
         ))}
       </div>
     );
@@ -282,10 +285,10 @@ function ProgramsList({ district }: { district: number }) {
 
   if (programs.length === 0) {
     return (
-      <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-        <Icon name="heart-pulse" size={28} className="text-white/10 mx-auto mb-2" />
-        <p className="text-xs text-txt-secondary">No programs yet</p>
-        <p className="text-[10px] text-txt-secondary mt-1">Create a program for your district</p>
+      <div className="text-center py-10" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+        <Icon name="heart-pulse" size={28} className="c-meta mx-auto mb-2" />
+        <p className="text-xs c-meta">No programs yet</p>
+        <p className="text-[10px] c-meta mt-1">Create a program for your district</p>
       </div>
     );
   }
@@ -295,19 +298,19 @@ function ProgramsList({ district }: { district: number }) {
       {programs.map((program) => {
         const colors = PROGRAM_COLORS[program.category] ?? PROGRAM_COLORS.community;
         return (
-          <div key={program.id} className="glass-card-elevated rounded-2xl p-4">
+          <div key={program.id} className="p-4" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-white">{program.title}</p>
+                <p className="text-[14px] font-semibold" style={{ color: "var(--ink-strong)" }}>{program.title}</p>
                 {program.description && (
-                  <p className="text-[12px] text-white/50 mt-1 line-clamp-2">{program.description}</p>
+                  <p className="text-[12px] c-meta mt-1 line-clamp-2">{program.description}</p>
                 )}
               </div>
               <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded-full ${colors.bg} ${colors.text} shrink-0`}>
                 {program.category}
               </span>
             </div>
-            <div className="flex items-center gap-3 mt-2 text-[11px] text-white/40">
+            <div className="flex items-center gap-3 mt-2 text-[11px] c-meta">
               {program.schedule && (
                 <span className="flex items-center gap-1">
                   <Icon name="clock" size={12} />

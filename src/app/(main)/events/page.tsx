@@ -187,7 +187,7 @@ export default function EventsPage() {
               <Tag tone="gold" size="sm">
                 {heroEvent.category}
               </Tag>
-              <span className="text-[11px] font-bold uppercase tracking-editorial text-ivory/70">
+              <span className="text-[11px] font-bold uppercase tracking-editorial" style={{ color: "var(--ink-strong)", opacity: 0.7 }}>
                 {formatEventDate(heroEvent.start_date).full}
               </span>
             </div>
@@ -327,7 +327,7 @@ export default function EventsPage() {
                   </Tag>
                   <span className="ml-auto rule-hairline flex-1 self-center" />
                 </div>
-                <p className="text-[11px] text-ivory/40 mt-1">Live events going on right now</p>
+                <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Live events going on right now</p>
               </div>
               <div className="space-y-2.5 stagger px-5">
                 {todayEvents.map((event) => (
@@ -355,7 +355,7 @@ export default function EventsPage() {
                     {thisWeekEvents.length}
                   </span>
                 </div>
-                <p className="text-[11px] text-ivory/40 mt-1">Don&apos;t miss out</p>
+                <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Don&apos;t miss out</p>
               </div>
               <div className="space-y-2.5 stagger px-5">
                 {thisWeekEvents.map((event) => (
@@ -445,7 +445,7 @@ export default function EventsPage() {
                 {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
               </span>
               <span className="ml-auto rule-hairline flex-1 self-center" />
-              <span className="text-[10px] font-bold tracking-editorial uppercase text-ivory/50 tabular-nums whitespace-nowrap">
+              <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums whitespace-nowrap" style={{ color: "var(--ink-mute)" }}>
                 {events.length}
               </span>
             </div>

@@ -86,7 +86,8 @@ export default function ServicesPage() {
       <div className="px-5 mb-5">
         <div className="relative">
           <svg
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-txt-secondary"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2"
+            style={{ color: "var(--ink-mute)" }}
             width="18"
             height="18"
             fill="none"
@@ -102,7 +103,7 @@ export default function ServicesPage() {
             placeholder="Search services..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 text-sm placeholder:text-txt-secondary focus:outline-none transition-all"
+            className="w-full pl-11 pr-4 py-3 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none transition-all"
             style={{
               background: "var(--paper)",
               border: "2px solid var(--rule-strong-c)",
@@ -164,7 +165,7 @@ export default function ServicesPage() {
               <div className="text-center py-16">
                 <span className="block mb-3"><Icon name="document" size={48} /></span>
                 <p className="text-sm font-medium mb-1">No services found</p>
-                <p className="text-xs text-txt-secondary">
+                <p className="text-xs c-meta">
                   Try a different search or department
                 </p>
               </div>

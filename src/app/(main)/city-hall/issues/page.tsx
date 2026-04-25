@@ -164,7 +164,7 @@ export default function CityIssuesPage() {
               <p className="text-xl font-bold" style={{ color: s.color }}>
                 {s.value}
               </p>
-              <p className="text-[10px] text-txt-secondary mt-0.5">{s.label}</p>
+              <p className="text-[10px] c-meta mt-0.5">{s.label}</p>
             </Card>
           ))}
         </div>
@@ -257,7 +257,7 @@ export default function CityIssuesPage() {
             />
           </div>
           {mapPoints.length === 0 && !loading && (
-            <p className="text-xs text-txt-secondary text-center mt-2">
+            <p className="text-xs c-meta text-center mt-2">
               No issues with location data to display on the map.
             </p>
           )}
@@ -277,7 +277,7 @@ export default function CityIssuesPage() {
             <div className="text-center py-8">
               <p className="mb-3"><Icon name="check" size={28} /></p>
               <p className="text-sm font-semibold">No issues found</p>
-              <p className="text-xs text-txt-secondary mt-1">
+              <p className="text-xs c-meta mt-1">
                 {typeFilter !== "all" || statusFilter !== "all"
                   ? "Try different filters"
                   : "Compton is looking good!"}
@@ -311,7 +311,7 @@ export default function CityIssuesPage() {
                           {issue.title}
                         </p>
                         {issue.location_text && (
-                          <p className="text-xs text-txt-secondary truncate flex items-center gap-1">
+                          <p className="text-xs c-meta truncate flex items-center gap-1">
                             <Icon name="pin" size={11} /> {issue.location_text}
                           </p>
                         )}
@@ -331,13 +331,13 @@ export default function CityIssuesPage() {
                         className="h-1 flex-1 rounded-full"
                         style={{
                           backgroundColor:
-                            i <= stepIndex ? statusCfg.color : "rgba(255,255,255,0.06)",
+                            i <= stepIndex ? statusCfg.color : "var(--rule-strong-c)",
                         }}
                       />
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-txt-secondary">
+                  <div className="flex items-center justify-between text-xs c-meta">
                     <div className="flex items-center gap-3">
                       <span className="flex items-center gap-1"><Icon name="heart-pulse" size={11} /> {issue.upvote_count}</span>
                       {issue.district && <span>District {issue.district}</span>}

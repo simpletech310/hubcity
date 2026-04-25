@@ -40,7 +40,7 @@ export default function EditorialHeader({
                 {kicker}
               </span>
             )}
-            <h2 className="font-display text-[26px] text-white leading-none truncate">
+            <h2 className="font-display text-[26px] leading-none truncate" style={{ color: "var(--ink-strong)" }}>
               {title}
             </h2>
           </div>
@@ -54,7 +54,7 @@ export default function EditorialHeader({
           )}
         </div>
         {subtitle && (
-          <p className="text-sm text-txt-secondary leading-relaxed max-w-xl">
+          <p className="text-sm leading-relaxed max-w-xl" style={{ color: "var(--ink-mute)" }}>
             {subtitle}
           </p>
         )}
@@ -76,9 +76,9 @@ export default function EditorialHeader({
           <span className="editorial-kicker">{kicker}</span>
         </div>
       )}
-      <h2 className="font-display text-3xl text-white leading-tight">{title}</h2>
+      <h2 className="font-display text-3xl leading-tight" style={{ color: "var(--ink-strong)" }}>{title}</h2>
       {subtitle && (
-        <p className="text-sm text-txt-secondary mt-2 max-w-md leading-relaxed">
+        <p className="text-sm mt-2 max-w-md leading-relaxed" style={{ color: "var(--ink-mute)" }}>
           {subtitle}
         </p>
       )}

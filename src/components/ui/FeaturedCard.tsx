@@ -32,7 +32,7 @@ export default function FeaturedCard({
   return (
     <Link
       href={href}
-      className={`group block rounded-2xl overflow-hidden panel-editorial transition-all duration-300 hover:border-gold/30 ${className || ""}`}
+      className={`group block overflow-hidden panel-editorial transition-all duration-300 hover:border-gold/30 ${className || ""}`}
     >
       <div className={`relative ${aspectRatio} bg-ink`}>
         {imageUrl ? (

@@ -11,7 +11,7 @@ const variantClass: Record<Variant, string> = {
 
 const borderClass: Record<Border, string> = {
   none: "",
-  subtle: "border border-white/[0.06]",
+  subtle: "",
   gold: "border border-gold/20",
 };
 
@@ -40,6 +40,7 @@ export default function EditorialCard({
         grain && "grain-overlay",
         className
       )}
+      style={border === "subtle" ? { border: "2px solid var(--rule-strong-c)" } : undefined}
     >
       {children}
     </div>

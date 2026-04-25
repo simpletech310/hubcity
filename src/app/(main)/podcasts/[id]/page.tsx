@@ -61,7 +61,7 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
         <span className="text-[10px] font-bold text-gold uppercase tracking-wider">
           Sponsored
         </span>
-        <span className="text-[10px] text-txt-secondary ml-auto">
+        <span className="text-[10px] ml-auto" style={{ color: "var(--ink-mute)" }}>
           Ad &bull; {remaining}s
         </span>
       </div>
@@ -84,10 +84,10 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
 
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <h3 className="font-heading font-bold text-[14px] mb-0.5 truncate">
+          <h3 className="font-heading font-bold text-[14px] mb-0.5 truncate" style={{ color: "var(--ink-strong)" }}>
             {ad.business_name}
           </h3>
-          <p className="text-[12px] text-txt-secondary leading-relaxed line-clamp-2 mb-2">
+          <p className="text-[12px] leading-relaxed line-clamp-2 mb-2" style={{ color: "var(--ink-mute)" }}>
             &ldquo;{ad.headline}&rdquo;
           </p>
           <button
@@ -114,10 +114,10 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
                 <div className="w-0.5 bg-gold rounded-full animate-pulse" style={{ height: "6px", animationDelay: "300ms" }} />
                 <div className="w-0.5 bg-gold rounded-full animate-pulse" style={{ height: "10px", animationDelay: "100ms" }} />
               </div>
-              <span className="text-[11px] text-txt-secondary">Playing ad...</span>
+              <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>Playing ad...</span>
             </>
           ) : (
-            <span className="text-[11px] text-txt-secondary">Sponsored message</span>
+            <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>Sponsored message</span>
           )}
         </div>
 
@@ -129,7 +129,7 @@ function AdCard({ ad, elapsed, canSkip, isAudioPlaying, onSkip, onCtaClick }: Ad
             Skip &raquo;
           </button>
         ) : (
-          <span className="text-[10px] text-txt-secondary/50">
+          <span className="text-[10px]" style={{ color: "var(--ink-mute)", opacity: 0.5 }}>
             Skip in {Math.max(0, 5 - elapsed)}s
           </span>
         )}
@@ -465,10 +465,10 @@ function AudioPlayer({ src, podcastId }: { src: string; podcastId: string }) {
 
         {/* Time display */}
         <div className="flex items-center justify-between">
-          <span className="text-[11px] text-txt-secondary font-mono">
+          <span className="text-[11px] font-mono" style={{ color: "var(--ink-mute)" }}>
             {formatTime(currentTime)}
           </span>
-          <span className="text-[11px] text-txt-secondary font-mono">
+          <span className="text-[11px] font-mono" style={{ color: "var(--ink-mute)" }}>
             {duration > 0 ? formatTime(duration) : "--:--"}
           </span>
         </div>
@@ -527,7 +527,7 @@ export default function PodcastEpisodePage() {
           <Icon name="podcast" size={28} style={{ color: "var(--ink-strong)" }} />
         </div>
         <p className="text-sm font-bold mb-1">Episode not found</p>
-        <p className="text-xs text-txt-secondary mb-4">
+        <p className="text-xs mb-4" style={{ color: "var(--ink-mute)" }}>
           This episode may have been removed
         </p>
         <button
@@ -546,7 +546,8 @@ export default function PodcastEpisodePage() {
       <div className="px-5 pt-4 mb-4">
         <button
           onClick={() => router.push("/podcasts")}
-          className="flex items-center gap-1.5 text-sm text-txt-secondary hover:text-white press transition-colors"
+          className="flex items-center gap-1.5 text-sm press transition-colors"
+          style={{ color: "var(--ink-mute)" }}
         >
           <svg
             width="16"
@@ -584,7 +585,7 @@ export default function PodcastEpisodePage() {
 
           {/* Title & meta */}
           <div className="flex-1 min-w-0 pt-1">
-            <h1 className="font-heading text-xl font-bold leading-tight mb-2">
+            <h1 className="font-heading text-xl font-bold leading-tight mb-2" style={{ color: "var(--ink-strong)" }}>
               {podcast.title}
             </h1>
             {podcast.channel?.name && (
@@ -614,7 +615,7 @@ export default function PodcastEpisodePage() {
             />
           )}
           {podcast.published_at && (
-            <span className="text-[11px] text-txt-secondary">
+            <span className="text-[11px]" style={{ color: "var(--ink-mute)" }}>
               {formatDate(podcast.published_at)}
             </span>
           )}
@@ -631,7 +632,7 @@ export default function PodcastEpisodePage() {
         <div className="px-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full bg-gold" />
-            <h2 className="font-heading font-bold text-base">About this Episode</h2>
+            <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>About this Episode</h2>
           </div>
           <div className="p-4" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
             <p className="c-body whitespace-pre-wrap">
@@ -646,7 +647,7 @@ export default function PodcastEpisodePage() {
         <div className="px-5 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 rounded-full bg-cyan" />
-            <h2 className="font-heading font-bold text-base">Transcript</h2>
+            <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>Transcript</h2>
           </div>
           <div
             className="p-4 max-h-64 overflow-y-auto"

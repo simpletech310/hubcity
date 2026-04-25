@@ -103,7 +103,7 @@ function DistributionBar({ star, count, max }: { star: number; count: number; ma
           style={{ width: `${pct}%`, background: "var(--gold-c)" }}
         />
       </div>
-      <span className="text-[11px] text-txt-secondary w-6 text-right">{count}</span>
+      <span className="text-[11px] w-6 text-right" style={{ color: "var(--ink-mute)" }}>{count}</span>
     </div>
   );
 }
@@ -189,13 +189,13 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
       <div className="px-5 mb-6">
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">Reviews</h2>
+          <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>Reviews</h2>
         </div>
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="rounded-2xl bg-card border border-border-subtle p-4 animate-pulse">
-              <div className="h-3 bg-white/5 rounded w-1/3 mb-2" />
-              <div className="h-2 bg-white/5 rounded w-2/3" />
+            <div key={i} className="p-4 animate-pulse" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
+              <div className="h-3 rounded w-1/3 mb-2" style={{ background: "var(--paper-soft)" }} />
+              <div className="h-2 rounded w-2/3" style={{ background: "var(--paper-soft)" }} />
             </div>
           ))}
         </div>
@@ -213,9 +213,9 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-1 h-5 rounded-full bg-gold" />
-          <h2 className="font-heading font-bold text-base">Reviews</h2>
+          <h2 className="font-heading font-bold text-base" style={{ color: "var(--ink-strong)" }}>Reviews</h2>
           {stats && stats.total > 0 && (
-            <span className="text-xs text-txt-secondary">({stats.total})</span>
+            <span className="text-xs" style={{ color: "var(--ink-mute)" }}>({stats.total})</span>
           )}
         </div>
         <Button
@@ -257,7 +257,7 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
                 {stats.avg_rating.toFixed(1)}
               </p>
               <StarDisplay rating={stats.avg_rating} size="md" />
-              <p className="text-[10px] text-txt-secondary mt-1">
+              <p className="text-[10px] mt-1" style={{ color: "var(--ink-mute)" }}>
                 {stats.total} review{stats.total !== 1 ? "s" : ""}
               </p>
             </div>
@@ -285,7 +285,7 @@ export default function ReviewSection({ businessId }: { businessId: string }) {
 
             {/* Star selector */}
             <div className="mb-3">
-              <label className="text-[11px] text-txt-secondary uppercase tracking-wider font-semibold block mb-1.5">
+              <label className="text-[11px] uppercase tracking-wider font-semibold block mb-1.5" style={{ color: "var(--ink-mute)" }}>
                 Rating
               </label>
               <StarSelector value={rating} onChange={setRating} />

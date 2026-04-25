@@ -475,7 +475,7 @@ export default function ResourcesPage() {
           <Chip
             key={cat.value}
             label={cat.label}
-            icon={<Icon name={cat.icon} size={16} className="text-white/70" />}
+            icon={<Icon name={cat.icon} size={16} style={{ color: "var(--ink-strong)", opacity: 0.7 }} />}
             active={activeCategory === cat.value}
             onClick={() => setActiveCategory(cat.value)}
           />
@@ -590,7 +590,7 @@ export default function ResourcesPage() {
                   Coming Soon &amp; More
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-ivory/50 tabular-nums whitespace-nowrap">
+                <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums whitespace-nowrap" style={{ color: "var(--ink-mute)" }}>
                   {otherResources.length}
                 </span>
               </div>
@@ -752,7 +752,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
           {spotsTotal > 0 && (
             <div className="mt-2.5">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[9px] text-ivory/40 font-medium uppercase tracking-editorial-tight">
+                <span className="text-[9px] font-medium uppercase tracking-editorial-tight" style={{ color: "var(--ink-mute)" }}>
                   {spotsLeft > 0 ? `${spotsLeft} spot${spotsLeft !== 1 ? "s" : ""} left` : "Full"}
                 </span>
                 <span
@@ -763,7 +763,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
                   {spotsUsed}/{spotsTotal}
                 </span>
               </div>
-              <div className="h-1 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="h-1 overflow-hidden" style={{ background: "var(--paper-soft)" }}>
                 <div
                   className={`h-full transition-all duration-500 ${
                     spotsPct >= 90 ? "bg-coral" : "bg-gold"
@@ -783,7 +783,7 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
               </span>
             )}
             {r.website && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-ivory/50 font-semibold">
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: "var(--ink-mute)" }}>
                 <Icon name="globe" size={10} />
                 Website
               </span>

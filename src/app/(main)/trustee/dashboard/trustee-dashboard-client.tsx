@@ -76,16 +76,16 @@ export default function TrusteeDashboardClient({
   const [feedKey, setFeedKey] = useState(0);
 
   return (
-    <div className="min-h-screen bg-midnight text-white pb-28 animate-fade-in">
+    <div className="min-h-screen pb-28 animate-fade-in" style={{ background: "var(--paper)" }}>
       {/* Header */}
-      <div className="sticky top-0 z-30 bg-midnight/80 backdrop-blur-xl border-b border-white/[0.04]">
+      <div className="sticky top-0 z-30 backdrop-blur-xl" style={{ background: "var(--paper)", borderBottom: "2px solid var(--rule-strong-c)" }}>
         <div className="flex items-center gap-3 px-5 py-3.5">
           <Link href="/officials" className="press">
-            <Icon name="back" size={20} className="text-white/60" />
+            <Icon name="back" size={20} style={{ color: "var(--ink-mute)" }} />
           </Link>
           <div className="flex-1 min-w-0">
-            <h1 className="font-heading text-[17px] font-bold">Trustee Dashboard</h1>
-            <p className="text-[11px] text-white/40">{areaName}</p>
+            <h1 className="font-heading text-[17px] font-bold" style={{ color: "var(--ink-strong)" }}>Trustee Dashboard</h1>
+            <p className="text-[11px] c-meta">{areaName}</p>
           </div>
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
@@ -105,8 +105,8 @@ export default function TrusteeDashboardClient({
               onClick={() => setActiveTab(tab)}
               className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 ${
                 activeTab === tab
-                  ? "border-current text-white"
-                  : "border-transparent text-white/40 hover:text-white/60"
+                  ? "border-current"
+                  : "border-transparent c-meta hover:text-[var(--ink-mute)]"
               }`}
               style={activeTab === tab ? { color: areaColor, borderColor: areaColor } : undefined}
             >
@@ -191,7 +191,8 @@ function PostComposer({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-colors press"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors press c-meta hover:text-[var(--ink-mute)]"
+        style={{ borderColor: "var(--rule-strong-c)" }}
       >
         <Icon name="plus" size={16} />
         <span className="text-xs font-semibold">Create Post</span>
@@ -202,11 +203,12 @@ function PostComposer({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 space-y-3 hover:border-gold/30 transition-colors"
+      className="p-4 space-y-3 hover:border-gold/30 transition-colors"
+      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white/60">New Post</p>
-        <button type="button" onClick={() => setIsOpen(false)} className="text-white/30 hover:text-white/60 press">
+        <p className="text-xs font-semibold c-meta">New Post</p>
+        <button type="button" onClick={() => setIsOpen(false)} className="c-meta hover:text-[var(--ink-strong)] press">
           <Icon name="close" size={16} />
         </button>
       </div>
@@ -220,8 +222,8 @@ function PostComposer({
             onClick={() => setPostType(type)}
             className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full transition-colors ${
               postType === type
-                ? "bg-white/10 text-white"
-                : "text-white/30 hover:text-white/50"
+                ? "bg-gold/10 text-gold"
+                : "c-meta hover:text-[var(--ink-mute)]"
             }`}
           >
             {type}
@@ -234,7 +236,8 @@ function PostComposer({
         placeholder="Title (optional)"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/10"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none transition-colors"
+        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
       />
 
       <textarea
@@ -242,7 +245,8 @@ function PostComposer({
         value={body}
         onChange={(e) => setBody(e.target.value)}
         rows={3}
-        className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/10 resize-none"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none resize-none transition-colors"
+        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
       />
 
       <button
@@ -293,7 +297,7 @@ function PostsFeed({
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-2xl bg-white/[0.03] animate-pulse" />
+          <div key={i} className="h-24 animate-pulse" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }} />
         ))}
       </div>
     );
@@ -301,10 +305,10 @@ function PostsFeed({
 
   if (posts.length === 0) {
     return (
-      <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-        <Icon name="chat" size={28} className="text-white/10 mx-auto mb-2" />
-        <p className="text-xs text-white/40">No posts yet</p>
-        <p className="text-[10px] text-white/30 mt-1">Create your first post for your trustee area</p>
+      <div className="text-center py-10" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+        <Icon name="chat" size={28} className="c-meta mx-auto mb-2" />
+        <p className="text-xs c-meta">No posts yet</p>
+        <p className="text-[10px] c-meta mt-1">Create your first post for your trustee area</p>
       </div>
     );
   }
@@ -317,7 +321,8 @@ function PostsFeed({
         return (
           <div
             key={post.id}
-            className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 hover:border-gold/30 transition-colors"
+            className="p-4 hover:border-gold/30 transition-colors"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
@@ -334,14 +339,14 @@ function PostsFeed({
                   )}
                 </div>
                 {post.title && (
-                  <p className="text-[14px] font-semibold text-white">{post.title}</p>
+                  <p className="text-[14px] font-semibold" style={{ color: "var(--ink-strong)" }}>{post.title}</p>
                 )}
                 {post.body && (
-                  <p className="text-[12px] text-white/50 mt-1 line-clamp-3">{post.body}</p>
+                  <p className="text-[12px] c-meta mt-1 line-clamp-3">{post.body}</p>
                 )}
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-2.5 text-[11px] text-white/30">
+            <div className="flex items-center gap-3 mt-2.5 text-[11px] c-meta">
               <span>
                 {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </span>
@@ -418,7 +423,7 @@ function MessagesInbox({ userId, areaColor }: { userId: string; areaColor: strin
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-2xl bg-white/[0.03] animate-pulse" />
+          <div key={i} className="h-20 animate-pulse" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }} />
         ))}
       </div>
     );
@@ -429,7 +434,7 @@ function MessagesInbox({ userId, areaColor }: { userId: string; areaColor: strin
   return (
     <div className="space-y-3">
       {unreadCount > 0 && (
-        <div className="flex items-center gap-2 text-xs text-white/40">
+        <div className="flex items-center gap-2 text-xs c-meta">
           <span
             className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold"
             style={{ backgroundColor: areaColor, color: "#0A0A0A" }}
@@ -441,10 +446,10 @@ function MessagesInbox({ userId, areaColor }: { userId: string; areaColor: strin
       )}
 
       {messages.length === 0 ? (
-        <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-          <Icon name="mail" size={28} className="text-white/10 mx-auto mb-2" />
-          <p className="text-xs text-white/40">No messages yet</p>
-          <p className="text-[10px] text-white/30 mt-1">Resident messages will appear here</p>
+        <div className="text-center py-10" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+          <Icon name="mail" size={28} className="c-meta mx-auto mb-2" />
+          <p className="text-xs c-meta">No messages yet</p>
+          <p className="text-[10px] c-meta mt-1">Resident messages will appear here</p>
         </div>
       ) : (
         messages.map((msg) => (
@@ -482,33 +487,34 @@ function MessageCard({
   return (
     <button
       onClick={handleClick}
-      className="w-full text-left rounded-2xl bg-zinc-900 border border-zinc-800 p-4 hover:border-gold/30 transition-colors"
+      className="w-full text-left p-4 hover:border-gold/30 transition-colors"
+      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
     >
       <div className="flex items-start gap-3">
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[11px] font-bold"
           style={{
-            backgroundColor: message.is_read ? "rgba(255,255,255,0.05)" : `${areaColor}20`,
-            color: message.is_read ? "rgba(255,255,255,0.3)" : areaColor,
+            backgroundColor: message.is_read ? "var(--paper-soft)" : `${areaColor}20`,
+            color: message.is_read ? "var(--ink-mute)" : areaColor,
           }}
         >
           {(message.sender?.display_name ?? "?")[0]?.toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-2">
-            <p className={`text-[13px] font-semibold truncate ${message.is_read ? "text-white/60" : "text-white"}`}>
+            <p className="text-[13px] font-semibold truncate" style={{ color: message.is_read ? "var(--ink-mute)" : "var(--ink-strong)" }}>
               {message.subject}
             </p>
             {!message.is_read && (
               <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: areaColor }} />
             )}
           </div>
-          <p className="text-[11px] text-white/30 mt-0.5">
+          <p className="text-[11px] c-meta mt-0.5">
             {message.sender?.display_name ?? "Resident"} &middot;{" "}
             {date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
           </p>
           {expanded && (
-            <p className="text-[12px] text-white/50 mt-2 whitespace-pre-wrap">{message.body}</p>
+            <p className="text-[12px] c-meta mt-2 whitespace-pre-wrap">{message.body}</p>
           )}
         </div>
       </div>
@@ -553,7 +559,8 @@ function ProgramsSection({
     <div className="space-y-3">
       <button
         onClick={() => setShowForm(true)}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/10 text-white/40 hover:border-white/20 hover:text-white/60 transition-colors press"
+        className="w-full flex items-center justify-center gap-2 py-3 border border-dashed transition-colors press c-meta hover:text-[var(--ink-mute)]"
+        style={{ borderColor: "var(--rule-strong-c)" }}
       >
         <Icon name="plus" size={16} />
         <span className="text-xs font-semibold">Create Program</span>
@@ -575,31 +582,31 @@ function ProgramsSection({
       {loading ? (
         <div className="space-y-2">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-white/[0.03] animate-pulse" />
+            <div key={i} className="h-24 animate-pulse" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }} />
           ))}
         </div>
       ) : programs.length === 0 ? (
-        <div className="text-center py-10 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
-          <Icon name="heart-pulse" size={28} className="text-white/10 mx-auto mb-2" />
-          <p className="text-xs text-white/40">No programs yet</p>
-          <p className="text-[10px] text-white/30 mt-1">Create a program for your trustee area</p>
+        <div className="text-center py-10" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+          <Icon name="heart-pulse" size={28} className="c-meta mx-auto mb-2" />
+          <p className="text-xs c-meta">No programs yet</p>
+          <p className="text-[10px] c-meta mt-1">Create a program for your trustee area</p>
         </div>
       ) : (
         <div className="space-y-2">
           {programs.map((program) => {
             const colors = PROGRAM_COLORS[program.category] ?? PROGRAM_COLORS.community;
             return (
-              <div key={program.id} className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 hover:border-gold/30 transition-colors">
+              <div key={program.id} className="p-4 hover:border-gold/30 transition-colors" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-semibold text-white">{program.name}</p>
+                    <p className="text-[14px] font-semibold" style={{ color: "var(--ink-strong)" }}>{program.name}</p>
                     {program.description && (
-                      <p className="text-[12px] text-white/50 mt-1 line-clamp-2">{program.description}</p>
+                      <p className="text-[12px] c-meta mt-1 line-clamp-2">{program.description}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {!program.is_active && (
-                      <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-white/5 text-white/30">
+                      <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full c-meta" style={{ background: "var(--paper-soft)", border: "1px solid var(--rule-strong-c)" }}>
                         Inactive
                       </span>
                     )}
@@ -609,7 +616,7 @@ function ProgramsSection({
                   </div>
                 </div>
                 {program.schedule && (
-                  <div className="flex items-center gap-1 mt-2 text-[11px] text-white/30">
+                  <div className="flex items-center gap-1 mt-2 text-[11px] c-meta">
                     <Icon name="clock" size={12} />
                     <span>{program.schedule}</span>
                   </div>
@@ -672,11 +679,12 @@ function ProgramForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-2xl bg-zinc-900 border border-zinc-800 p-4 space-y-3 hover:border-gold/30 transition-colors"
+      className="p-4 space-y-3 hover:border-gold/30 transition-colors"
+      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
     >
       <div className="flex items-center justify-between">
-        <p className="text-xs font-semibold text-white/60">New Program</p>
-        <button type="button" onClick={onClose} className="text-white/30 hover:text-white/60 press">
+        <p className="text-xs font-semibold c-meta">New Program</p>
+        <button type="button" onClick={onClose} className="c-meta hover:text-[var(--ink-strong)] press">
           <Icon name="close" size={16} />
         </button>
       </div>
@@ -687,7 +695,8 @@ function ProgramForm({
         value={name}
         onChange={(e) => setName(e.target.value)}
         required
-        className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/10"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none transition-colors"
+        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
       />
 
       <textarea
@@ -695,7 +704,8 @@ function ProgramForm({
         value={description}
         onChange={(e) => setDescription(e.target.value)}
         rows={2}
-        className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/10 resize-none"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none resize-none transition-colors"
+        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
       />
 
       {/* Category selector */}
@@ -710,7 +720,7 @@ function ProgramForm({
               className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full transition-colors ${
                 category === cat
                   ? `${colors?.bg} ${colors?.text}`
-                  : "text-white/30 hover:text-white/50"
+                  : "c-meta hover:text-[var(--ink-mute)]"
               }`}
             >
               {cat}
@@ -724,7 +734,8 @@ function ProgramForm({
         placeholder="Schedule (e.g. Mon & Wed 3-5 PM)"
         value={schedule}
         onChange={(e) => setSchedule(e.target.value)}
-        className="w-full bg-white/[0.04] border border-white/[0.06] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/10"
+        className="w-full px-3 py-2.5 text-sm placeholder:text-[var(--ink-mute)] focus:outline-none transition-colors"
+        style={{ background: "var(--paper-soft)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
       />
 
       <button
