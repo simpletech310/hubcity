@@ -101,7 +101,10 @@ function SuggestedProfilesCard({ profiles }: { profiles: SuggestedProfile[] }) {
                     className="w-13 h-13 rounded-full object-cover ring-2 ring-black/10 mb-2"
                   />
                 ) : (
-                  <div className="w-13 h-13 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-lg ring-2 ring-black/10 mb-2">
+                  <div
+                    className="w-13 h-13 rounded-full flex items-center justify-center font-heading font-bold text-lg mb-2"
+                    style={{ background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
+                  >
                     {profile.display_name.charAt(0)}
                   </div>
                 )}
@@ -429,7 +432,10 @@ export default function PulseFeed({
       {canPost && (
         <div className="mx-5 mb-3">
           <div className="flex items-center gap-3 px-4 py-3" style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}>
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-xs ring-2 ring-black/10 shrink-0">
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center font-heading font-bold text-xs shrink-0"
+              style={{ background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
+            >
               {userName
                 .split(" ")
                 .map((w) => w[0])

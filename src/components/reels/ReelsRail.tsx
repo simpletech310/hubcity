@@ -56,14 +56,15 @@ export default function ReelsRail({
     <>
       <div className="mb-4">
         <div className="flex items-center justify-between px-5 mb-2.5">
-          <h2 className="font-heading font-bold text-sm text-white uppercase tracking-wider flex items-center gap-2">
-            <Icon name="video" size={14} className="text-gold" />
+          <h2 className="c-kicker flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
+            <Icon name="video" size={14} style={{ color: "var(--gold-c)" }} />
             {label}
           </h2>
           {showSeeAll && reels.length > 0 && (
             <Link
               href="/reels"
-              className="text-[11px] font-semibold text-gold press"
+              className="c-kicker press"
+              style={{ color: "var(--gold-c)", fontSize: 11 }}
             >
               See all
             </Link>
@@ -76,22 +77,30 @@ export default function ReelsRail({
               (onPost ? (
                 <button
                   onClick={onPost}
-                  className="shrink-0 w-[92px] h-[148px] rounded-2xl border border-dashed border-gold/40 bg-gold/[0.05] flex flex-col items-center justify-center gap-1.5 press hover:bg-gold/[0.08]"
+                  className="shrink-0 w-[92px] h-[148px] flex flex-col items-center justify-center gap-2 press"
+                  style={{ border: "2px dashed var(--rule-strong-c)", background: "var(--paper-warm)" }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
-                    <Icon name="plus" size={16} className="text-gold" />
+                  <div
+                    className="w-8 h-8 flex items-center justify-center"
+                    style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+                  >
+                    <Icon name="plus" size={16} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="text-[10px] font-bold text-gold">Post reel</p>
+                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>POST REEL</p>
                 </button>
               ) : (
                 <Link
                   href="/reels/new"
-                  className="shrink-0 w-[92px] h-[148px] rounded-2xl border border-dashed border-gold/40 bg-gold/[0.05] flex flex-col items-center justify-center gap-1.5 press hover:bg-gold/[0.08]"
+                  className="shrink-0 w-[92px] h-[148px] flex flex-col items-center justify-center gap-2 press"
+                  style={{ border: "2px dashed var(--rule-strong-c)", background: "var(--paper-warm)" }}
                 >
-                  <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
-                    <Icon name="plus" size={16} className="text-gold" />
+                  <div
+                    className="w-8 h-8 flex items-center justify-center"
+                    style={{ border: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+                  >
+                    <Icon name="plus" size={16} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="text-[10px] font-bold text-gold">Post reel</p>
+                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>POST REEL</p>
                 </Link>
               ))}
 
@@ -101,7 +110,7 @@ export default function ReelsRail({
                 <button
                   key={reel.id}
                   onClick={() => setOpenIndex(idx)}
-                  className="shrink-0 relative w-[92px] h-[148px] rounded-2xl overflow-hidden press group"
+                  className="shrink-0 relative w-[92px] h-[148px] overflow-hidden press group"
                   style={{
                     borderWidth: 2,
                     borderStyle: "solid",
@@ -149,13 +158,19 @@ export default function ReelsRail({
 
                   {/* Story chip */}
                   {reel.is_story && (
-                    <span className="absolute top-1 left-1 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider rounded bg-purple/80 backdrop-blur-sm text-white">
+                    <span
+                      className="absolute top-1 left-1 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider"
+                      style={{ background: "rgba(139,92,246,0.85)", color: "#fff" }}
+                    >
                       Story
                     </span>
                   )}
 
                   {/* Play icon */}
-                  <div className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                  <div
+                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center"
+                    style={{ background: "rgba(0,0,0,0.55)" }}
+                  >
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
                       <polygon points="6,4 20,12 6,20" />
                     </svg>

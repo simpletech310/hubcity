@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import ReactionBar from "./ReactionBar";
 import CommentsPreview from "./CommentsPreview";
@@ -145,26 +144,35 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
   if (deleted) return null;
 
   return (
-    <Card className={`!p-0 overflow-hidden ${post.is_pinned ? "relative" : ""}`} style={{ border: "2px solid var(--rule-strong-c)" }}>
+    <div
+      className={`overflow-hidden ${post.is_pinned ? "relative" : ""}`}
+      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+    >
       {/* Role-based accent line */}
       {(() => {
         const role = author?.role;
-        const accentGradient =
+        const color =
           role === "city_official" || role === "city_ambassador" || role === "admin"
-            ? "from-gold/50 via-gold/25 to-transparent"
+            ? "#F2A900"
             : role === "business_owner"
-            ? "from-emerald/50 via-emerald/25 to-transparent"
+            ? "#22C55E"
             : role === "content_creator"
-            ? "from-hc-purple/50 via-hc-purple/25 to-transparent"
-            : "from-transparent via-transparent to-transparent";
-        return (
-          <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${accentGradient} z-10`} />
-        );
+            ? "#8B5CF6"
+            : null;
+        return color ? (
+          <div
+            className="absolute top-0 left-0 right-0 h-[3px] z-10"
+            style={{ background: `linear-gradient(90deg, ${color}99, transparent)` }}
+          />
+        ) : null;
       })()}
 
       {/* Pinned accent — overrides role line */}
       {post.is_pinned && (
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-gold/50 via-gold/25 to-transparent z-10" />
+        <div
+          className="absolute top-0 left-0 right-0 h-[3px] z-10"
+          style={{ background: "linear-gradient(90deg, #F2A90099, transparent)" }}
+        />
       )}
 
       <div className="p-4">
@@ -187,14 +195,14 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 alt={author.display_name}
                 width={44}
                 height={44}
-                className={`w-11 h-11 rounded-full object-cover ring-2 ${
-                  isVerified ? "ring-cyan/30" : "ring-black/10"
-                }`}
+                className="w-11 h-11 rounded-full object-cover"
+                style={{ border: "2px solid var(--rule-strong-c)" }}
               />
             ) : (
-              <div className={`w-11 h-11 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold c-card-t font-bold text-sm ring-2 ${
-                isVerified ? "ring-cyan/30" : "ring-black/10"
-              }`}>
+              <div
+                className="w-11 h-11 rounded-full flex items-center justify-center font-heading font-bold text-sm"
+                style={{ background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
+              >
                 {initials}
               </div>
             )}
@@ -205,7 +213,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
                 {author?.display_name || "Unknown"}
               </Link>
               {isVerified && (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-cyan shrink-0">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="shrink-0" style={{ color: "var(--gold-c)" }}>
                   <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
                 </svg>
@@ -477,14 +485,12 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
         <ReactionBar post={post} userReactions={userReactions} userId={userId} />
       </div>
 
-      {/* Inline comments preview — Instagram style */}
-      {(post.preview_comments?.length ?? 0) > 0 && (
-        <CommentsPreview
-          comments={post.preview_comments ?? []}
-          totalCount={post.comment_count || 0}
-          onOpen={() => setPreviewCommentsOpen(true)}
-        />
-      )}
+      {/* Inline comments preview — always visible */}
+      <CommentsPreview
+        comments={post.preview_comments ?? []}
+        totalCount={post.comment_count || 0}
+        onOpen={() => setPreviewCommentsOpen(true)}
+      />
 
       {/* Separate sheet driver (ReactionBar owns its own sheet internally, but
           the "View all N" link on the preview opens this mirror instance so
@@ -514,7 +520,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
       {/* Report Modal */}
       {showReport && (
         <>
-          <div className="fixed inset-0 bg-black/60 z-50" onClick={() => setShowReport(false)} />
+          <div className="fixed inset-0 bg-black/70 z-50" onClick={() => setShowReport(false)} />
           <div
             className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 p-5 max-w-sm mx-auto"
             style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
@@ -601,7 +607,7 @@ export default function PostCard({ post, userReactions, userId }: PostCardProps)
           </div>
         </>
       )}
-    </Card>
+    </div>
   );
 }
 

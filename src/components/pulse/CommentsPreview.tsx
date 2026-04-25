@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-
 export type PreviewComment = {
   id: string;
   body: string;
@@ -12,13 +10,14 @@ export type PreviewComment = {
 };
 
 /**
- * Instagram-style inline comment preview — renders up to 2 top-level comments
- * under a post plus a "View all N comments" tap-target. Used by PostCard
- * and GroupPostCard.
+ * Always-visible inline comment section beneath a PostCard.
  *
- *   @handle  body text…
- *   @handle  body text…
- *   View all 23 comments →
+ * • 0 comments   → "Be the first to comment…" tap target
+ * • 1–2 comments → inline author + body rows, tappable to open sheet
+ * • 3+ comments  → "View all N comments →" + 2 inline preview rows
+ *
+ * Tapping any element opens the full CommentsSheet (via onOpen).
+ * Comment reactions live inside the CommentsSheet itself.
  */
 export default function CommentsPreview({
   comments,
@@ -29,46 +28,63 @@ export default function CommentsPreview({
   totalCount: number;
   onOpen: () => void;
 }) {
-  if (totalCount === 0) return null;
+  // When there are more comments than the 2-row preview, or when we have a
+  // count but no fetched previews (e.g. logged-out), show the "View all" link.
+  const showViewAll =
+    totalCount > 2 || (totalCount > 0 && comments.length === 0);
 
   return (
-    <div className="px-4 pb-2 pt-1 space-y-1.5">
-      {totalCount > 2 && (
+    <div
+      className="px-4 pb-3 pt-2"
+      style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+    >
+      {/* View all link */}
+      {showViewAll && (
         <button
           type="button"
           onClick={onOpen}
-          className="c-kicker block press"
-          style={{ color: "var(--ink-strong)", opacity: 0.65 }}
+          className="c-kicker block press mb-1.5"
+          style={{ color: "var(--ink-strong)", opacity: 0.6 }}
         >
-          View all {totalCount} comments →
+          View all {totalCount} comment{totalCount !== 1 ? "s" : ""} →
         </button>
       )}
+
+      {/* Inline preview rows — tappable, open full sheet */}
       {comments.slice(0, 2).map((c) => (
-        <div key={c.id} className="flex gap-2 text-[12px] leading-snug">
-          {c.author_handle ? (
-            <Link
-              href={`/user/${c.author_handle}`}
-              className="shrink-0 font-semibold press"
-              style={{ color: "var(--ink-strong)" }}
-            >
-              {c.author_display_name}
-            </Link>
-          ) : (
-            <span
-              className="shrink-0 font-semibold"
-              style={{ color: "var(--ink-strong)" }}
-            >
-              {c.author_display_name}
-            </span>
-          )}
-          <p
-            className="c-body line-clamp-2 min-w-0"
-            style={{ color: "var(--ink-strong)", opacity: 0.75 }}
+        <button
+          key={c.id}
+          type="button"
+          onClick={onOpen}
+          className="flex gap-2 text-left w-full press mb-0.5"
+          style={{ fontSize: 12, lineHeight: 1.35 }}
+        >
+          <span
+            className="shrink-0 font-semibold"
+            style={{ color: "var(--ink-strong)" }}
+          >
+            {c.author_display_name}
+          </span>
+          <span
+            className="line-clamp-1 min-w-0 c-body"
+            style={{ color: "var(--ink-strong)", opacity: 0.72 }}
           >
             {c.body}
-          </p>
-        </div>
+          </span>
+        </button>
       ))}
+
+      {/* Empty state CTA */}
+      {totalCount === 0 && (
+        <button
+          type="button"
+          onClick={onOpen}
+          className="press c-meta"
+          style={{ color: "var(--ink-strong)", opacity: 0.4 }}
+        >
+          Be the first to comment…
+        </button>
+      )}
     </div>
   );
 }
