@@ -51,7 +51,20 @@ export default async function OrderTrackingPage({
 
   if (!order) notFound();
 
-  const o = order as Order & { business: Business; items: OrderItem[] };
+  // Several columns the page renders aren't yet typed on Order (loyalty /
+  // discounts / lifecycle timestamps). Cast a narrow shim so the receipt +
+  // timeline panels can read them when present without dropping into `any`.
+  const o = order as Order & {
+    business: Business;
+    items: OrderItem[];
+    loyalty_discount?: number | null;
+    loyalty_points_redeemed?: number | null;
+    verified_resident_discount?: number | null;
+    store_accepted_at?: string | null;
+    prep_ready_at?: string | null;
+    cancelled_at?: string | null;
+    cancellation_reason?: string | null;
+  };
   const tone = STATUS_TONE[o.status] ?? STATUS_TONE.pending;
 
   // Payment status. The Stripe payment intent is captured at checkout, so
@@ -347,24 +360,24 @@ export default async function OrderTrackingPage({
           {o.platform_fee > 0 && (
             <ReceiptRow label="Service fee" value={dollars(o.platform_fee)} />
           )}
-          {o.discount_amount > 0 && (
+          {(o.discount_amount ?? 0) > 0 && (
             <ReceiptRow
               label="Discount"
-              value={`− ${dollars(o.discount_amount)}`}
+              value={`− ${dollars(o.discount_amount ?? 0)}`}
               tone="credit"
             />
           )}
-          {o.loyalty_discount > 0 && (
+          {(o.loyalty_discount ?? 0) > 0 && (
             <ReceiptRow
               label={`Loyalty (${o.loyalty_points_redeemed ?? 0} pts)`}
-              value={`− ${dollars(o.loyalty_discount)}`}
+              value={`− ${dollars(o.loyalty_discount ?? 0)}`}
               tone="credit"
             />
           )}
-          {o.verified_resident_discount > 0 && (
+          {(o.verified_resident_discount ?? 0) > 0 && (
             <ReceiptRow
               label="Verified resident"
-              value={`− ${dollars(o.verified_resident_discount)}`}
+              value={`− ${dollars(o.verified_resident_discount ?? 0)}`}
               tone="credit"
             />
           )}

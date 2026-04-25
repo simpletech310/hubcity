@@ -116,36 +116,71 @@ export default function WatchPage({ video, moreVideos, userId }: WatchPageProps)
     ? TYPE_BADGE[channel.type as ChannelType] || TYPE_BADGE.community
     : null;
 
+  // Show + creator metadata fetched server-side (see watch/[id]/page.tsx).
+  const show = (video as ChannelVideo & {
+    show?: {
+      id: string;
+      slug: string;
+      title: string;
+      tagline: string | null;
+      description: string | null;
+      poster_url: string | null;
+      format: string | null;
+      runtime_minutes: number | null;
+    } | null;
+  }).show;
+  const creator = (
+    channel as unknown as {
+      owner?: {
+        id: string;
+        display_name: string;
+        handle: string | null;
+        avatar_url: string | null;
+        role: string | null;
+        verification_status: string | null;
+      } | null;
+    } | null
+  )?.owner;
+
   return (
     <div className="animate-fade-in">
 
-      {/* ── Back Header ─────────────────────────────────── */}
+      {/* ── Back Header — sticky ink slab so it stays readable over the
+              gold ad foil and bright Mux frames. ──────────────────────── */}
       <div
-        className="flex items-center gap-3 px-4 py-3"
-        style={{ borderBottom: "2px solid var(--rule-strong-c)", background: "var(--paper-warm)" }}
+        className="sticky top-0 z-30 flex items-center gap-3 px-4 py-2.5"
+        style={{
+          background: "var(--ink-strong)",
+          borderBottom: "2px solid var(--gold-c)",
+          color: "var(--paper)",
+        }}
       >
         <button
           onClick={() => router.back()}
           className="w-9 h-9 flex items-center justify-center press transition-colors shrink-0"
-          style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)", color: "var(--ink-strong)" }}
+          style={{
+            background: "var(--gold-c)",
+            border: "2px solid var(--paper)",
+            color: "var(--ink-strong)",
+          }}
           aria-label="Go back"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
-        <h1
-          className="c-card-t text-[14px] truncate flex-1"
-          style={{ color: "var(--ink-strong)" }}
+        <div
+          className="c-kicker"
+          style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.18em" }}
         >
-          {video.title}
-        </h1>
+          § ON AIR · WATCH
+        </div>
       </div>
 
-      {/* ── Player / Paywall ────────────────────────────── */}
+      {/* ── Player / Paywall — full-bleed 16:9 ───────────────────── */}
       <div
         className="overflow-hidden relative"
-        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         {paywall && paywallReason ? (
           <PaywallOverlay
@@ -313,10 +348,158 @@ export default function WatchPage({ video, moreVideos, userId }: WatchPageProps)
           </Link>
         )}
 
+        {/* Show metadata — only when this video belongs to a show. */}
+        {show && (
+          <Link
+            href={`/live/shows/${show.slug}`}
+            className="press"
+            style={{
+              display: "flex",
+              gap: 12,
+              padding: "12px 16px",
+              borderBottom: "2px solid var(--rule-strong-c)",
+              background: "var(--paper)",
+            }}
+          >
+            <div
+              style={{
+                width: 64,
+                height: 64,
+                flexShrink: 0,
+                background: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                overflow: "hidden",
+                position: "relative",
+              }}
+            >
+              {show.poster_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={show.poster_url}
+                  alt={show.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center"
+                  style={{ color: "var(--gold-c)" }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="6,3 20,12 6,21" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>
+                § FROM THE SHOW
+              </div>
+              <p
+                className="c-card-t mt-1"
+                style={{ fontSize: 15, color: "var(--ink-strong)", lineHeight: 1.2 }}
+              >
+                {show.title}
+                {video.episode_number != null ? ` · EP ${video.episode_number}` : ""}
+              </p>
+              {(show.tagline || show.description) && (
+                <p
+                  className="c-serif-it mt-1"
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ink-strong)",
+                    opacity: 0.85,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
+                  {show.tagline ?? show.description}
+                </p>
+              )}
+            </div>
+          </Link>
+        )}
+
+        {/* Creator (channel owner) — small editorial credit line */}
+        {creator && (
+          <Link
+            href={`/user/${creator.handle ?? creator.id}`}
+            className="press flex items-center gap-3"
+            style={{
+              padding: "10px 16px",
+              borderBottom: "2px solid var(--rule-strong-c)",
+              background: "var(--paper-warm)",
+            }}
+          >
+            <div
+              className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0"
+              style={{
+                background: creator.avatar_url ? "transparent" : "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--gold-c)",
+                fontFamily: "var(--font-anton), Anton, sans-serif",
+                fontSize: 12,
+              }}
+            >
+              {creator.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={creator.avatar_url}
+                  alt={creator.display_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                creator.display_name
+                  .split(" ")
+                  .map((w) => w[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase()
+              )}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="c-kicker" style={{ fontSize: 9, opacity: 0.65 }}>
+                POSTED BY
+              </div>
+              <p
+                className="c-card-t"
+                style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.2 }}
+              >
+                {creator.display_name}
+                {creator.verification_status === "verified" && (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    style={{ color: "var(--gold-c)", display: "inline-block", marginLeft: 4, verticalAlign: "middle" }}
+                  >
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                    <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </p>
+            </div>
+            <span
+              className="c-kicker"
+              style={{ fontSize: 9, color: "var(--gold-c)" }}
+            >
+              VIEW →
+            </span>
+          </Link>
+        )}
+
         {/* Description */}
         {video.description && (
           <div style={{ padding: "12px 16px" }}>
             <div style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)", padding: "12px 14px" }}>
+              <div
+                className="c-kicker mb-2"
+                style={{ fontSize: 9, color: "var(--ink-strong)", opacity: 0.65 }}
+              >
+                § ABOUT THIS VIDEO
+              </div>
               <p
                 className="c-body text-[13px] leading-relaxed"
                 style={{ color: "var(--ink-strong)" }}

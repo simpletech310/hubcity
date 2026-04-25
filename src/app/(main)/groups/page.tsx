@@ -8,7 +8,9 @@ import Button from "@/components/ui/Button";
 import type { CommunityGroup } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import { useKnownCities } from "@/hooks/useActiveCity";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 
 const CATEGORY_ICONS: Record<string, string> = {
   neighborhood: "house",
@@ -48,7 +50,13 @@ const CATEGORY_BADGE_VARIANT: Record<string, "gold" | "blue" | "coral" | "emeral
 };
 
 export default function GroupsPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = sp.get("city");
+  const filterCity = filterCitySlug
+    ? cities.find((c) => c.slug === filterCitySlug) ?? null
+    : null;
   const [groups, setGroups] = useState<CommunityGroup[]>([]);
   const [myGroups, setMyGroups] = useState<string[]>([]);
   const [userRole, setUserRole] = useState<string | null>(null);
@@ -69,7 +77,7 @@ export default function GroupsPage() {
       setLoading(true);
       const params = new URLSearchParams();
       if (category !== "all") params.set("category", category);
-      if (activeCity?.slug) params.set("city", activeCity.slug);
+      if (filterCitySlug) params.set("city", filterCitySlug);
       const res = await fetch(`/api/groups?${params}`);
       if (res.ok) {
         const data = await res.json();
@@ -80,7 +88,7 @@ export default function GroupsPage() {
       setLoading(false);
     }
     load();
-  }, [category, activeCity?.slug]);
+  }, [category, filterCitySlug]);
 
   // Filter out private groups client-side
   const publicGroups = groups.filter((g) => g.is_public !== false);
@@ -142,7 +150,7 @@ export default function GroupsPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE COMMUNITY · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE COMMUNITY · {filterCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -153,6 +161,7 @@ export default function GroupsPage() {
         <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
           Neighbors, interests, and the people organizing it.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </header>
 
       {/* Create CTA - only for officials */}

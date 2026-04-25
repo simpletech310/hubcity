@@ -10,10 +10,19 @@ export default async function VideoWatchPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  // Fetch video with channel info
+  // Fetch video with channel + show + creator profile (the channel owner)
+  // so the watch page can render proper editorial metadata underneath the
+  // player.
   const { data: video } = await supabase
     .from("channel_videos")
-    .select("*, channel:channels(id, name, slug, avatar_url, type, follower_count, is_verified)")
+    .select(
+      `*,
+       channel:channels(
+         id, name, slug, avatar_url, type, follower_count, is_verified,
+         owner:profiles!channels_owner_id_fkey(id, display_name, handle, avatar_url, role, verification_status)
+       ),
+       show:shows(id, slug, title, tagline, description, poster_url, format, runtime_minutes)`
+    )
     .eq("id", id)
     .single();
 

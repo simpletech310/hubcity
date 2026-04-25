@@ -74,7 +74,7 @@ interface GroupEvent {
   visibility: string | null;
 }
 
-type GroupTab = "posts" | "events" | "reels" | "gallery" | "members";
+type GroupTab = "posts" | "events" | "gallery" | "members";
 
 const CATEGORY_BADGE: Record<string, "gold" | "emerald" | "cyan" | "purple" | "coral" | "blue" | "pink"> = {
   // All category variants collapse to gold/emerald in the Culture palette
@@ -422,7 +422,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         className="flex gap-1 px-5 mt-3 mb-3"
         style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
       >
-        {(["posts", "events", "reels", "gallery", "members"] as GroupTab[]).map((t) => {
+        {(["posts", "events", "gallery", "members"] as GroupTab[]).map((t) => {
           const active = activeTab === t;
           return (
             <button
@@ -449,19 +449,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   }}
                 >
                   {groupEvents.length}
-                </span>
-              )}
-              {t === "reels" && reels.length > 0 && (
-                <span
-                  className="ml-1.5 c-kicker"
-                  style={{
-                    fontSize: 9,
-                    background: "var(--gold-c)",
-                    color: "var(--ink-strong)",
-                    padding: "1px 6px",
-                  }}
-                >
-                  {reels.length}
                 </span>
               )}
               {t === "members" && (
@@ -497,17 +484,43 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         })}
       </div>
 
-      {/* ═══════ POSTS TAB ═══════ */}
+      {/* ═══════ POSTS TAB (posts + moments) ═══════ */}
       {activeTab === "posts" && (
         <>
           {isMember && (
-            <div className="px-5 mt-2 mb-4">
+            <div className="px-5 mt-2 mb-3">
               <GroupPostComposer groupId={id} userId={userId!} onPost={handleNewPost} />
             </div>
           )}
 
+          {/* Share-a-moment CTA + group moments rail are folded into the
+              same Posts tab so members see one unified stream. */}
+          {isMember && (
+            <div className="px-5 mb-3">
+              <button
+                onClick={() => setShowReelComposer(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 c-kicker press"
+                style={{
+                  fontSize: 11,
+                  color: "var(--ink-strong)",
+                  border: "2px dashed var(--rule-strong-c)",
+                  background: "var(--paper-warm)",
+                }}
+              >
+                <Icon name="video" size={14} style={{ color: "var(--gold-c)" }} />
+                SHARE A MOMENT TO THIS GROUP
+              </button>
+            </div>
+          )}
+
+          {reels.length > 0 && (
+            <div className="mb-4">
+              <ReelsRail reels={reels} label="Group moments" showSeeAll={false} />
+            </div>
+          )}
+
           {!isMember && !loading && (
-            <div className="px-5 mt-4 mb-4">
+            <div className="px-5 mt-2 mb-4">
               <div
                 className="p-4 text-center"
                 style={{
@@ -684,58 +697,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
-      {/* ═══════ REELS TAB ═══════ */}
-      {activeTab === "reels" && (
-        <div className="space-y-4">
-          {isMember ? (
-            <div className="px-5">
-              <button
-                onClick={() => setShowReelComposer(true)}
-                className="w-full flex items-center justify-center gap-2 py-3 c-kicker press"
-                style={{
-                  fontSize: 11,
-                  color: "var(--ink-strong)",
-                  border: "2px dashed var(--rule-strong-c)",
-                  background: "var(--paper-warm)",
-                }}
-              >
-                <Icon name="video" size={14} style={{ color: "var(--gold-c)" }} />
-                POST A REEL TO THIS GROUP
-              </button>
-            </div>
-          ) : (
-            <div className="px-5">
-              <div
-                className="p-4 text-center"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <p className="c-serif-it" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
-                  Members get the mic. Join to share your reels here.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {reels.length > 0 ? (
-            <ReelsRail reels={reels} label="Group moments" showSeeAll={false} />
-          ) : (
-            <div className="px-5">
-              <div
-                className="p-6 text-center"
-                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="video" size={28} className="mx-auto mb-2" style={{ color: "var(--ink-strong)", opacity: 0.35 }} />
-                <p className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
-                  NO REELS YET
-                </p>
-                <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
-                  {isMember ? "Be the first to post." : "Members can post reels here."}
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ═══════ GALLERY TAB ═══════ */}
       {activeTab === "gallery" && (
