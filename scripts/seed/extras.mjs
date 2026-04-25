@@ -3,11 +3,16 @@
 //   thumbs   — generate poster thumbnails for every reel (Moment) lacking one
 //   biz      — update Pucker Up / FakeSmiles / Glamorous Mane with their
 //              real catalog: menu items, services, staff, time slots
+//   videoad  — insert/refresh the Top Dawg Law video pre-roll into video_ads
+//   livetv   — create the simulated 24/7 live channel and seed a looping
+//              schedule across the 4 Culture VOD videos for the next 14 days
 //
 // Usage:
-//   node scripts/seed/extras.mjs                  (both)
+//   node scripts/seed/extras.mjs                  (all)
 //   node scripts/seed/extras.mjs thumbs
 //   node scripts/seed/extras.mjs biz
+//   node scripts/seed/extras.mjs videoad
+//   node scripts/seed/extras.mjs livetv
 
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -302,11 +307,164 @@ async function seedBizExtras() {
   console.log('  ✓ catalogs updated');
 }
 
+// ─── Top Dawg Law video pre-roll ───────────────────────────────────────────
+
+async function seedVideoAd() {
+  console.log('\n=== Video pre-roll ad (Top Dawg Law) ===');
+  // Pull the playback id from the existing ad_creatives row so we don't
+  // re-upload to Mux. It's a stream.mux.com/<id>.m3u8 URL.
+  const { data: cre } = await supabase
+    .from('ad_creatives')
+    .select('id, video_url')
+    .eq('ad_type', 'pre_roll')
+    .not('video_url', 'is', null)
+    .maybeSingle();
+  if (!cre?.video_url) {
+    console.error('  ! ad_creatives row with video_url not found — run knect-tv ads first');
+    return;
+  }
+  const m = /stream\.mux\.com\/([^./]+)\.m3u8/.exec(cre.video_url);
+  if (!m) {
+    console.error(`  ! could not extract playback id from ${cre.video_url}`);
+    return;
+  }
+  const playbackId = m[1];
+
+  // Find or update video_ads row.
+  const { data: existing } = await supabase
+    .from('video_ads')
+    .select('id')
+    .eq('mux_playback_id', playbackId)
+    .maybeSingle();
+
+  const row = {
+    title: 'Top Dawg Law',
+    mux_playback_id: playbackId,
+    ad_type: 'pre_roll',
+    duration: 30,
+    cta_text: 'Get the legal team that fights for you.',
+    cta_url: 'https://app.topdoglaw.com',
+    is_active: true,
+  };
+
+  if (existing?.id) {
+    await supabase.from('video_ads').update(row).eq('id', existing.id);
+    console.log(`  ✓ updated video_ads row for ${playbackId}`);
+  } else {
+    const { error } = await supabase.from('video_ads').insert(row);
+    if (error) throw error;
+    console.log(`  ✓ inserted video_ads row for ${playbackId}`);
+  }
+}
+
+// ─── Live TV (24/7 simulated loop) ─────────────────────────────────────────
+
+async function seedLiveTV() {
+  console.log('\n=== Live TV (simulated 24/7 loop) ===');
+
+  // Get Culture owner so the live channel is owned by the same creator.
+  const { data: owner } = await supabase
+    .from('profiles')
+    .select('id, city_id')
+    .eq('handle', 'culture')
+    .maybeSingle();
+  if (!owner) {
+    console.error('  ! culture profile not found — run knect-tv first');
+    return;
+  }
+
+  // Find the 4 ready VOD videos to loop. Skip subscriber/PPV-only here so
+  // the public live stream stays free.
+  const { data: videos, error: vErr } = await supabase
+    .from('channel_videos')
+    .select('id, title, duration, mux_playback_id, channel:channels!inner(owner_id)')
+    .eq('is_published', true)
+    .eq('status', 'ready')
+    .not('mux_playback_id', 'is', null)
+    .order('created_at');
+  if (vErr) throw vErr;
+  const culture = (videos ?? []).filter((v) => v.channel?.owner_id === owner.id);
+  if (culture.length === 0) {
+    console.error('  ! no Culture VOD videos found');
+    return;
+  }
+  console.log(`  → looping ${culture.length} videos`);
+
+  // Create or update the live channel.
+  const LIVE_SLUG = 'knect-tv-live'; // hardcoded in src/app/(main)/live/page.tsx
+  const { data: existingCh } = await supabase
+    .from('channels')
+    .select('id')
+    .eq('slug', LIVE_SLUG)
+    .maybeSingle();
+  let liveChannelId;
+  const liveRow = {
+    slug: LIVE_SLUG,
+    name: 'Culture TV',
+    description: 'The 24/7 Culture broadcast — film, music, comedy on a loop.',
+    type: 'media',
+    scope: 'national',
+    content_scope: 'national',
+    is_active: true,
+    is_verified: true,
+    is_live_simulated: true,
+    owner_id: owner.id,
+  };
+  if (existingCh?.id) {
+    liveChannelId = existingCh.id;
+    await supabase.from('channels').update(liveRow).eq('id', liveChannelId);
+    console.log(`  · live channel ${LIVE_SLUG} updated`);
+  } else {
+    const { data: ins, error } = await supabase.from('channels').insert(liveRow).select('id').single();
+    if (error) throw error;
+    liveChannelId = ins.id;
+    console.log(`  ✓ live channel ${LIVE_SLUG} created`);
+  }
+
+  // Wipe existing schedule for this channel and rebuild a fresh 14-day loop.
+  await supabase.from('scheduled_broadcasts').delete().eq('channel_id', liveChannelId);
+
+  const FOURTEEN_DAYS = 14 * 24 * 60 * 60; // seconds
+  // Round start to current minute so the first slot lines up cleanly.
+  const start = new Date();
+  start.setSeconds(0, 0);
+  let cursor = start.getTime();
+  const endByMs = cursor + FOURTEEN_DAYS * 1000;
+  let position = 0;
+  const rows = [];
+  while (cursor < endByMs) {
+    const v = culture[position % culture.length];
+    const dur = Math.max(60, Math.round(Number(v.duration) || 600)); // seconds
+    const startsAt = new Date(cursor).toISOString();
+    const endsAt = new Date(cursor + dur * 1000).toISOString();
+    rows.push({
+      channel_id: liveChannelId,
+      video_id: v.id,
+      starts_at: startsAt,
+      ends_at: endsAt,
+      position,
+      is_ad_slot: false,
+    });
+    cursor += dur * 1000;
+    position++;
+  }
+  // Insert in chunks (Supabase has request size limits).
+  const CHUNK = 200;
+  for (let i = 0; i < rows.length; i += CHUNK) {
+    const slice = rows.slice(i, i + CHUNK);
+    const { error } = await supabase.from('scheduled_broadcasts').insert(slice);
+    if (error) throw error;
+  }
+  console.log(`  ✓ scheduled ${rows.length} slots over the next 14 days`);
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────
 const t0 = Date.now();
 try {
   if (wants('thumbs')) await seedThumbnails();
   if (wants('biz')) await seedBizExtras();
+  if (wants('videoad')) await seedVideoAd();
+  if (wants('livetv')) await seedLiveTV();
 } catch (e) {
   console.error('\nExtras failed:', e?.stack || e);
   process.exit(1);
