@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { muxAudioStreamUrl } from "@/lib/audio/seed";
+import { muxAudioStreamUrl, resolveMuxAudioUrl } from "@/lib/audio/seed";
 
 /**
  * A single playable item — track from an album OR podcast episode.
@@ -179,9 +179,12 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     const a = audioRef.current;
     if (!a) return;
     // Same as driveContent: skip load() so the assignment-only swap keeps the
-    // user-gesture chain intact for iOS.
-    if (a.src !== ad.audio_url) {
-      a.src = ad.audio_url;
+    // user-gesture chain intact for iOS. resolveMuxAudioUrl swaps
+    // audio.m4a → .m3u8 on iOS so the format matches the content URL and
+    // playback stays in the same HLS session.
+    const adUrl = resolveMuxAudioUrl(ad.audio_url);
+    if (a.src !== adUrl) {
+      a.src = adUrl;
     }
     try {
       a.currentTime = 0;
