@@ -617,16 +617,28 @@ async function seedAds() {
   // Campaign.
   const today = new Date();
   const end = new Date(today.getTime() + 365 * 86400 * 1000);
+  const CAMPAIGN_NAME = 'Top Dawg Law — pre-roll';
+  const AD_TITLE = 'Top Dawg Law';
+  const AD_BODY = 'Get the legal team that fights for you.';
+  const AD_CLICK = 'https://app.topdoglaw.com';
   let campaignId;
-  const { data: existingCampaign } = await supabase.from('ad_campaigns').select('id').eq('name', 'Dog\'s Gonna Eat — house').maybeSingle();
+  // Check by either old or new campaign name so re-runs don't duplicate.
+  const { data: existingCampaign } = await supabase
+    .from('ad_campaigns')
+    .select('id')
+    .in('name', [CAMPAIGN_NAME, "Dog's Gonna Eat — house"])
+    .maybeSingle();
   if (existingCampaign?.id) {
     campaignId = existingCampaign.id;
+    await supabase.from('ad_campaigns').update({
+      name: CAMPAIGN_NAME, title: AD_TITLE, status: 'active',
+    }).eq('id', campaignId);
   } else {
     const { data: ins, error } = await supabase.from('ad_campaigns').insert({
       advertiser_id: ownerProf.id,
       owner_id: ownerProf.id,
-      name: "Dog's Gonna Eat — house",
-      title: "Dog's Gonna Eat",
+      name: CAMPAIGN_NAME,
+      title: AD_TITLE,
       budget_cents: 100000,
       start_date: today.toISOString().slice(0, 10),
       end_date: end.toISOString().slice(0, 10),
@@ -648,10 +660,10 @@ async function seedAds() {
     const row = {
       campaign_id: campaignId,
       ad_type: 'pre_roll',
-      title: "Dog's Gonna Eat",
-      body: 'Hub City eats. Dog approved.',
+      title: AD_TITLE,
+      body: AD_BODY,
       video_url: `https://stream.mux.com/${muxV.playback_id}.m3u8`,
-      click_url: 'https://hubcity.app',
+      click_url: AD_CLICK,
       duration_seconds: muxV.duration_seconds,
     };
     if (existingVid?.id) await supabase.from('ad_creatives').update(row).eq('id', existingVid.id);
@@ -669,10 +681,10 @@ async function seedAds() {
     const row = {
       campaign_id: campaignId,
       ad_type: 'audio_spot',
-      title: "Dog's Gonna Eat",
-      body: 'Hub City eats. Dog approved.',
+      title: AD_TITLE,
+      body: AD_BODY,
       audio_url: `https://stream.mux.com/${muxA.playback_id}/audio.m4a`,
-      click_url: 'https://hubcity.app',
+      click_url: AD_CLICK,
       duration_seconds: muxA.duration_seconds,
     };
     if (existingAud?.id) await supabase.from('ad_creatives').update(row).eq('id', existingAud.id);

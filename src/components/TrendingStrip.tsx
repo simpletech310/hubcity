@@ -110,7 +110,7 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
                 }}
               />
 
-              {/* REEL kicker — top left, printed label on paper ground */}
+              {/* MOMENT kicker — top left, printed label on paper ground */}
               <div
                 className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 px-1.5"
                 style={{
@@ -131,7 +131,7 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
                   className="c-kicker"
                   style={{ fontSize: 8, letterSpacing: "0.16em" }}
                 >
-                  REEL
+                  MOMENT
                 </span>
               </div>
 
