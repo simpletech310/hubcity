@@ -41,7 +41,7 @@ const NAV_ITEMS: NavItem[] = [
     id: "culture",
     label: "CULT.",
     href: "/culture",
-    match: [/^\/culture/, /^\/live/],
+    match: [/^\/culture/, /^\/live/, /^\/frequency/],
     icon: ({ size = 22, strokeWidth = 1.6 }) => (
       <svg
         width={size}

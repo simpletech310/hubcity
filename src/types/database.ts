@@ -1341,7 +1341,7 @@ export interface BusinessReview {
 // ── Podcasts ─────────────────────────────────────────
 export interface Podcast {
   id: string;
-  channel_id: string;
+  channel_id: string | null;
   title: string;
   description: string | null;
   audio_url: string;
@@ -1355,7 +1355,120 @@ export interface Podcast {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  // FREQUENCY (migration 092) extensions
+  mux_asset_id?: string | null;
+  mux_playback_id?: string | null;
+  mux_upload_id?: string | null;
+  mux_status?: "pending" | "ready" | "errored";
+  genre_slug?: string | null;
+  explicit?: boolean;
+  mid_roll_seconds?: number[] | null;
+  creator_id?: string | null;
+  show_slug?: string | null;
+  show_title?: string | null;
+  show_description?: string | null;
+  is_demo?: boolean;
   channel?: Channel;
+}
+
+// ── FREQUENCY: audio hub (migration 092) ────────────────
+export type AudioReleaseType = "single" | "ep" | "album" | "mixtape";
+export type AudioAccessType = "free" | "subscribers" | "ppv";
+export type AudioMuxStatus = "pending" | "ready" | "errored";
+
+export interface AudioGenre {
+  slug: string;
+  name: string;
+  icon: string | null;
+  sort_order: number;
+  active: boolean;
+}
+
+export interface Album {
+  id: string;
+  channel_id: string | null;
+  creator_id: string | null;
+  slug: string;
+  title: string;
+  description: string | null;
+  release_type: AudioReleaseType;
+  cover_art_url: string | null;
+  cover_art_path: string | null;
+  genre_slug: string | null;
+  release_date: string | null;
+  access_type: AudioAccessType;
+  price_cents: number | null;
+  ppv_stripe_price_id: string | null;
+  preview_seconds: number | null;
+  is_published: boolean;
+  is_demo: boolean;
+  play_count: number;
+  like_count: number;
+  created_at: string;
+  updated_at: string;
+  tracks?: Track[];
+  creator?: { display_name: string; avatar_url: string | null } | null;
+}
+
+export interface Track {
+  id: string;
+  album_id: string;
+  channel_id: string | null;
+  creator_id: string | null;
+  title: string;
+  track_number: number;
+  duration_seconds: number | null;
+  mux_asset_id: string | null;
+  mux_playback_id: string | null;
+  mux_upload_id: string | null;
+  mux_status: AudioMuxStatus;
+  genre_slug: string | null;
+  explicit: boolean;
+  features: string[] | null;
+  credits: Record<string, unknown> | null;
+  mid_roll_seconds: number[] | null;
+  play_count: number;
+  is_published: boolean;
+  is_demo: boolean;
+  created_at: string;
+  updated_at: string;
+  album?: Album;
+}
+
+export interface Playlist {
+  id: string;
+  owner_id: string | null;
+  title: string;
+  description: string | null;
+  cover_art_url: string | null;
+  is_public: boolean;
+  is_editorial: boolean;
+  is_demo: boolean;
+  genre_slug: string | null;
+  created_at: string;
+  updated_at: string;
+  items?: PlaylistItem[];
+}
+
+export interface PlaylistItem {
+  playlist_id: string;
+  position: number;
+  item_type: "track" | "episode";
+  item_id: string;
+  added_at: string;
+}
+
+export interface AudioPlay {
+  id: number;
+  listener_id: string | null;
+  item_type: "track" | "episode";
+  item_id: string;
+  source: "album" | "podcast" | "playlist" | "genre_mix" | "direct" | null;
+  started_at: string;
+  duration_listened_seconds: number;
+  completed: boolean;
+  ad_breaks_served: number;
+  updated_at: string;
 }
 
 // ── Community Groups ─────────────────────────────────

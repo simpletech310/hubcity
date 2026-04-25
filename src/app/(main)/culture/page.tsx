@@ -255,6 +255,7 @@ export default async function CulturePage() {
           { label: "HERITAGE", href: "/culture/history" },
           { label: "STYLE", href: "/culture/gallery" },
           { label: "SOUND", href: "/live" },
+          { label: "FREQUENCY", href: "/frequency" },
           { label: "FOOD", href: "/food" },
           { label: "STREETS", href: "/culture/landmarks" },
           { label: "ART", href: "/culture/exhibits" },

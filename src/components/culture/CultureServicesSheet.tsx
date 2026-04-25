@@ -22,6 +22,7 @@ const TILES: ServiceTile[] = [
   { href: "/business", label: "Commerce", icon: "briefcase" },
   { href: "/pulse", label: "Feed", icon: "pulse" },
   { href: "/live", label: "On Air", icon: "film" },
+  { href: "/frequency", label: "Frequency", icon: "radio" },
   { href: "/health", label: "Health", icon: "heart-pulse" },
   { href: "/jobs", label: "Work", icon: "briefcase" },
   { href: "/groups", label: "Community", icon: "users" },

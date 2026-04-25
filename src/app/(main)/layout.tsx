@@ -2,6 +2,8 @@ import ToastProvider from "@/components/ui/Toast";
 import CityProvider from "@/components/city/CityProvider";
 import CultureBottomNav from "@/components/culture/CultureBottomNav";
 import CultureTopNav from "@/components/culture/CultureTopNav";
+import { AudioPlayProvider } from "@/components/audio/AudioPlayContext";
+import AudioPlayer from "@/components/audio/AudioPlayer";
 import {
   getActiveCity,
   getActiveCityFromCookie,
@@ -38,17 +40,20 @@ export default async function MainLayout({
 
   return (
     <CityProvider city={activeCity} cities={cities}>
-      <div
-        className="culture-surface max-w-[430px] mx-auto min-h-dvh relative"
-        style={{ color: "var(--ink-strong)" }}
-      >
-        <CultureTopNav />
-        <main className="pb-24 pb-safe overflow-y-auto overflow-x-hidden c-noscroll">
-          {children}
-        </main>
-        <CultureBottomNav />
-        <ToastProvider />
-      </div>
+      <AudioPlayProvider>
+        <div
+          className="culture-surface max-w-[430px] mx-auto min-h-dvh relative"
+          style={{ color: "var(--ink-strong)" }}
+        >
+          <CultureTopNav />
+          <main className="pb-24 pb-safe overflow-y-auto overflow-x-hidden c-noscroll">
+            {children}
+          </main>
+          <AudioPlayer />
+          <CultureBottomNav />
+          <ToastProvider />
+        </div>
+      </AudioPlayProvider>
     </CityProvider>
   );
 }
