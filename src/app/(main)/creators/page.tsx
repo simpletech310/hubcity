@@ -312,7 +312,7 @@ export default async function CreatorsPage({
       >
         {[
           { label: "CREATORS", value: creators.length, gold: true },
-          { label: "REELS", value: reels.length },
+          { label: "MOMENTS", value: reels.length },
           { label: "VIDEOS", value: videos.length },
           { label: "POSTS", value: posts.filter((p) => p.image_url).length },
         ].map((stat, i) => (
@@ -1137,7 +1137,7 @@ export default async function CreatorsPage({
                     <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
                       {creatorReels.length}
                     </span>
-                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>REELS</span>
+                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>MOMENTS</span>
                   </div>
                 )}
                 {creatorVideos.length > 0 && (

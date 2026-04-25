@@ -132,7 +132,7 @@ export default function ReelComposer({ onSuccess, onClose }: ReelComposerProps) 
     try {
       const m = await readVideoMeta(f);
       if (m.duration > MAX_DURATION + 1) {
-        setError(`Reels must be ${MAX_DURATION}s or shorter.`);
+        setError(`Moments must be ${MAX_DURATION}s or shorter.`);
         return;
       }
       setFile(f);
@@ -166,7 +166,7 @@ export default function ReelComposer({ onSuccess, onClose }: ReelComposerProps) 
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) throw new Error("Please sign in to post a reel.");
+      if (!user) throw new Error("Please sign in to share a moment.");
 
       const stamp = Date.now();
       const rand = Math.random().toString(36).slice(2, 8);
@@ -234,7 +234,7 @@ export default function ReelComposer({ onSuccess, onClose }: ReelComposerProps) 
       });
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(body.error ?? "Failed to save reel");
+        throw new Error(body.error ?? "Failed to save moment");
       }
       setProgress(100);
       reset();
@@ -322,10 +322,10 @@ export default function ReelComposer({ onSuccess, onClose }: ReelComposerProps) 
             />
             <div className="flex-1">
               <p className="text-[13px] font-semibold text-white">
-                Post as Story
+                Share as Story
               </p>
               <p className="text-[11px] text-white/50">
-                Disappears in 24 hours. Leave off for a permanent Reel.
+                Disappears in 24 hours. Leave off for a permanent Moment.
               </p>
             </div>
           </label>
@@ -363,7 +363,7 @@ export default function ReelComposer({ onSuccess, onClose }: ReelComposerProps) 
               disabled={uploading}
               className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-gold to-gold-light text-midnight font-bold text-sm press disabled:opacity-40"
             >
-              {uploading ? "Posting…" : isStory ? "Post Story" : "Post Reel"}
+              {uploading ? "Sharing…" : isStory ? "Share Story" : "Share Moment"}
             </button>
           </div>
         </>

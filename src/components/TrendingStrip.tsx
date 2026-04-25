@@ -89,7 +89,7 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={reel.poster_url}
-                  alt={reel.caption ?? "Reel"}
+                  alt={reel.caption ?? "Moment"}
                   className="w-full h-full object-cover"
                 />
               ) : (

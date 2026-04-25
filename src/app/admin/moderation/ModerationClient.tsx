@@ -97,7 +97,7 @@ export default function ModerationClient({ posts: initialPosts, reels: initialRe
   const tabs: { label: string; value: TabValue }[] = [
     { label: "All", value: "all" },
     { label: "Posts", value: "posts" },
-    { label: "Reels", value: "reels" },
+    { label: "Moments", value: "reels" },
   ];
 
   return (

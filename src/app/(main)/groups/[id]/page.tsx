@@ -717,7 +717,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           )}
 
           {reels.length > 0 ? (
-            <ReelsRail reels={reels} label="Group reels" showSeeAll={false} />
+            <ReelsRail reels={reels} label="Group moments" showSeeAll={false} />
           ) : (
             <div className="px-5">
               <div

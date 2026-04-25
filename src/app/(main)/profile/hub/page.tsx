@@ -149,7 +149,7 @@ function savedBadge(itemType: string): { variant: BadgeVariant; label: string } 
     business: { variant: "gold", label: "Business" },
     event: { variant: "cyan", label: "Event" },
     post: { variant: "coral", label: "Post" },
-    reel: { variant: "purple", label: "Reel" },
+    reel: { variant: "purple", label: "Moment" },
   };
   return map[itemType] ?? { variant: "gold", label: itemType };
 }

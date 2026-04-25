@@ -380,7 +380,7 @@ export default async function HomePage() {
     { label: "ALL", href: "/" },
     { label: "FOOD", href: "/food" },
     { label: "EVENTS", href: "/events" },
-    { label: "REELS", href: "/reels" },
+    { label: "MOMENTS", href: "/moments" },
     { label: "SHOPS", href: "/business" },
     { label: "CIVIC", href: "/city-data" },
     { label: "JOBS", href: "/jobs" },

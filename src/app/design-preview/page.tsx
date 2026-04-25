@@ -166,7 +166,7 @@ export default function DesignPreviewPage() {
 
       {/* Category tabs */}
       <CultureChipRow
-        chips={["ALL", "FOOD", "EVENTS", "REELS", "SHOPS", "CIVIC", "JOBS"]}
+        chips={["ALL", "FOOD", "EVENTS", "MOMENTS", "SHOPS", "CIVIC", "JOBS"]}
         activeIndex={0}
       />
 

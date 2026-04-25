@@ -501,7 +501,7 @@ export default async function PublicProfilePage({
             <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
               <div className="flex items-baseline gap-3">
                 <EditorialNumber n={sectionIndex("reels")} size="lg" />
-                <SectionKicker tone="muted">Reels</SectionKicker>
+                <SectionKicker tone="muted">Moments</SectionKicker>
               </div>
               <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                 {profileReels.length}

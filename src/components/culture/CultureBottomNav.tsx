@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactElement } from "react";
 import CultureServicesSheet from "./CultureServicesSheet";
 
-type TabId = "home" | "culture" | "hub" | "reels" | "profile";
+type TabId = "home" | "culture" | "hub" | "moments" | "profile";
 
 type NavItem = {
   id: TabId;
@@ -80,10 +80,10 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: "reels",
-    label: "REELS",
-    href: "/reels",
-    match: [/^\/reels/],
+    id: "moments",
+    label: "MOMENTS",
+    href: "/moments",
+    match: [/^\/moments/, /^\/reels/],
     icon: ({ size = 22, strokeWidth = 1.6 }) => (
       <svg
         width={size}

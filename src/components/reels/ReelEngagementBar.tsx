@@ -341,8 +341,8 @@ export default function ReelEngagementBar({
           <button
             type="button"
             onClick={() => {
-              const url = `${window.location.origin}/reels?id=${reelId}`;
-              if (navigator.share) navigator.share({ title: "Culture reel", url }).catch(() => {});
+              const url = `${window.location.origin}/moments?id=${reelId}`;
+              if (navigator.share) navigator.share({ title: "Culture moment", url }).catch(() => {});
               else navigator.clipboard.writeText(url);
             }}
             className="flex flex-col items-center gap-1 press"

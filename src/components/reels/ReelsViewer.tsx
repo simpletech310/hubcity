@@ -111,9 +111,9 @@ export default function ReelsViewer({
         >
           <Icon name="video" size={28} style={{ color: "var(--ink-strong)" }} />
         </div>
-        <p className="c-card-t" style={{ fontSize: 16 }}>No reels yet</p>
+        <p className="c-card-t" style={{ fontSize: 16 }}>No moments yet</p>
         <p className="c-serif-it mt-1" style={{ fontSize: 13, opacity: 0.7 }}>
-          Be the first to post a reel.
+          Record a moment, share a moment.
         </p>
       </div>
     );
@@ -189,7 +189,7 @@ export default function ReelsViewer({
             border: "2px solid var(--rule-strong-c)",
             color: "var(--ink-strong)",
           }}
-          aria-label="Close reels"
+          aria-label="Close moments"
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M6 6l12 12M18 6L6 18" />

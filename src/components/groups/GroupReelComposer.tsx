@@ -145,7 +145,7 @@ export default function GroupReelComposer({ groupId, isOpen, onClose, onCreated 
     try {
       const m = await readVideoMeta(f);
       if (m.duration > MAX_DURATION + 1) {
-        setError(`Reels must be ${MAX_DURATION}s or shorter.`);
+        setError(`Moments must be ${MAX_DURATION}s or shorter.`);
         return;
       }
       setFile(f);

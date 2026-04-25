@@ -185,7 +185,7 @@ export default function ContentPage() {
 
   const tabs: { id: FilterTab; label: string }[] = [
     { id: "all", label: "All" },
-    { id: "reels", label: "Reels" },
+    { id: "reels", label: "Moments" },
     { id: "posts", label: "Posts" },
     { id: "scheduled", label: "Scheduled" },
     { id: "live", label: "Live" },
@@ -336,7 +336,7 @@ export default function ContentPage() {
                   {/* Type badge overlay */}
                   <div className="absolute top-2 left-2">
                     <span className="px-2 py-0.5 rounded-full bg-black/60 text-[9px] font-bold uppercase tracking-wide text-white/80">
-                      {item.type === "reel" ? "Reel" : "Post"}
+                      {item.type === "reel" ? "Moment" : "Post"}
                     </span>
                   </div>
                   {/* Clock button for drafts */}

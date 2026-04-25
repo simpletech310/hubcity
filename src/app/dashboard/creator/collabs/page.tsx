@@ -45,7 +45,7 @@ const statusVariants: Record<CollabStatus, "gold" | "emerald" | "coral"> = {
 };
 
 const contentTypeLabels: Record<ContentType, string> = {
-  reel: "Reel",
+  reel: "Moment",
   video: "Video",
   post: "Post",
 };

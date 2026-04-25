@@ -8,7 +8,7 @@ import type { Reel } from "@/types/database";
 
 interface ReelsRailProps {
   reels: Reel[];
-  /** Header label — defaults to "Reels" */
+  /** Header label — defaults to "Moments" */
   label?: string;
   /** Show a "See all" link to /reels */
   showSeeAll?: boolean;
@@ -39,7 +39,7 @@ function accentFor(role?: string | null) {
 
 export default function ReelsRail({
   reels,
-  label = "Reels",
+  label = "Moments",
   showSeeAll = true,
   canPost = false,
   onPost,
@@ -62,7 +62,7 @@ export default function ReelsRail({
           </h2>
           {showSeeAll && reels.length > 0 && (
             <Link
-              href="/reels"
+              href="/moments"
               className="c-kicker press"
               style={{ color: "var(--gold-c)", fontSize: 11 }}
             >
@@ -86,11 +86,11 @@ export default function ReelsRail({
                   >
                     <Icon name="plus" size={16} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>POST REEL</p>
+                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>SHARE MOMENT</p>
                 </button>
               ) : (
                 <Link
-                  href="/reels/new"
+                  href="/moments/new"
                   className="shrink-0 w-[92px] h-[148px] flex flex-col items-center justify-center gap-2 press"
                   style={{ border: "2px dashed var(--rule-strong-c)", background: "var(--paper-warm)" }}
                 >
@@ -100,7 +100,7 @@ export default function ReelsRail({
                   >
                     <Icon name="plus" size={16} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>POST REEL</p>
+                  <p className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>SHARE MOMENT</p>
                 </Link>
               ))}
 
@@ -117,7 +117,7 @@ export default function ReelsRail({
                     borderColor: `${accent}88`,
                     background: "#111",
                   }}
-                  aria-label={`Play reel by ${reel.author?.display_name ?? "creator"}`}
+                  aria-label={`Play moment by ${reel.author?.display_name ?? "creator"}`}
                 >
                   {reel.poster_url ? (
                     // eslint-disable-next-line @next/next/no-img-element

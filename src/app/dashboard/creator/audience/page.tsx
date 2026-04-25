@@ -210,7 +210,7 @@ export default function AudiencePage() {
         // Merge reels + videos, sort by metric, take top 5
         const reelItems: TopContent[] = (reelsData ?? []).map((r) => ({
           id: r.id,
-          label: r.caption ?? "Reel",
+          label: r.caption ?? "Moment",
           type: "reel",
           metric: r.view_count ?? r.like_count ?? 0,
           thumbnail_url: r.poster_url,
