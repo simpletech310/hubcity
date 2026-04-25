@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Album, Track } from "@/types/database";
@@ -31,8 +32,16 @@ export default function AlbumDetail({
   access?: AudioAccess;
   channelName?: string | null;
 }) {
-  const { play, current, isPlaying, toggle } = useAudioPlay();
+  const { play, current, isPlaying, toggle, prefetchAd } = useAudioPlay();
   const locked = access ? !access.allowed : false;
+
+  // iOS Safari needs the pre-roll src to be known synchronously inside the
+  // user gesture. Warm up the ad on mount so the first track tap can swap
+  // straight into it.
+  useEffect(() => {
+    if (locked) return;
+    prefetchAd({ channelId: album.channel_id ?? null });
+  }, [album.channel_id, locked, prefetchAd]);
 
   const queue: PlayableItem[] = tracks
     .filter((t) => !!t.mux_playback_id)

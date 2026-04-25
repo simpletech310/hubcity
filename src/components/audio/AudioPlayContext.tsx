@@ -85,6 +85,12 @@ interface AudioPlayApi extends AudioPlayState {
   skipAd: () => void;
   /** Open the ad's click-through URL in a new tab and record the click. */
   clickAd: () => void;
+  /**
+   * Page-mount prefetch: stash a pre-roll ad in memory so the next play()
+   * can swap to it synchronously inside the user gesture. Critical on iOS,
+   * where an async ad fetch between gesture and src-swap breaks playback.
+   */
+  prefetchAd: (params: { itemId?: string | null; channelId?: string | null }) => void;
   /** Internal: bind a real <audio> element so the API can drive it. */
   _registerAudio: (el: HTMLAudioElement | null) => void;
   /** Internal: report time updates from the bound element. */
@@ -119,6 +125,12 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   // setState updater is synchronous in React 18 but can be coalesced under
   // automatic batching, so we keep an explicit ref to be safe.
   const modeRef = useRef<"content" | "ad">("content");
+  // Pre-roll ad warmed up by the page (AlbumDetail / PodcastShowDetail) on
+  // mount. iOS requires the src-swap to happen synchronously within the user
+  // gesture, so we can't fetch during the tap — we have to know the ad URL
+  // before the user clicks play.
+  const prefetchedAdRef = useRef<AudioAd | null>(null);
+  const prefetchKeyRef = useRef<string | null>(null);
 
   const _registerAudio = useCallback((el: HTMLAudioElement | null) => {
     audioRef.current = el;
@@ -186,62 +198,61 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /**
-   * Fetch a pre-roll ad for the given item and either swap to the ad
-   * (mode='ad', stash content as pending) or fall through to content.
-   * Runs after the user-gesture-driven content `play()` already started —
-   * we cancel the content via the swap, which is fine on desktop. For
-   * mobile this still works because the audio element is already "unlocked"
-   * by the prior synchronous play().
-   */
-  const tryPreRoll = useCallback(
-    async (item: PlayableItem): Promise<boolean> => {
-      if (adInFlightRef.current) return false;
+  const prefetchAd = useCallback(
+    (params: { itemId?: string | null; channelId?: string | null }) => {
+      if (typeof window === "undefined") return;
+      const key = `${params.channelId ?? ""}|${params.itemId ?? ""}`;
+      // Don't refetch if we already have an ad warmed up for this context.
+      if (prefetchedAdRef.current && prefetchKeyRef.current === key) return;
+      if (adInFlightRef.current) return;
       adInFlightRef.current = true;
-      try {
-        const params = new URLSearchParams({
-          zone: "podcast_preroll",
-          item_id: item.id,
+      const sp = new URLSearchParams({ zone: "podcast_preroll" });
+      if (params.itemId) sp.set("item_id", params.itemId);
+      if (params.channelId) sp.set("channel_id", params.channelId);
+      void fetch(`/api/frequency/ad-decision?${sp.toString()}`, { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data: { ad: AudioAd | null } | null) => {
+          if (data?.ad?.audio_url) {
+            prefetchedAdRef.current = data.ad;
+            prefetchKeyRef.current = key;
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          adInFlightRef.current = false;
         });
-        if (item.channelId) params.set("channel_id", item.channelId);
-        const r = await fetch(`/api/frequency/ad-decision?${params.toString()}`, {
-          cache: "no-store",
-        });
-        if (!r.ok) return false;
-        const data = (await r.json()) as { ad: AudioAd | null };
-        const ad = data.ad;
-        if (!ad || !ad.audio_url) return false;
-
-        // Listener may have already navigated away or hit Stop while we
-        // were fetching — bail in that case.
-        if (!audioRef.current) return false;
-
-        pendingContentRef.current = item;
-        modeRef.current = "ad";
-        setState((s) => ({
-          ...s,
-          mode: "ad",
-          ad,
-          position: 0,
-          duration: ad.duration || s.duration,
-        }));
-        driveAd(ad);
-        return true;
-      } catch {
-        return false;
-      } finally {
-        adInFlightRef.current = false;
-      }
     },
-    [driveAd]
+    []
   );
 
   const playInternal = useCallback(
     (item: PlayableItem, queue: PlayableItem[], index: number) => {
-      // 1. Start content MUTED so the gesture is consumed and the audio
-      //    element is unlocked for any later imperative src swap (ad).
-      //    User hears nothing during the ~50–300ms ad-decision fetch.
-      driveContent(item, { muted: true });
+      // FAST PATH: an ad was prefetched (page mount) → drive ad
+      // synchronously inside the gesture so iOS lets it play.
+      const cached = prefetchedAdRef.current;
+      if (cached) {
+        prefetchedAdRef.current = null;
+        pendingContentRef.current = item;
+        modeRef.current = "ad";
+        setState((s) => ({
+          ...s,
+          current: item,
+          queue,
+          index,
+          position: 0,
+          duration: cached.duration || s.duration,
+          mode: "ad",
+          ad: cached,
+          expanded: true,
+        }));
+        driveAd(cached);
+        return;
+      }
+
+      // SLOW PATH: no cached ad. Start the content immediately (UN-muted)
+      // so the listener never gets stuck on a silent player. We still kick
+      // off an async ad fetch for next time.
+      driveContent(item);
       pendingContentRef.current = null;
       modeRef.current = "content";
       setState((s) => ({
@@ -253,21 +264,12 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
         duration: item.durationSeconds ?? s.duration,
         mode: "content",
         ad: null,
-        // Auto-open the full-screen player on the first tap. The user
-        // can collapse it (mini bar persists) or fully Stop ✕.
         expanded: true,
       }));
-      // 2. Race the ad-decision; on a fill swap to ad, otherwise unmute
-      //    content.
-      void tryPreRoll(item).then((adServed) => {
-        if (!adServed) {
-          // No ad fill — unmute the content that's already playing.
-          const a = audioRef.current;
-          if (a) a.muted = false;
-        }
-      });
+      // Warm up the next ad (will be served on next tap / next track).
+      prefetchAd({ itemId: item.id, channelId: item.channelId ?? null });
     },
-    [driveContent, tryPreRoll]
+    [driveContent, driveAd, prefetchAd]
   );
 
   const play = useCallback(
@@ -432,6 +434,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       setExpanded,
       skipAd,
       clickAd,
+      prefetchAd,
       _registerAudio,
       _onTimeUpdate,
       _onPlayState,
@@ -450,6 +453,7 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       setExpanded,
       skipAd,
       clickAd,
+      prefetchAd,
       _registerAudio,
       _onTimeUpdate,
       _onPlayState,

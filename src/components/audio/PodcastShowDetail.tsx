@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { Podcast } from "@/types/database";
@@ -40,8 +41,15 @@ export default function PodcastShowDetail({
   access?: AudioAccess;
   channelName?: string | null;
 }) {
-  const { play, current, isPlaying, toggle } = useAudioPlay();
+  const { play, current, isPlaying, toggle, prefetchAd } = useAudioPlay();
   const locked = access ? !access.allowed : false;
+
+  // Warm up the pre-roll ad so the first tap swaps straight into the ad URL
+  // inside the user gesture (required by iOS Safari).
+  useEffect(() => {
+    if (locked) return;
+    prefetchAd({ channelId: show.channel_id ?? null });
+  }, [show.channel_id, locked, prefetchAd]);
 
   const queue: PlayableItem[] = episodes
     .filter((e) => !!e.mux_playback_id)
