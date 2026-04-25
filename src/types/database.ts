@@ -2122,6 +2122,8 @@ export interface Reel {
   is_story: boolean;
   is_published: boolean;
   expires_at: string | null;
+  /** When set, this reel is scoped to a community group (added in migration 091). */
+  group_id?: string | null;
   created_at: string;
   updated_at: string;
   author?: Profile;

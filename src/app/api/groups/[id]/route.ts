@@ -21,8 +21,9 @@ export async function GET(
       return NextResponse.json({ error: "Group not found" }, { status: 404 });
     }
 
-    // Check current user's role
+    // Check current user's role + status
     let myRole: string | null = null;
+    let myStatus: string | null = null;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -30,15 +31,20 @@ export async function GET(
     if (user) {
       const { data: membership } = await supabase
         .from("group_members")
-        .select("role")
+        .select("role, status")
         .eq("group_id", id)
         .eq("user_id", user.id)
         .single();
 
       myRole = membership?.role ?? null;
+      myStatus = membership?.status ?? null;
+      // Hide role from client until membership is approved.
+      if (myStatus !== "active") {
+        myRole = null;
+      }
     }
 
-    return NextResponse.json({ group, my_role: myRole });
+    return NextResponse.json({ group, my_role: myRole, my_status: myStatus });
   } catch (error) {
     console.error("Get group error:", error);
     return NextResponse.json({ error: "Failed to fetch group" }, { status: 500 });

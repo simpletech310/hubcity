@@ -3,9 +3,35 @@ import { createClient } from "@/lib/supabase/server";
 
 const ROLE_RANK: Record<string, number> = { admin: 3, moderator: 2, member: 1 };
 
-// DELETE — remove member
+/**
+ * Helper: recompute and persist active-only member count.
+ */
+async function refreshMemberCount(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  groupId: string
+) {
+  const { count } = await supabase
+    .from("group_members")
+    .select("user_id", { count: "exact", head: true })
+    .eq("group_id", groupId)
+    .eq("status", "active");
+
+  await supabase
+    .from("community_groups")
+    .update({ member_count: count ?? 0 })
+    .eq("id", groupId);
+
+  return count ?? 0;
+}
+
+/**
+ * DELETE /api/groups/[id]/members/[userId]
+ * Used for both:
+ *   - Rejecting a pending request
+ *   - Revoking an existing member's access
+ */
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   try {
@@ -19,22 +45,25 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get caller's role
+    // Caller must be admin / moderator (and active).
     const { data: callerMembership } = await supabase
       .from("group_members")
-      .select("role")
+      .select("role, status")
       .eq("group_id", groupId)
       .eq("user_id", user.id)
       .single();
 
-    if (!callerMembership || !["admin", "moderator"].includes(callerMembership.role)) {
+    if (
+      !callerMembership ||
+      callerMembership.status !== "active" ||
+      !["admin", "moderator"].includes(callerMembership.role)
+    ) {
       return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    // Get target's role
     const { data: targetMembership } = await supabase
       .from("group_members")
-      .select("role")
+      .select("role, status")
       .eq("group_id", groupId)
       .eq("user_id", userId)
       .single();
@@ -43,9 +72,15 @@ export async function DELETE(
       return NextResponse.json({ error: "User is not a member" }, { status: 404 });
     }
 
-    // Cannot remove someone with equal or higher role
-    if ((ROLE_RANK[targetMembership.role] ?? 0) >= (ROLE_RANK[callerMembership.role] ?? 0)) {
-      return NextResponse.json({ error: "Cannot remove a member with equal or higher role" }, { status: 403 });
+    // Role guard only matters for active members; pending users can be rejected freely.
+    if (
+      targetMembership.status === "active" &&
+      (ROLE_RANK[targetMembership.role] ?? 0) >= (ROLE_RANK[callerMembership.role] ?? 0)
+    ) {
+      return NextResponse.json(
+        { error: "Cannot remove a member with equal or higher role" },
+        { status: 403 }
+      );
     }
 
     await supabase
@@ -54,25 +89,22 @@ export async function DELETE(
       .eq("group_id", groupId)
       .eq("user_id", userId);
 
-    // Update member count
-    const { count } = await supabase
-      .from("group_members")
-      .select("user_id", { count: "exact", head: true })
-      .eq("group_id", groupId);
+    const memberCount = await refreshMemberCount(supabase, groupId);
 
-    await supabase
-      .from("community_groups")
-      .update({ member_count: count ?? 0 })
-      .eq("id", groupId);
-
-    return NextResponse.json({ removed: true, member_count: count ?? 0 });
+    return NextResponse.json({ removed: true, member_count: memberCount });
   } catch (error) {
     console.error("Remove member error:", error);
     return NextResponse.json({ error: "Failed to remove member" }, { status: 500 });
   }
 }
 
-// PATCH — change role
+/**
+ * PATCH /api/groups/[id]/members/[userId]
+ *
+ * Body shapes:
+ *   { role: 'member' | 'moderator' | 'admin' }   — admin only, target must be active
+ *   { status: 'active' }                         — approve a pending request
+ */
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; userId: string }> }
@@ -88,35 +120,94 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Only admins can change roles
     const { data: callerMembership } = await supabase
       .from("group_members")
-      .select("role")
+      .select("role, status")
       .eq("group_id", groupId)
       .eq("user_id", user.id)
       .single();
 
-    if (!callerMembership || callerMembership.role !== "admin") {
-      return NextResponse.json({ error: "Only admins can change roles" }, { status: 403 });
+    if (!callerMembership || callerMembership.status !== "active") {
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
-    const { role } = await request.json();
+    const body = await request.json();
+    const { role, status } = body as {
+      role?: string;
+      status?: string;
+    };
 
-    if (!["member", "moderator", "admin"].includes(role)) {
-      return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+    // ── Approval flow ──────────────────────────────────────
+    if (status === "active") {
+      // Admins or moderators can approve.
+      if (!["admin", "moderator"].includes(callerMembership.role)) {
+        return NextResponse.json(
+          { error: "Only admins or moderators can approve members" },
+          { status: 403 }
+        );
+      }
+
+      const { data: target } = await supabase
+        .from("group_members")
+        .select("status")
+        .eq("group_id", groupId)
+        .eq("user_id", userId)
+        .single();
+
+      if (!target) {
+        return NextResponse.json({ error: "Pending request not found" }, { status: 404 });
+      }
+
+      if (target.status === "active") {
+        return NextResponse.json({ updated: true, status: "active" });
+      }
+
+      const { error } = await supabase
+        .from("group_members")
+        .update({ status: "active" })
+        .eq("group_id", groupId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      const memberCount = await refreshMemberCount(supabase, groupId);
+      return NextResponse.json({
+        updated: true,
+        status: "active",
+        member_count: memberCount,
+      });
     }
 
-    const { error } = await supabase
-      .from("group_members")
-      .update({ role })
-      .eq("group_id", groupId)
-      .eq("user_id", userId);
+    // ── Role change ────────────────────────────────────────
+    if (role) {
+      if (callerMembership.role !== "admin") {
+        return NextResponse.json(
+          { error: "Only admins can change roles" },
+          { status: 403 }
+        );
+      }
 
-    if (error) throw error;
+      if (!["member", "moderator", "admin"].includes(role)) {
+        return NextResponse.json({ error: "Invalid role" }, { status: 400 });
+      }
 
-    return NextResponse.json({ updated: true, role });
+      const { error } = await supabase
+        .from("group_members")
+        .update({ role })
+        .eq("group_id", groupId)
+        .eq("user_id", userId);
+
+      if (error) throw error;
+
+      return NextResponse.json({ updated: true, role });
+    }
+
+    return NextResponse.json(
+      { error: "Body must include `role` or `status`" },
+      { status: 400 }
+    );
   } catch (error) {
-    console.error("Change role error:", error);
-    return NextResponse.json({ error: "Failed to change role" }, { status: 500 });
+    console.error("Update member error:", error);
+    return NextResponse.json({ error: "Failed to update member" }, { status: 500 });
   }
 }

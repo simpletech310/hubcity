@@ -199,26 +199,110 @@ export default async function CreatorsPage({
   const creatorById = new Map<string, CreatorProfile>();
   for (const c of creators) creatorById.set(c.id, c);
 
+  // Pick a "featured" creator — the one with the most combined media. Falls back
+  // to first creator. Drives the magazine hero spotlight at the top.
+  const scoreCreator = (c: CreatorProfile) => {
+    const reelCount = (reelsByCreator.get(c.id) ?? []).length;
+    const postCount = (postsByCreator.get(c.id) ?? []).filter((p) => p.image_url).length;
+    const ch = channelByOwner.get(c.id);
+    const vidCount = ch ? (videosByChannel.get(ch.id) ?? []).length : 0;
+    const verifyBoost = c.verification_status === "verified" ? 2 : 0;
+    return reelCount * 2 + postCount + vidCount * 3 + verifyBoost;
+  };
+  const sortedByScore = [...creators].sort((a, b) => scoreCreator(b) - scoreCreator(a));
+  const featuredCreator = sortedByScore[0] ?? null;
+  const featuredHasMedia = featuredCreator ? scoreCreator(featuredCreator) > 0 : false;
+
+  // What's the hero piece of media for the featured creator?
+  let featuredMedia: {
+    kind: "reel" | "video" | "post";
+    href: string;
+    img: string | null;
+    title: string | null;
+    duration: number | null;
+  } | null = null;
+  if (featuredCreator && featuredHasMedia) {
+    const fch = channelByOwner.get(featuredCreator.id);
+    const fvids = fch ? videosByChannel.get(fch.id) ?? [] : [];
+    const freels = reelsByCreator.get(featuredCreator.id) ?? [];
+    const fposts = (postsByCreator.get(featuredCreator.id) ?? []).filter((p) => p.image_url);
+    if (fvids.length > 0) {
+      const v = fvids[0];
+      const thumb =
+        v.thumbnail_url ??
+        (v.mux_playback_id
+          ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=800&height=450&time=5`
+          : null);
+      featuredMedia = {
+        kind: "video",
+        href: `/live/watch/${v.id}`,
+        img: thumb,
+        title: v.title,
+        duration: v.duration,
+      };
+    } else if (freels.length > 0) {
+      const r = freels[0];
+      featuredMedia = {
+        kind: "reel",
+        href: "/reels",
+        img: r.poster_url,
+        title: r.caption,
+        duration: null,
+      };
+    } else if (fposts.length > 0) {
+      const p = fposts[0];
+      featuredMedia = {
+        kind: "post",
+        href: `/user/${featuredCreator.handle}`,
+        img: p.image_url,
+        title: null,
+        duration: null,
+      };
+    }
+  }
+
+  // Remove the featured creator from the main loop so the spotlight isn't
+  // duplicated below.
+  const remainingCreators = featuredCreator
+    ? creators.filter((c) => c.id !== featuredCreator.id)
+    : creators;
+
   return (
     <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
 
       {/* ── Masthead ─────────────────────────────────────────────── */}
       <header
-        className="px-[18px] pt-5 pb-4"
+        className="px-[18px] pt-6 pb-5"
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
-        <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE DISCOVER · {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
+        <div className="flex items-center justify-between mb-2">
+          <div className="c-kicker" style={{ opacity: 0.65, fontSize: 9 }}>
+            § VOL·01 · ISSUE DISCOVER
+          </div>
+          <div className="c-kicker" style={{ opacity: 0.65, fontSize: 9 }}>
+            {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
+          </div>
         </div>
         <h1
-          className="c-hero mt-2"
-          style={{ fontSize: 60, lineHeight: 0.86, letterSpacing: "-0.02em" }}
+          className="c-hero"
+          style={{ fontSize: 72, lineHeight: 0.84, letterSpacing: "-0.035em" }}
         >
           DISCOVER.
         </h1>
-        <p className="c-serif-it mt-3" style={{ fontSize: 14, lineHeight: 1.45 }}>
-          Find things to watch. Meet the people making it.
-        </p>
+        <div className="flex items-baseline justify-between gap-3 mt-3">
+          <p
+            className="c-serif-it"
+            style={{ fontSize: 15, lineHeight: 1.4, color: "var(--ink-strong)", opacity: 0.85 }}
+          >
+            Find things to watch. Meet the people making it.
+          </p>
+          <span
+            className="c-kicker tabular-nums shrink-0"
+            style={{ fontSize: 9, opacity: 0.5 }}
+          >
+            EST. 2026
+          </span>
+        </div>
       </header>
 
       {/* ── Stats strip ──────────────────────────────────────────── */}
@@ -354,21 +438,256 @@ export default async function CreatorsPage({
         )}
       </div>
 
+      {/* ── FEATURED SPOTLIGHT ─ magazine cover-style hero for top creator ─ */}
+      {featuredCreator && featuredMedia && (
+        <section
+          style={{
+            background: "var(--ink-strong)",
+            borderBottom: "3px solid var(--rule-strong-c)",
+          }}
+        >
+          {/* Top byline strip */}
+          <div
+            className="flex items-center justify-between px-5 py-2.5"
+            style={{ borderBottom: "1px solid rgba(242,169,0,0.35)" }}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  background: "var(--gold-c)",
+                  display: "inline-block",
+                }}
+              />
+              <span
+                className="c-kicker"
+                style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+              >
+                THE COVER · TONIGHT&apos;S BIG STORY
+              </span>
+            </div>
+            <span
+              className="c-kicker"
+              style={{ fontSize: 9, color: "var(--paper)", opacity: 0.55 }}
+            >
+              № 00
+            </span>
+          </div>
+
+          {/* Featured media — wide cinema treatment */}
+          <Link href={featuredMedia.href} className="block press relative">
+            <div
+              className="relative overflow-hidden"
+              style={{
+                aspectRatio: "16/10",
+                background: "var(--ink-strong)",
+                borderBottom: "2px solid var(--gold-c)",
+              }}
+            >
+              {featuredMedia.img && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={featuredMedia.img}
+                  alt=""
+                  className="w-full h-full object-cover"
+                  style={{ opacity: 0.78 }}
+                />
+              )}
+              {/* Cinematic gradient — dark left for type, lighter right */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(90deg, rgba(26,21,18,0.92) 0%, rgba(26,21,18,0.55) 45%, rgba(26,21,18,0.25) 100%)",
+                }}
+              />
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 50%, rgba(26,21,18,0.85) 100%)",
+                }}
+              />
+
+              {/* Kind chip top-right */}
+              <div className="absolute top-4 right-4">
+                <div
+                  className="inline-flex items-center gap-1.5 px-2 py-1"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                  }}
+                >
+                  <Icon
+                    name={featuredMedia.kind === "video" ? "film" : featuredMedia.kind === "reel" ? "video" : "photo"}
+                    size={10}
+                    style={{ color: "var(--ink-strong)" }}
+                  />
+                  <span className="c-kicker" style={{ fontSize: 9, color: "var(--ink-strong)" }}>
+                    {featuredMedia.kind === "video"
+                      ? "FEATURED FILM"
+                      : featuredMedia.kind === "reel"
+                      ? "REEL"
+                      : "FROM THE FEED"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Big play */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 64,
+                    height: 64,
+                    background: "var(--gold-c)",
+                    border: "3px solid var(--paper)",
+                    boxShadow: "5px 5px 0 rgba(0,0,0,0.45)",
+                  }}
+                >
+                  <svg width="22" height="22" fill="var(--ink-strong)" viewBox="0 0 10 10">
+                    <polygon points="3,1.5 9,5 3,8.5" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Bottom slab — title + creator */}
+              <div className="absolute inset-x-0 bottom-0 p-5">
+                {featuredMedia.title && (
+                  <h2
+                    className="c-hero line-clamp-2 mb-2"
+                    style={{
+                      fontSize: 28,
+                      lineHeight: 1.0,
+                      letterSpacing: "-0.02em",
+                      color: "var(--paper)",
+                      textShadow: "0 2px 8px rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    {featuredMedia.title}
+                  </h2>
+                )}
+                <div className="flex items-center gap-2">
+                  <span
+                    className="c-kicker"
+                    style={{ fontSize: 9, color: "var(--gold-c)" }}
+                  >
+                    @{featuredCreator.handle}
+                  </span>
+                  {featuredCreator.verification_status === "verified" && (
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ color: "var(--gold-c)" }}>
+                      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  )}
+                  {featuredMedia.duration && (
+                    <>
+                      <span
+                        className="c-kicker"
+                        style={{ fontSize: 9, color: "var(--paper)", opacity: 0.5 }}
+                      >
+                        ·
+                      </span>
+                      <span
+                        className="c-kicker tabular-nums"
+                        style={{ fontSize: 9, color: "var(--paper)", opacity: 0.65 }}
+                      >
+                        {Math.floor(featuredMedia.duration / 60)}:
+                        {Math.floor(featuredMedia.duration % 60).toString().padStart(2, "0")}
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Creator credit slab */}
+          <Link
+            href={`/user/${featuredCreator.handle}`}
+            className="flex items-center gap-3 px-5 py-4 press"
+          >
+            <div
+              className="shrink-0 overflow-hidden"
+              style={{
+                width: 48,
+                height: 48,
+                background: "var(--gold-c)",
+                border: "2px solid var(--gold-c)",
+              }}
+            >
+              {featuredCreator.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={featuredCreator.avatar_url}
+                  alt={featuredCreator.display_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span
+                    className="c-card-t"
+                    style={{ fontSize: 16, color: "var(--ink-strong)" }}
+                  >
+                    {featuredCreator.display_name
+                      .split(" ")
+                      .map((w) => w[0])
+                      .join("")
+                      .slice(0, 2)
+                      .toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p
+                className="c-card-t truncate"
+                style={{ fontSize: 16, color: "var(--paper)", lineHeight: 1.1 }}
+              >
+                {featuredCreator.display_name}
+              </p>
+              {featuredCreator.bio ? (
+                <p
+                  className="c-serif-it line-clamp-1 mt-0.5"
+                  style={{ fontSize: 12, color: "var(--paper)", opacity: 0.7 }}
+                >
+                  {featuredCreator.bio}
+                </p>
+              ) : featuredCreator.role ? (
+                <p
+                  className="c-kicker mt-0.5"
+                  style={{ fontSize: 9, color: "var(--paper)", opacity: 0.55 }}
+                >
+                  {(ROLE_LABEL[featuredCreator.role as RoleKey] ?? featuredCreator.role).toUpperCase()}
+                </p>
+              ) : null}
+            </div>
+            <span
+              className="c-kicker shrink-0"
+              style={{ fontSize: 9, color: "var(--gold-c)" }}
+            >
+              VIEW PROFILE ↗
+            </span>
+          </Link>
+        </section>
+      )}
+
       {/* ── № 01 · HOT RIGHT NOW — reels + videos strip ─────────── */}
       {(reels.length > 0 || videos.length > 0) && (
-        <section className="mt-6 mb-6">
-          <div className="px-5 mb-3">
+        <section className="mt-7 mb-7">
+          <div className="px-5 mb-4">
             <div
-              className="flex items-baseline gap-3 pb-2"
+              className="flex items-baseline gap-3 pb-2.5"
               style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
             >
               <span
                 className="c-display c-tabnum"
-                style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                style={{ fontSize: 28, lineHeight: 1, color: "var(--gold-c)", letterSpacing: "-0.02em" }}
               >
                 № 01
               </span>
-              <span className="c-kicker" style={{ color: "var(--ink-mute)" }}>
+              <span className="c-kicker" style={{ fontSize: 11, letterSpacing: "0.14em" }}>
                 HOT RIGHT NOW
               </span>
               <Link
@@ -379,10 +698,16 @@ export default async function CreatorsPage({
                 ALL REELS ↗
               </Link>
             </div>
+            <p
+              className="c-serif-it mt-2"
+              style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.6 }}
+            >
+              The newest drops across reels and channels — playing tonight.
+            </p>
           </div>
 
           <div
-            className="flex overflow-x-auto scrollbar-hide gap-2.5 pb-2"
+            className="flex overflow-x-auto scrollbar-hide gap-3 pb-2"
             style={{ paddingLeft: 20, paddingRight: 20 }}
           >
             {/* Reels — tall 9:16 tiles */}
@@ -393,7 +718,7 @@ export default async function CreatorsPage({
                   key={reel.id}
                   href="/reels"
                   className="shrink-0 press"
-                  style={{ width: 108 }}
+                  style={{ width: 132 }}
                 >
                   <div
                     className="relative overflow-hidden"
@@ -445,23 +770,24 @@ export default async function CreatorsPage({
                       <div
                         className="flex items-center justify-center"
                         style={{
-                          width: 28,
-                          height: 28,
+                          width: 36,
+                          height: 36,
                           background: "var(--gold-c)",
                           border: "2px solid var(--paper)",
+                          boxShadow: "2px 2px 0 rgba(0,0,0,0.35)",
                         }}
                       >
-                        <svg width="9" height="9" fill="var(--ink-strong)" viewBox="0 0 10 10">
+                        <svg width="11" height="11" fill="var(--ink-strong)" viewBox="0 0 10 10">
                           <polygon points="3,2 9,5 3,8" />
                         </svg>
                       </div>
                     </div>
                     {/* Creator name bottom */}
                     {creator && (
-                      <div className="absolute bottom-0 inset-x-0 p-1.5">
+                      <div className="absolute bottom-0 inset-x-0 p-2">
                         <p
                           className="c-kicker"
-                          style={{ fontSize: 8, color: "var(--paper)", opacity: 0.9 }}
+                          style={{ fontSize: 9, color: "var(--paper)", opacity: 0.95 }}
                         >
                           @{creator.handle}
                         </p>
@@ -505,7 +831,7 @@ export default async function CreatorsPage({
                   key={v.id}
                   href={`/live/watch/${v.id}`}
                   className="shrink-0 press"
-                  style={{ width: 168 }}
+                  style={{ width: 220 }}
                 >
                   <div
                     className="relative overflow-hidden"
@@ -531,13 +857,14 @@ export default async function CreatorsPage({
                       <div
                         className="flex items-center justify-center"
                         style={{
-                          width: 28,
-                          height: 28,
+                          width: 40,
+                          height: 40,
                           background: "var(--gold-c)",
                           border: "2px solid var(--paper)",
+                          boxShadow: "2px 2px 0 rgba(0,0,0,0.35)",
                         }}
                       >
-                        <svg width="9" height="9" fill="var(--ink-strong)" viewBox="0 0 10 10">
+                        <svg width="12" height="12" fill="var(--ink-strong)" viewBox="0 0 10 10">
                           <polygon points="3,2 9,5 3,8" />
                         </svg>
                       </div>
@@ -545,11 +872,11 @@ export default async function CreatorsPage({
                     {/* Duration */}
                     {v.duration && (
                       <div
-                        className="absolute bottom-1 right-1 px-1.5 c-kicker"
+                        className="absolute bottom-1.5 right-1.5 px-1.5 c-kicker"
                         style={{
-                          background: "rgba(0,0,0,0.75)",
+                          background: "rgba(0,0,0,0.78)",
                           color: "#fff",
-                          fontSize: 8,
+                          fontSize: 9,
                         }}
                       >
                         {Math.floor(v.duration / 60)}:
@@ -560,10 +887,10 @@ export default async function CreatorsPage({
                     )}
                     {/* Creator */}
                     {creator && (
-                      <div className="absolute bottom-1 left-1.5">
+                      <div className="absolute bottom-1.5 left-2">
                         <p
                           className="c-kicker"
-                          style={{ fontSize: 8, color: "var(--paper)", opacity: 0.85 }}
+                          style={{ fontSize: 9, color: "var(--paper)", opacity: 0.9 }}
                         >
                           @{creator.handle}
                         </p>
@@ -571,8 +898,8 @@ export default async function CreatorsPage({
                     )}
                   </div>
                   <p
-                    className="c-card-t mt-1 line-clamp-1"
-                    style={{ fontSize: 11, color: "var(--ink-strong)" }}
+                    className="c-card-t mt-1.5 line-clamp-2"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", lineHeight: 1.25 }}
                   >
                     {v.title}
                   </p>
@@ -614,7 +941,25 @@ export default async function CreatorsPage({
       )}
 
       {/* ── Creator cards — № 02, 03, … ────────────────────────── */}
-      {creators.map((creator, idx) => {
+      {/* Section opener for the roster */}
+      {remainingCreators.length > 0 && (
+        <div
+          className="px-5 pt-2 pb-4"
+          style={{ borderTop: "3px solid var(--rule-strong-c)", borderBottom: "2px solid var(--rule-strong-c)", background: "var(--paper-warm)" }}
+        >
+          <div className="flex items-baseline gap-3">
+            <span className="c-kicker" style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.16em" }}>
+              § THE ROSTER
+            </span>
+            <span className="block flex-1 h-px" style={{ background: "var(--rule-strong-c)" }} />
+            <span className="c-kicker tabular-nums" style={{ fontSize: 9, opacity: 0.55 }}>
+              {remainingCreators.length} {remainingCreators.length === 1 ? "ENTRY" : "ENTRIES"}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {remainingCreators.map((creator, idx) => {
         const creatorPosts = (postsByCreator.get(creator.id) ?? []).slice(0, 6);
         const creatorReels = (reelsByCreator.get(creator.id) ?? []).slice(0, 5);
         const channel = channelByOwner.get(creator.id);
@@ -633,10 +978,11 @@ export default async function CreatorsPage({
           ? ROLE_LABEL[creator.role as RoleKey] ?? creator.role
           : null;
 
-        // Numbered section: Hot Right Now = 01, creators start at 02
+        // Numbered section: Cover = 00, Hot Right Now = 01, roster starts at 02
         const sectionNum = String(idx + 2).padStart(2, "0");
 
         const imagePosts = creatorPosts.filter((p) => p.image_url);
+        const totalMedia = creatorReels.length + imagePosts.length + creatorVideos.length;
 
         return (
           <section
@@ -645,21 +991,21 @@ export default async function CreatorsPage({
           >
             {/* ─ Section header bar ─ */}
             <div
-              className="px-5 py-2.5 flex items-center justify-between"
+              className="px-5 py-3 flex items-center justify-between"
               style={{
-                background: "var(--paper-warm)",
-                borderBottom: "2px solid var(--rule-strong-c)",
+                background: "var(--paper)",
+                borderBottom: "1px solid var(--rule-strong-c)",
               }}
             >
-              <div className="flex items-baseline gap-2">
+              <div className="flex items-baseline gap-2.5">
                 <span
                   className="c-display c-tabnum"
-                  style={{ fontSize: 18, lineHeight: 1, color: "var(--gold-c)" }}
+                  style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)", letterSpacing: "-0.02em" }}
                 >
                   № {sectionNum}
                 </span>
                 {roleLabel && (
-                  <span className="c-badge c-badge-ink" style={{ fontSize: 8 }}>
+                  <span className="c-kicker" style={{ fontSize: 9, color: "var(--ink-strong)", letterSpacing: "0.14em" }}>
                     {roleLabel.toUpperCase()}
                   </span>
                 )}
@@ -674,16 +1020,19 @@ export default async function CreatorsPage({
 
             {/* ─ Creator identity row ─ */}
             <div
-              className="px-5 py-4 flex items-start gap-4"
+              className="px-5 pt-5 pb-4 flex items-start gap-4"
               style={{ background: "var(--paper)" }}
             >
-              {/* Square avatar */}
-              <Link href={`/user/${creator.handle}`} className="shrink-0">
+              {/* Square avatar — bigger, gold inner frame for premium feel */}
+              <Link href={`/user/${creator.handle}`} className="shrink-0 relative">
                 <div
-                  className="w-[68px] h-[68px] overflow-hidden"
+                  className="overflow-hidden relative"
                   style={{
+                    width: 84,
+                    height: 84,
                     border: "2px solid var(--rule-strong-c)",
                     background: "var(--ink-strong)",
+                    boxShadow: "3px 3px 0 var(--gold-c)",
                   }}
                 >
                   {creator.avatar_url ? (
@@ -697,7 +1046,7 @@ export default async function CreatorsPage({
                     <div className="w-full h-full flex items-center justify-center">
                       <span
                         className="c-card-t"
-                        style={{ fontSize: 22, color: "var(--gold-c)" }}
+                        style={{ fontSize: 28, color: "var(--gold-c)" }}
                       >
                         {initials}
                       </span>
@@ -707,15 +1056,16 @@ export default async function CreatorsPage({
               </Link>
 
               {/* Info */}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pt-0.5">
                 <div className="flex items-start gap-1.5">
-                  <Link href={`/user/${creator.handle}`}>
+                  <Link href={`/user/${creator.handle}`} className="min-w-0">
                     <h2
-                      className="c-card-t"
+                      className="c-hero"
                       style={{
-                        fontSize: 20,
+                        fontSize: 26,
                         color: "var(--ink-strong)",
-                        lineHeight: 1.1,
+                        lineHeight: 0.98,
+                        letterSpacing: "-0.02em",
                       }}
                     >
                       {creator.display_name}
@@ -723,11 +1073,11 @@ export default async function CreatorsPage({
                   </Link>
                   {creator.verification_status === "verified" && (
                     <svg
-                      width="14"
-                      height="14"
+                      width="15"
+                      height="15"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className="shrink-0 mt-0.5"
+                      className="shrink-0 mt-1"
                       style={{ color: "var(--gold-c)" }}
                     >
                       <path
@@ -742,25 +1092,31 @@ export default async function CreatorsPage({
                   )}
                 </div>
                 {creator.handle && (
-                  <p className="c-kicker mt-0.5" style={{ fontSize: 9, opacity: 0.5 }}>
+                  <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.55, color: "var(--gold-c)" }}>
                     @{creator.handle}
                   </p>
                 )}
                 {creator.bio && (
                   <p
-                    className="c-serif-it mt-1.5 line-clamp-2"
-                    style={{ fontSize: 12, color: "var(--ink-strong)" }}
+                    className="c-serif-it mt-2 line-clamp-2"
+                    style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.35, opacity: 0.85 }}
                   >
                     {creator.bio}
                   </p>
                 )}
                 {creator.profile_tags && creator.profile_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
+                  <div className="flex flex-wrap gap-1 mt-2.5">
                     {creator.profile_tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="c-badge c-badge-gold"
-                        style={{ fontSize: 8 }}
+                        className="c-kicker"
+                        style={{
+                          fontSize: 9,
+                          color: "var(--ink-strong)",
+                          padding: "3px 7px",
+                          border: "1.5px solid var(--rule-strong-c)",
+                          background: "var(--paper-warm)",
+                        }}
                       >
                         #{tag}
                       </span>
@@ -769,6 +1125,39 @@ export default async function CreatorsPage({
                 )}
               </div>
             </div>
+
+            {/* ─ Mini stats slab — compact tally for credibility ─ */}
+            {totalMedia > 0 && (
+              <div
+                className="px-5 pb-3 flex items-center gap-4"
+                style={{ background: "var(--paper)" }}
+              >
+                {creatorReels.length > 0 && (
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
+                      {creatorReels.length}
+                    </span>
+                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>REELS</span>
+                  </div>
+                )}
+                {creatorVideos.length > 0 && (
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
+                      {creatorVideos.length}
+                    </span>
+                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>VIDEOS</span>
+                  </div>
+                )}
+                {imagePosts.length > 0 && (
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
+                      {imagePosts.length}
+                    </span>
+                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>POSTS</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* ─ Media strip ─ */}
             {(creatorReels.length > 0 || imagePosts.length > 0 || creatorVideos.length > 0) && (
@@ -782,7 +1171,7 @@ export default async function CreatorsPage({
                     key={r.id}
                     href="/reels"
                     className="shrink-0 press"
-                    style={{ width: 74 }}
+                    style={{ width: 96 }}
                   >
                     <div
                       className="relative overflow-hidden"
@@ -847,7 +1236,7 @@ export default async function CreatorsPage({
                     key={p.id}
                     href={`/user/${creator.handle}`}
                     className="shrink-0 press"
-                    style={{ width: 74 }}
+                    style={{ width: 96 }}
                   >
                     <div
                       className="relative overflow-hidden"
@@ -879,7 +1268,7 @@ export default async function CreatorsPage({
                       key={v.id}
                       href={`/live/watch/${v.id}`}
                       className="shrink-0 press"
-                      style={{ width: 130 }}
+                      style={{ width: 168 }}
                     >
                       <div
                         className="relative overflow-hidden"

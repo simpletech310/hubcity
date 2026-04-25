@@ -11,6 +11,9 @@ import GroupCommentsSheet from "@/components/groups/GroupCommentsSheet";
 import GroupEditModal from "@/components/groups/GroupEditModal";
 import GroupEventForm from "@/components/groups/GroupEventForm";
 import GroupGallery from "@/components/groups/GroupGallery";
+import GroupReelComposer from "@/components/groups/GroupReelComposer";
+import ReelsRail from "@/components/reels/ReelsRail";
+import type { Reel } from "@/types/database";
 
 // ── Types ───────────────────────────────────────────────
 interface GroupInfo {
@@ -48,6 +51,7 @@ interface GroupPost {
 
 interface GroupMemberInfo {
   role: string;
+  status?: string;
   joined_at: string;
   user: {
     id: string;
@@ -70,7 +74,7 @@ interface GroupEvent {
   visibility: string | null;
 }
 
-type GroupTab = "posts" | "events" | "gallery" | "members";
+type GroupTab = "posts" | "events" | "reels" | "gallery" | "members";
 
 const CATEGORY_BADGE: Record<string, "gold" | "emerald" | "cyan" | "purple" | "coral" | "blue" | "pink"> = {
   // All category variants collapse to gold/emerald in the Culture palette
@@ -118,6 +122,14 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
   // Members
   const [members, setMembers] = useState<GroupMemberInfo[]>([]);
+  const [pendingMembers, setPendingMembers] = useState<GroupMemberInfo[]>([]);
+
+  // Reels
+  const [reels, setReels] = useState<Reel[]>([]);
+  const [showReelComposer, setShowReelComposer] = useState(false);
+
+  // Pending join request UI
+  const [myStatus, setMyStatus] = useState<"active" | "pending" | null>(null);
 
   // Events
   const [groupEvents, setGroupEvents] = useState<GroupEvent[]>([]);
@@ -132,23 +144,27 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [groupRes, postsRes, membersRes, eventsRes] = await Promise.all([
+      const [groupRes, postsRes, membersRes, eventsRes, reelsRes] = await Promise.all([
         fetch(`/api/groups/${id}`),
         fetch(`/api/groups/${id}/posts`),
         fetch(`/api/groups/${id}/members`),
         fetch(`/api/groups/${id}/events`),
+        fetch(`/api/groups/${id}/reels`),
       ]);
+
+      let resolvedRole: string | null = null;
+      let resolvedStatus: "active" | "pending" | null = null;
 
       if (groupRes.ok) {
         const data = await groupRes.json();
         setGroup(data.group);
-        setMyRole(data.my_role);
-        setIsMember(!!data.my_role);
+        resolvedRole = data.my_role ?? null;
+        resolvedStatus = (data.my_status as "active" | "pending" | null) ?? (resolvedRole ? "active" : null);
       }
       if (postsRes.ok) {
         const data = await postsRes.json();
         setPosts(data.posts ?? []);
-        if (data.my_role) { setMyRole(data.my_role); setIsMember(true); }
+        if (data.my_role) { resolvedRole = data.my_role; }
         setUserReactions(data.user_reactions ?? {});
         setUserId(data.user_id ?? null);
         // Init comment counts
@@ -164,23 +180,93 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         const data = await eventsRes.json();
         setGroupEvents(data.events ?? []);
       }
+      if (reelsRes.ok) {
+        const data = await reelsRes.json();
+        setReels(data.reels ?? []);
+      }
+
+      setMyRole(resolvedRole);
+      setMyStatus(resolvedStatus);
+      setIsMember(resolvedStatus === "active");
       setLoading(false);
     }
     load();
   }, [id]);
 
-  // ── Join/Leave ────────────────────────────────────────
+  // ── Load pending member requests (admins / mods) ──────
+  useEffect(() => {
+    if (!isAdminOrMod) {
+      setPendingMembers([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/groups/${id}/members?status=pending`);
+      if (!res.ok || cancelled) return;
+      const data = await res.json();
+      setPendingMembers(data.members ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id, isAdminOrMod]);
+
+  // ── Join/Leave / cancel pending ───────────────────────
   const handleJoin = useCallback(async () => {
     setJoining(true);
     const res = await fetch(`/api/groups/${id}/join`, { method: "POST" });
     if (res.ok) {
       const data = await res.json();
-      setIsMember(data.joined);
-      setMyRole(data.joined ? "member" : null);
-      if (group) setGroup({ ...group, member_count: data.member_count });
+      const nextStatus =
+        data.joined === false
+          ? null
+          : (data.status as "active" | "pending" | undefined) ?? "active";
+      setMyStatus(nextStatus);
+      setIsMember(nextStatus === "active");
+      setMyRole(
+        nextStatus === "active"
+          ? (data.role as string | undefined) ?? "member"
+          : null
+      );
+      if (group && typeof data.member_count === "number") {
+        setGroup({ ...group, member_count: data.member_count });
+      }
     }
     setJoining(false);
   }, [id, group]);
+
+  // ── Approve / reject pending requests ─────────────────
+  const handleApprove = useCallback(async (memberId: string) => {
+    const res = await fetch(`/api/groups/${id}/members/${memberId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "active" }),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    setPendingMembers((prev) => {
+      const promoted = prev.find((m) => m.user?.id === memberId);
+      if (promoted) {
+        setMembers((cur) => [...cur, { ...promoted, status: "active" }]);
+      }
+      return prev.filter((m) => m.user?.id !== memberId);
+    });
+    if (group && typeof data.member_count === "number") {
+      setGroup({ ...group, member_count: data.member_count });
+    }
+  }, [id, group]);
+
+  const handleReject = useCallback(async (memberId: string, name: string) => {
+    if (!confirm(`Reject ${name}'s request to join?`)) return;
+    const res = await fetch(`/api/groups/${id}/members/${memberId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) return;
+    setPendingMembers((prev) => prev.filter((m) => m.user?.id !== memberId));
+  }, [id]);
+
+  // ── New reel ──────────────────────────────────────────
+  const handleReelCreated = useCallback((reel: Reel) => {
+    setReels((prev) => [reel, ...prev]);
+  }, []);
 
   // ── Create post ───────────────────────────────────────
   const handleNewPost = useCallback((post: Record<string, unknown>) => {
@@ -295,18 +381,48 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         group={group}
         isMember={isMember}
         myRole={myRole}
+        myStatus={myStatus}
         joining={joining}
         onJoin={handleJoin}
         onEdit={() => setShowEditModal(true)}
         onShare={handleShare}
       />
 
+      {/* Pending request callout */}
+      {myStatus === "pending" && (
+        <div className="px-5 mt-3">
+          <div
+            className="px-3 py-2.5 flex items-center justify-between gap-3"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <div className="flex-1 min-w-0">
+              <p className="c-kicker" style={{ fontSize: 10, color: "var(--ink-strong)" }}>
+                REQUEST SENT
+              </p>
+              <p className="c-serif-it" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
+                An admin will review your request to join.
+              </p>
+            </div>
+            <button
+              onClick={handleJoin}
+              disabled={joining}
+              className="c-btn c-btn-outline c-btn-sm press disabled:opacity-40"
+            >
+              CANCEL
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ═══════ TABS ═══════ */}
       <div
         className="flex gap-1 px-5 mt-3 mb-3"
         style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
       >
-        {(["posts", "events", "gallery", "members"] as GroupTab[]).map((t) => {
+        {(["posts", "events", "reels", "gallery", "members"] as GroupTab[]).map((t) => {
           const active = activeTab === t;
           return (
             <button
@@ -335,6 +451,19 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   {groupEvents.length}
                 </span>
               )}
+              {t === "reels" && reels.length > 0 && (
+                <span
+                  className="ml-1.5 c-kicker"
+                  style={{
+                    fontSize: 9,
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    padding: "1px 6px",
+                  }}
+                >
+                  {reels.length}
+                </span>
+              )}
               {t === "members" && (
                 <span
                   className="ml-1.5 c-kicker"
@@ -347,6 +476,20 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   }}
                 >
                   {group.member_count}
+                </span>
+              )}
+              {t === "members" && isAdminOrMod && pendingMembers.length > 0 && (
+                <span
+                  className="ml-1 c-kicker"
+                  style={{
+                    fontSize: 9,
+                    background: "var(--ink-strong)",
+                    color: "var(--gold-c)",
+                    padding: "1px 6px",
+                  }}
+                  title={`${pendingMembers.length} pending`}
+                >
+                  +{pendingMembers.length}
                 </span>
               )}
             </button>
@@ -541,14 +684,163 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         </div>
       )}
 
+      {/* ═══════ REELS TAB ═══════ */}
+      {activeTab === "reels" && (
+        <div className="space-y-4">
+          {isMember ? (
+            <div className="px-5">
+              <button
+                onClick={() => setShowReelComposer(true)}
+                className="w-full flex items-center justify-center gap-2 py-3 c-kicker press"
+                style={{
+                  fontSize: 11,
+                  color: "var(--ink-strong)",
+                  border: "2px dashed var(--rule-strong-c)",
+                  background: "var(--paper-warm)",
+                }}
+              >
+                <Icon name="video" size={14} style={{ color: "var(--gold-c)" }} />
+                POST A REEL TO THIS GROUP
+              </button>
+            </div>
+          ) : (
+            <div className="px-5">
+              <div
+                className="p-4 text-center"
+                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <p className="c-serif-it" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+                  Members get the mic. Join to share your reels here.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {reels.length > 0 ? (
+            <ReelsRail reels={reels} label="Group reels" showSeeAll={false} />
+          ) : (
+            <div className="px-5">
+              <div
+                className="p-6 text-center"
+                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+              >
+                <Icon name="video" size={28} className="mx-auto mb-2" style={{ color: "var(--ink-strong)", opacity: 0.35 }} />
+                <p className="c-kicker" style={{ fontSize: 11, color: "var(--ink-strong)" }}>
+                  NO REELS YET
+                </p>
+                <p className="c-serif-it mt-1" style={{ fontSize: 12 }}>
+                  {isMember ? "Be the first to post." : "Members can post reels here."}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ═══════ GALLERY TAB ═══════ */}
       {activeTab === "gallery" && (
-        <GroupGallery groupId={id} />
+        <GroupGallery groupId={id} canCurate={isAdminOrMod} currentUserId={userId} />
       )}
 
       {/* ═══════ MEMBERS TAB ═══════ */}
       {activeTab === "members" && (
         <div className="px-5">
+          {/* Pending approval queue (admin / moderator only) */}
+          {isAdminOrMod && pendingMembers.length > 0 && (
+            <div className="mb-5">
+              <div className="flex items-center justify-between mb-2">
+                <p className="c-kicker" style={{ fontSize: 10, color: "var(--ink-strong)" }}>
+                  AWAITING APPROVAL
+                </p>
+                <span
+                  className="c-kicker"
+                  style={{
+                    fontSize: 9,
+                    background: "var(--ink-strong)",
+                    color: "var(--gold-c)",
+                    padding: "1px 6px",
+                  }}
+                >
+                  {pendingMembers.length}
+                </span>
+              </div>
+              <div
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                {pendingMembers.map((m, i) => (
+                  <div
+                    key={m.user?.id ?? i}
+                    className="flex items-center gap-3 px-3 py-2.5"
+                    style={{
+                      borderTop: i === 0 ? undefined : "1.5px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center overflow-hidden shrink-0"
+                      style={{
+                        background: "var(--gold-c)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      {m.user?.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.user.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="c-card-t" style={{ fontSize: 12, color: "var(--ink-strong)" }}>
+                          {m.user?.display_name?.charAt(0) || "?"}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="c-card-t truncate"
+                        style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                      >
+                        {m.user?.display_name || "Unknown"}
+                      </p>
+                      {m.user?.handle && (
+                        <p className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
+                          @{m.user.handle.toUpperCase()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => m.user && handleApprove(m.user.id)}
+                        className="px-2.5 py-1 c-kicker press"
+                        style={{
+                          fontSize: 9,
+                          background: "var(--gold-c)",
+                          color: "var(--ink-strong)",
+                          border: "1.5px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        APPROVE
+                      </button>
+                      <button
+                        onClick={() =>
+                          m.user && handleReject(m.user.id, m.user.display_name || "this user")
+                        }
+                        className="px-2.5 py-1 c-kicker press"
+                        style={{
+                          fontSize: 9,
+                          background: "var(--paper)",
+                          color: "var(--ink-strong)",
+                          border: "1.5px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        REJECT
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {members.length === 0 ? (
             <div className="flex justify-center py-8">
               <div
@@ -668,6 +960,16 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             setCommentCounts((prev) => ({ ...prev, [commentsPostId]: count }));
             setPosts((prev) => prev.map((p) => p.id === commentsPostId ? { ...p, comment_count: count } : p));
           }}
+        />
+      )}
+
+      {/* ═══════ REEL COMPOSER ═══════ */}
+      {isMember && (
+        <GroupReelComposer
+          groupId={id}
+          isOpen={showReelComposer}
+          onClose={() => setShowReelComposer(false)}
+          onCreated={handleReelCreated}
         />
       )}
 

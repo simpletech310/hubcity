@@ -123,34 +123,112 @@ export default function ChannelPage({
     }
   }, [userId, following, channel.id]);
 
+  // The hero piece: a featured video, falls back to the latest one. Drives the
+  // big cinematic top slab — title, trailer button, PPV/subs badge, watch CTA.
+  const heroVideo = videos.find((v) => v.is_featured) ?? videos[0] ?? null;
+  const heroThumb = heroVideo
+    ? heroVideo.thumbnail_url ??
+      (heroVideo.mux_playback_id
+        ? `https://image.mux.com/${heroVideo.mux_playback_id}/thumbnail.webp?width=1200&height=675&time=5`
+        : null)
+    : null;
+  const heroBackdrop = heroThumb ?? channel.banner_url ?? null;
+
+  // PPV / subscriber price helper
+  const formatPrice = (cents: number | null | undefined) => {
+    if (!cents) return null;
+    return `$${(cents / 100).toFixed(2)}`;
+  };
+
+  // Featured rail vs the rest of the catalog
+  const featuredVideos = videos.filter((v) => v.is_featured);
+  const regularVideos = videos.filter((v) => !v.is_featured);
+
+  // Compact PPV chip used on tiles
+  const accessChip = (v: ChannelVideo) => {
+    const price = formatPrice(v.price_cents);
+    if (v.access_type === "ppv" || (v.is_premium && price)) {
+      return (
+        <span
+          className="inline-flex items-center px-1.5 c-kicker"
+          style={{
+            background: "var(--gold-c)",
+            color: "var(--ink-strong)",
+            fontSize: 9,
+            height: 17,
+            border: "1.5px solid var(--ink-strong)",
+          }}
+        >
+          {price ?? "RENT"}
+        </span>
+      );
+    }
+    if (v.access_type === "subscribers" || v.is_premium) {
+      return (
+        <span
+          className="inline-flex items-center px-1.5 c-kicker"
+          style={{
+            background: "var(--ink-strong)",
+            color: "var(--gold-c)",
+            fontSize: 9,
+            height: 17,
+            border: "1.5px solid var(--ink-strong)",
+          }}
+        >
+          SUBS
+        </span>
+      );
+    }
+    return null;
+  };
+
   return (
-    <div className="culture-surface min-h-dvh animate-fade-in">
-      {/* ── Banner ──────────────────────────────────────── */}
-      <div className="relative h-44 overflow-hidden" style={{ background: "var(--ink-strong)" }}>
-        {channel.banner_url ? (
+    <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
+      {/* ══════════════════════════════════════════════════════════
+         CINEMA HERO  —  big poster, gradient, title, watch + trailer
+         ══════════════════════════════════════════════════════════ */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          aspectRatio: "16/10",
+          background: "var(--ink-strong)",
+          borderBottom: "3px solid var(--gold-c)",
+        }}
+      >
+        {heroBackdrop ? (
           <img
-            src={channel.banner_url}
+            src={heroBackdrop}
             alt=""
             className="w-full h-full object-cover"
+            style={{ opacity: 0.7 }}
           />
         ) : (
           <div className="w-full h-full" style={{ background: "var(--ink-strong)" }} />
         )}
+
+        {/* Cinematic gradients */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.45) 70%, var(--paper) 100%)",
+              "linear-gradient(180deg, rgba(26,21,18,0.55) 0%, rgba(26,21,18,0.15) 35%, rgba(26,21,18,0.85) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(26,21,18,0.7) 0%, rgba(26,21,18,0.25) 50%, transparent 100%)",
           }}
         />
 
-        {/* Back button — paper chip */}
+        {/* Back button */}
         <button
           onClick={() => router.back()}
           className="absolute top-4 left-4 flex items-center justify-center press z-10"
           style={{
-            width: 36,
-            height: 36,
+            width: 38,
+            height: 38,
             background: "var(--paper)",
             border: "2px solid var(--rule-strong-c)",
             color: "var(--ink-strong)",
@@ -160,216 +238,501 @@ export default function ChannelPage({
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
         </button>
+
+        {/* Channel chip top right */}
+        <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+          {activeStreams.length > 0 && (
+            <span
+              className="inline-flex items-center gap-1.5 px-2 py-1"
+              style={{ background: "#E84855", color: "var(--paper)", border: "2px solid var(--paper)" }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse"
+                style={{ background: "var(--paper)" }}
+              />
+              <span className="c-kicker" style={{ fontSize: 9, color: "var(--paper)" }}>LIVE NOW</span>
+            </span>
+          )}
+        </div>
+
+        {/* Bottom slab — title + actions */}
+        <div className="absolute inset-x-0 bottom-0 px-5 pb-5">
+          {heroVideo ? (
+            <>
+              <div className="flex items-center gap-2 mb-2.5">
+                <span
+                  className="c-kicker inline-flex items-center gap-1.5"
+                  style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.16em" }}
+                >
+                  <span style={{ width: 6, height: 6, background: "var(--gold-c)", display: "inline-block" }} />
+                  {heroVideo.is_featured ? "FEATURED PRESENTATION" : "NOW PLAYING"}
+                </span>
+                {heroVideo.access_type === "ppv" || (heroVideo.is_premium && heroVideo.price_cents) ? (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 c-kicker"
+                    style={{
+                      background: "var(--gold-c)",
+                      color: "var(--ink-strong)",
+                      fontSize: 9,
+                      border: "2px solid var(--paper)",
+                    }}
+                  >
+                    RENT {formatPrice(heroVideo.price_cents) ?? ""}
+                  </span>
+                ) : heroVideo.access_type === "subscribers" || heroVideo.is_premium ? (
+                  <span
+                    className="inline-flex items-center px-2 py-0.5 c-kicker"
+                    style={{
+                      background: "var(--paper)",
+                      color: "var(--ink-strong)",
+                      fontSize: 9,
+                      border: "2px solid var(--paper)",
+                    }}
+                  >
+                    SUBSCRIBERS
+                  </span>
+                ) : null}
+              </div>
+              <h2
+                className="c-hero line-clamp-2"
+                style={{
+                  fontSize: 30,
+                  lineHeight: 0.96,
+                  letterSpacing: "-0.025em",
+                  color: "var(--paper)",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.55)",
+                }}
+              >
+                {heroVideo.title}
+              </h2>
+              {heroVideo.description && (
+                <p
+                  className="c-serif-it mt-2 line-clamp-2"
+                  style={{ fontSize: 13, color: "var(--paper)", opacity: 0.85, lineHeight: 1.4 }}
+                >
+                  {heroVideo.description}
+                </p>
+              )}
+              <div className="flex items-center gap-2 mt-3.5">
+                <Link
+                  href={`/live/watch/${heroVideo.id}`}
+                  className="inline-flex items-center justify-center gap-2 press"
+                  style={{
+                    background: "var(--gold-c)",
+                    color: "var(--ink-strong)",
+                    border: "2px solid var(--paper)",
+                    padding: "10px 18px",
+                    fontFamily: "var(--font-archivo-narrow), sans-serif",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    letterSpacing: "0.08em",
+                    boxShadow: "3px 3px 0 rgba(0,0,0,0.5)",
+                  }}
+                >
+                  <svg width="11" height="11" fill="currentColor" viewBox="0 0 10 10">
+                    <polygon points="2.5,1.5 9,5 2.5,8.5" />
+                  </svg>
+                  {heroVideo.access_type === "ppv" || (heroVideo.is_premium && heroVideo.price_cents)
+                    ? "WATCH NOW"
+                    : "WATCH"}
+                </Link>
+                {(heroVideo.preview_seconds && heroVideo.preview_seconds > 0) ||
+                heroVideo.access_type === "ppv" ||
+                heroVideo.is_premium ? (
+                  <Link
+                    href={`/live/watch/${heroVideo.id}?preview=1`}
+                    className="inline-flex items-center justify-center gap-2 press"
+                    style={{
+                      background: "transparent",
+                      color: "var(--paper)",
+                      border: "2px solid var(--paper)",
+                      padding: "10px 16px",
+                      fontFamily: "var(--font-archivo-narrow), sans-serif",
+                      fontWeight: 700,
+                      fontSize: 11,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    TRAILER
+                  </Link>
+                ) : null}
+                {heroVideo.duration && (
+                  <span
+                    className="c-kicker tabular-nums ml-1"
+                    style={{ fontSize: 10, color: "var(--paper)", opacity: 0.7 }}
+                  >
+                    {formatDuration(heroVideo.duration)}
+                  </span>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="c-kicker mb-2" style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.16em" }}>
+                § THE CHANNEL
+              </div>
+              <h2
+                className="c-hero"
+                style={{
+                  fontSize: 36,
+                  lineHeight: 0.94,
+                  letterSpacing: "-0.025em",
+                  color: "var(--paper)",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.55)",
+                }}
+              >
+                {channel.name}
+              </h2>
+              {channel.description && (
+                <p
+                  className="c-serif-it mt-2 line-clamp-2"
+                  style={{ fontSize: 13, color: "var(--paper)", opacity: 0.85 }}
+                >
+                  {channel.description}
+                </p>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
-      {/* ── Channel Info ────────────────────────────────── */}
-      <div className="px-5 -mt-10 relative z-10 mb-5">
-        <div className="flex items-end gap-4">
-          {/* Avatar — c-frame-strong on paper */}
-          <div
-            className="w-20 h-20 flex items-center justify-center overflow-hidden shrink-0"
-            style={{
-              background: "var(--gold-c)",
-              border: "3px solid var(--rule-strong-c)",
-            }}
-          >
-            {channel.avatar_url ? (
-              <img
-                src={channel.avatar_url}
-                alt={channel.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span
-                className="c-hero"
-                style={{ fontSize: 28, lineHeight: 1, color: "var(--ink-strong)" }}
-              >
+      {/* ══════════════════════════════════════════════════════════
+         CHANNEL META BAR  —  avatar, name, type, follower count
+         ══════════════════════════════════════════════════════════ */}
+      <div
+        className="px-5 py-4 flex items-center gap-3.5"
+        style={{
+          background: "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+        }}
+      >
+        {/* Avatar */}
+        <div
+          className="overflow-hidden shrink-0"
+          style={{
+            width: 56,
+            height: 56,
+            background: "var(--gold-c)",
+            border: "2px solid var(--rule-strong-c)",
+            boxShadow: "3px 3px 0 var(--rule-strong-c)",
+          }}
+        >
+          {channel.avatar_url ? (
+            <img src={channel.avatar_url} alt={channel.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="c-hero" style={{ fontSize: 20, color: "var(--ink-strong)" }}>
                 {channelInitials(channel.name)}
               </span>
-            )}
-          </div>
-
-          <div className="flex-1 min-w-0 pb-1">
-            <h1 className="c-hero flex items-center gap-2" style={{ fontSize: 26, lineHeight: 0.95 }}>
-              <span className="truncate">{channel.name}</span>
-              {channel.is_verified && (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ color: "var(--gold-c)" }} className="shrink-0">
-                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                </svg>
-              )}
-            </h1>
-            <div className="flex items-center gap-2 mt-1.5">
-              <Badge label={badge.label} variant={badge.variant} />
-              <span className="c-kicker" style={{ fontSize: 10, opacity: 0.65 }}>
-                {followerCount} FOLLOWERS
-              </span>
             </div>
-            {channel.owner?.verification_status === "verified" && (
-              <span
-                className="c-kicker inline-flex items-center gap-1 mt-1"
-                style={{ fontSize: 9, color: "var(--gold-c)" }}
-              >
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" className="shrink-0">
-                  <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                </svg>
-                VERIFIED CREATOR
-              </span>
+          )}
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <h1 className="c-card-t flex items-center gap-1.5" style={{ fontSize: 17, color: "var(--ink-strong)", lineHeight: 1.05 }}>
+            <span className="truncate">{channel.name}</span>
+            {channel.is_verified && (
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style={{ color: "var(--gold-c)" }} className="shrink-0">
+                <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+              </svg>
             )}
-            {channel.description && (
-              <p
-                className="c-serif-it mt-2 line-clamp-2"
-                style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.85 }}
-              >
-                {channel.description}
-              </p>
+          </h1>
+          <div className="flex items-center gap-2 mt-1">
+            <Badge label={badge.label} variant={badge.variant} />
+            <span className="c-kicker tabular-nums" style={{ fontSize: 9, opacity: 0.65 }}>
+              {followerCount.toLocaleString()} FOLLOWERS
+            </span>
+            {videos.length > 0 && (
+              <>
+                <span className="c-kicker" style={{ fontSize: 9, opacity: 0.4 }}>·</span>
+                <span className="c-kicker tabular-nums" style={{ fontSize: 9, opacity: 0.65 }}>
+                  {videos.length} {videos.length === 1 ? "VIDEO" : "VIDEOS"}
+                </span>
+              </>
             )}
           </div>
         </div>
+      </div>
 
-        {/* Follow + Subscribe buttons */}
-        {userId && (
-          <div className="mt-3 flex flex-col gap-2">
-            <button
-              onClick={handleFollow}
-              className={following ? "c-btn c-btn-outline w-full press" : "c-btn c-btn-primary w-full press"}
-            >
-              {following ? "FOLLOWING" : "FOLLOW"}
-            </button>
-            <ChannelSubscribeButton channel={channel} userId={userId} />
-          </div>
-        )}
-
-        {/* Tip Jar */}
-        {stripeAccountId && (
-          <div className="mt-3">
+      {/* ══════════════════════════════════════════════════════════
+         ACTIONS  —  follow / subscribe / tip
+         ══════════════════════════════════════════════════════════ */}
+      {(userId || stripeAccountId) && (
+        <div
+          className="px-5 py-3 flex flex-col gap-2"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}
+        >
+          {userId && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleFollow}
+                className={following ? "c-btn c-btn-outline c-btn-sm flex-1 press" : "c-btn c-btn-primary c-btn-sm flex-1 press"}
+              >
+                {following ? "✓ FOLLOWING" : "+ FOLLOW"}
+              </button>
+              <div className="flex-1">
+                <ChannelSubscribeButton channel={channel} userId={userId} />
+              </div>
+            </div>
+          )}
+          {stripeAccountId && (
             <TipJar
               channelId={channel.id}
               channelName={channel.name}
               stripeAccountId={stripeAccountId}
             />
-          </div>
-        )}
-      </div>
-
-      {/* ── Live indicator ──────────────────────────────── */}
-      {activeStreams.length > 0 && (
-        <div className="px-5 mb-4">
-          <div
-            className="relative overflow-hidden p-4"
-            style={{
-              background: "var(--paper)",
-              border: "2px solid var(--rule-strong-c)",
-              color: "var(--ink-strong)",
-            }}
-          >
-            <div style={{ height: 3, background: "#E84855", marginTop: -16, marginLeft: -16, marginRight: -16, marginBottom: 12 }} />
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full animate-pulse shrink-0" style={{ background: "#E84855" }} />
-              <p className="c-card-t" style={{ fontSize: 13, color: "#E84855" }}>LIVE NOW</p>
-              <span className="c-badge-live" style={{ fontSize: 9 }}>LIVE</span>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
-      {/* ── Tab Navigation ──────────────────────────────── */}
-      <div
-        className="flex gap-0 px-5 mb-5 pb-3"
-        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className="flex-1 py-2 text-center c-card-t press"
-            style={
-              activeTab === tab.id
-                ? { background: "var(--ink-strong)", color: "var(--gold-c)", border: "2px solid var(--ink-strong)", fontSize: 11, marginRight: -2 }
-                : { background: "transparent", color: "var(--ink-strong)", border: "2px solid var(--rule-strong-c)", fontSize: 11, marginRight: -2 }
-            }
-          >
-            {tab.label.toUpperCase()}
-            {tab.id === "videos" && videos.length > 0 && (
-              <span className="ml-1" style={{ fontSize: 10, opacity: 0.6 }}>{videos.length}</span>
-            )}
-          </button>
-        ))}
+      {/* ══════════════════════════════════════════════════════════
+         TABS  —  videos / live / about
+         ══════════════════════════════════════════════════════════ */}
+      <div className="flex" style={{ borderBottom: "2px solid var(--rule-strong-c)", background: "var(--paper)" }}>
+        {TABS.map((tab) => {
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className="flex-1 py-3 text-center press relative"
+              style={{
+                background: isActive ? "var(--ink-strong)" : "var(--paper)",
+                color: isActive ? "var(--gold-c)" : "var(--ink-strong)",
+                fontFamily: "var(--font-archivo-narrow), sans-serif",
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: "0.12em",
+              }}
+            >
+              {tab.label.toUpperCase()}
+              {tab.id === "videos" && videos.length > 0 && (
+                <span
+                  className="ml-1.5 tabular-nums"
+                  style={{ fontSize: 10, opacity: isActive ? 0.75 : 0.5 }}
+                >
+                  {videos.length}
+                </span>
+              )}
+              {tab.id === "live" && activeStreams.length > 0 && (
+                <span
+                  className="ml-1.5 inline-block w-1.5 h-1.5 rounded-full animate-pulse align-middle"
+                  style={{ background: "#E84855" }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Videos Tab ──────────────────────────────────── */}
+      {/* ══════════════════════════════════════════════════════════
+         VIDEOS TAB  —  featured rail + main grid
+         ══════════════════════════════════════════════════════════ */}
       {activeTab === "videos" && (
-        <div className="animate-fade-in px-5">
+        <div className="animate-fade-in pt-5 pb-2">
           {videos.length === 0 ? (
-            <div className="text-center py-10">
+            <div className="text-center py-12 px-5">
               <div
-                className="w-16 h-16 flex items-center justify-center mx-auto mb-3"
-                style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+                className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                style={{ background: "var(--ink-strong)" }}
               >
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
                   <polygon points="23 7 16 12 23 17 23 7" />
                   <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
                 </svg>
               </div>
-              <p className="c-body">No videos yet</p>
+              <p className="c-card-t mb-1" style={{ fontSize: 15, color: "var(--ink-strong)" }}>No videos yet</p>
+              <p className="c-serif-it" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
+                This channel hasn&apos;t published anything yet.
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {videos.map((video) => (
-                <Link
-                  key={video.id}
-                  href={`/live/watch/${video.id}`}
-                  className="press group"
-                >
-                  {/* Thumbnail canvas stays dark — video preview surface */}
-                  <div
-                    className="relative overflow-hidden mb-2"
-                    style={{ border: "2px solid var(--rule-strong-c)" }}
-                  >
-                    <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
-                      {video.thumbnail_url ? (
-                        <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
-                      ) : video.mux_playback_id ? (
-                        <img
-                          src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=360&height=202&time=5`}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--paper)", opacity: 0.3 }}>
-                          <polygon points="5 3 19 12 5 21 5 3" />
-                        </svg>
-                      )}
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                        <div
-                          className="w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                          style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}
-                        >
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5" style={{ color: "var(--ink-strong)" }}>
-                            <polygon points="5 3 19 12 5 21 5 3" />
-                          </svg>
-                        </div>
-                      </div>
-                      {video.duration && (
-                        <div className="absolute bottom-1 right-1 px-1 py-0.5 c-kicker" style={{ fontSize: 9, background: "var(--paper)", color: "var(--ink-strong)", border: "1.5px solid var(--rule-strong-c)" }}>
-                          {formatDuration(video.duration)}
-                        </div>
-                      )}
-                      {video.is_featured && (
-                        <div className="absolute top-1 left-1">
-                          <span className="c-badge-gold" style={{ fontSize: 9 }}>FEATURED</span>
-                        </div>
-                      )}
+            <>
+              {/* Featured rail */}
+              {featuredVideos.length > 1 && (
+                <section className="mb-6">
+                  <div className="px-5 mb-3">
+                    <div className="flex items-baseline gap-3 pb-2" style={{ borderBottom: "2px solid var(--rule-strong-c)" }}>
+                      <span className="c-display c-tabnum" style={{ fontSize: 22, color: "var(--gold-c)", lineHeight: 1, letterSpacing: "-0.02em" }}>
+                        № 01
+                      </span>
+                      <span className="c-kicker" style={{ fontSize: 11, letterSpacing: "0.14em" }}>
+                        FEATURED
+                      </span>
                     </div>
                   </div>
-                  <h3 className="c-card-t line-clamp-2 mb-0.5" style={{ fontSize: 11, color: "var(--ink-strong)" }}>{video.title}</h3>
-                  <p className="c-meta" style={{ fontSize: 9 }}>
-                    {formatViews(video.view_count)} VIEWS
-                  </p>
-                </Link>
-              ))}
-            </div>
+                  <div className="flex overflow-x-auto scrollbar-hide gap-3 pb-2 px-5">
+                    {featuredVideos.map((video) => {
+                      const thumb = video.thumbnail_url ??
+                        (video.mux_playback_id
+                          ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=480&height=270&time=5`
+                          : null);
+                      const chip = accessChip(video);
+                      return (
+                        <Link
+                          key={video.id}
+                          href={`/live/watch/${video.id}`}
+                          className="shrink-0 press"
+                          style={{ width: 260 }}
+                        >
+                          <div
+                            className="relative overflow-hidden"
+                            style={{
+                              aspectRatio: "16/9",
+                              background: "var(--ink-strong)",
+                              border: "2px solid var(--rule-strong-c)",
+                              boxShadow: "3px 3px 0 var(--rule-strong-c)",
+                            }}
+                          >
+                            {thumb ? (
+                              <img src={thumb} alt={video.title} className="w-full h-full object-cover" />
+                            ) : null}
+                            <div
+                              className="absolute inset-0"
+                              style={{ background: "linear-gradient(180deg, transparent 50%, rgba(26,21,18,0.85) 100%)" }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div
+                                className="flex items-center justify-center"
+                                style={{
+                                  width: 44,
+                                  height: 44,
+                                  background: "var(--gold-c)",
+                                  border: "2px solid var(--paper)",
+                                  boxShadow: "2px 2px 0 rgba(0,0,0,0.45)",
+                                }}
+                              >
+                                <svg width="14" height="14" fill="var(--ink-strong)" viewBox="0 0 10 10">
+                                  <polygon points="3,1.5 9,5 3,8.5" />
+                                </svg>
+                              </div>
+                            </div>
+                            <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                              <span className="c-badge-gold" style={{ fontSize: 9 }}>FEATURED</span>
+                              {chip}
+                            </div>
+                            {video.duration && (
+                              <div
+                                className="absolute bottom-2 right-2 px-1.5 c-kicker tabular-nums"
+                                style={{ background: "rgba(0,0,0,0.78)", color: "var(--paper)", fontSize: 10 }}
+                              >
+                                {formatDuration(video.duration)}
+                              </div>
+                            )}
+                          </div>
+                          <h3
+                            className="c-card-t mt-2 line-clamp-2"
+                            style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.25 }}
+                          >
+                            {video.title}
+                          </h3>
+                          <p className="c-meta mt-0.5" style={{ fontSize: 9 }}>
+                            {formatViews(video.view_count)} VIEWS
+                          </p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* Main catalog */}
+              {regularVideos.length > 0 && (
+                <section className="mb-2">
+                  <div className="px-5 mb-3">
+                    <div className="flex items-baseline gap-3 pb-2" style={{ borderBottom: "2px solid var(--rule-strong-c)" }}>
+                      <span className="c-display c-tabnum" style={{ fontSize: 22, color: "var(--gold-c)", lineHeight: 1, letterSpacing: "-0.02em" }}>
+                        № {featuredVideos.length > 1 ? "02" : "01"}
+                      </span>
+                      <span className="c-kicker" style={{ fontSize: 11, letterSpacing: "0.14em" }}>
+                        ALL VIDEOS
+                      </span>
+                      <span className="ml-auto c-kicker tabular-nums" style={{ fontSize: 9, opacity: 0.55 }}>
+                        {regularVideos.length}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-5 px-5">
+                    {regularVideos.map((video) => {
+                      const thumb = video.thumbnail_url ??
+                        (video.mux_playback_id
+                          ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`
+                          : null);
+                      const chip = accessChip(video);
+                      return (
+                        <Link
+                          key={video.id}
+                          href={`/live/watch/${video.id}`}
+                          className="press group"
+                        >
+                          <div
+                            className="relative overflow-hidden"
+                            style={{
+                              aspectRatio: "16/9",
+                              background: "var(--ink-strong)",
+                              border: "2px solid var(--rule-strong-c)",
+                            }}
+                          >
+                            {thumb ? (
+                              <img src={thumb} alt={video.title} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--paper)", opacity: 0.3 }}>
+                                  <polygon points="5 3 19 12 5 21 5 3" />
+                                </svg>
+                              </div>
+                            )}
+                            <div
+                              className="absolute inset-0"
+                              style={{ background: "linear-gradient(180deg, transparent 55%, rgba(26,21,18,0.7) 100%)" }}
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div
+                                className="flex items-center justify-center transition-transform group-hover:scale-110"
+                                style={{
+                                  width: 32,
+                                  height: 32,
+                                  background: "var(--gold-c)",
+                                  border: "2px solid var(--paper)",
+                                  boxShadow: "2px 2px 0 rgba(0,0,0,0.4)",
+                                }}
+                              >
+                                <svg width="11" height="11" fill="var(--ink-strong)" viewBox="0 0 10 10">
+                                  <polygon points="3,1.5 9,5 3,8.5" />
+                                </svg>
+                              </div>
+                            </div>
+                            {chip && (
+                              <div className="absolute top-1.5 left-1.5">
+                                {chip}
+                              </div>
+                            )}
+                            {video.duration && (
+                              <div
+                                className="absolute bottom-1.5 right-1.5 px-1.5 c-kicker tabular-nums"
+                                style={{ background: "rgba(0,0,0,0.78)", color: "var(--paper)", fontSize: 9 }}
+                              >
+                                {formatDuration(video.duration)}
+                              </div>
+                            )}
+                          </div>
+                          <h3 className="c-card-t mt-1.5 line-clamp-2" style={{ fontSize: 12, color: "var(--ink-strong)", lineHeight: 1.25 }}>
+                            {video.title}
+                          </h3>
+                          <p className="c-meta mt-0.5" style={{ fontSize: 9 }}>
+                            {formatViews(video.view_count)} VIEWS
+                          </p>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </>
           )}
         </div>
       )}

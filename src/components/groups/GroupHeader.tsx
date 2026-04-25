@@ -32,13 +32,15 @@ interface GroupHeaderProps {
   group: GroupInfo;
   isMember: boolean;
   myRole: string | null;
+  /** "active" | "pending" | null — undefined falls back to legacy isMember-only behavior */
+  myStatus?: "active" | "pending" | null;
   joining: boolean;
   onJoin: () => void;
   onEdit: () => void;
   onShare: () => void;
 }
 
-export default function GroupHeader({ group, isMember, myRole, joining, onJoin, onEdit, onShare }: GroupHeaderProps) {
+export default function GroupHeader({ group, isMember, myRole, myStatus, joining, onJoin, onEdit, onShare }: GroupHeaderProps) {
   const [descExpanded, setDescExpanded] = useState(false);
   const isAdmin = myRole === "admin";
 
@@ -172,9 +174,18 @@ export default function GroupHeader({ group, isMember, myRole, joining, onJoin, 
           <button
             onClick={onJoin}
             disabled={joining}
-            className={`c-btn c-btn-sm press ${isMember ? "c-btn-outline" : "c-btn-primary"}`}
+            className={`c-btn c-btn-sm press ${
+              isMember || myStatus === "pending" ? "c-btn-outline" : "c-btn-primary"
+            }`}
+            title={myStatus === "pending" ? "Tap to cancel your request" : undefined}
           >
-            {joining ? "…" : isMember ? "JOINED" : "JOIN"}
+            {joining
+              ? "…"
+              : myStatus === "pending"
+              ? "PENDING"
+              : isMember
+              ? "JOINED"
+              : "JOIN"}
           </button>
           <button
             onClick={onShare}

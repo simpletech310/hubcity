@@ -461,7 +461,7 @@ export default async function PublicProfilePage({
 
       {/* --- PULL QUOTE (bio) --- */}
       {profile.bio && (
-        <div className="px-6 py-8">
+        <div className="px-6 py-9">
           <PullQuote
             quote={profile.bio}
             attribution={profile.display_name}
@@ -471,18 +471,18 @@ export default async function PublicProfilePage({
       )}
 
       {/* --- № 01 POSTS --- */}
-      <section className="pt-4 pb-2">
-        <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+      <section className="pt-5 pb-2">
+        <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
           <div className="flex items-baseline gap-3 min-w-0">
-            <EditorialNumber n={sectionIndex("posts")} size="md" />
+            <EditorialNumber n={sectionIndex("posts")} size="lg" />
             <SectionKicker tone="muted">Posts</SectionKicker>
           </div>
-          <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
-            {postCount ?? userPosts.length}
+          <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
+            {postCount ?? userPosts.length} {(postCount ?? userPosts.length) === 1 ? "ENTRY" : "ENTRIES"}
           </span>
         </div>
-        <div className="px-5 mb-4">
-          <div className="rule-hairline" />
+        <div className="px-5 mb-5">
+          <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
         </div>
         <div className="px-5">
           <UserPostsGrid
@@ -498,12 +498,17 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section>
-            <div className="px-5 mb-3 flex items-baseline gap-3">
-              <EditorialNumber n={sectionIndex("reels")} size="md" />
-              <SectionKicker tone="muted">Reels</SectionKicker>
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3">
+                <EditorialNumber n={sectionIndex("reels")} size="lg" />
+                <SectionKicker tone="muted">Reels</SectionKicker>
+              </div>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
+                {profileReels.length}
+              </span>
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <ReelsRail
               reels={profileReels}
@@ -520,17 +525,17 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section>
-            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
               <div className="flex items-baseline gap-3 min-w-0">
-                <EditorialNumber n={sectionIndex("events")} size="md" />
+                <EditorialNumber n={sectionIndex("events")} size="lg" />
                 <SectionKicker tone="muted">Upcoming Events</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                 {events.length}
               </span>
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <ProfileEventsRow events={events} accentColor="#F2A900" />
           </section>
@@ -542,12 +547,19 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section>
-            <div className="px-5 mb-3 flex items-baseline gap-3">
-              <EditorialNumber n={sectionIndex("channel")} size="md" />
-              <SectionKicker tone="muted">Channel</SectionKicker>
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3">
+                <EditorialNumber n={sectionIndex("channel")} size="lg" />
+                <SectionKicker tone="muted">Channel</SectionKicker>
+              </div>
+              {channelVideos.length > 0 && (
+                <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
+                  {channelVideos.length} {channelVideos.length === 1 ? "VIDEO" : "VIDEOS"}
+                </span>
+              )}
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <div className="px-5">
               <ProfileChannelStrip channel={channel} videos={channelVideos} />
@@ -561,12 +573,12 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section>
-            <div className="px-5 mb-3 flex items-baseline gap-3">
-              <EditorialNumber n={sectionIndex("business")} size="md" />
+            <div className="px-5 mb-2.5 flex items-baseline gap-3">
+              <EditorialNumber n={sectionIndex("business")} size="lg" />
               <SectionKicker tone="muted">Business</SectionKicker>
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <div className="px-5">
               <ProfileBusinessStrip business={ownedBusiness} />
@@ -591,17 +603,17 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section>
-            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
               <div className="flex items-baseline gap-3 min-w-0">
-                <EditorialNumber n={sectionIndex("deals")} size="md" />
+                <EditorialNumber n={sectionIndex("deals")} size="lg" />
                 <SectionKicker tone="muted">Deals &amp; Coupons</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                 {deals.length}
               </span>
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <ProfileDealsRow deals={deals} />
           </section>
@@ -613,17 +625,17 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section id="resources">
-            <div className="px-5 mb-3 flex items-baseline justify-between gap-3">
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
               <div className="flex items-baseline gap-3 min-w-0">
-                <EditorialNumber n={sectionIndex("resources")} size="md" />
+                <EditorialNumber n={sectionIndex("resources")} size="lg" />
                 <SectionKicker tone="muted">Resources</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                 {ownedResources.length}
               </span>
             </div>
-            <div className="px-5 mb-4">
-              <div className="rule-hairline" />
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <ProfileResourcesRow resources={ownedResources} />
           </section>
@@ -635,13 +647,16 @@ export default async function PublicProfilePage({
         <>
           <IssueDivider />
           <section className="px-5">
-            <div className="mb-3 flex items-baseline gap-3">
+            <div className="mb-2.5 flex items-baseline gap-3">
               <SectionKicker tone="gold">Plates</SectionKicker>
               <span className="block h-px flex-1" style={{ background: "var(--rule-strong-c)" }} />
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase flex items-center gap-1.5" style={{ color: "var(--ink-strong)", opacity: 0.45 }}>
+              <span className="text-[10px] font-bold tracking-editorial-tight uppercase flex items-center gap-1.5 tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
                 <Icon name="photo" size={12} className="text-gold" />
-                Gallery
+                {gallery.length} {gallery.length === 1 ? "PLATE" : "PLATES"}
               </span>
+            </div>
+            <div className="mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
             <ProfileGalleryMasonry
               images={gallery}
@@ -655,12 +670,23 @@ export default async function PublicProfilePage({
 
       {/* --- Colophon / close --- */}
       <IssueDivider label="END" />
-      <div className="px-6 pb-2 flex items-center justify-between text-[10px] font-semibold tracking-editorial uppercase" style={{ color: "var(--ink-strong)", opacity: 0.4 }}>
-        <span className="flex items-center gap-2">
-          <Icon name={roleIcon} size={12} className="text-gold" />
-          {roleLabel}
-        </span>
-        <span className="tabular-nums">@{profile.handle}</span>
+      <div className="px-6 pb-4 pt-1">
+        <div
+          className="flex items-center justify-between"
+          style={{
+            padding: "10px 14px",
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <span className="text-[10px] font-bold tracking-editorial uppercase flex items-center gap-2" style={{ color: "var(--ink-strong)" }}>
+            <Icon name={roleIcon} size={12} className="text-gold" />
+            {roleLabel}
+          </span>
+          <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums" style={{ color: "var(--gold-c)" }}>
+            @{profile.handle}
+          </span>
+        </div>
       </div>
     </div>
   );
