@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveCity } from "@/lib/city-context";
+import { getCityFilter } from "@/lib/city-filter";
 import CultureTV from "@/components/live/CultureTV";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import { buildRelatedToLive } from "@/lib/live/relatedToLive";
 import type {
   Channel,
@@ -13,32 +13,41 @@ import type {
   VideoAd,
 } from "@/types/database";
 
-export default async function LivePage() {
-  const city = await getActiveCity();
-  if (!city) redirect("/choose-city");
-
+export default async function LivePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ city?: string | string[] }>;
+}) {
   const supabase = await createClient();
+  const sp = (await (searchParams ?? Promise.resolve({}))) as { city?: string | string[] };
+  // Default scope = ALL cities. Listener can scope down via ?city=<slug>.
+  // National channels (e.g. Culture TV) always show regardless of filter.
+  const city = await getCityFilter(sp);
 
-  // Fetch channels (includes new `scope` + `is_live_simulated` columns).
-  // National channels (e.g. Culture TV Live) stay visible across every city;
-  // local channels are filtered to the active city.
-  const { data: rawChannels } = await supabase
+  // Fetch channels (includes `scope` + `is_live_simulated` columns).
+  // - All-cities default: every active channel.
+  // - Filtered: national channels + local channels in the chosen city.
+  let channelsQuery = supabase
     .from("channels")
     .select("*, owner:profiles!channels_owner_id_fkey(id, display_name, avatar_url, role)")
     .eq("is_active", true)
-    .or(`scope.eq.national,city_id.eq.${city.id}`)
     .order("follower_count", { ascending: false });
+  if (city) {
+    channelsQuery = channelsQuery.or(`scope.eq.national,city_id.eq.${city.id}`);
+  }
+  const { data: rawChannels } = await channelsQuery;
 
-  // Fetch active live streams (real live, not simulated)
-  const { data: rawStreams } = await supabase
+  // Fetch active live streams. Filter by city only when one is selected.
+  let streamsQuery = supabase
     .from("live_streams")
     .select(
       "*, creator:profiles(id, display_name, avatar_url, role, verification_status), channel:channels(id, name, slug, avatar_url, type, scope)"
     )
     .neq("status", "disabled")
-    .eq("city_id", city.id)
     .order("status", { ascending: true })
     .order("scheduled_at", { ascending: true, nullsFirst: false });
+  if (city) streamsQuery = streamsQuery.eq("city_id", city.id);
+  const { data: rawStreams } = await streamsQuery;
 
   // Fetch featured videos
   const { data: rawFeatured } = await supabase
@@ -157,16 +166,15 @@ export default async function LivePage() {
             .toLocaleDateString("en-US", { weekday: "short" })
             .toUpperCase()}
         </div>
-        <h1
-          className="c-hero mt-2"
-          style={{
-            fontSize: 56,
-            lineHeight: 0.88,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          On Air.
-        </h1>
+        <div className="flex items-end justify-between gap-3 mt-2">
+          <h1
+            className="c-hero"
+            style={{ fontSize: 56, lineHeight: 0.88, letterSpacing: "-0.02em" }}
+          >
+            On Air.
+          </h1>
+          <CityFilterChip />
+        </div>
       </div>
       <CultureTV
         channels={(rawChannels as Channel[]) || []}

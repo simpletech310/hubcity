@@ -14,7 +14,8 @@ import type {
   FoodChallenge,
 } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import CityOwnershipFilter, {
   DEFAULT_OWNERSHIP_OPTIONS,
   type CityOption,
@@ -548,12 +549,19 @@ function PromoCard({ promo }: { promo: FoodPromotion }) {
 
 // ─── Main Page ─────────────────────────────────────
 export default function FoodPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip
+  // which writes ?city=<slug> into the URL.
+  const searchParams = useSearchParams();
+  const filterCitySlug = searchParams.get("city");
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [cities, setCities] = useState<CityOption[]>([]);
+  const filterCityName = useMemo(() => {
+    if (!filterCitySlug) return null;
+    return cities.find((c) => c.slug === filterCitySlug)?.name ?? null;
+  }, [filterCitySlug, cities]);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
   const [selectedOwnership, setSelectedOwnership] = useState<string[]>([]);
   const [activeQuick, setActiveQuick] = useState<string | null>(null);
@@ -583,14 +591,14 @@ export default function FoodPage() {
       const params = new URLSearchParams();
       if (activeTab !== "all") params.set("subtype", activeTab);
       if (search) params.set("search", search);
-      if (activeCity?.slug) params.set("city", activeCity.slug);
+      if (filterCitySlug) params.set("city", filterCitySlug);
       const res = await fetch(`/api/food/businesses?${params}`);
       const data = await res.json();
       setBusinesses(data.businesses ?? []);
       setLoading(false);
     }
     fetchBusinesses();
-  }, [activeTab, search, activeCity?.slug]);
+  }, [activeTab, search, filterCitySlug]);
 
   // Fetch supporting data
   useEffect(() => {
@@ -639,7 +647,7 @@ export default function FoodPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § ISSUE EAT · {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
+          § ISSUE EAT · {(filterCityName ?? "EVERYWHERE").toUpperCase()}
         </div>
         <h1
           className="c-display mt-2"
@@ -651,8 +659,9 @@ export default function FoodPage() {
           className="c-serif-it mt-3"
           style={{ fontSize: 14, lineHeight: 1.45 }}
         >
-          The plug is local. The kitchen issue from {activeCity?.name ?? "your city"}.
+          The plug is local. The kitchen issue from {filterCityName ?? "your city"}.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </div>
 
       {/* ─── Search row (printed-rule input + ink FILTER button) ─── */}
@@ -874,7 +883,7 @@ export default function FoodPage() {
         <div className="mt-6">
           <SnapCarousel
             number={3}
-            kicker={`${(activeCity?.name ?? "LOCAL").toUpperCase()} FEATURED`}
+            kicker={`${(filterCityName ?? "LOCAL").toUpperCase()} FEATURED`}
           >
             {featuredSpots.map((biz) => (
               <FoodCard key={biz.id} business={biz} featured />

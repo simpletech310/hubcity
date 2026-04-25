@@ -12,6 +12,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getFeaturedArt } from "@/lib/art-spotlight";
 import { getActiveCity } from "@/lib/city-context";
+import { getCityFilter } from "@/lib/city-filter";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 
@@ -35,17 +37,25 @@ type RecentPodcast = {
   duration: number | null;
 };
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ city?: string | string[] }>;
+}) {
   const supabase = await createClient();
   const nowIso = new Date().toISOString();
   const todayIso = new Date().toISOString().split("T")[0];
   const activeCity = await getActiveCity();
-  const cityId = activeCity?.id ?? null;
+  const sp = (await (searchParams ?? Promise.resolve({}))) as { city?: string | string[] };
+  // Default scope = ALL cities. The listener can scope down to a single
+  // market by selecting a city via <CityFilterChip>, which writes ?city=<slug>
+  // into the URL. activeCity (the cookie-stored "home city") only feeds the
+  // masthead label, the featured-art lookup, and a few civic surfaces below.
+  const filterCity = await getCityFilter(sp);
+  const cityId = filterCity?.id ?? null;
 
-  // Helper that conditionally narrows a query to the active city. When no
-  // city has been resolved yet (very rare — only on cold-boot with zero
-  // live cities) we fall back to a global query so the homepage still has
-  // content rather than an empty shell.
+  // Helper that conditionally narrows a query to the *filter* city only.
+  // Without a filter we let the query fan out across every city.
   const scopeToCity = <T,>(q: T): T => {
     if (!cityId) return q;
     return ((q as unknown) as { eq: (k: string, v: string) => T }).eq(
@@ -292,16 +302,20 @@ export default async function HomePage() {
   const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
 
   // ── Derived UI values ────────────────────────────────────────────────────
-  const cityName = activeCity?.name ?? "Everywhere";
+  // The label tracks the *filter* city when one is set, and only falls back
+  // to the home city's name when the listener hasn't filtered down. With no
+  // filter and no home city we just say "Everywhere".
+  const labelCity = filterCity ?? activeCity ?? null;
+  const cityName = labelCity?.name ?? "Everywhere";
   const cityUpper = cityName.toUpperCase();
 
-  // Wordmark: "HUB CITY." only when the active city is Compton (the flagship).
+  // Wordmark: "HUB CITY." only when the label city is Compton (the flagship).
   // For every other city, the masthead wears the city's own name so the
-  // paper feels like a local edition. When nothing's selected, the wordmark
-  // falls back to a generic "CULTURE." title.
+  // paper feels like a local edition. When the listener is browsing all
+  // cities (default), the wordmark says CULTURE.
   const wordmark = (() => {
-    if (!activeCity) return "CULTURE.";
-    const slug = (activeCity.slug ?? "").toLowerCase();
+    if (!labelCity) return "CULTURE.";
+    const slug = (labelCity.slug ?? "").toLowerCase();
     if (slug === "compton") return "HUB CITY.";
     return `${cityUpper}.`;
   })();
@@ -458,6 +472,22 @@ export default async function HomePage() {
           </>
         }
       />
+
+      {/* Filter strip — city scope. Default = ALL CITIES. */}
+      <div
+        className="flex items-center gap-2 px-[18px] py-2"
+        style={{
+          borderTop: "2px solid var(--rule-strong-c)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+          background: "var(--paper-soft, #DCD3BF)",
+        }}
+      >
+        <span className="c-kicker" style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.8 }}>
+          BROWSING
+        </span>
+        <CityFilterChip />
+        <span className="flex-1" />
+      </div>
 
       {/* Location ink-strip */}
       <div

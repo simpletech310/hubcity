@@ -5,7 +5,9 @@ import Image from "next/image";
 import Icon from "@/components/ui/Icon";
 import JobCard from "@/components/jobs/JobCard";
 import SnapCarousel from "@/components/ui/editorial/SnapCarousel";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import { useKnownCities } from "@/hooks/useActiveCity";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import type { JobListing } from "@/types/database";
 import type { IconName } from "@/components/ui/Icon";
 
@@ -29,7 +31,13 @@ const categoryCards: { label: string; iconName: IconName; value: string; color: 
 ];
 
 export default function JobsPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = sp.get("city");
+  const filterCity = filterCitySlug
+    ? cities.find((c) => c.slug === filterCitySlug) ?? null
+    : null;
   const [activeType, setActiveType] = useState("all");
   const [activeCategory, setActiveCategory] = useState<{ value: string; filter: "org_type" | "search" } | null>(null);
   const [jobs, setJobs] = useState<JobListing[]>([]);
@@ -44,7 +52,7 @@ export default function JobsPage() {
       if (activeCategory?.filter === "org_type") {
         params.set("org_type", activeCategory.value);
       }
-      if (activeCity?.slug) params.set("city", activeCity.slug);
+      if (filterCitySlug) params.set("city", filterCitySlug);
 
       const res = await fetch(`/api/jobs?${params.toString()}`);
       const data = await res.json();
@@ -68,7 +76,7 @@ export default function JobsPage() {
       setLoading(false);
     }
     fetchJobs();
-  }, [activeType, activeCategory, activeCity?.slug]);
+  }, [activeType, activeCategory, filterCitySlug]);
 
   const filtered = search
     ? jobs.filter((j) => {
@@ -94,7 +102,7 @@ export default function JobsPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE WORK · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE WORK · {filterCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -105,6 +113,7 @@ export default function JobsPage() {
         <p className="c-serif-it mt-2" style={{ fontSize: 13, lineHeight: 1.45 }}>
           Opportunity, hustle, and the next chapter.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
 
         <div
           className="flex items-center gap-3 mt-4 px-3"

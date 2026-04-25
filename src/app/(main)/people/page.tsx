@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
+import { getCityFilter } from "@/lib/city-filter";
 import { buildExploreFeed } from "@/lib/feed/exploreFeed";
 import ExploreMosaic from "@/components/explore/ExploreMosaic";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 
 export async function generateMetadata(): Promise<Metadata> {
   const city = await getActiveCity();
@@ -14,14 +15,21 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function PeoplePage() {
-  const city = await getActiveCity();
-  if (!city) redirect("/choose-city");
+export default async function PeoplePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ city?: string | string[] }>;
+}) {
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = (await (searchParams ?? Promise.resolve({}))) as { city?: string | string[] };
+  const filterCity = await getCityFilter(sp);
+  const home = await getActiveCity();
+  const labelCity = filterCity ?? home;
 
   const supabase = await createClient();
-  const items = await buildExploreFeed(supabase, { cityId: city.id });
+  const items = await buildExploreFeed(supabase, { cityId: filterCity?.id ?? null });
 
-  const cityUpper = (city?.name ?? "EVERYWHERE").toUpperCase();
+  const cityUpper = (labelCity?.name ?? "EVERYWHERE").toUpperCase();
 
   return (
     <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
@@ -38,8 +46,9 @@ export default async function PeoplePage() {
         >
           Explore.
         </h1>
+        <div className="mt-3"><CityFilterChip /></div>
         <p className="c-serif-it mt-2" style={{ fontSize: 14, lineHeight: 1.45 }}>
-          Who&rsquo;s making, what&rsquo;s happening in {city.name}.
+          Who&rsquo;s making, what&rsquo;s happening in {labelCity?.name ?? "your city"}.
         </p>
       </div>
       <ExploreMosaic items={items} />

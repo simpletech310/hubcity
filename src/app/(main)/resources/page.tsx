@@ -9,7 +9,9 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Tag from "@/components/ui/editorial/Tag";
 import { createClient } from "@/lib/supabase/client";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import { useKnownCities } from "@/hooks/useActiveCity";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import type { Resource } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -72,7 +74,13 @@ const quickPrompts: { text: string; icon: IconName }[] = [
 // ---------------------------------------------------------------------------
 
 function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: string) => void }) {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = sp.get("city");
+  const filterCity = filterCitySlug
+    ? cities.find((c) => c.slug === filterCitySlug) ?? null
+    : null;
   const [expanded, setExpanded] = useState(false);
   const [query, setQuery] = useState("");
   const [response, setResponse] = useState("");
@@ -114,7 +122,7 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
         .select("*")
         .eq("is_published", true)
         .limit(50);
-      if (activeCity?.id) resourcesQuery = resourcesQuery.eq("city_id", activeCity.id);
+      if (filterCity?.id) resourcesQuery = resourcesQuery.eq("city_id", filterCity.id);
       const { data: resources } = await resourcesQuery;
 
       if (resources) {
@@ -342,7 +350,14 @@ function AIResourceAssistant({ onResultClick }: { onResultClick?: (category: str
 // ---------------------------------------------------------------------------
 
 export default function ResourcesPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = sp.get("city");
+  const filterCity = useMemo(
+    () => (filterCitySlug ? cities.find((c) => c.slug === filterCitySlug) ?? null : null),
+    [filterCitySlug, cities],
+  );
   const [activeCategory, setActiveCategory] = useState("all");
   const [resources, setResources] = useState<Resource[]>([]);
   const [search, setSearch] = useState("");
@@ -358,8 +373,8 @@ export default function ResourcesPage() {
         .eq("is_published", true)
         .order("created_at", { ascending: false });
 
-      if (activeCity?.id) {
-        query = query.eq("city_id", activeCity.id);
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity.id);
       }
 
       if (activeCategory !== "all") {
@@ -371,7 +386,7 @@ export default function ResourcesPage() {
       setLoading(false);
     }
     fetchResources();
-  }, [activeCategory, activeCity?.id]);
+  }, [activeCategory, filterCity?.id]);
 
   const filtered = useMemo(() => {
     if (!search) return resources;
@@ -400,7 +415,7 @@ export default function ResourcesPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE SUPPORT · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE SUPPORT · {filterCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -409,8 +424,9 @@ export default function ResourcesPage() {
           Support.
         </h1>
         <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
-          Grants, programs &amp; services for {activeCity?.name ?? "local"} members.
+          Grants, programs &amp; services for {filterCity?.name ?? "local"} members.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </header>
 
       {/* ── Quick Stats ── */}

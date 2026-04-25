@@ -8,7 +8,9 @@ import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Tag from "@/components/ui/editorial/Tag";
 import { createClient } from "@/lib/supabase/client";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import { useKnownCities } from "@/hooks/useActiveCity";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import type { Event } from "@/types/database";
 
 const categories: { label: string; value: string; icon: IconName }[] = [
@@ -60,7 +62,14 @@ function isThisWeek(dateStr: string) {
 }
 
 export default function EventsPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const searchParams = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = searchParams.get("city");
+  const filterCity = useMemo(
+    () => (filterCitySlug ? cities.find((c) => c.slug === filterCitySlug) ?? null : null),
+    [filterCitySlug, cities],
+  );
   const [activeCategory, setActiveCategory] = useState("all");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,8 +87,8 @@ export default function EventsPage() {
         .order("is_featured", { ascending: false })
         .order("start_date", { ascending: true });
 
-      if (activeCity?.id) {
-        query = query.eq("city_id", activeCity.id);
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity.id);
       }
 
       if (activeCategory !== "all") {
@@ -91,7 +100,7 @@ export default function EventsPage() {
       setLoading(false);
     }
     fetchEvents();
-  }, [activeCategory, activeCity?.id]);
+  }, [activeCategory, filterCity?.id]);
 
   const featured = useMemo(() => events.filter((e) => e.is_featured), [events]);
   const todayEvents = useMemo(() => events.filter((e) => isToday(e.start_date)), [events]);
@@ -118,7 +127,7 @@ export default function EventsPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § ISSUE EVENTS · {(activeCity?.name ?? "EVERYWHERE").toUpperCase()}
+          § ISSUE EVENTS · {(filterCity?.name ?? "EVERYWHERE").toUpperCase()}
         </div>
         <h1
           className="c-display mt-2"
@@ -130,8 +139,9 @@ export default function EventsPage() {
           className="c-serif-it mt-2"
           style={{ fontSize: 14, lineHeight: 1.45 }}
         >
-          What&apos;s happening in {activeCity?.name ?? "your city"}.
+          What&apos;s happening in {filterCity?.name ?? "your city"}.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </header>
 
       {/* ══════════════════════════════════════════════════════
@@ -489,7 +499,7 @@ export default function EventsPage() {
                   Host Your Event
                 </h3>
                 <p className="c-body mb-4 max-w-[280px]">
-                  Reach every citizen in {activeCity?.name ?? "your city"}. List your event for free.
+                  Reach every citizen in {filterCity?.name ?? "your city"}. List your event for free.
                 </p>
                 <Link
                   href="/dashboard"

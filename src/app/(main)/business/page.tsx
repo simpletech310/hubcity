@@ -3,12 +3,14 @@
 import { useState, useEffect, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Tag from "@/components/ui/editorial/Tag";
 import HeroBlock from "@/components/ui/editorial/HeroBlock";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import { createClient } from "@/lib/supabase/client";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useKnownCities } from "@/hooks/useActiveCity";
 import type { Business } from "@/types/database";
 
 // ---------------------------------------------------------------------------
@@ -214,7 +216,13 @@ function SectionHead({
 // ---------------------------------------------------------------------------
 
 export default function BusinessPage() {
-  const activeCity = useActiveCity();
+  const searchParams = useSearchParams();
+  const cities = useKnownCities();
+  const filterSlug = searchParams.get("city");
+  const filterCity = useMemo(
+    () => (filterSlug ? cities.find((c) => c.slug === filterSlug) ?? null : null),
+    [filterSlug, cities],
+  );
   const [activeCategory, setActiveCategory] = useState("all");
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [search, setSearch] = useState("");
@@ -239,8 +247,10 @@ export default function BusinessPage() {
         .order("is_featured", { ascending: false })
         .order("rating_avg", { ascending: false });
 
-      if (activeCity?.id) {
-        query = query.eq("city_id", activeCity.id);
+      // Default scope = ALL cities. Listener narrows via the CityFilterChip
+      // which writes ?city=<slug> into the URL.
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity.id);
       }
 
       if (activeCategory !== "all") {
@@ -252,7 +262,7 @@ export default function BusinessPage() {
       setLoading(false);
     }
     fetchData();
-  }, [activeCategory, activeCity?.id]);
+  }, [activeCategory, filterCity?.id]);
 
   const filtered = useMemo(() => {
     let result = businesses;
@@ -297,7 +307,7 @@ export default function BusinessPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE COMMERCE · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE COMMERCE · {filterCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -306,10 +316,11 @@ export default function BusinessPage() {
           Commerce.
         </h1>
         <p className="c-serif-it mt-2 mb-4" style={{ fontSize: 13 }}>
-          {activeCity
-            ? `Shops, services & makers in ${activeCity.name}.`
+          {filterCity
+            ? `Shops, services & makers in ${filterCity.name}.`
             : "Every city, every category."}
         </p>
+        <div className="mb-4"><CityFilterChip /></div>
       </div>
 
       {/* ── Search + Category strip ─────────────────────────────── */}
@@ -472,7 +483,7 @@ export default function BusinessPage() {
               <div className="px-5">
                 <SectionHead
                   num="03"
-                  kicker={`Trending in ${activeCity?.name ?? "Your City"}`}
+                  kicker={`Trending in ${filterCity?.name ?? "Your City"}`}
                   sub="Most talked about this week"
                 />
               </div>
@@ -578,7 +589,7 @@ export default function BusinessPage() {
               <div className="px-5">
                 <SectionHead
                   num="06"
-                  kicker={`New in ${activeCity?.name ?? "Your City"}`}
+                  kicker={`New in ${filterCity?.name ?? "Your City"}`}
                   sub="Recently opened"
                   meta={
                     <Tag tone="coral" size="xs">Just opened</Tag>
@@ -680,7 +691,7 @@ export default function BusinessPage() {
                     <ul className="space-y-1.5">
                       <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                         <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
-                        <span>68¢ of every $1 stays in {activeCity?.name ?? "your city"}</span>
+                        <span>68¢ of every $1 stays in {filterCity?.name ?? "your city"}</span>
                       </li>
                       <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
                         <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
@@ -767,7 +778,7 @@ export default function BusinessPage() {
                     Promote Your Business
                   </p>
                   <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
-                    Run deals, get featured &amp; reach all of {activeCity?.name ?? "your city"}
+                    Run deals, get featured &amp; reach all of {filterCity?.name ?? "your city"}
                   </p>
                 </div>
                 <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
@@ -786,7 +797,7 @@ export default function BusinessPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-display text-[17px] leading-tight" style={{ color: "var(--ink-strong)" }}>
-                    Own a Business in {activeCity?.name ?? "Your City"}?
+                    Own a Business in {filterCity?.name ?? "Your City"}?
                   </p>
                   <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
                     Get listed, earn city badges &amp; connect with customers

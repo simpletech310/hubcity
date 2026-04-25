@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
+import { getCityFilter } from "@/lib/city-filter";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import AdZone from "@/components/ui/AdZone";
 import Icon from "@/components/ui/Icon";
 import {
@@ -47,12 +48,34 @@ type NotablePerson = {
   image_url: string | null;
 };
 
-export default async function CulturePage() {
-  const city = await getActiveCity();
-  if (!city) redirect("/choose-city");
+export default async function CulturePage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ city?: string | string[] }>;
+}) {
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip
+  // (?city=<slug>). The "label" city for the masthead falls back to the
+  // saved home city when no filter is active.
+  const sp = (await (searchParams ?? Promise.resolve({}))) as { city?: string | string[] };
+  const filterCity = await getCityFilter(sp);
+  const home = await getActiveCity();
+  const labelCity = filterCity ?? home;
+  // Stand-in city used purely for masthead labels when nothing is filtered
+  // and the listener has no saved home city — keeps the existing JSX that
+  // expects `city.name` working without sprinkling guards everywhere.
+  const city = labelCity ?? { name: "Everywhere", slug: "all" };
+  const isCompton = city.slug === "compton";
 
   const supabase = await createClient();
-  const isCompton = city.slug === "compton";
+
+  const scopeId = filterCity?.id ?? null;
+  const scope = <T,>(q: T): T => {
+    if (!scopeId) return q;
+    return ((q as unknown) as { eq: (k: string, v: string) => T }).eq(
+      "city_id",
+      scopeId,
+    );
+  };
 
   const [
     exhibitsRes,
@@ -64,56 +87,64 @@ export default async function CulturePage() {
     peopleCountRes,
     libraryCountRes,
   ] = await Promise.all([
-    supabase
-      .from("museum_exhibits")
-      .select("*")
-      .eq("is_published", true)
-      .eq("city_id", city.id)
-      .order("is_featured", { ascending: false })
-      .order("created_at", { ascending: false })
-      .limit(5),
-    supabase
-      .from("gallery_items")
-      .select("*")
-      .eq("is_published", true)
-      .eq("city_id", city.id)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("notable_people")
-      .select("*")
-      .eq("is_published", true)
-      .eq("city_id", city.id)
-      .order("display_order", { ascending: true })
-      .limit(4),
-    supabase
-      .from("events")
-      .select("id, title, start_date, location_name")
-      .eq("category", "culture")
-      .eq("city_id", city.id)
-      .gte("start_date", new Date().toISOString())
-      .order("start_date", { ascending: true })
-      .limit(3),
-    supabase
-      .from("museum_exhibits")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true)
-      .eq("city_id", city.id),
-    supabase
-      .from("gallery_items")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true)
-      .eq("city_id", city.id),
-    supabase
-      .from("notable_people")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true)
-      .eq("city_id", city.id),
-    supabase
-      .from("library_items")
-      .select("id", { count: "exact", head: true })
-      .eq("is_published", true)
-      .eq("city_id", city.id),
+    scope(
+      supabase
+        .from("museum_exhibits")
+        .select("*")
+        .eq("is_published", true)
+        .order("is_featured", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ),
+    scope(
+      supabase
+        .from("gallery_items")
+        .select("*")
+        .eq("is_published", true)
+        .order("created_at", { ascending: false })
+        .limit(6),
+    ),
+    scope(
+      supabase
+        .from("notable_people")
+        .select("*")
+        .eq("is_published", true)
+        .order("display_order", { ascending: true })
+        .limit(4),
+    ),
+    scope(
+      supabase
+        .from("events")
+        .select("id, title, start_date, location_name")
+        .eq("category", "culture")
+        .gte("start_date", new Date().toISOString())
+        .order("start_date", { ascending: true })
+        .limit(3),
+    ),
+    scope(
+      supabase
+        .from("museum_exhibits")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true),
+    ),
+    scope(
+      supabase
+        .from("gallery_items")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true),
+    ),
+    scope(
+      supabase
+        .from("notable_people")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true),
+    ),
+    scope(
+      supabase
+        .from("library_items")
+        .select("id", { count: "exact", head: true })
+        .eq("is_published", true),
+    ),
   ]);
 
   const exhibits = (exhibitsRes.data ?? []) as Exhibit[];
@@ -243,6 +274,7 @@ export default async function CulturePage() {
           Printed weekly from {city.name}. The music, the food, the fits, the
           streets. Edited by the block, for the block.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </div>
 
       {/* Marquee */}

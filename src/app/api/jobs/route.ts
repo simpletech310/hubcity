@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCityBySlug } from "@/lib/cities";
-import { getActiveCity } from "@/lib/city-context";
 
 export async function GET(request: Request) {
   try {
@@ -12,14 +11,11 @@ export async function GET(request: Request) {
     const orgType = searchParams.get("org_type");
     const citySlug = searchParams.get("city");
 
-    // Resolve city: explicit slug param > active city from cookie/profile.
+    // Default scope = ALL cities. Filter only when ?city=<slug> is passed.
     let cityId: string | null = null;
-    if (citySlug) {
+    if (citySlug && citySlug !== "all") {
       const c = await getCityBySlug(citySlug);
       if (c) cityId = c.id;
-    } else {
-      const active = await getActiveCity();
-      if (active) cityId = active.id;
     }
 
     let query = supabase

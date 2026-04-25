@@ -6,7 +6,9 @@ import EmergencyBanner from "@/components/health/EmergencyBanner";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/client";
-import { useActiveCity } from "@/hooks/useActiveCity";
+import { useSearchParams } from "next/navigation";
+import { useKnownCities } from "@/hooks/useActiveCity";
+import CityFilterChip from "@/components/ui/CityFilterChip";
 import type { HealthResource, HealthCategory } from "@/types/database";
 
 // ─── Config ────────────────────────────────────────
@@ -248,7 +250,14 @@ function HealthResourceCard({ resource }: { resource: HealthResource }) {
 
 // ─── Main Page ─────────────────────────────────────
 export default function HealthPage() {
-  const activeCity = useActiveCity();
+  // Default scope = ALL cities. Listener narrows via the CityFilterChip.
+  const sp = useSearchParams();
+  const cities = useKnownCities();
+  const filterCitySlug = sp.get("city");
+  const filterCity = useMemo(
+    () => (filterCitySlug ? cities.find((c) => c.slug === filterCitySlug) ?? null : null),
+    [filterCitySlug, cities],
+  );
   const [activeCategory, setActiveCategory] = useState<HealthCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<Set<FilterTag>>(new Set());
@@ -267,8 +276,8 @@ export default function HealthPage() {
         .order("is_emergency", { ascending: false })
         .order("name", { ascending: true });
 
-      if (activeCity?.id) {
-        query = query.eq("city_id", activeCity.id);
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity!.id);
       }
 
       if (activeCategory !== "all") {
@@ -280,7 +289,7 @@ export default function HealthPage() {
       setLoading(false);
     }
     fetchResources();
-  }, [activeCategory, activeCity?.id]);
+  }, [activeCategory, filterCity?.id]);
 
   // Fetch health-related events from DB
   useEffect(() => {
@@ -296,15 +305,15 @@ export default function HealthPage() {
         .order("start_date")
         .limit(6);
 
-      if (activeCity?.id) {
-        query = query.eq("city_id", activeCity.id);
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity!.id);
       }
 
       const { data } = await query;
       setDbEvents(data ?? []);
     }
     fetchHealthEvents();
-  }, [activeCity?.id]);
+  }, [filterCity?.id]);
 
   const filteredResources = useMemo(() => {
     let result = resources;
@@ -345,7 +354,7 @@ export default function HealthPage() {
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
         <div className="c-kicker" style={{ opacity: 0.65 }}>
-          § VOL·01 · ISSUE HEALTH · {activeCity?.name?.toUpperCase() ?? "EVERYWHERE"}
+          § VOL·01 · ISSUE HEALTH · {filterCity?.name?.toUpperCase() ?? "EVERYWHERE"}
         </div>
         <h1
           className="c-hero mt-2"
@@ -354,8 +363,9 @@ export default function HealthPage() {
           Health.
         </h1>
         <p className="c-serif-it mt-2" style={{ fontSize: 13 }}>
-          Care, fitness &amp; resources for {activeCity?.name ?? "your city"}.
+          Care, fitness &amp; resources for {filterCity?.name ?? "your city"}.
         </p>
+        <div className="mt-3"><CityFilterChip /></div>
       </div>
 
       {/* ─── Stats Strip ─── */}
@@ -889,7 +899,7 @@ export default function HealthPage() {
               className="c-serif-it mb-4 max-w-md"
               style={{ fontSize: 13, color: "var(--paper)", opacity: 0.8 }}
             >
-              It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all {activeCity?.name ?? "local"} residents.
+              It&apos;s okay to not be okay. Free counseling, support groups, and crisis resources are available for all {filterCity?.name ?? "local"} residents.
             </p>
             <div className="flex gap-2">
               <a
