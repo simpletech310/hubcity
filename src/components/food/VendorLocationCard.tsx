@@ -43,77 +43,77 @@ export default function VendorLocationCard({
   return (
     <Link
       href={href}
-      className="block p-4 press"
-      style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+      className="flex-shrink-0 flex flex-col press"
+      style={{
+        width: 162,
+        background: "var(--paper-warm)",
+        border: "2px solid var(--rule-strong-c)",
+        boxShadow: "3px 3px 0 rgba(26,21,18,0.14)",
+      }}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <h3
-              className="c-card-t truncate"
-              style={{ fontSize: 14, color: "var(--ink-strong)" }}
-            >
-              {biz?.name ?? vehicle.name}
-            </h3>
-          </div>
+      {/* Status bar — gold if live */}
+      <div
+        style={{
+          background: status.live ? "var(--gold-c)" : "var(--paper)",
+          borderBottom: "2px solid var(--rule-strong-c)",
+          padding: "5px 8px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 4,
+        }}
+      >
+        <span className="c-kicker inline-flex items-center gap-1" style={{ fontSize: 8 }}>
+          <span
+            className={status.live ? "animate-pulse" : ""}
+            style={{ width: 5, height: 5, background: "var(--ink-strong)", display: "inline-block", flexShrink: 0 }}
+          />
+          {status.label}
+        </span>
+        {biz?.accepts_orders && (
+          <span className="c-kicker" style={{ fontSize: 8, color: "var(--ink-strong)" }}>ORDER ↗</span>
+        )}
+      </div>
 
-          <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.65 }}>
-            {typeLabel} · {vehicle.name}
+      {/* Body */}
+      <div style={{ padding: "10px 10px 10px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* Name */}
+        <h3
+          className="c-card-t"
+          style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.2 }}
+        >
+          {biz?.name ?? vehicle.name}
+        </h3>
+
+        {/* Type label */}
+        <p className="c-kicker" style={{ fontSize: 8, opacity: 0.6 }}>
+          {typeLabel} · {vehicle.name}
+        </p>
+
+        {/* Location */}
+        {vehicle.current_location_name && (
+          <p
+            className="c-body inline-flex items-start gap-1"
+            style={{ fontSize: 11, color: "var(--ink-strong)", lineHeight: 1.3 }}
+          >
+            <Icon name="pin" size={11} style={{ color: "var(--gold-c)", flexShrink: 0, marginTop: 1 }} />
+            <span className="line-clamp-2">{vehicle.current_location_name}</span>
           </p>
+        )}
 
-          {vehicle.current_location_name && (
-            <p
-              className="c-body mt-1.5 inline-flex items-center gap-1"
-              style={{ fontSize: 12, color: "var(--ink-strong)" }}
-            >
-              <Icon name="pin" size={12} style={{ color: "var(--gold-c)" }} />
-              {vehicle.current_location_name}
+        {/* Footer meta */}
+        <div style={{ marginTop: "auto", display: "flex", flexWrap: "wrap", gap: "4px 8px", alignItems: "center" }}>
+          {updatedAgo && (
+            <p className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>
+              {updatedAgo}
             </p>
           )}
-
-          <div className="flex items-center gap-2 mt-2">
-            <span
-              className="inline-flex items-center gap-1 c-kicker px-2"
-              style={{
-                background: status.live ? "var(--gold-c)" : "var(--paper)",
-                border: "2px solid var(--rule-strong-c)",
-                color: "var(--ink-strong)",
-                fontSize: 9,
-                height: 22,
-              }}
-            >
-              <span
-                className={status.live ? "animate-pulse" : ""}
-                style={{
-                  width: 5,
-                  height: 5,
-                  background: "var(--ink-strong)",
-                  display: "inline-block",
-                }}
-              />
-              {status.label}
-            </span>
-            {updatedAgo && (
-              <p className="c-kicker" style={{ fontSize: 9, opacity: 0.6 }}>
-                UPDATED {updatedAgo}
-              </p>
-            )}
-            {typeof distanceMiles === "number" && (
-              <p
-                className="c-kicker"
-                style={{ fontSize: 9, color: "var(--gold-c)" }}
-              >
-                {distanceMiles.toFixed(1)} MI
-              </p>
-            )}
-          </div>
+          {typeof distanceMiles === "number" && (
+            <p className="c-kicker" style={{ fontSize: 8, color: "var(--gold-c)" }}>
+              {distanceMiles.toFixed(1)} mi
+            </p>
+          )}
         </div>
-
-        {biz?.accepts_orders && (
-          <span className="c-badge c-badge-gold shrink-0" style={{ fontSize: 9 }}>
-            ORDER
-          </span>
-        )}
       </div>
     </Link>
   );

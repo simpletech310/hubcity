@@ -375,25 +375,28 @@ export default function FoodTruckTracker({ initialVehicles = [] }: FoodTruckTrac
         </div>
       )}
 
-      {/* Vehicle list */}
-      <div className="px-5 space-y-2.5">
-        {sorted.length === 0 ? (
-          <div
-            className="c-serif-it text-center py-8"
-            style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.65 }}
-          >
-            No vehicles match those filters.
-          </div>
-        ) : (
-          sorted.map(({ v, dist }) => (
+      {/* Vehicle list — horizontal scroll strip */}
+      {sorted.length === 0 ? (
+        <div
+          className="c-serif-it text-center py-8 px-5"
+          style={{ fontSize: 13, color: "var(--ink-strong)", opacity: 0.65 }}
+        >
+          No vehicles match those filters.
+        </div>
+      ) : (
+        <div
+          className="flex overflow-x-auto scrollbar-hide gap-3"
+          style={{ padding: "0 20px 12px" }}
+        >
+          {sorted.map(({ v, dist }) => (
             <VendorLocationCard
               key={v.id}
               vehicle={v}
               distanceMiles={dist}
             />
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Owner CTA */}
       <div className="px-5 mt-4">

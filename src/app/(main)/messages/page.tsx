@@ -68,7 +68,15 @@ export default async function MessagesPage() {
           strap="Your direct messages"
         />
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">{"\u{1F4AC}"}</span>
+          <div
+            className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink-strong)" }}>
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          </div>
           <p
             className="c-serif-it mb-1"
             style={{ fontSize: 14, color: "var(--ink-strong)" }}
@@ -129,7 +137,15 @@ export default async function MessagesPage() {
 
       {rows.length === 0 ? (
         <div className="text-center py-16 px-5">
-          <span className="text-5xl block mb-3">{"\u{1F4EC}"}</span>
+          <div
+            className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: "var(--ink-strong)" }}>
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+          </div>
           <p
             className="c-serif-it mb-1"
             style={{ fontSize: 14, color: "var(--ink-strong)" }}
@@ -144,7 +160,7 @@ export default async function MessagesPage() {
           </p>
         </div>
       ) : (
-        <div className="px-5 pt-5 stagger">
+        <div className="pt-4 stagger">
           {rows.map((row, i) => {
             const name = row.other?.display_name || row.other?.handle || "Unknown";
             const handle = row.other?.handle ? `@${row.other.handle}` : null;
@@ -153,17 +169,19 @@ export default async function MessagesPage() {
               <Link
                 key={row.id}
                 href={href}
-                className="group block py-4 press"
+                className="group block press"
                 style={{
                   borderTop: i === 0 ? "2px solid var(--rule-strong-c)" : undefined,
                   borderBottom: "2px solid var(--rule-strong-c)",
+                  background: row.unread ? "var(--paper-warm)" : "transparent",
+                  padding: "14px 16px",
                 }}
               >
                 <div className="flex items-center gap-3">
                   {/* Avatar */}
                   <div className="relative shrink-0">
                     <div
-                      className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center"
+                      className="w-12 h-12 overflow-hidden flex items-center justify-center"
                       style={{
                         background: "var(--gold-c)",
                         border: "2px solid var(--rule-strong-c)",
@@ -187,12 +205,12 @@ export default async function MessagesPage() {
                     </div>
                     {row.unread && (
                       <span
-                        className="absolute -top-0.5 -right-0.5 rounded-full"
+                        className="absolute -top-0.5 -right-0.5"
                         style={{
-                          width: 12,
-                          height: 12,
-                          background: "var(--ink-strong)",
-                          border: "2px solid var(--gold-c)",
+                          width: 10,
+                          height: 10,
+                          background: "var(--gold-c)",
+                          border: "2px solid var(--rule-strong-c)",
                         }}
                       />
                     )}
