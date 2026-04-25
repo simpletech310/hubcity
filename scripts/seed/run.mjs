@@ -56,9 +56,13 @@ async function seedPersonas() {
       socialLinks: p.socialLinks ?? {},
     });
 
-    // Update channel: subscription price + content_scope + city.
+    // Update channel: subscription price + scope + content_scope + city.
+    // National personas (Big Accounts) need scope='national' so On Air shows
+    // them to unverified users; the auto-create trigger defaults to 'local'.
+    const channelScope = p.contentScope === 'national' ? 'national' : 'local';
     await supabase.from('channels').update({
       city_id: cityId,
+      scope: channelScope,
       content_scope: p.contentScope ?? (p.citySlug ? 'local' : 'national'),
       subscription_price_cents: p.subscriptionPriceCents ?? null,
     }).eq('owner_id', profile.id);
@@ -494,6 +498,7 @@ async function seedKnectTV() {
     name: 'Culture',
     description: 'Long-form film, music, and comedy from the Hub City and beyond.',
     type: 'media',
+    scope: 'national',
     subscription_price_cents: 999,
     subscription_currency: 'usd',
     is_verified: true,

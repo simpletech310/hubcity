@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
     if (subtype) {
       if (subtype === "food_truck") {
-        query = query.eq("is_mobile_vendor", true).eq("category", "restaurant");
+        query = query.eq("is_mobile_vendor", true).in("category", ["restaurant", "food"]);
       } else if (subtype === "cart") {
         query = query.eq("is_mobile_vendor", true);
       } else if (subtype === "restaurant") {
@@ -43,8 +43,13 @@ export async function GET(request: Request) {
         query = query.eq("category", subtype);
       }
     } else {
-      // All food businesses: restaurants + mobile vendors
-      query = query.eq("category", "restaurant");
+      // All food businesses: restaurants + general "food" + mobile vendors +
+      // food-adjacent retail (coffee, grocery). business_type='food' covers
+      // any business that self-identifies as food regardless of legacy
+      // category enum.
+      query = query.or(
+        "category.in.(restaurant,food,coffee,grocery),business_type.eq.food"
+      );
     }
 
     if (search) {

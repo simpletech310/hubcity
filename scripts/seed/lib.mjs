@@ -254,6 +254,20 @@ export async function uploadToMux(localPath, { audioOnly = false, label = '' } =
   const playbackId = asset.playback_ids?.[0]?.id;
   if (!playbackId) throw new Error(`Mux asset ${label} has no playback id`);
 
+  // Audio-only assets need a static rendition (`audio.m4a`) to play in
+  // <audio> via the AudioPlayContext. Request it here; Mux completes it
+  // asynchronously, and the URL becomes available within a few seconds.
+  if (audioOnly) {
+    try {
+      await mux.video.assets.createStaticRendition(assetId, { resolution: 'audio-only' });
+    } catch (e) {
+      // Ignore "already exists" — re-runs hit this.
+      if (!/already|409|400/i.test(String(e?.message ?? ''))) {
+        console.warn(`  ⚠ static rendition request failed for ${label}: ${e?.message}`);
+      }
+    }
+  }
+
   return {
     asset_id: assetId,
     playback_id: playbackId,

@@ -226,12 +226,16 @@ export default function BusinessPage() {
       setLoading(true);
       const supabase = createClient();
 
-      // Fetch businesses with city join
+      // Fetch businesses with city join. Food businesses live on /food (Eat),
+      // so exclude them here. Excludes both legacy `category='restaurant'` and
+      // the broader `category='food'` plus anything self-identified as food
+      // via `business_type='food'`.
       let query = supabase
         .from("businesses")
         .select("*, city:cities(id, slug, name)")
         .eq("is_published", true)
-        .neq("category", "restaurant")
+        .not("category", "in", "(restaurant,food,coffee,grocery)")
+        .or("business_type.is.null,business_type.neq.food")
         .order("is_featured", { ascending: false })
         .order("rating_avg", { ascending: false });
 
