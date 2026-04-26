@@ -287,6 +287,32 @@ export default function BusinessPage() {
     return Array.from(set).sort();
   }, [businesses]);
 
+  // ── Section numbering ───────────────────────────────────────
+  // Compute which sections will render so we can number sequentially
+  // (so the eye sees № 01 → № 02 → № 03 instead of № 01 → № 03 → № 07).
+  const isHomeView = activeCategory === "all" && !search && !quickFilter;
+  const showEditorsPick = isHomeView && !!editorsPick;
+  const showDeals = (quickFilter === null || quickFilter === "deals") && deals.length > 0;
+  const showTrending = isHomeView && trending.length > 0;
+  const showFeatured = activeCategory === "all" && !quickFilter && otherFeatured.length > 0;
+  const showPromos = isHomeView && promoDeals.length > 0;
+  const showNew = isHomeView && newBusinesses.length > 0;
+  const showValues = isHomeView && allBadges.length > 0;
+  const showBrowseCats = isHomeView;
+
+  // Counter that issues the next two-digit number when called.
+  let _n = 0;
+  const next = () => String(++_n).padStart(2, "0");
+  const nEditors = showEditorsPick ? next() : null;
+  const nDeals = showDeals ? next() : null;
+  const nTrending = showTrending ? next() : null;
+  const nFeatured = showFeatured ? next() : null;
+  const nPromos = showPromos ? next() : null;
+  const nNew = showNew ? next() : null;
+  const nValues = showValues ? next() : null;
+  const nBrowseCats = showBrowseCats ? next() : null;
+  const nDirectory = next(); // always shown
+
   return (
     <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
       <div
@@ -394,11 +420,11 @@ export default function BusinessPage() {
         </div>
       ) : (
         <>
-          {/* ── № 01 · Editor's Pick (single featured spotlight) ── */}
-          {activeCategory === "all" && !search && !quickFilter && editorsPick && (
+          {/* ── Editor's Pick (single featured spotlight) ── */}
+          {showEditorsPick && nEditors && (
             <section className="px-5 mb-6">
               <SectionHead
-                num="01"
+                num={nEditors}
                 kicker="Editor's Pick"
                 sub="Spotlight from the local commerce desk"
               />
@@ -441,12 +467,12 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 02 · Today's Deals — real DB rows only ──────────── */}
-          {(quickFilter === null || quickFilter === "deals") && deals.length > 0 && (
+          {/* ── Today's Deals — real DB rows only ──────────── */}
+          {showDeals && nDeals && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
-                  num="02"
+                  num={nDeals}
                   kicker="Today's Deals"
                   sub="Live promotions from local businesses"
                   meta={
@@ -464,12 +490,12 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 03 · Trending — real biz scored by activity ─────── */}
-          {activeCategory === "all" && !search && !quickFilter && trending.length > 0 && (
+          {/* ── Trending — real biz scored by activity ─────── */}
+          {showTrending && nTrending && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
-                  num="03"
+                  num={nTrending}
                   kicker={`Trending in ${filterCity?.name ?? "Your City"}`}
                   sub="Featured shops + most-rated this week"
                 />
@@ -482,7 +508,7 @@ export default function BusinessPage() {
                     <Link
                       key={biz.id}
                       href={`/business/${biz.slug}`}
-                      className="shrink-0 w-[180px] animate-slide-in press"
+                      className="shrink-0 w-[200px] animate-slide-in press"
                       style={{ animationDelay: `${i * 80}ms` }}
                     >
                       <div
@@ -493,7 +519,7 @@ export default function BusinessPage() {
                         }}
                       >
                         <div
-                          className="aspect-[4/3] relative overflow-hidden"
+                          className="aspect-square relative overflow-hidden"
                           style={{
                             background: "var(--ink-strong)",
                             borderBottom: "2px solid var(--rule-strong-c)",
@@ -556,12 +582,12 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 04 · Other Featured (horizontal scroller) ─────── */}
-          {activeCategory === "all" && otherFeatured.length > 0 && !quickFilter && (
+          {/* ── Featured Shops (horizontal scroller) ─────── */}
+          {showFeatured && nFeatured && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
-                  num="04"
+                  num={nFeatured}
                   kicker="Featured Shops"
                   sub="Hand-picked local standouts"
                   meta={
@@ -579,11 +605,11 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 05 · Promo Codes — real DB only ──────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && promoDeals.length > 0 && (
+          {/* ── Promo Codes — real DB only ──────────────────── */}
+          {showPromos && nPromos && (
             <section className="mb-6 px-5">
               <SectionHead
-                num="05"
+                num={nPromos}
                 kicker="Promo Codes"
                 sub="Tap to copy, then use at checkout"
               />
@@ -655,12 +681,12 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 06 · New Businesses ────────────────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && newBusinesses.length > 0 && (
+          {/* ── New Businesses ────────────────────────────── */}
+          {showNew && nNew && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
-                  num="06"
+                  num={nNew}
                   kicker={`New in ${filterCity?.name ?? "Your City"}`}
                   sub="Recently opened"
                   meta={
@@ -676,10 +702,10 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 07 · Shop by Values ────────────────────────────── */}
-          {activeCategory === "all" && allBadges.length > 0 && !search && !quickFilter && (
+          {/* ── Shop by Values ────────────────────────────── */}
+          {showValues && nValues && (
             <section className="mb-6 px-5">
-              <SectionHead num="07" kicker="Shop by Values" sub="City-certified labels" />
+              <SectionHead num={nValues} kicker="Shop by Values" sub="City-certified labels" />
               <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
                 {allBadges.map((badge) => {
                   const count = businesses.filter((b) => b.badges?.includes(badge)).length;
@@ -708,10 +734,10 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 08 · Browse by Category ───────────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && (
+          {/* ── Browse by Category ───────────────────────── */}
+          {showBrowseCats && nBrowseCats && (
             <section className="mb-6 px-5">
-              <SectionHead num="08" kicker="Browse by Category" />
+              <SectionHead num={nBrowseCats} kicker="Browse by Category" />
               <div className="grid grid-cols-2 gap-2.5">
                 {categories
                   .filter((c) => c.value !== "all")
@@ -745,51 +771,16 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 09 · Why Shop Local ─────────────────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && (
-            <section className="px-5 mb-6">
-              <div className="p-5" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
-                <div className="flex items-start gap-3">
-                  <div className="w-11 h-11 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
-                    <Icon name="heart-pulse" size={20} style={{ color: "var(--gold-c)" }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] uppercase tracking-editorial font-bold mb-1" style={{ color: "var(--gold-c)" }}>
-                      Essay · Why Shop Local
-                    </p>
-                    <h3 className="font-display text-[18px] leading-tight mb-2" style={{ color: "var(--ink-strong)" }}>
-                      Every dollar is a vote for the block.
-                    </h3>
-                    <ul className="space-y-1.5">
-                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
-                        <span>68¢ of every $1 stays in {filterCity?.name ?? "your city"}</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
-                        <span>Creates 2× more local jobs than chains</span>
-                      </li>
-                      <li className="flex items-start gap-2 text-[11px] leading-relaxed" style={{ color: "var(--ink-soft)" }}>
-                        <span className="mt-1.5 block w-1 h-1 rounded-full bg-gold shrink-0" />
-                        <span>Builds a stronger, self-sufficient community</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </section>
-          )}
-
-          {activeCategory === "all" && !search && !quickFilter && (
+          {isHomeView && (
             <div className="px-5 mb-5">
               <div className="divider-subtle" />
             </div>
           )}
 
-          {/* ── № 10 · The Full Directory ───────────────────────── */}
+          {/* ── The Full Directory ───────────────────────── */}
           <section className="px-5">
             <SectionHead
-              num="10"
+              num={nDirectory}
               kicker={
                 activeCategory === "all"
                   ? quickFilter === "top"
