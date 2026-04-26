@@ -667,6 +667,34 @@ export default function ResourcesPage() {
               </div>
             </div>
           </div>
+
+          {/* ── Become a Provider CTA ── */}
+          <div className="px-5 mt-2 mb-6">
+            <Link
+              href="/resources/provider"
+              className="block p-5 press"
+              style={{
+                background: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--paper)",
+              }}
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <p className="c-kicker" style={{ color: "var(--gold-c)", opacity: 0.9 }}>
+                    § FOR ORGANIZATIONS
+                  </p>
+                  <p className="c-card-t mt-1" style={{ fontSize: 17, color: "var(--paper)" }}>
+                    Run a program serving Compton?
+                  </p>
+                  <p className="c-meta mt-1" style={{ color: "var(--paper)", opacity: 0.75 }}>
+                    Post housing, jobs, food, youth, and more — and review applicants.
+                  </p>
+                </div>
+                <Icon name="arrow-right-thin" size={18} style={{ color: "var(--gold-c)" }} />
+              </div>
+            </Link>
+          </div>
         </>
       )}
     </div>

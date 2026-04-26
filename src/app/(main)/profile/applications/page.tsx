@@ -11,6 +11,10 @@ const statusLabels: Record<string, string> = {
   approved: "Approved",
   denied: "Denied",
   waitlisted: "Waitlisted",
+  referred: "Referred",
+  enrolled: "Enrolled",
+  completed: "Completed",
+  withdrawn: "Withdrawn",
 };
 
 const statusVariant: Record<string, "gold" | "emerald" | "coral" | "cyan" | "purple"> = {
@@ -19,7 +23,19 @@ const statusVariant: Record<string, "gold" | "emerald" | "coral" | "cyan" | "pur
   approved: "emerald",
   denied: "coral",
   waitlisted: "purple",
+  referred: "purple",
+  enrolled: "emerald",
+  completed: "emerald",
+  withdrawn: "coral",
 };
+
+function formatDate(d: string) {
+  return new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
 
 export default async function MyApplicationsPage() {
   const supabase = await createClient();
@@ -81,34 +97,80 @@ export default async function MyApplicationsPage() {
             </Link>
           </div>
         ) : (
-          appList.map((app) => (
-            <Card key={app.id}>
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-[13px] font-bold">
-                    {app.resource?.name ?? "Resource"}
-                  </h3>
-                  {app.resource?.organization && (
-                    <p className="text-[11px] c-meta mt-0.5">
-                      {app.resource.organization}
+          appList.map((app) => {
+            const resourceHref = app.resource
+              ? `/resources/${app.resource.slug || app.resource.id}`
+              : null;
+            const reviewedDifferent =
+              app.reviewed_at && app.reviewed_at !== app.created_at;
+            return (
+              <Card key={app.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    {resourceHref ? (
+                      <Link
+                        href={resourceHref}
+                        className="text-[13px] font-bold hover:underline"
+                      >
+                        {app.resource?.name ?? "Resource"}
+                      </Link>
+                    ) : (
+                      <h3 className="text-[13px] font-bold">
+                        {app.resource?.name ?? "Resource"}
+                      </h3>
+                    )}
+                    {app.resource?.organization && (
+                      <p className="text-[11px] c-meta mt-0.5">
+                        {app.resource.organization}
+                      </p>
+                    )}
+                    <p className="text-xs c-meta mt-1.5">
+                      Applied {formatDate(app.created_at)}
+                      {reviewedDifferent && (
+                        <> · Updated {formatDate(app.reviewed_at!)}</>
+                      )}
                     </p>
-                  )}
-                  <p className="text-xs c-meta mt-1.5">
-                    Applied{" "}
-                    {new Date(app.created_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                  </div>
+                  <Badge
+                    label={statusLabels[app.status] ?? app.status}
+                    variant={statusVariant[app.status] ?? "gold"}
+                  />
                 </div>
-                <Badge
-                  label={statusLabels[app.status] ?? app.status}
-                  variant={statusVariant[app.status] ?? "gold"}
-                />
-              </div>
-            </Card>
-          ))
+
+                {/* Provider message */}
+                {app.status_note && (
+                  <div
+                    className="mt-3 p-3"
+                    style={{
+                      background: "var(--paper-soft)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    <p className="c-kicker mb-1" style={{ fontSize: 10, opacity: 0.6 }}>
+                      § MESSAGE FROM PROVIDER
+                    </p>
+                    <p className="text-[13px]" style={{ lineHeight: 1.5 }}>
+                      {app.status_note}
+                    </p>
+                  </div>
+                )}
+
+                {/* Follow-up date */}
+                {app.follow_up_date && (
+                  <p className="mt-2 text-xs c-meta">
+                    Next step: <span className="font-semibold">{formatDate(app.follow_up_date)}</span>
+                  </p>
+                )}
+
+                {/* Referred to */}
+                {app.referred_to && (
+                  <p className="mt-2 text-xs c-meta">
+                    Referred to: <span className="font-semibold">{app.referred_to}</span>
+                  </p>
+                )}
+              </Card>
+            );
+          })
         )}
       </div>
     </div>

@@ -21,11 +21,11 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("notification_prefs")
+    .select("notification_prefs, role")
     .eq("id", user.id)
     .single();
 
   const prefs = profile?.notification_prefs ?? defaultPrefs;
 
-  return <SettingsForm initialPrefs={prefs} />;
+  return <SettingsForm initialPrefs={prefs} role={profile?.role ?? null} />;
 }

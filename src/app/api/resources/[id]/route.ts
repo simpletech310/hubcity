@@ -94,6 +94,7 @@ export async function PATCH(
       "website",
       "hours",
       "district",
+      "image_url",
       "is_published",
       "accepts_applications",
       "application_fields",

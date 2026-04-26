@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 import type { Resource, ApplicationField } from "@/types/database";
 
 interface GrantApplicationFormProps {
@@ -13,8 +14,10 @@ export default function GrantApplicationForm({
   resource,
 }: GrantApplicationFormProps) {
   const router = useRouter();
+  const supabase = useMemo(() => createClient(), []);
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -29,6 +32,44 @@ export default function GrantApplicationForm({
         delete next[name];
         return next;
       });
+    }
+  }
+
+  async function handleFileUpload(fieldName: string, file: File | undefined) {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, [fieldName]: "File must be under 10 MB" }));
+      return;
+    }
+
+    setUploading((prev) => ({ ...prev, [fieldName]: true }));
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        setErrors((prev) => ({ ...prev, [fieldName]: "You must be signed in to upload" }));
+        return;
+      }
+
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${userId}/applications/${resource.id}/${fieldName}-${Date.now()}.${ext}`;
+
+      const { error: upErr } = await supabase.storage
+        .from("media")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+
+      if (upErr) {
+        setErrors((prev) => ({ ...prev, [fieldName]: upErr.message }));
+        return;
+      }
+
+      const { data: pub } = supabase.storage.from("media").getPublicUrl(path);
+      updateField(fieldName, pub.publicUrl);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Upload failed";
+      setErrors((prev) => ({ ...prev, [fieldName]: msg }));
+    } finally {
+      setUploading((prev) => ({ ...prev, [fieldName]: false }));
     }
   }
 
@@ -132,6 +173,57 @@ export default function GrantApplicationForm({
                 </option>
               ))}
             </select>
+            {error && (
+              <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{error}</p>
+            )}
+          </div>
+        );
+
+      case "file":
+        return (
+          <div key={field.name} className="w-full">
+            <label className="c-kicker block mb-2">
+              {field.label}
+              {field.required && <span className="ml-1" style={{ color: "var(--red-c, #c0392b)" }}>*</span>}
+            </label>
+            {value ? (
+              <div
+                className="flex items-center justify-between gap-3 px-4 py-3"
+                style={inputBaseStyle}
+              >
+                <a
+                  href={value}
+                  target="_blank"
+                  rel="noopener"
+                  className="c-meta truncate underline"
+                  style={{ flex: 1 }}
+                >
+                  Uploaded — view
+                </a>
+                <button
+                  type="button"
+                  onClick={() => updateField(field.name, "")}
+                  className="c-meta"
+                  style={{ color: "var(--red-c, #c0392b)" }}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <label
+                className="block w-full px-4 py-3 text-sm cursor-pointer text-center"
+                style={{ ...inputBaseStyle, ...(errBorder || {}) }}
+              >
+                {uploading[field.name] ? "Uploading…" : (field.placeholder || "Upload a photo or document")}
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(field.name, e.target.files?.[0])}
+                  disabled={uploading[field.name]}
+                />
+              </label>
+            )}
             {error && (
               <p className="c-meta mt-1" style={{ color: "var(--red-c, #c0392b)" }}>{error}</p>
             )}

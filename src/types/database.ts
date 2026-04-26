@@ -235,7 +235,7 @@ export interface Resource {
 export interface ApplicationField {
   name: string;
   label: string;
-  type: "text" | "textarea" | "email" | "phone" | "number" | "select";
+  type: "text" | "textarea" | "email" | "phone" | "number" | "select" | "file";
   required: boolean;
   options?: string[];
   placeholder?: string;
