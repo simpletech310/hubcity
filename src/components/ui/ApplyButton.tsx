@@ -1,36 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Icon from "@/components/ui/Icon";
 
 interface ApplyButtonProps {
   resourceId: string;
   resourceName: string;
+  resourceSlug?: string | null;
+  acceptsApplications?: boolean;
   status: string;
   website: string | null;
   phone: string | null;
 }
 
 export default function ApplyButton({
+  resourceId,
   resourceName,
+  resourceSlug,
+  acceptsApplications,
   status,
   website,
   phone,
 }: ApplyButtonProps) {
+  const router = useRouter();
   const [showModal, setShowModal] = useState(false);
 
   const handleApply = () => {
+    if (acceptsApplications) {
+      router.push(`/resources/${resourceSlug || resourceId}/apply`);
+      return;
+    }
     if (website) {
-      // Open external application link
       window.open(
         website.startsWith("http") ? website : `https://${website}`,
         "_blank",
         "noopener,noreferrer"
       );
-    } else {
-      setShowModal(true);
+      return;
     }
+    setShowModal(true);
   };
 
   const isOpen = status === "open" || status === "limited";

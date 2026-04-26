@@ -1,18 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
 import SaveButton from "@/components/ui/SaveButton";
 import ApplyButton from "@/components/ui/ApplyButton";
-import PullQuote from "@/components/ui/PullQuote";
-import {
-  HeroBlock,
-  EditorialNumber,
-  SectionKicker,
-  EditorialCard,
-  Tag,
-  IssueDivider,
-} from "@/components/ui/editorial";
 import { createClient } from "@/lib/supabase/server";
 import type { Resource } from "@/types/database";
 
@@ -30,15 +24,32 @@ const categoryIcons: Record<string, IconName> = {
   utilities: "lightbulb",
 };
 
-type StatusTone = "emerald" | "coral" | "cyan" | "gold";
-const statusMeta: Record<
-  string,
-  { tone: StatusTone; label: string; upper: string }
-> = {
-  open: { tone: "emerald", label: "Open", upper: "OPEN" },
-  closed: { tone: "coral", label: "Closed", upper: "CLOSED" },
-  upcoming: { tone: "cyan", label: "Coming Soon", upper: "COMING SOON" },
-  limited: { tone: "gold", label: "Limited", upper: "LIMITED SPOTS" },
+const statusVariant: Record<string, "emerald" | "coral" | "cyan" | "gold"> = {
+  open: "emerald",
+  closed: "coral",
+  upcoming: "cyan",
+  limited: "gold",
+};
+
+const statusLabel: Record<string, string> = {
+  open: "Open",
+  closed: "Closed",
+  upcoming: "Coming Soon",
+  limited: "Limited",
+};
+
+const categoryLabels: Record<string, string> = {
+  business: "Business",
+  housing: "Housing",
+  health: "Health",
+  youth: "Youth",
+  jobs: "Jobs",
+  food: "Food",
+  legal: "Legal",
+  senior: "Senior",
+  education: "Education",
+  veterans: "Veterans",
+  utilities: "Utilities",
 };
 
 export default async function ResourceDetailPage({
@@ -49,47 +60,56 @@ export default async function ResourceDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: resource } = await supabase
-    .from("resources")
-    .select("*")
-    .eq("id", id)
-    .single();
+  // UUIDs are 36 chars with hyphens. If it doesn't match, try slug first.
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  let resource = null;
+  if (!isUuid) {
+    const { data } = await supabase
+      .from("resources")
+      .select("*")
+      .eq("slug", id)
+      .maybeSingle();
+    resource = data;
+  }
+  if (!resource) {
+    const { data } = await supabase
+      .from("resources")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    resource = data;
+  }
 
   if (!resource) notFound();
 
   const res = resource as Resource;
   const icon = categoryIcons[res.category] ?? ("document" as IconName);
-  const status = statusMeta[res.status] ?? {
-    tone: "cyan" as StatusTone,
-    label: res.status,
-    upper: String(res.status).toUpperCase(),
-  };
-
-  const categoryLabel = res.category.toUpperCase();
-  const city = "Compton";
-
-  const firstSentence =
-    res.description?.split(/(?<=[.!?])\s+/)[0]?.trim() ?? "";
+  const categoryName = categoryLabels[res.category] ?? res.category;
 
   const deadlineLabel = res.deadline
     ? new Date(res.deadline).toLocaleDateString("en-US", {
-        month: "long",
+        month: "short",
         day: "numeric",
         year: "numeric",
       })
     : null;
 
+  const spotsLeft =
+    res.max_spots != null
+      ? Math.max(0, res.max_spots - (res.filled_spots ?? 0))
+      : null;
+
   return (
-    <article className="culture-surface min-h-dvh animate-fade-in pb-safe">
-      {/* Back link */}
-      <div className="px-5 pt-4 mb-3 flex items-center justify-between">
+    <article className="min-h-dvh animate-fade-in pb-24">
+      {/* Header bar */}
+      <div className="px-4 pt-3 pb-3 flex items-center justify-between">
         <Link
           href="/resources"
-          className="inline-flex items-center gap-1.5 text-gold text-[11px] font-bold uppercase tracking-editorial press"
+          className="inline-flex items-center gap-1.5 text-sm font-semibold text-gold press"
         >
           <svg
-            width="14"
-            height="14"
+            width="16"
+            height="16"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -97,302 +117,176 @@ export default async function ResourceDetailPage({
           >
             <path d="M10 12L6 8l4-4" />
           </svg>
-          Back to Support
+          Back
         </Link>
         <SaveButton itemType="resource" itemId={res.id} />
       </div>
 
-      {/* ── Cover ── */}
-      {res.image_url ? (
-        <div className="relative">
-          <HeroBlock image={res.image_url} aspect="3/2" alt={res.name}>
-            <div className="absolute inset-x-0 bottom-0 px-6 pb-7 z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
-                <Tag tone={status.tone} size="sm">{status.label}</Tag>
-                {res.is_free && <Tag tone="emerald" size="sm">Free</Tag>}
-              </div>
-              <h1 className="font-display text-[38px] sm:text-[52px] leading-[0.95] tracking-tight text-ivory max-w-[26ch]">
-                {res.name}
-              </h1>
-              <div className="mt-5 h-px w-16 bg-gold" />
-              {res.organization && (
-                <p className="mt-4 text-[11px] uppercase tracking-editorial-tight text-black/70">
-                  {res.organization}
-                </p>
-              )}
-            </div>
-          </HeroBlock>
+      {/* Hero image */}
+      {res.image_url && (
+        <div className="relative w-full aspect-[16/10] mb-4 overflow-hidden">
+          <Image
+            src={res.image_url}
+            alt={res.name}
+            fill
+            sizes="(max-width: 768px) 100vw, 768px"
+            className="object-cover"
+            priority
+          />
         </div>
-      ) : (
-        <section
-          className="mx-5 mt-2 c-frame px-6 py-10 relative overflow-hidden"
-          style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
-        >
-          <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: "var(--gold-c)" }} />
-          <div className="flex items-start gap-4">
-            <div
-              className="w-20 h-20 flex items-center justify-center shrink-0"
-              style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-            >
-              <Icon name={icon} size={40} style={{ color: "var(--ink-strong)" }} />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <SectionKicker tone="gold">{categoryLabel}</SectionKicker>
-                <Tag tone={status.tone} size="xs">{status.label}</Tag>
-                {res.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
-              </div>
-              <h1 className="font-display text-[34px] sm:text-[42px] leading-[0.98] tracking-tight" style={{ color: "var(--ink-strong)" }}>
-                {res.name}
-              </h1>
-              <div className="mt-4 h-px w-14 bg-gold" />
-              {res.organization && (
-                <p className="mt-3 text-[11px] uppercase tracking-editorial-tight text-black/70">
-                  {res.organization}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
       )}
 
-      {/* ── Byline Strip ── */}
-      <div className="px-5 mt-6 flex items-baseline gap-4">
-        <EditorialNumber n={1} size="sm" />
-        <SectionKicker tone="gold">
-          {categoryLabel} · {city.toUpperCase()}
-        </SectionKicker>
-        <span className="flex-1 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" />
-        <span
-          className={
-            "text-[10px] uppercase tracking-editorial-tight whitespace-nowrap " +
-            (status.tone === "emerald"
-              ? "text-emerald"
-              : status.tone === "coral"
-              ? "text-coral"
-              : status.tone === "gold"
-              ? "text-gold"
-              : "text-cyan")
-          }
-        >
-          {status.upper}
-        </span>
+      {/* Title block */}
+      <div className="px-4">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-txt-secondary">
+            <Icon name={icon} size={12} />
+            {categoryName}
+          </span>
+          <Badge
+            label={statusLabel[res.status] ?? res.status}
+            variant={statusVariant[res.status] ?? "gold"}
+            size="sm"
+          />
+          {res.is_free && <Badge label="Free" variant="emerald" size="sm" />}
+        </div>
+
+        <h1 className="text-2xl font-heading font-bold leading-tight">
+          {res.name}
+        </h1>
+        {res.organization && (
+          <p className="mt-1 text-sm text-txt-secondary">{res.organization}</p>
+        )}
       </div>
 
-      {/* ── Pull Quote ── */}
-      {firstSentence && (
-        <section className="px-5 mt-8 max-w-[68ch]">
-          <PullQuote
-            quote={firstSentence}
-            attribution={res.organization ?? categoryLabel}
-            size="md"
-          />
-        </section>
-      )}
-
-      {/* ── № 01 · About ── */}
+      {/* Description */}
       {res.description && (
-        <section className="px-5 mt-10 max-w-[68ch]">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={1} size="md" />
-            <SectionKicker tone="muted">About</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
-          <p className="text-[14px] text-black/85 leading-relaxed first-letter:font-display first-letter:text-[52px] first-letter:float-left first-letter:mr-2 first-letter:mt-1 first-letter:text-gold first-letter:leading-none">
+        <section className="px-4 mt-5">
+          <p className="text-[15px] leading-relaxed text-white/90">
             {res.description}
           </p>
         </section>
       )}
 
-      {/* ── № 02 · Eligibility ── */}
-      {res.eligibility && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={2} size="md" />
-            <SectionKicker tone="muted">Eligibility</SectionKicker>
-            {deadlineLabel && (
-              <Tag tone="gold" size="xs" className="ml-auto">
+      {/* Key facts row */}
+      {(deadlineLabel || spotsLeft != null) && (
+        <section className="px-4 mt-5 grid grid-cols-2 gap-3">
+          {deadlineLabel && (
+            <Card className="text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-txt-secondary">
                 Deadline
-              </Tag>
-            )}
-          </div>
-          <div className="rule-hairline mb-5" />
-
-          <EditorialCard variant="ink" border="gold" className="p-5">
-            <div className="flex items-start gap-3 mb-3">
-              <div
-                className="w-10 h-10 flex items-center justify-center shrink-0"
-                style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-              >
-                <Icon name="document" size={18} style={{ color: "var(--ink-strong)" }} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                  Requirements
-                </p>
-                <p className="text-[14px] text-black/85 leading-relaxed mt-1.5">
-                  {res.eligibility}
-                </p>
-              </div>
-            </div>
-
-            {deadlineLabel && (
-              <div className="flex items-center gap-3 pt-4 mt-1" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
-                <div
-                  className="w-10 h-10 flex items-center justify-center shrink-0"
-                  style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-                >
-                  <Icon name="clock" size={18} style={{ color: "var(--ink-strong)" }} />
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                    Deadline
-                  </p>
-                  <p className="font-display text-[18px] text-gold leading-tight mt-0.5">
-                    {deadlineLabel}
-                  </p>
-                </div>
-              </div>
-            )}
-          </EditorialCard>
+              </p>
+              <p className="mt-1 text-sm font-bold text-gold">{deadlineLabel}</p>
+            </Card>
+          )}
+          {spotsLeft != null && (
+            <Card className="text-center">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-txt-secondary">
+                Spots Left
+              </p>
+              <p className="mt-1 text-sm font-bold text-gold">
+                {spotsLeft} of {res.max_spots}
+              </p>
+            </Card>
+          )}
         </section>
       )}
 
-      {/* ── № 03 · Contact ── */}
+      {/* Eligibility / Requirements */}
+      {res.eligibility && (
+        <section className="px-4 mt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
+            Requirements
+          </h2>
+          <Card>
+            <p className="text-sm leading-relaxed text-white/90">
+              {res.eligibility}
+            </p>
+          </Card>
+        </section>
+      )}
+
+      {/* Contact info */}
       {(res.address || res.phone || res.website || res.hours) && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={3} size="md" />
-            <SectionKicker tone="muted">Contact</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
-
-          <EditorialCard variant="ink" border="gold" className="p-5">
-            <div className="space-y-4">
-              {res.phone && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 flex items-center justify-center shrink-0"
-                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-                  >
-                    <Icon name="phone" size={18} className="text-gold" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                      Phone
-                    </p>
-                    <a
-                      href={`tel:${res.phone}`}
-                      className="font-display text-[18px] text-gold leading-tight block mt-0.5"
-                    >
-                      {res.phone}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {res.address && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 flex items-center justify-center shrink-0"
-                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-                  >
-                    <Icon name="pin" size={18} className="text-gold" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                      Address
-                    </p>
-                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">
-                      {res.address}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {res.website && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 flex items-center justify-center shrink-0"
-                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-                  >
-                    <Icon name="globe" size={18} className="text-gold" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                      Website
-                    </p>
-                    <a
-                      href={
-                        res.website.startsWith("http")
-                          ? res.website
-                          : `https://${res.website}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[14px] text-gold font-medium truncate block mt-0.5"
-                    >
-                      {res.website}
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {res.hours && (
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-10 h-10 flex items-center justify-center shrink-0"
-                    style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-                  >
-                    <Icon name="clock" size={18} className="text-gold" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[9px] uppercase tracking-editorial-tight text-black/55">
-                      Hours
-                    </p>
-                    <p className="text-[14px] text-black/85 leading-snug mt-0.5">
-                      {res.hours}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </EditorialCard>
+        <section className="px-4 mt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
+            Contact
+          </h2>
+          <Card className="space-y-3">
+            {res.address && (
+              <div className="flex items-start gap-3">
+                <Icon name="pin" size={16} className="text-gold mt-0.5 shrink-0" />
+                <p className="text-sm text-white/90">{res.address}</p>
+              </div>
+            )}
+            {res.phone && (
+              <div className="flex items-start gap-3">
+                <Icon name="phone" size={16} className="text-gold mt-0.5 shrink-0" />
+                <a
+                  href={`tel:${res.phone}`}
+                  className="text-sm text-gold font-medium"
+                >
+                  {res.phone}
+                </a>
+              </div>
+            )}
+            {res.hours && (
+              <div className="flex items-start gap-3">
+                <Icon name="clock" size={16} className="text-gold mt-0.5 shrink-0" />
+                <p className="text-sm text-white/90">{res.hours}</p>
+              </div>
+            )}
+            {res.website && (
+              <div className="flex items-start gap-3">
+                <Icon name="globe" size={16} className="text-gold mt-0.5 shrink-0" />
+                <a
+                  href={
+                    res.website.startsWith("http")
+                      ? res.website
+                      : `https://${res.website}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gold truncate"
+                >
+                  {res.website.replace(/^https?:\/\//, "")}
+                </a>
+              </div>
+            )}
+          </Card>
         </section>
       )}
 
-      {/* ── № 04 · Tags ── */}
+      {/* Tags */}
       {res.match_tags && res.match_tags.length > 0 && (
-        <section className="px-5 mt-10">
-          <div className="mb-4 flex items-baseline gap-3">
-            <EditorialNumber n={4} size="md" />
-            <SectionKicker tone="muted">Related</SectionKicker>
-          </div>
-          <div className="rule-hairline mb-5" />
-          <div className="flex flex-wrap gap-2">
+        <section className="px-4 mt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
+            Tags
+          </h2>
+          <div className="flex flex-wrap gap-1.5">
             {res.match_tags.map((tag) => (
-              <Tag key={tag} tone="default" size="sm">
+              <span
+                key={tag}
+                className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.06] text-white/80 border border-border-subtle"
+              >
                 {tag}
-              </Tag>
+              </span>
             ))}
           </div>
         </section>
       )}
 
-      <IssueDivider label="APPLY" className="mt-12" />
-
-      {/* ── CTA Footer ── */}
-      <section className="px-5 pb-10">
-        <div className="flex gap-3">
-          <ApplyButton
-            resourceId={res.id}
-            resourceName={res.name}
-            status={res.status}
-            website={res.website}
-            phone={res.phone}
-          />
-        </div>
+      {/* Apply CTA */}
+      <section className="px-4 mt-8">
+        <ApplyButton
+          resourceId={res.id}
+          resourceName={res.name}
+          resourceSlug={res.slug}
+          acceptsApplications={res.accepts_applications}
+          status={res.status}
+          website={res.website}
+          phone={res.phone}
+        />
       </section>
     </article>
   );
