@@ -47,7 +47,13 @@ export default async function FoodChallengesPage() {
       <div className="px-5 space-y-3">
         {(challenges as FoodChallenge[] | null)?.length ? (
           (challenges as FoodChallenge[]).map((challenge) => (
-            <ChallengeCard key={challenge.id} challenge={challenge} />
+            <Link
+              key={challenge.id}
+              href={`/food/challenges/${challenge.slug}`}
+              className="block press"
+            >
+              <ChallengeCard challenge={challenge} />
+            </Link>
           ))
         ) : (
           <div

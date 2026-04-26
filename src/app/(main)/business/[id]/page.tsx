@@ -10,6 +10,7 @@ import type { Business, BusinessReview } from "@/types/database";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
 import ReviewSection from "./ReviewSection";
 import BusinessTabs from "./BusinessTabs";
+import ChallengeCard from "@/components/food/ChallengeCard";
 import HeroGallery from "@/components/business/HeroGallery";
 import ShareQrButton from "@/components/business/ShareQrButton";
 import OpenNowBadge from "@/components/business/OpenNowBadge";
@@ -292,6 +293,17 @@ export default async function BusinessDetailPage({
     .gte("valid_until", new Date().toISOString())
     .order("created_at", { ascending: false })
     .limit(3);
+
+  // Fetch active food challenges for this vendor
+  const today = new Date().toISOString().split("T")[0];
+  const { data: challengesData } = await supabase
+    .from("food_challenges")
+    .select("*")
+    .eq("business_id", biz.id)
+    .eq("is_active", true)
+    .gte("end_date", today)
+    .order("start_date", { ascending: true });
+  const activeChallenges = (challengesData ?? []) as import("@/types/database").FoodChallenge[];
 
   // Fetch services if accepts bookings
   let services: { id: string; name: string; description: string | null; duration: number; price: number }[] = [];
@@ -1287,6 +1299,21 @@ export default async function BusinessDetailPage({
         <div className="c-rule" style={{ margin: "0 18px 14px" }} />
 
         <div style={{ padding: "0 18px" }}>
+          {activeChallenges.length > 0 && (
+            <div className="mb-6">
+              <p className="c-kicker mb-3" style={{ color: "var(--ink-strong)", opacity: 0.7 }}>
+                § ACTIVE CHALLENGES
+              </p>
+              <div className="space-y-3">
+                {activeChallenges.map((ch) => (
+                  <Link key={ch.id} href={`/food/challenges/${ch.slug}`} className="block press">
+                    <ChallengeCard challenge={ch} />
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
           <Link
             href={biz.category === "restaurant" ? "/food" : "/business"}
             className="c-frame press block"

@@ -1235,6 +1235,7 @@ export interface FoodTour {
 
 export interface FoodChallenge {
   id: string;
+  business_id: string | null;
   name: string;
   slug: string;
   description: string;
@@ -1249,6 +1250,17 @@ export interface FoodChallenge {
   created_by: string;
   created_at: string;
   updated_at: string;
+  business?: { id: string; name: string; slug: string } | null;
+}
+
+export interface ChallengeCompletion {
+  id: string;
+  challenge_id: string;
+  user_id: string;
+  photo_url: string | null;
+  caption: string | null;
+  completed_at: string;
+  user?: { id: string; display_name: string; handle: string | null; avatar_url: string | null } | null;
 }
 
 // ── City Issues ──────────────────────────────────────
@@ -2274,7 +2286,8 @@ export type ExploreKind =
   | "artwork"
   | "mural"
   | "group"
-  | "group_post";
+  | "group_post"
+  | "food_challenge";
 
 export type ExploreWhoFilter =
   | "all"
@@ -2293,6 +2306,7 @@ export type ExploreWhatFilter =
   | "event"
   | "show"
   | "business"
+  | "challenge"
   | "group"
   | "culture";
 

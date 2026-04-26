@@ -292,6 +292,16 @@ export async function buildExploreFeed(
     .eq("is_published", true);
   if (cityId) groupPostsQ = groupPostsQ.eq("city_id", cityId);
 
+  // Food challenges (no city_id column — filter via business if cityId set)
+  const challengesQ = supabase
+    .from("food_challenges")
+    .select(
+      "id, slug, name, description, image_url, challenge_type, end_date, participant_count, business:businesses!inner(id, name, slug, city_id)"
+    )
+    .eq("is_active", true)
+    .gte("end_date", todayISO)
+    .order("end_date", { ascending: true });
+
   const [
     { data: creatorRows },
     { data: postRows },
@@ -303,6 +313,7 @@ export async function buildExploreFeed(
     { data: muralRows },
     { data: groupRows },
     { data: groupPostRows },
+    { data: challengeRows },
   ] = await Promise.all([
     creatorsQ.limit(30),
     postsQ.order("created_at", { ascending: false }).limit(20),
@@ -326,6 +337,7 @@ export async function buildExploreFeed(
     muralsQ.limit(8),
     groupsQ.order("member_count", { ascending: false }).limit(8),
     groupPostsQ.order("created_at", { ascending: false }).limit(15),
+    challengesQ.limit(12),
   ]);
 
   const items: ExploreItem[] = [];
@@ -487,6 +499,32 @@ export async function buildExploreFeed(
       subtitle: gp.body?.slice(0, 80) ?? undefined,
       aspectHint: "portrait",
       chip: { label: "Group", variant: "blue" },
+    });
+  }
+
+  for (const ch of (challengeRows ?? []) as unknown as Array<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    end_date: string;
+    participant_count: number;
+    business: { id: string; name: string; slug: string; city_id: string | null } | { id: string; name: string; slug: string; city_id: string | null }[] | null;
+  }>) {
+    const biz = Array.isArray(ch.business) ? ch.business[0] : ch.business;
+    if (cityId && biz?.city_id && biz.city_id !== cityId) continue;
+    items.push({
+      id: `food_challenge:${ch.id}`,
+      kind: "food_challenge",
+      href: `/food/challenges/${ch.slug}`,
+      image_url: ch.image_url,
+      title: ch.name,
+      subtitle: biz?.name ?? ch.description?.slice(0, 80) ?? undefined,
+      accentColor: "#F2A900",
+      aspectHint: "landscape",
+      chip: { label: "Challenge", variant: "gold" },
+      meta: { date: ch.end_date },
     });
   }
 
