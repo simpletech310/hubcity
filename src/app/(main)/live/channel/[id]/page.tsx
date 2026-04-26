@@ -74,6 +74,15 @@ export default async function ChannelDetailPage({
     .order("day_of_week", { ascending: true })
     .order("start_time", { ascending: true });
 
+  // Fetch albums tied to this channel (for the Music shelf)
+  const { data: rawAlbums } = await supabase
+    .from("albums")
+    .select("id, slug, title, cover_art_url, release_type, release_date")
+    .eq("channel_id", channel.id)
+    .eq("is_published", true)
+    .order("release_date", { ascending: false, nullsFirst: false })
+    .limit(12);
+
   // Check follow status
   const {
     data: { user },
@@ -109,6 +118,16 @@ export default async function ChannelDetailPage({
       videos={(rawVideos as ChannelVideo[]) || []}
       streams={(rawStreams as LiveStream[]) || []}
       timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
+      albums={
+        (rawAlbums as Array<{
+          id: string;
+          slug: string;
+          title: string;
+          cover_art_url: string | null;
+          release_type: string | null;
+          release_date: string | null;
+        }>) ?? []
+      }
       isFollowing={isFollowing}
       userId={user?.id || null}
       stripeAccountId={stripeAccountId}

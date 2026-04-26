@@ -7,8 +7,8 @@ import {
   SectionKicker,
   IssueDivider,
 } from "@/components/ui/editorial";
-import PullQuote from "@/components/ui/PullQuote";
 import ProfileHero from "@/components/profile/ProfileHero";
+import ProfileMusicShelf from "@/components/profile/ProfileMusicShelf";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileBusinessStrip from "@/components/profile/ProfileBusinessStrip";
 import ProfileDealsRow from "@/components/profile/ProfileDealsRow";
@@ -138,6 +138,7 @@ export default async function PublicProfilePage({
     { data: reelsRaw },
     { data: ownedResourcesRaw },
     { data: ownedBusinessesRaw },
+    { data: albumsRaw },
   ] = await Promise.all([
     supabase
       .from("posts")
@@ -200,6 +201,14 @@ export default async function PublicProfilePage({
       .order("is_featured", { ascending: false })
       .order("created_at", { ascending: false })
       .limit(1),
+    // Albums (music releases) — singles, EPs, albums, mixtapes
+    supabase
+      .from("albums")
+      .select("id, slug, title, cover_art_url, release_type, release_date")
+      .eq("creator_id", profile.id)
+      .eq("is_published", true)
+      .order("release_date", { ascending: false, nullsFirst: false })
+      .limit(12),
   ]);
 
   const channel = (channels?.[0] as Channel | undefined) ?? null;
@@ -208,6 +217,14 @@ export default async function PublicProfilePage({
   const gallery = (galleryRaw ?? []) as ProfileGalleryImage[];
   const profileReels = (reelsRaw ?? []) as unknown as Reel[];
   const ownedResources = (ownedResourcesRaw ?? []) as ResourceTile[];
+  const profileAlbums = (albumsRaw ?? []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    cover_art_url: string | null;
+    release_type: string | null;
+    release_date: string | null;
+  }>;
 
   // Viewer's reactions on this profile's posts (for the grid overlay).
   const userReactions: Record<string, ReactionEmoji[]> = {};
@@ -434,6 +451,7 @@ export default async function PublicProfilePage({
   // with what we actually render below. Order defines the reading flow.
   const numberedSections: string[] = ["posts"];
   if (profileReels.length > 0 || isOwner) numberedSections.push("reels");
+  if (profileAlbums.length > 0) numberedSections.push("music");
   if (events.length > 0) numberedSections.push("events");
   if (channel) numberedSections.push("channel");
   if (ownedBusiness) numberedSections.push("business");
@@ -482,16 +500,6 @@ export default async function PublicProfilePage({
         </section>
       )}
 
-      {/* --- PULL QUOTE (bio) --- */}
-      {profile.bio && (
-        <div className="px-6 py-9">
-          <PullQuote
-            quote={profile.bio}
-            attribution={profile.display_name}
-            size="lg"
-          />
-        </div>
-      )}
 
       {/* --- № 01 POSTS --- */}
       <section className="pt-5 pb-2">
@@ -539,6 +547,33 @@ export default async function PublicProfilePage({
               showSeeAll={false}
               canPost={isOwner}
             />
+          </section>
+        </>
+      )}
+
+      {/* --- MUSIC (albums / EPs / singles) --- */}
+      {profileAlbums.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("music")} size="lg" />
+                <SectionKicker tone="muted">Music</SectionKicker>
+              </div>
+              <span
+                className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums"
+                style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+              >
+                {profileAlbums.length} {profileAlbums.length === 1 ? "RELEASE" : "RELEASES"}
+              </span>
+            </div>
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
+            </div>
+            <div className="px-5">
+              <ProfileMusicShelf albums={profileAlbums} />
+            </div>
           </section>
         </>
       )}

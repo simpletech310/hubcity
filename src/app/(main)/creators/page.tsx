@@ -3,8 +3,9 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
-import CreatorFeaturedTile from "@/components/creators/CreatorFeaturedTile";
+import CreatorCard, { type WorkItem } from "@/components/creators/CreatorCard";
 import { resolveFeaturedMedia, type FeaturedMedia } from "@/lib/featured-media";
+import { deriveDiscipline } from "@/lib/creator-discipline";
 
 // Valid user_role enum values that count as a "creator" in Discover.
 const CREATOR_ROLES = [
@@ -43,6 +44,7 @@ type CreatorProfile = {
   role: string | null;
   verification_status: string | null;
   profile_tags: string[] | null;
+  creator_tier: "starter" | "rising" | "partner" | "premium" | null;
   featured_kind: "reel" | "video" | "post" | "track" | "exhibit" | null;
   featured_id: string | null;
   featured_caption: string | null;
@@ -114,7 +116,7 @@ export default async function CreatorsPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, featured_kind, featured_id, featured_caption, city:cities!profiles_city_id_fkey(slug, name)"
+      "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, creator_tier, featured_kind, featured_id, featured_caption, city:cities!profiles_city_id_fkey(slug, name)"
     )
     .in("role", CREATOR_ROLES as unknown as string[])
     .not("handle", "is", null);
@@ -135,9 +137,9 @@ export default async function CreatorsPage({
   const creatorIds = creators.map((c) => c.id);
   const nowISO = new Date().toISOString();
 
-  const [postsRes, reelsRes, channelsRes] =
+  const [postsRes, reelsRes, channelsRes, albumsRes, galleryRes] =
     creatorIds.length === 0
-      ? [{ data: [] }, { data: [] }, { data: [] }]
+      ? [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }]
       : await Promise.all([
           supabase
             .from("posts")
@@ -159,11 +161,28 @@ export default async function CreatorsPage({
             .select("id, slug, name, owner_id, follower_count")
             .in("owner_id", creatorIds)
             .eq("is_active", true),
+          supabase
+            .from("albums")
+            .select("id, slug, title, cover_art_url, creator_id, release_date")
+            .in("creator_id", creatorIds)
+            .eq("is_published", true)
+            .order("release_date", { ascending: false, nullsFirst: false })
+            .limit(60),
+          supabase
+            .from("profile_gallery_images")
+            .select("id, image_url, caption, owner_id, display_order")
+            .in("owner_id", creatorIds)
+            .order("display_order", { ascending: true })
+            .limit(60),
         ]);
 
   const posts = (postsRes.data ?? []) as CreatorPost[];
   const reels = (reelsRes.data ?? []) as CreatorReel[];
   const channels = (channelsRes.data ?? []) as CreatorChannel[];
+  type CreatorAlbum = { id: string; slug: string; title: string; cover_art_url: string | null; creator_id: string };
+  type CreatorGalleryImage = { id: string; image_url: string; caption: string | null; owner_id: string };
+  const albums = (albumsRes.data ?? []) as CreatorAlbum[];
+  const galleryImages = (galleryRes.data ?? []) as CreatorGalleryImage[];
 
   const channelIds = channels.map((c) => c.id);
   let videos: CreatorVideo[] = [];
@@ -203,6 +222,19 @@ export default async function CreatorsPage({
   }
   const creatorById = new Map<string, CreatorProfile>();
   for (const c of creators) creatorById.set(c.id, c);
+
+  const albumsByCreator = new Map<string, CreatorAlbum[]>();
+  for (const a of albums) {
+    const arr = albumsByCreator.get(a.creator_id) ?? [];
+    arr.push(a);
+    albumsByCreator.set(a.creator_id, arr);
+  }
+  const galleryByOwner = new Map<string, CreatorGalleryImage[]>();
+  for (const g of galleryImages) {
+    const arr = galleryByOwner.get(g.owner_id) ?? [];
+    arr.push(g);
+    galleryByOwner.set(g.owner_id, arr);
+  }
 
   // Resolve pinned featured-media for any creator who pinned one.
   const featuredByCreator = new Map<string, FeaturedMedia>();
@@ -985,429 +1017,137 @@ export default async function CreatorsPage({
       )}
 
       {remainingCreators.map((creator, idx) => {
-        const creatorPosts = (postsByCreator.get(creator.id) ?? []).slice(0, 6);
-        const creatorReels = (reelsByCreator.get(creator.id) ?? []).slice(0, 5);
+        const creatorPosts = postsByCreator.get(creator.id) ?? [];
+        const creatorReels = reelsByCreator.get(creator.id) ?? [];
         const channel = channelByOwner.get(creator.id);
-        const creatorVideos = channel
-          ? (videosByChannel.get(channel.id) ?? []).slice(0, 4)
-          : [];
+        const creatorVideos = channel ? videosByChannel.get(channel.id) ?? [] : [];
+        const creatorAlbums = albumsByCreator.get(creator.id) ?? [];
+        const creatorGallery = galleryByOwner.get(creator.id) ?? [];
+        const imagePosts = creatorPosts.filter((p) => p.image_url);
 
-        const initials = creator.display_name
-          .split(" ")
-          .map((w) => w[0])
-          .join("")
-          .slice(0, 2)
-          .toUpperCase();
-
-        const roleLabel = creator.role
-          ? ROLE_LABEL[creator.role as RoleKey] ?? creator.role
-          : null;
-
-        // Numbered section: Cover = 00, Hot Right Now = 01, roster starts at 02
         const sectionNum = String(idx + 2).padStart(2, "0");
 
-        const imagePosts = creatorPosts.filter((p) => p.image_url);
-        const totalMedia = creatorReels.length + imagePosts.length + creatorVideos.length;
+        const stats = {
+          reels: creatorReels.length,
+          videos: creatorVideos.length,
+          posts: imagePosts.length,
+          tracks: creatorAlbums.length,
+        };
+
+        const discipline = deriveDiscipline(
+          { role: creator.role },
+          {
+            reels: creatorReels.length,
+            videos: creatorVideos.length,
+            tracks: creatorAlbums.length,
+            image_posts: imagePosts.length,
+          }
+        );
+
+        // Featured: pinned > algorithmic fallback (video → reel → post → album → exhibit)
+        let featured: FeaturedMedia | null = featuredByCreator.get(creator.id) ?? null;
+        if (!featured) {
+          if (creatorVideos.length > 0) {
+            const v = creatorVideos[0];
+            featured = {
+              kind: "video",
+              id: v.id,
+              mux_playback_id: v.mux_playback_id ?? null,
+              title: v.title,
+              description: null,
+              duration_seconds: v.duration ?? null,
+              thumbnail_url:
+                v.thumbnail_url ??
+                (v.mux_playback_id
+                  ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=800&height=450&time=5`
+                  : null),
+            };
+          } else if (creatorReels.length > 0) {
+            const r = creatorReels[0];
+            featured = {
+              kind: "reel",
+              id: r.id,
+              video_url: r.video_url,
+              poster_url: r.poster_url,
+              caption: r.caption,
+              duration_seconds: null,
+            };
+          } else if (imagePosts.length > 0) {
+            const p = imagePosts[0];
+            featured = {
+              kind: "post",
+              id: p.id,
+              image_url: p.image_url!,
+              body: p.body ?? null,
+            };
+          } else if (creatorAlbums.length > 0) {
+            const a = creatorAlbums[0];
+            featured = {
+              kind: "track",
+              id: a.id,
+              title: a.title,
+              cover_art_url: a.cover_art_url,
+              mux_playback_id: null,
+              preview_seconds: null,
+              duration_seconds: null,
+              album_id: a.id,
+              album_title: a.title,
+            };
+          } else if (creatorGallery.length > 0) {
+            const g = creatorGallery[0];
+            featured = {
+              kind: "exhibit",
+              id: g.id,
+              image_url: g.image_url,
+              caption: g.caption,
+            };
+          }
+        }
+
+        // Build a flat WorkItem[] for the portfolio grid (uniform 1:1 squares)
+        const work: WorkItem[] = [];
+        for (const r of creatorReels) {
+          work.push({ id: r.id, kind: "reel", thumb: r.poster_url, href: `/reels?reel=${r.id}` });
+        }
+        for (const v of creatorVideos) {
+          const thumb =
+            v.thumbnail_url ??
+            (v.mux_playback_id
+              ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=400&height=400&time=5`
+              : null);
+          work.push({ id: v.id, kind: "video", thumb, href: `/live/watch/${v.id}`, label: v.title });
+        }
+        for (const p of imagePosts) {
+          work.push({ id: p.id, kind: "post", thumb: p.image_url, href: `/user/${creator.handle}` });
+        }
+        for (const a of creatorAlbums) {
+          work.push({ id: a.id, kind: "track", thumb: a.cover_art_url, href: `/user/${creator.handle}`, label: a.title });
+        }
+        for (const g of creatorGallery) {
+          work.push({ id: g.id, kind: "exhibit", thumb: g.image_url, href: `/user/${creator.handle}`, label: g.caption });
+        }
+        const workFiltered = featured
+          ? work.filter((w) => !(w.id === featured!.id && w.kind === featured!.kind))
+          : work;
 
         return (
-          <section
+          <CreatorCard
             key={creator.id}
-            style={{ borderTop: "2px solid var(--rule-strong-c)" }}
-          >
-            {/* ─ Section header bar ─ */}
-            <div
-              className="px-5 py-3 flex items-center justify-between"
-              style={{
-                background: "var(--paper)",
-                borderBottom: "1px solid var(--rule-strong-c)",
-              }}
-            >
-              <div className="flex items-baseline gap-2.5">
-                <span
-                  className="c-display c-tabnum"
-                  style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)", letterSpacing: "-0.02em" }}
-                >
-                  № {sectionNum}
-                </span>
-                {roleLabel && (
-                  <span className="c-kicker" style={{ fontSize: 9, color: "var(--ink-strong)", letterSpacing: "0.14em" }}>
-                    {roleLabel.toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <span
-                className="c-kicker"
-                style={{ fontSize: 9, opacity: 0.5 }}
-              >
-                {creator.city?.name?.toUpperCase() ?? "EVERYWHERE"}
-              </span>
-            </div>
-
-            {/* ─ Creator identity row ─ */}
-            <div
-              className="px-5 pt-5 pb-4 flex items-start gap-4"
-              style={{ background: "var(--paper)" }}
-            >
-              {/* Square avatar — bigger, gold inner frame for premium feel */}
-              <Link href={`/user/${creator.handle}`} className="shrink-0 relative">
-                <div
-                  className="overflow-hidden relative"
-                  style={{
-                    width: 84,
-                    height: 84,
-                    border: "2px solid var(--rule-strong-c)",
-                    background: "var(--ink-strong)",
-                    boxShadow: "3px 3px 0 var(--gold-c)",
-                  }}
-                >
-                  {creator.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={creator.avatar_url}
-                      alt={creator.display_name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span
-                        className="c-card-t"
-                        style={{ fontSize: 28, color: "var(--gold-c)" }}
-                      >
-                        {initials}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0 pt-0.5">
-                <div className="flex items-start gap-1.5">
-                  <Link href={`/user/${creator.handle}`} className="min-w-0">
-                    <h2
-                      className="c-hero"
-                      style={{
-                        fontSize: 26,
-                        color: "var(--ink-strong)",
-                        lineHeight: 0.98,
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      {creator.display_name}
-                    </h2>
-                  </Link>
-                  {creator.verification_status === "verified" && (
-                    <svg
-                      width="15"
-                      height="15"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      className="shrink-0 mt-1"
-                      style={{ color: "var(--gold-c)" }}
-                    >
-                      <path
-                        d="M9 12l2 2 4-4"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                    </svg>
-                  )}
-                </div>
-                {creator.handle && (
-                  <p className="c-kicker mt-1" style={{ fontSize: 9, opacity: 0.55, color: "var(--gold-c)" }}>
-                    @{creator.handle}
-                  </p>
-                )}
-                {creator.bio && (
-                  <p
-                    className="c-serif-it mt-2 line-clamp-2"
-                    style={{ fontSize: 13, color: "var(--ink-strong)", lineHeight: 1.35, opacity: 0.85 }}
-                  >
-                    {creator.bio}
-                  </p>
-                )}
-                {creator.profile_tags && creator.profile_tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2.5">
-                    {creator.profile_tags.slice(0, 3).map((tag) => (
-                      <span
-                        key={tag}
-                        className="c-kicker"
-                        style={{
-                          fontSize: 9,
-                          color: "var(--ink-strong)",
-                          padding: "3px 7px",
-                          border: "1.5px solid var(--rule-strong-c)",
-                          background: "var(--paper-warm)",
-                        }}
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* ─ Featured tile (creator-pinned) ─ */}
-            {featuredByCreator.has(creator.id) && (
-              <div className="px-5 pb-4" style={{ background: "var(--paper)" }}>
-                <p className="c-kicker mb-2" style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.16em" }}>
-                  § FEATURED
-                </p>
-                <CreatorFeaturedTile media={featuredByCreator.get(creator.id)!} aspect="16/10" />
-              </div>
-            )}
-
-            {/* ─ Mini stats slab — compact tally for credibility ─ */}
-            {totalMedia > 0 && (
-              <div
-                className="px-5 pb-3 flex items-center gap-4"
-                style={{ background: "var(--paper)" }}
-              >
-                {creatorReels.length > 0 && (
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
-                      {creatorReels.length}
-                    </span>
-                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>MOMENTS</span>
-                  </div>
-                )}
-                {creatorVideos.length > 0 && (
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
-                      {creatorVideos.length}
-                    </span>
-                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>VIDEOS</span>
-                  </div>
-                )}
-                {imagePosts.length > 0 && (
-                  <div className="flex items-baseline gap-1.5">
-                    <span className="c-display c-tabnum" style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1 }}>
-                      {imagePosts.length}
-                    </span>
-                    <span className="c-kicker" style={{ fontSize: 8, opacity: 0.55 }}>POSTS</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* ─ Media strip ─ */}
-            {(creatorReels.length > 0 || imagePosts.length > 0 || creatorVideos.length > 0) && (
-              <div
-                className="flex overflow-x-auto scrollbar-hide gap-1.5 pb-3"
-                style={{ paddingLeft: 20, paddingRight: 20 }}
-              >
-                {/* Reels — narrow 9:16 */}
-                {creatorReels.slice(0, 4).map((r) => (
-                  <Link
-                    key={r.id}
-                    href="/reels"
-                    className="shrink-0 press"
-                    style={{ width: 96 }}
-                  >
-                    <div
-                      className="relative overflow-hidden"
-                      style={{
-                        aspectRatio: "9/16",
-                        background: "var(--ink-strong)",
-                        border: "2px solid var(--rule-strong-c)",
-                      }}
-                    >
-                      {r.poster_url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={r.poster_url}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          background: "linear-gradient(180deg, rgba(26,21,18,0.2) 0%, transparent 50%, rgba(26,21,18,0.6) 100%)",
-                        }}
-                      />
-                      {/* REEL chip */}
-                      <div
-                        className="absolute top-1 left-1 px-1 inline-flex items-center"
-                        style={{
-                          background: "var(--paper)",
-                          border: "1.5px solid var(--rule-strong-c)",
-                          height: 13,
-                        }}
-                      >
-                        <span className="c-kicker" style={{ fontSize: 6.5 }}>
-                          REEL
-                        </span>
-                      </div>
-                      {/* Play */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div
-                          style={{
-                            width: 22,
-                            height: 22,
-                            background: "var(--gold-c)",
-                            border: "1.5px solid var(--paper)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <svg width="7" height="7" fill="var(--ink-strong)" viewBox="0 0 10 10">
-                            <polygon points="3,2 8.5,5 3,8" />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-
-                {/* Image posts — square */}
-                {imagePosts.slice(0, 3).map((p) => (
-                  <Link
-                    key={p.id}
-                    href={`/user/${creator.handle}`}
-                    className="shrink-0 press"
-                    style={{ width: 96 }}
-                  >
-                    <div
-                      className="relative overflow-hidden"
-                      style={{
-                        aspectRatio: "1/1",
-                        background: "var(--ink-strong)",
-                        border: "2px solid var(--rule-strong-c)",
-                      }}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={p.image_url!}
-                        alt=""
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </Link>
-                ))}
-
-                {/* Channel videos — 16:9, wider */}
-                {creatorVideos.slice(0, 3).map((v) => {
-                  const thumb =
-                    v.thumbnail_url ??
-                    (v.mux_playback_id
-                      ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=240&height=135&time=5`
-                      : null);
-                  return (
-                    <Link
-                      key={v.id}
-                      href={`/live/watch/${v.id}`}
-                      className="shrink-0 press"
-                      style={{ width: 168 }}
-                    >
-                      <div
-                        className="relative overflow-hidden"
-                        style={{
-                          aspectRatio: "16/9",
-                          background: "var(--ink-strong)",
-                          border: "2px solid var(--rule-strong-c)",
-                        }}
-                      >
-                        {thumb && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={thumb}
-                            alt={v.title}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                        <div
-                          className="absolute inset-0"
-                          style={{
-                            background: "linear-gradient(180deg, transparent 50%, rgba(26,21,18,0.7) 100%)",
-                          }}
-                        />
-                        {/* Play */}
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div
-                            style={{
-                              width: 22,
-                              height: 22,
-                              background: "var(--gold-c)",
-                              border: "1.5px solid var(--paper)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <svg width="7" height="7" fill="var(--ink-strong)" viewBox="0 0 10 10">
-                              <polygon points="3,2 8.5,5 3,8" />
-                            </svg>
-                          </div>
-                        </div>
-                        {/* Duration */}
-                        {v.duration && (
-                          <div
-                            className="absolute bottom-1 right-1 c-kicker px-1"
-                            style={{ background: "rgba(0,0,0,0.75)", color: "#fff", fontSize: 7 }}
-                          >
-                            {Math.floor(v.duration / 60)}:
-                            {Math.floor(v.duration % 60)
-                              .toString()
-                              .padStart(2, "0")}
-                          </div>
-                        )}
-                      </div>
-                      <p
-                        className="c-kicker mt-1 line-clamp-1"
-                        style={{ fontSize: 9, color: "var(--ink-mute)" }}
-                      >
-                        {v.title}
-                      </p>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-
-            {/* ─ Channel callout ─ */}
-            {channel && (
-              <div
-                className="px-5 pb-3 flex items-center gap-2"
-              >
-                <Icon name="film" size={11} style={{ color: "var(--gold-c)" }} />
-                <Link
-                  href={`/live/channel/${channel.slug || channel.id}`}
-                  className="c-kicker"
-                  style={{ fontSize: 9, color: "var(--gold-c)" }}
-                >
-                  {channel.name.toUpperCase()} · CHANNEL ↗
-                </Link>
-                {channel.follower_count > 0 && (
-                  <span className="c-kicker" style={{ fontSize: 9, opacity: 0.45 }}>
-                    {channel.follower_count.toLocaleString()} followers
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* ─ View profile CTA bar ─ */}
-            <Link
-              href={`/user/${creator.handle}`}
-              className="flex items-center justify-between px-5 py-3 press"
-              style={{
-                borderTop: "2px solid var(--rule-strong-c)",
-                background: "var(--paper-warm)",
-              }}
-            >
-              <span className="c-kicker" style={{ fontSize: 9 }}>
-                VIEW PROFILE
-              </span>
-              <span className="c-kicker" style={{ fontSize: 9, color: "var(--gold-c)" }}>
-                @{creator.handle} ↗
-              </span>
-            </Link>
-          </section>
+            id={creator.id}
+            display_name={creator.display_name}
+            handle={creator.handle}
+            avatar_url={creator.avatar_url}
+            bio={creator.bio}
+            verified={creator.verification_status === "verified"}
+            profile_tags={creator.profile_tags}
+            city={creator.city?.name ?? null}
+            featured={featured}
+            work={workFiltered.slice(0, 6)}
+            stats={stats}
+            discipline={discipline}
+            tier={creator.creator_tier ?? null}
+            sectionNum={sectionNum}
+          />
         );
       })}
 

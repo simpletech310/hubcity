@@ -7,6 +7,7 @@ import Badge from "@/components/ui/Badge";
 import StreamCard from "./StreamCard";
 import ChannelSubscribeButton from "./ChannelSubscribeButton";
 import TipJar from "@/components/TipJar";
+import ProfileMusicShelf from "@/components/profile/ProfileMusicShelf";
 import type {
   Channel,
   ChannelVideo,
@@ -80,11 +81,21 @@ function formatTimeBlock(time: string) {
   return `${displayHour}:${m} ${ampm}`;
 }
 
+interface ChannelAlbum {
+  id: string;
+  slug: string;
+  title: string;
+  cover_art_url: string | null;
+  release_type: string | null;
+  release_date: string | null;
+}
+
 interface ChannelPageProps {
   channel: Channel;
   videos: ChannelVideo[];
   streams: LiveStream[];
   timeBlocks: TimeBlock[];
+  albums?: ChannelAlbum[];
   isFollowing: boolean;
   userId: string | null;
   stripeAccountId: string | null;
@@ -95,6 +106,7 @@ export default function ChannelPage({
   videos,
   streams,
   timeBlocks,
+  albums = [],
   isFollowing: initialFollowing,
   userId,
   stripeAccountId,
@@ -733,6 +745,37 @@ export default function ChannelPage({
                 </section>
               )}
             </>
+          )}
+
+          {/* ── Music shelf (albums tied to this channel) ── */}
+          {albums.length > 0 && (
+            <section className="mt-8 mb-2">
+              <div className="px-5 mb-3">
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-display c-tabnum"
+                    style={{ fontSize: 22, color: "var(--gold-c)", lineHeight: 1, letterSpacing: "-0.02em" }}
+                  >
+                    §
+                  </span>
+                  <span className="c-kicker" style={{ fontSize: 11, letterSpacing: "0.14em" }}>
+                    MUSIC
+                  </span>
+                  <span
+                    className="ml-auto c-kicker tabular-nums"
+                    style={{ fontSize: 9, opacity: 0.55 }}
+                  >
+                    {albums.length} {albums.length === 1 ? "RELEASE" : "RELEASES"}
+                  </span>
+                </div>
+              </div>
+              <div className="px-5">
+                <ProfileMusicShelf albums={albums} />
+              </div>
+            </section>
           )}
         </div>
       )}
