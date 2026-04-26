@@ -104,33 +104,11 @@ export default async function ResourceDetailPage({
 
   return (
     <article className="culture-surface min-h-dvh animate-fade-in pb-24">
-      {/* Header bar */}
-      <div className="px-5 pt-4 pb-3 flex items-center justify-between">
-        <Link
-          href="/resources"
-          className="c-kicker inline-flex items-center gap-1.5 press"
-          style={{ color: "var(--ink-strong)" }}
-        >
-          <svg
-            width="14"
-            height="14"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-          >
-            <path d="M10 12L6 8l4-4" />
-          </svg>
-          Back
-        </Link>
-        <SaveButton itemType="resource" itemId={res.id} />
-      </div>
-
-      {/* Hero image */}
-      {res.image_url && (
+      {/* Hero image with overlaid back/save */}
+      {res.image_url ? (
         <div
           className="relative w-full aspect-[16/10] overflow-hidden"
-          style={{ borderTop: "2px solid var(--rule-strong-c)", borderBottom: "2px solid var(--rule-strong-c)" }}
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
         >
           <Image
             src={res.image_url}
@@ -140,6 +118,47 @@ export default async function ResourceDetailPage({
             className="object-cover"
             priority
           />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/55 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 px-4 pt-4 flex items-center justify-between z-10">
+            <Link
+              href="/resources"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.14em] press"
+              style={{ background: "rgba(0,0,0,0.55)", color: "#fff", border: "2px solid rgba(255,255,255,0.2)" }}
+            >
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              >
+                <path d="M10 12L6 8l4-4" />
+              </svg>
+              Back
+            </Link>
+            <SaveButton itemType="resource" itemId={res.id} />
+          </div>
+        </div>
+      ) : (
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between">
+          <Link
+            href="/resources"
+            className="c-kicker inline-flex items-center gap-1.5 press"
+            style={{ color: "var(--ink-strong)" }}
+          >
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <path d="M10 12L6 8l4-4" />
+            </svg>
+            Back
+          </Link>
         </div>
       )}
 
