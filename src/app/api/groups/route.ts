@@ -108,7 +108,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, description, category, image_url, is_public } = body;
+    const { name, description, category, image_url, is_public, tags } = body;
 
     if (!name) {
       return NextResponse.json(
@@ -129,6 +129,7 @@ export async function POST(request: Request) {
         slug,
         description: description || null,
         category: category || "other",
+        tags: Array.isArray(tags) ? tags : [],
         image_url: image_url || null,
         is_public: is_public !== false,
         created_by: user.id,

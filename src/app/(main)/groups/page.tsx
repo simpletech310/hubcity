@@ -11,6 +11,8 @@ import type { IconName } from "@/components/ui/Icon";
 import { useSearchParams } from "next/navigation";
 import { useKnownCities } from "@/hooks/useActiveCity";
 import CityFilterChip from "@/components/ui/CityFilterChip";
+import TagPicker from "@/components/ui/TagPicker";
+import TagFilterRow from "@/components/ui/TagFilterRow";
 
 const CATEGORY_ICONS: Record<string, string> = {
   neighborhood: "house",
@@ -70,7 +72,11 @@ export default function GroupsPage() {
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newCategory, setNewCategory] = useState("other");
+  const [newTags, setNewTags] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
+
+  // Tag filter (interest tag) — separate from the category chip filter.
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -93,13 +99,17 @@ export default function GroupsPage() {
   // Filter out private groups client-side
   const publicGroups = groups.filter((g) => g.is_public !== false);
 
+  const tagFiltered = tagFilter
+    ? publicGroups.filter((g) => Array.isArray(g.tags) && g.tags.includes(tagFilter))
+    : publicGroups;
+
   const filteredGroups = search.trim()
-    ? publicGroups.filter(
+    ? tagFiltered.filter(
         (g) =>
           g.name.toLowerCase().includes(search.toLowerCase()) ||
           (g.description && g.description.toLowerCase().includes(search.toLowerCase()))
       )
-    : publicGroups;
+    : tagFiltered;
 
   async function handleJoin(groupId: string) {
     setJoining(groupId);
@@ -130,6 +140,7 @@ export default function GroupsPage() {
         name: newName.trim(),
         description: newDesc.trim() || null,
         category: newCategory,
+        tags: newTags,
       }),
     });
     if (res.ok) {
@@ -139,6 +150,7 @@ export default function GroupsPage() {
       setShowCreate(false);
       setNewName("");
       setNewDesc("");
+      setNewTags([]);
     }
     setCreating(false);
   }
@@ -224,6 +236,12 @@ export default function GroupsPage() {
                 />
               ))}
             </div>
+            <div>
+              <p className="text-[10px] mb-2" style={{ color: "var(--ink-strong)", opacity: 0.7 }}>
+                Pick up to 5 interest tags so people can find your group.
+              </p>
+              <TagPicker selected={newTags} onChange={setNewTags} max={5} />
+            </div>
             <div className="flex gap-2">
               <Button onClick={handleCreate} loading={creating}>Create</Button>
               <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancel</Button>
@@ -265,6 +283,12 @@ export default function GroupsPage() {
             }}
           />
         </div>
+      </div>
+
+      {/* Interest tag filter */}
+      <div className="px-4 mb-2">
+        <p className="c-kicker mb-2 px-1" style={{ fontSize: 10, opacity: 0.7 }}>§ FILTER BY INTEREST</p>
+        <TagFilterRow value={tagFilter} onChange={setTagFilter} />
       </div>
 
       {/* Category Filters */}

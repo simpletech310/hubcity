@@ -175,6 +175,7 @@ export interface Event {
   slug: string;
   description: string | null;
   category: EventCategory;
+  tags: string[];
   start_date: string;
   start_time: string | null;
   end_date: string | null;
@@ -1499,6 +1500,7 @@ export interface CommunityGroup {
   slug: string;
   description: string | null;
   category: GroupCategory;
+  tags: string[];
   image_url: string | null;
   avatar_url: string | null;
   is_public: boolean;

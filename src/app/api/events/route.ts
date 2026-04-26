@@ -106,6 +106,7 @@ export async function POST(request: Request) {
         slug,
         description: body.description?.trim() || null,
         category: body.category || "community",
+        tags: Array.isArray(body.tags) ? body.tags : [],
         start_date: body.start_date,
         start_time: body.start_time || null,
         end_date: body.end_date || null,

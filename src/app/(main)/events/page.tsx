@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { useKnownCities } from "@/hooks/useActiveCity";
 import CityFilterChip from "@/components/ui/CityFilterChip";
+import TagFilterRow from "@/components/ui/TagFilterRow";
 import type { Event } from "@/types/database";
 
 const categories: { label: string; value: string; icon: IconName }[] = [
@@ -71,6 +72,7 @@ export default function EventsPage() {
     [filterCitySlug, cities],
   );
   const [activeCategory, setActiveCategory] = useState("all");
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
@@ -95,12 +97,16 @@ export default function EventsPage() {
         query = query.eq("category", activeCategory);
       }
 
+      if (tagFilter) {
+        query = query.contains("tags", [tagFilter]);
+      }
+
       const { data } = await query;
       setEvents((data as Event[]) ?? []);
       setLoading(false);
     }
     fetchEvents();
-  }, [activeCategory, filterCity?.id]);
+  }, [activeCategory, tagFilter, filterCity?.id]);
 
   const featured = useMemo(() => events.filter((e) => e.is_featured), [events]);
   const todayEvents = useMemo(() => events.filter((e) => isToday(e.start_date)), [events]);
@@ -289,6 +295,12 @@ export default function EventsPage() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Interest tag filter */}
+      <div className="px-[14px] mb-2">
+        <p className="c-kicker mb-2 px-1" style={{ fontSize: 10, opacity: 0.7 }}>§ FILTER BY INTEREST</p>
+        <TagFilterRow value={tagFilter} onChange={setTagFilter} />
       </div>
 
       {/* ══════════════════════════════════════════════════════

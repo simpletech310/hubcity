@@ -9,6 +9,7 @@ import Chip from "@/components/ui/Chip";
 import { createClient } from "@/lib/supabase/client";
 import type { Event, EventCategory, Venue, VenueSection } from "@/types/database";
 import Icon from "@/components/ui/Icon";
+import TagPicker from "@/components/ui/TagPicker";
 
 const categories: EventCategory[] = [
   "city", "sports", "culture", "community", "school", "youth",
@@ -40,6 +41,7 @@ export default function EventForm({ event }: EventFormProps) {
   // Core event fields
   const [title, setTitle] = useState(event?.title ?? "");
   const [category, setCategory] = useState<EventCategory>(event?.category ?? "community");
+  const [tags, setTags] = useState<string[]>(event?.tags ?? []);
   const [description, setDescription] = useState(event?.description ?? "");
   const [startDate, setStartDate] = useState(event?.start_date ?? "");
   const [startTime, setStartTime] = useState(event?.start_time ?? "");
@@ -159,6 +161,7 @@ export default function EventForm({ event }: EventFormProps) {
       title: title.trim(),
       slug,
       category,
+      tags,
       description: description.trim() || null,
       start_date: startDate,
       start_time: startTime || null,
@@ -245,6 +248,14 @@ export default function EventForm({ event }: EventFormProps) {
               <Chip key={cat} label={cat} active={category === cat} onClick={() => setCategory(cat)} />
             ))}
           </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-txt-secondary mb-2">Interest Tags</label>
+          <p className="text-xs text-txt-secondary mb-2">
+            Pick up to 5 tags so people can find this event by interest (Health, Youth, Tech…).
+          </p>
+          <TagPicker selected={tags} onChange={setTags} max={5} />
         </div>
 
         <div>

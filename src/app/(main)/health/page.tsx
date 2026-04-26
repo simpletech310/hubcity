@@ -36,50 +36,6 @@ const categoryLabels: Record<string, string> = {
 
 type FilterTag = "free" | "medicaid" | "walkins";
 
-// ─── Wellness Activities (hardcoded community data) ─
-const wellnessActivities: { name: string; tagline: string; description: string; icon: IconName; color: string; schedule: string; location: string; type: string }[] = [
-  {
-    name: "Compton Run Club",
-    tagline: "Every Saturday at 7 AM",
-    description: "Free weekly community run/walk through Compton. All levels welcome — from first-timers to marathon runners.",
-    icon: "trending",
-    color: "#22C55E",
-    schedule: "Saturdays 7:00 AM",
-    location: "Wilson Park, Compton",
-    type: "recurring",
-  },
-  {
-    name: "Yoga in the Park",
-    tagline: "Free outdoor yoga sessions",
-    description: "Beginner-friendly yoga class every Sunday morning. Bring a mat or towel — we provide the good vibes.",
-    icon: "heart-pulse",
-    color: "#8B5CF6",
-    schedule: "Sundays 8:00 AM",
-    location: "Gonzales Park, Compton",
-    type: "recurring",
-  },
-  {
-    name: "Compton Boxing Club",
-    tagline: "Train like a champion",
-    description: "Free boxing training for youth and adults. Build confidence, discipline, and fitness.",
-    icon: "trophy",
-    color: "#EF4444",
-    schedule: "Mon/Wed/Fri 5:00 PM",
-    location: "Compton Community Center",
-    type: "recurring",
-  },
-  {
-    name: "Seniors Walk & Talk",
-    tagline: "Move your body, feed your soul",
-    description: "Gentle walking group for seniors. Social connection and light exercise in a supportive environment.",
-    icon: "elder",
-    color: "#D97706",
-    schedule: "Tuesdays 9:00 AM",
-    location: "Lueders Park, Compton",
-    type: "recurring",
-  },
-];
-
 const upcomingHealthEvents: { id: string; title: string; date: string; time: string; location: string; icon: IconName; color: string; type: string; description: string }[] = [
   {
     id: "blood-drive-spring",
@@ -296,12 +252,13 @@ export default function HealthPage() {
     async function fetchHealthEvents() {
       const supabase = createClient();
       const today = new Date().toISOString().split("T")[0];
+      // Strict tag-based filter — only events explicitly tagged "health" (or "mental_health" / "fitness").
       let query = supabase
         .from("events")
         .select("id, title, start_date, start_time, location_name, category")
         .eq("is_published", true)
         .gte("start_date", today)
-        .or("title.ilike.%health%,title.ilike.%wellness%,title.ilike.%clinic%,title.ilike.%vaccination%,title.ilike.%screening%,title.ilike.%medical%,title.ilike.%blood%,title.ilike.%run%,title.ilike.%fitness%,title.ilike.%walk%,title.ilike.%yoga%")
+        .overlaps("tags", ["health", "mental_health", "fitness"])
         .order("start_date")
         .limit(6);
 
@@ -313,6 +270,41 @@ export default function HealthPage() {
       setDbEvents(data ?? []);
     }
     fetchHealthEvents();
+  }, [filterCity?.id]);
+
+  // Health groups — only groups tagged "health" (or "mental_health" / "fitness").
+  const [healthGroups, setHealthGroups] = useState<
+    { id: string; slug: string; name: string; description: string | null; image_url: string | null; member_count: number }[]
+  >([]);
+  useEffect(() => {
+    async function fetchHealthGroups() {
+      const supabase = createClient();
+      let query = supabase
+        .from("community_groups")
+        .select("id, slug, name, description, image_url, avatar_url, member_count")
+        .eq("is_active", true)
+        .eq("is_public", true)
+        .overlaps("tags", ["health", "mental_health", "fitness"])
+        .order("member_count", { ascending: false })
+        .limit(6);
+
+      if (filterCity?.id) {
+        query = query.eq("city_id", filterCity!.id);
+      }
+
+      const { data } = await query;
+      setHealthGroups(
+        (data ?? []).map((g) => ({
+          id: g.id as string,
+          slug: g.slug as string,
+          name: g.name as string,
+          description: (g.description as string | null) ?? null,
+          image_url: (g.image_url as string | null) ?? (g.avatar_url as string | null) ?? null,
+          member_count: (g.member_count as number) ?? 0,
+        }))
+      );
+    }
+    fetchHealthGroups();
   }, [filterCity?.id]);
 
   const filteredResources = useMemo(() => {
@@ -440,71 +432,74 @@ export default function HealthPage() {
         })()}
       </div>
 
-      {/* ─── Community Fitness & Activities ─── */}
-      <section className="mb-6">
-        <div className="px-5 mb-3">
-          <div className="flex items-baseline gap-3">
-            <span
-              className="c-hero tabular-nums"
-              style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
-            >
-              № 01
-            </span>
-            <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
-              COMMUNITY FITNESS
-            </span>
-            <span
-              className="ml-auto flex-1 self-center"
-              style={{ borderTop: "2px solid var(--rule-strong-c)" }}
-            />
-          </div>
-          <p className="c-serif-it mt-1" style={{ fontSize: 11 }}>Free weekly activities for everyone.</p>
-        </div>
-        <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-          {wellnessActivities.map((activity) => (
-            <div
-              key={activity.name}
-              className="shrink-0 w-[240px] overflow-hidden press"
-              style={{
-                background: "var(--paper)",
-                border: "2px solid var(--rule-strong-c)",
-              }}
-            >
-              <div className="p-4 h-full">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div
-                    className="w-10 h-10 flex items-center justify-center shrink-0"
-                    style={{
-                      background: "var(--ink-strong)",
-                      color: "var(--gold-c)",
-                      border: "2px solid var(--rule-strong-c)",
-                    }}
-                  >
-                    <Icon name={activity.icon} size={18} />
-                  </div>
-                  <div className="min-w-0">
-                    <h3 className="c-card-t truncate" style={{ fontSize: 14 }}>{activity.name}</h3>
-                    <p
-                      className="c-kicker truncate"
-                      style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
-                    >
-                      {activity.tagline.toUpperCase()}
-                    </p>
-                  </div>
-                </div>
-                <p className="c-body mb-3 line-clamp-2" style={{ fontSize: 11 }}>{activity.description}</p>
-                <div className="flex items-center gap-3">
-                  <span className="c-meta flex items-center gap-1" style={{ fontSize: 10 }}>
-                    <svg width="10" height="10" fill="none" stroke="var(--gold-c)" strokeWidth="2" strokeLinecap="round"><circle cx="5" cy="5" r="4"/><path d="M5 3v2l1.5 1"/></svg>
-                    {activity.schedule}
-                  </span>
-                </div>
-                <p className="c-meta mt-1" style={{ fontSize: 10, opacity: 0.7 }}>{activity.location}</p>
-              </div>
+      {/* ─── Health Groups ─── */}
+      {healthGroups.length > 0 && (
+        <section className="mb-6">
+          <div className="px-5 mb-3">
+            <div className="flex items-baseline gap-3">
+              <span
+                className="c-hero tabular-nums"
+                style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+              >
+                № 01
+              </span>
+              <span className="c-kicker" style={{ fontSize: 10, letterSpacing: "0.16em" }}>
+                HEALTH GROUPS
+              </span>
+              <span
+                className="ml-auto flex-1 self-center"
+                style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+              />
             </div>
-          ))}
-        </div>
-      </section>
+            <p className="c-serif-it mt-1" style={{ fontSize: 11 }}>Communities tagged with health, mental health, or fitness.</p>
+          </div>
+          <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
+            {healthGroups.map((g) => (
+              <Link
+                key={g.id}
+                href={`/groups/${g.slug || g.id}`}
+                className="shrink-0 w-[240px] overflow-hidden press block"
+                style={{
+                  background: "var(--paper)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                <div className="p-4 h-full">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div
+                      className="w-10 h-10 flex items-center justify-center shrink-0 overflow-hidden"
+                      style={{
+                        background: "var(--ink-strong)",
+                        color: "var(--gold-c)",
+                        border: "2px solid var(--rule-strong-c)",
+                      }}
+                    >
+                      {g.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={g.image_url} alt={g.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <Icon name="users" size={18} />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="c-card-t truncate" style={{ fontSize: 14 }}>{g.name}</h3>
+                      <p
+                        className="c-kicker truncate"
+                        style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
+                      >
+                        {g.member_count} MEMBER{g.member_count === 1 ? "" : "S"}
+                      </p>
+                    </div>
+                  </div>
+                  {g.description && (
+                    <p className="c-body line-clamp-3" style={{ fontSize: 11 }}>{g.description}</p>
+                  )}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── Upcoming Health Events ─── */}
       <section className="px-5 mb-6">
