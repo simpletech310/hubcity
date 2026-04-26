@@ -36,64 +36,6 @@ const categoryLabels: Record<string, string> = {
 
 type FilterTag = "free" | "medicaid" | "walkins";
 
-const upcomingHealthEvents: { id: string; title: string; date: string; time: string; location: string; icon: IconName; color: string; type: string; description: string }[] = [
-  {
-    id: "blood-drive-spring",
-    title: "Spring Community Blood Drive",
-    date: "2026-04-12",
-    time: "9:00 AM - 3:00 PM",
-    location: "Compton City Hall",
-    icon: "heart-pulse",
-    color: "#EF4444",
-    type: "blood_drive",
-    description: "Give the gift of life. Walk-ins welcome, appointments preferred. Free snacks and a t-shirt for all donors.",
-  },
-  {
-    id: "health-fair-2026",
-    title: "Compton Health & Wellness Fair",
-    date: "2026-04-19",
-    time: "10:00 AM - 4:00 PM",
-    location: "Compton College",
-    icon: "first-aid",
-    color: "#3B82F6",
-    type: "health_fair",
-    description: "Free screenings, dental checkups, vision tests, mental health resources, and family activities.",
-  },
-  {
-    id: "5k-run-spring",
-    title: "Compton Strong 5K Run/Walk",
-    date: "2026-04-26",
-    time: "7:00 AM",
-    location: "Wilson Park → City Hall",
-    icon: "trophy",
-    color: "#22C55E",
-    type: "fitness",
-    description: "Annual community 5K through historic Compton. All ages and abilities. Finisher medals for everyone!",
-  },
-  {
-    id: "mental-health-workshop",
-    title: "Mental Wellness Workshop",
-    date: "2026-05-03",
-    time: "2:00 PM - 4:00 PM",
-    location: "Compton Library",
-    icon: "brain",
-    color: "#8B5CF6",
-    type: "mental_health",
-    description: "Free workshop on stress management, mindfulness, and community support resources.",
-  },
-  {
-    id: "vaccination-clinic",
-    title: "Free Vaccination Clinic",
-    date: "2026-05-10",
-    time: "10:00 AM - 2:00 PM",
-    location: "MLK Jr Community Hospital",
-    icon: "stethoscope",
-    color: "#06B6D4",
-    type: "clinic",
-    description: "Flu shots, COVID boosters, and routine vaccinations. No insurance needed. All ages welcome.",
-  },
-];
-
 const fitnessSpots: { name: string; type: string; icon: IconName; features: string[]; color: string }[] = [
   { name: "Wilson Park", type: "Park", icon: "tree", features: ["Track", "Basketball", "Playground"], color: "#22C55E" },
   { name: "Gonzales Park", type: "Park", icon: "tree", features: ["Walking Path", "Open Field", "Benches"], color: "#15803D" },
@@ -219,6 +161,8 @@ export default function HealthPage() {
   const [activeFilters, setActiveFilters] = useState<Set<FilterTag>>(new Set());
   const [resources, setResources] = useState<HealthResource[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showAllResources, setShowAllResources] = useState(false);
+  const RESOURCE_LIMIT = 6;
   const [dbEvents, setDbEvents] = useState<Array<{ id: string; title: string; start_date: string; start_time: string | null; location_name: string | null; category: string }>>([]);
 
   useEffect(() => {
@@ -323,6 +267,11 @@ export default function HealthPage() {
     return result;
   }, [resources, searchQuery, activeFilters]);
 
+  // Reset show-all when filters change
+  useEffect(() => {
+    setShowAllResources(false);
+  }, [searchQuery, activeCategory, activeFilters]);
+
   function toggleFilter(f: FilterTag) {
     setActiveFilters((prev) => {
       const next = new Set(prev);
@@ -369,7 +318,7 @@ export default function HealthPage() {
           {[
             { label: "Resources", value: resources.length.toString() },
             { label: "Free", value: freeCount.toString() },
-            { label: "Events", value: (upcomingHealthEvents.length + dbEvents.length).toString() },
+            { label: "Events", value: dbEvents.length.toString() },
             { label: "Emergency", value: emergencyCount.toString() },
           ].map((stat, idx) => (
             <div
@@ -528,57 +477,20 @@ export default function HealthPage() {
         </div>
 
         <div className="space-y-2.5 stagger">
-          {upcomingHealthEvents.map((event) => {
-            const { month, day } = formatEventDate(event.date);
-            return (
-              <div
-                key={event.id}
-                className="overflow-hidden"
-                style={{
-                  background: "var(--paper)",
-                  border: "2px solid var(--rule-strong-c)",
-                }}
-              >
-                <div className="p-4">
-                  <div className="flex items-start gap-3">
-                    {/* Editorial date block */}
-                    <div
-                      className="w-12 h-14 flex flex-col items-center justify-center shrink-0"
-                      style={{
-                        background: "var(--ink-strong)",
-                        border: "2px solid var(--rule-strong-c)",
-                      }}
-                    >
-                      <p
-                        className="c-kicker"
-                        style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em", lineHeight: 1 }}
-                      >
-                        {month.toUpperCase()}
-                      </p>
-                      <p
-                        className="c-hero tabular-nums mt-1"
-                        style={{ fontSize: 20, lineHeight: 1, color: "var(--paper)" }}
-                      >
-                        {day}
-                      </p>
-                    </div>
 
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Icon name={event.icon} size={14} style={{ color: "var(--gold-c)" }} />
-                        <h3 className="c-card-t truncate" style={{ fontSize: 14 }}>{event.title}</h3>
-                      </div>
-                      <p className="c-body line-clamp-2 mb-2" style={{ fontSize: 11 }}>{event.description}</p>
-                      <div className="flex items-center gap-3">
-                        <span className="c-meta" style={{ fontSize: 10 }}>{event.time}</span>
-                        <span className="c-meta" style={{ fontSize: 10, opacity: 0.7 }}>{event.location}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {dbEvents.length === 0 && (
+            <div
+              className="p-4 text-center"
+              style={{
+                background: "var(--paper)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <p className="c-meta" style={{ fontSize: 12 }}>
+                No upcoming health events. Check back soon.
+              </p>
+            </div>
+          )}
 
           {/* DB events */}
           {dbEvents.map((event) => {
@@ -838,27 +750,55 @@ export default function HealthPage() {
         </div>
       ) : (
         <section className="px-5 mb-6">
-          <div className="space-y-2.5 stagger">
-            {filteredResources.map((resource) => (
-              <HealthResourceCard key={resource.id} resource={resource} />
-            ))}
-            {filteredResources.length === 0 && (
-              <div className="text-center py-16">
-                <div
-                  className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
-                  style={{
-                    background: "var(--ink-strong)",
-                    color: "var(--gold-c)",
-                    border: "2px solid var(--rule-strong-c)",
-                  }}
-                >
-                  <Icon name="first-aid" size={30} />
+          {(() => {
+            const visible = showAllResources
+              ? filteredResources
+              : filteredResources.slice(0, RESOURCE_LIMIT);
+            const hidden = Math.max(0, filteredResources.length - visible.length);
+            return (
+              <>
+                <div className="space-y-2.5 stagger">
+                  {visible.map((resource) => (
+                    <HealthResourceCard key={resource.id} resource={resource} />
+                  ))}
+                  {filteredResources.length === 0 && (
+                    <div className="text-center py-16">
+                      <div
+                        className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                        style={{
+                          background: "var(--ink-strong)",
+                          color: "var(--gold-c)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        <Icon name="first-aid" size={30} />
+                      </div>
+                      <p className="c-card-t mb-1" style={{ fontSize: 14 }}>No health resources found</p>
+                      <p className="c-meta" style={{ fontSize: 11 }}>Try a different category or search.</p>
+                    </div>
+                  )}
                 </div>
-                <p className="c-card-t mb-1" style={{ fontSize: 14 }}>No health resources found</p>
-                <p className="c-meta" style={{ fontSize: 11 }}>Try a different category or search.</p>
-              </div>
-            )}
-          </div>
+                {hidden > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllResources(true)}
+                    className="c-btn c-btn-outline w-full press mt-4"
+                  >
+                    SHOW {hidden} MORE
+                  </button>
+                )}
+                {showAllResources && filteredResources.length > RESOURCE_LIMIT && (
+                  <button
+                    type="button"
+                    onClick={() => setShowAllResources(false)}
+                    className="c-btn c-btn-outline w-full press mt-4"
+                  >
+                    SHOW LESS
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </section>
       )}
 

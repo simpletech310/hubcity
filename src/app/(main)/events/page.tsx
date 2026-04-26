@@ -76,6 +76,8 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [showAll, setShowAll] = useState(false);
+  const LIST_LIMIT = 8;
 
   useEffect(() => {
     async function fetchEvents() {
@@ -103,6 +105,7 @@ export default function EventsPage() {
 
       const { data } = await query;
       setEvents((data as Event[]) ?? []);
+      setShowAll(false);
       setLoading(false);
     }
     fetchEvents();
@@ -352,7 +355,7 @@ export default function EventsPage() {
                 <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Live events going on right now</p>
               </div>
               <div className="space-y-2.5 stagger px-5">
-                {todayEvents.map((event) => (
+                {todayEvents.slice(0, 5).map((event) => (
                   <EventListRow key={event.id} event={event} live />
                 ))}
               </div>
@@ -380,7 +383,7 @@ export default function EventsPage() {
                 <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Don&apos;t miss out</p>
               </div>
               <div className="space-y-2.5 stagger px-5">
-                {thisWeekEvents.map((event) => (
+                {thisWeekEvents.slice(0, 5).map((event) => (
                   <EventListRow key={event.id} event={event} />
                 ))}
               </div>
@@ -459,37 +462,72 @@ export default function EventsPage() {
               № 05 — ALL UPCOMING / FILTERED LIST
               ══════════════════════════════════════════════════ */}
           <section className="px-5 mb-8">
-            <div className="flex items-baseline gap-3 mb-3">
-              <span className="font-display text-gold text-[22px] leading-none tabular-nums">
-                № 05
-              </span>
-              <span className="c-kicker" style={{ opacity: 0.65 }}>
-                {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
-              </span>
-              <span className="ml-auto rule-hairline flex-1 self-center" />
-              <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums whitespace-nowrap" style={{ color: "var(--ink-mute)" }}>
-                {events.length}
-              </span>
-            </div>
-            <div className="space-y-2.5 stagger">
-              {(activeCategory !== "all" ? events : upcomingEvents.length > 0 ? upcomingEvents : events).map((event) => (
-                <EventListRow key={event.id} event={event} />
-              ))}
-              {events.length === 0 && (
-                <div className="text-center py-16">
-                  <div
-                    className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
-                    style={{ background: "var(--ink-strong)" }}
-                  >
-                    <Icon name="calendar" size={28} style={{ color: "var(--gold-c)" }} />
+            {(() => {
+              const sourceList = activeCategory !== "all"
+                ? events
+                : upcomingEvents.length > 0
+                ? upcomingEvents
+                : events;
+              const visibleList = showAll ? sourceList : sourceList.slice(0, LIST_LIMIT);
+              const hiddenCount = Math.max(0, sourceList.length - visibleList.length);
+
+              return (
+                <>
+                  <div className="flex items-baseline gap-3 mb-3">
+                    <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                      № 05
+                    </span>
+                    <span className="c-kicker" style={{ opacity: 0.65 }}>
+                      {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
+                    </span>
+                    <span className="ml-auto rule-hairline flex-1 self-center" />
+                    <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums whitespace-nowrap" style={{ color: "var(--ink-mute)" }}>
+                      {visibleList.length}/{sourceList.length}
+                    </span>
                   </div>
-                  <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No events found</p>
-                  <p className="c-meta max-w-[240px] mx-auto">
-                    Try a different category or check back soon for new events
-                  </p>
-                </div>
-              )}
-            </div>
+
+                  <div className="space-y-2.5 stagger">
+                    {visibleList.map((event) => (
+                      <EventListRow key={event.id} event={event} />
+                    ))}
+
+                    {events.length === 0 && (
+                      <div className="text-center py-16">
+                        <div
+                          className="w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                          style={{ background: "var(--ink-strong)" }}
+                        >
+                          <Icon name="calendar" size={28} style={{ color: "var(--gold-c)" }} />
+                        </div>
+                        <p className="c-card-t mb-1" style={{ color: "var(--ink-strong)" }}>No events found</p>
+                        <p className="c-meta max-w-[240px] mx-auto">
+                          Try a different category or check back soon for new events
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {hiddenCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAll(true)}
+                      className="c-btn c-btn-outline w-full press mt-4"
+                    >
+                      SHOW {hiddenCount} MORE
+                    </button>
+                  )}
+                  {showAll && sourceList.length > LIST_LIMIT && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAll(false)}
+                      className="c-btn c-btn-outline w-full press mt-4"
+                    >
+                      SHOW LESS
+                    </button>
+                  )}
+                </>
+              );
+            })()}
           </section>
 
           {/* ══════════════════════════════════════════════════
