@@ -76,7 +76,7 @@ export default function ProviderLandingPage() {
                     className="w-8 h-8 flex items-center justify-center"
                     style={{ background: c.color, border: "2px solid var(--rule-strong-c)" }}
                   >
-                    <Icon name={c.icon} size={18} color="#000" />
+                    <Icon name={c.icon} size={18} style={{ color: "#000" }} />
                   </div>
                   <span className="c-card-t" style={{ fontSize: 14 }}>{c.label}</span>
                 </div>
