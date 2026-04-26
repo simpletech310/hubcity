@@ -3,6 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
+import CreatorFeaturedTile from "@/components/creators/CreatorFeaturedTile";
+import { resolveFeaturedMedia, type FeaturedMedia } from "@/lib/featured-media";
 
 // Valid user_role enum values that count as a "creator" in Discover.
 const CREATOR_ROLES = [
@@ -41,6 +43,9 @@ type CreatorProfile = {
   role: string | null;
   verification_status: string | null;
   profile_tags: string[] | null;
+  featured_kind: "reel" | "video" | "post" | "track" | "exhibit" | null;
+  featured_id: string | null;
+  featured_caption: string | null;
   city: { slug: string; name: string } | null;
 };
 
@@ -109,7 +114,7 @@ export default async function CreatorsPage({
   let query = supabase
     .from("profiles")
     .select(
-      "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, city:cities!profiles_city_id_fkey(slug, name)"
+      "id, display_name, handle, avatar_url, bio, role, verification_status, profile_tags, featured_kind, featured_id, featured_caption, city:cities!profiles_city_id_fkey(slug, name)"
     )
     .in("role", CREATOR_ROLES as unknown as string[])
     .not("handle", "is", null);
@@ -198,6 +203,26 @@ export default async function CreatorsPage({
   }
   const creatorById = new Map<string, CreatorProfile>();
   for (const c of creators) creatorById.set(c.id, c);
+
+  // Resolve pinned featured-media for any creator who pinned one.
+  const featuredByCreator = new Map<string, FeaturedMedia>();
+  const pinned = creators.filter((c) => c.featured_kind && c.featured_id);
+  if (pinned.length > 0) {
+    const resolved = await Promise.all(
+      pinned.map((c) =>
+        resolveFeaturedMedia(supabase, {
+          id: c.id,
+          featured_kind: c.featured_kind,
+          featured_id: c.featured_id,
+          featured_caption: c.featured_caption,
+        })
+      )
+    );
+    pinned.forEach((c, i) => {
+      const m = resolved[i];
+      if (m) featuredByCreator.set(c.id, m);
+    });
+  }
 
   // Pick a "featured" creator — the one with the most combined media. Falls back
   // to first creator. Drives the magazine hero spotlight at the top.
@@ -1125,6 +1150,16 @@ export default async function CreatorsPage({
                 )}
               </div>
             </div>
+
+            {/* ─ Featured tile (creator-pinned) ─ */}
+            {featuredByCreator.has(creator.id) && (
+              <div className="px-5 pb-4" style={{ background: "var(--paper)" }}>
+                <p className="c-kicker mb-2" style={{ fontSize: 9, opacity: 0.6, letterSpacing: "0.16em" }}>
+                  § FEATURED
+                </p>
+                <CreatorFeaturedTile media={featuredByCreator.get(creator.id)!} aspect="16/10" />
+              </div>
+            )}
 
             {/* ─ Mini stats slab — compact tally for credibility ─ */}
             {totalMedia > 0 && (

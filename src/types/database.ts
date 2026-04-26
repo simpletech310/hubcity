@@ -118,6 +118,11 @@ export interface Profile {
   creator_approved_at: string | null;
   creator_tier: CreatorTier | null;
   city_id: string | null;
+  /** Pinned featured-media slot (resolved via lib/featured-media.ts). */
+  featured_kind: "reel" | "video" | "post" | "track" | "exhibit" | null;
+  featured_id: string | null;
+  featured_caption: string | null;
+  featured_set_at: string | null;
   created_at: string;
   updated_at: string;
 }

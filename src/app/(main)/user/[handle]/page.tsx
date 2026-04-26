@@ -21,6 +21,8 @@ import ProfileResourcesRow, {
 import { deriveActiveRoles } from "@/components/profile/ProfileRoleChips";
 import UserPostsGrid from "@/components/profile/UserPostsGrid";
 import ReelsRail from "@/components/reels/ReelsRail";
+import CreatorFeaturedTile from "@/components/creators/CreatorFeaturedTile";
+import { resolveFeaturedMedia } from "@/lib/featured-media";
 import type {
   Post,
   Channel,
@@ -95,6 +97,14 @@ export default async function PublicProfilePage({
     .single();
 
   if (!profile) return notFound();
+
+  // Resolve pinned featured media (if any)
+  const featuredMedia = await resolveFeaturedMedia(supabase, {
+    id: profile.id,
+    featured_kind: profile.featured_kind ?? null,
+    featured_id: profile.featured_id ?? null,
+    featured_caption: profile.featured_caption ?? null,
+  });
 
   // Current viewer context
   const {
@@ -458,6 +468,19 @@ export default async function PublicProfilePage({
         initialFollowing={initialFollowing}
         coverImage={coverImage}
       />
+
+      {/* --- FEATURED MEDIA (creator pinned) --- */}
+      {featuredMedia && (
+        <section className="px-5 pt-5">
+          <p
+            className="c-kicker mb-2"
+            style={{ fontSize: 10, opacity: 0.7, letterSpacing: "0.16em", color: "var(--ink-strong)" }}
+          >
+            § FEATURED
+          </p>
+          <CreatorFeaturedTile media={featuredMedia} aspect="16/10" />
+        </section>
+      )}
 
       {/* --- PULL QUOTE (bio) --- */}
       {profile.bio && (
