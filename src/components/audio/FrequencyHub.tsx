@@ -6,6 +6,9 @@ import SnapCarousel from "@/components/ui/editorial/SnapCarousel";
 import AlbumCard from "./AlbumCard";
 import PodcastShowCard from "./PodcastShowCard";
 import GenreTile from "./GenreTile";
+import FeaturedSingleHero, {
+  type FeaturedSingleData,
+} from "./FeaturedSingleHero";
 import type { Album, AudioGenre, Playlist } from "@/types/database";
 
 type ShowTile = {
@@ -18,6 +21,9 @@ type ShowTile = {
 };
 
 export interface FrequencyHubData {
+  /** Optional editorial featured single — renders as a magazine-cover hero
+   *  at the top of the home tab. Can play directly from the hero. */
+  featured?: FeaturedSingleData | null;
   new_singles: Album[];
   new_albums: Album[];
   podcasts: ShowTile[];
@@ -124,26 +130,46 @@ export default function FrequencyHub({ data }: { data: FrequencyHubData }) {
 // ── HOME ────────────────────────────────────────────────
 
 function HomeTab({ data }: { data: FrequencyHubData }) {
+  // Numbering: featured single is N=1 when present; subsequent rails shift.
+  let n = 1;
+  const featuredN = data.featured ? n++ : null;
+  const singlesN = data.new_singles.length > 0 ? n++ : null;
+  const albumsN = data.new_albums.length > 0 ? n++ : null;
+  const podcastsN = data.podcasts.length > 0 ? n++ : null;
+  const genresN = data.genres.length > 0 ? n++ : null;
+  const playlistsN = data.playlists.length > 0 ? n++ : null;
+
   return (
     <div className="pt-5 space-y-6">
-      {data.new_singles.length > 0 && (
-        <SnapCarousel kicker="NEW" title="Singles" number={1}>
+      {data.featured && featuredN !== null && (
+        <SnapCarousel
+          kicker="THIS WEEK"
+          title="Featured Single"
+          number={featuredN}
+          rail={false}
+        >
+          <FeaturedSingleHero single={data.featured} />
+        </SnapCarousel>
+      )}
+
+      {data.new_singles.length > 0 && singlesN !== null && (
+        <SnapCarousel kicker="NEW" title="Singles" number={singlesN}>
           {data.new_singles.map((a) => (
             <AlbumCard key={a.id} album={a} />
           ))}
         </SnapCarousel>
       )}
 
-      {data.new_albums.length > 0 && (
-        <SnapCarousel kicker="DROPS" title="Albums &amp; EPs" number={2}>
+      {data.new_albums.length > 0 && albumsN !== null && (
+        <SnapCarousel kicker="DROPS" title="Albums &amp; EPs" number={albumsN}>
           {data.new_albums.map((a) => (
             <AlbumCard key={a.id} album={a} />
           ))}
         </SnapCarousel>
       )}
 
-      {data.podcasts.length > 0 && (
-        <SnapCarousel kicker="ON THE MIC" title="Podcasts" number={3}>
+      {data.podcasts.length > 0 && podcastsN !== null && (
+        <SnapCarousel kicker="ON THE MIC" title="Podcasts" number={podcastsN}>
           {data.podcasts.map((s) => (
             <PodcastShowCard
               key={s.show_slug ?? s.show_title}
@@ -158,16 +184,16 @@ function HomeTab({ data }: { data: FrequencyHubData }) {
         </SnapCarousel>
       )}
 
-      {data.genres.length > 0 && (
-        <SnapCarousel kicker="DIAL IN" title="Genres" number={4}>
+      {data.genres.length > 0 && genresN !== null && (
+        <SnapCarousel kicker="DIAL IN" title="Genres" number={genresN}>
           {data.genres.map((g) => (
             <GenreTile key={g.slug} genre={g} />
           ))}
         </SnapCarousel>
       )}
 
-      {data.playlists.length > 0 && (
-        <SnapCarousel kicker="EDITOR" title="Playlists" number={5}>
+      {data.playlists.length > 0 && playlistsN !== null && (
+        <SnapCarousel kicker="EDITOR" title="Playlists" number={playlistsN}>
           {data.playlists.map((p) => (
             <PlaylistCard key={p.id} playlist={p} />
           ))}
