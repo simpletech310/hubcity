@@ -1,20 +1,16 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Badge from "@/components/ui/Badge";
 import { createClient } from "@/lib/supabase/server";
 import type { JobListing, JobType } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 
-const jobTypeBadge: Record<
-  JobType,
-  { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }
-> = {
-  full_time: { label: "Full-Time", variant: "emerald" },
-  part_time: { label: "Part-Time", variant: "cyan" },
-  contract: { label: "Contract", variant: "gold" },
-  seasonal: { label: "Seasonal", variant: "coral" },
-  internship: { label: "Internship", variant: "purple" },
-  volunteer: { label: "Volunteer", variant: "gold" },
+const jobTypeLabel: Record<JobType, string> = {
+  full_time: "Full-Time",
+  part_time: "Part-Time",
+  contract: "Contract",
+  seasonal: "Seasonal",
+  internship: "Internship",
+  volunteer: "Volunteer",
 };
 
 const orgTypeIcon: Record<string, string> = {
@@ -110,24 +106,33 @@ export default async function JobDetailPage({
     hasApplied = !!existing;
   }
 
-  const badge = jobTypeBadge[listing.job_type] ?? {
-    label: listing.job_type,
-    variant: "gold" as const,
-  };
+  const typeLabel = jobTypeLabel[listing.job_type] ?? listing.job_type;
   const salary = isVolunteer ? null : formatSalary(listing);
+
+  // Parse requirements as a bulleted list when each line starts with `- `.
+  const reqText = listing.requirements?.trim() ?? "";
+  const reqLines = reqText
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
+  const isBulleted = reqLines.length > 0 && reqLines.every((l) => l.startsWith("- "));
+  const reqBullets = isBulleted ? reqLines.map((l) => l.replace(/^-\s+/, "")) : null;
 
   return (
     <div className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Masthead */}
-      <div className="px-5 pt-5 pb-4" style={{ borderBottom: "3px solid var(--rule-strong-c)" }}>
+      <div
+        className="px-5 pt-5 pb-5"
+        style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+      >
         <Link
           href="/jobs"
           className="c-kicker inline-flex items-center gap-1.5 press"
-          style={{ color: "var(--ink-strong)" }}
+          style={{ color: "var(--ink-strong)", letterSpacing: "0.14em", fontSize: 11 }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -137,91 +142,105 @@ export default async function JobDetailPage({
           </svg>
           § BACK TO JOBS
         </Link>
-        <h1 className="c-hero mt-3" style={{ fontSize: 56, lineHeight: 0.88 }}>
+
+        <p
+          className="c-kicker mt-4"
+          style={{
+            color: "var(--ink-strong)",
+            opacity: 0.65,
+            fontSize: 10,
+            letterSpacing: "0.18em",
+          }}
+        >
+          § JOB POSTING
+        </p>
+        <h1
+          className="c-hero mt-1"
+          style={{ fontSize: 44, lineHeight: 0.92, letterSpacing: "-0.012em" }}
+        >
           {listing.title.toUpperCase()}.
         </h1>
-        <p className="c-serif-it mt-2">{displayName}</p>
+        <p
+          className="c-serif-it mt-2"
+          style={{ fontSize: 16, color: "var(--ink-strong)", opacity: 0.85 }}
+        >
+          {displayName}
+        </p>
+
+        {/* Hub City badges */}
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          <span className="c-badge c-badge-ink">{typeLabel}</span>
+          {salary && <span className="c-badge c-badge-gold">{salary}</span>}
+          {listing.is_remote && <span className="c-badge c-badge-gold">Remote</span>}
+          {isVolunteer && <span className="c-badge c-badge-ok">Volunteer</span>}
+        </div>
       </div>
 
-      {/* Volunteer banner */}
-      {isVolunteer && (
+      {/* Org card */}
+      <div className="px-5 pt-5">
         <div
-          className="mx-5 mb-4 px-4 py-3 c-frame"
-          style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+          className="flex items-center gap-3 px-3 py-3 c-frame"
+          style={{ background: "var(--paper-warm)" }}
         >
-          <div className="flex items-center gap-2">
-            <span className="text-lg"><Icon name="handshake" size={20} style={{ color: "var(--ink-strong)" }} /></span>
-            <div>
-              <p className="c-kicker" style={{ color: "var(--ink-strong)" }}>Volunteer Opportunity</p>
-              <p className="c-meta">
-                Give back to your community
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Organization / Business Info */}
-      <div className="px-5 mb-5">
-        <div className="flex items-center gap-3 mb-4">
           <div
-            className="w-14 h-14 overflow-hidden relative flex items-center justify-center shrink-0"
-            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+            className="w-12 h-12 overflow-hidden flex items-center justify-center shrink-0"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
           >
             {businessImage ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={businessImage}
                 alt={displayName}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-2xl">{orgIcon || "\uD83D\uDCBC"}</span>
+              <span className="text-xl">{orgIcon || "\uD83D\uDCBC"}</span>
             )}
           </div>
-          <div>
-            <p className="text-sm c-meta">
-              {orgIcon && <span className="mr-1">{orgIcon}</span>}
-              {business?.slug ? (
-                <Link
-                  href={`/business/${business.slug}`}
-                  className="hover:text-gold transition-colors"
-                >
-                  {displayName}
-                </Link>
-              ) : (
-                displayName
-              )}
+          <div className="min-w-0">
+            <p
+              className="c-kicker"
+              style={{ fontSize: 9, letterSpacing: "0.16em", opacity: 0.65 }}
+            >
+              POSTED BY
             </p>
-            <h1 className="font-heading text-xl font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>
-              {listing.title}
-            </h1>
+            {business?.slug ? (
+              <Link
+                href={`/business/${business.slug}`}
+                className="c-card-t truncate block"
+                style={{ color: "var(--ink-strong)", fontSize: 14 }}
+              >
+                {displayName}
+              </Link>
+            ) : (
+              <p
+                className="c-card-t truncate"
+                style={{ color: "var(--ink-strong)", fontSize: 14 }}
+              >
+                {displayName}
+              </p>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Meta chips */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Badge label={badge.label} variant={badge.variant} size="md" />
-          {listing.is_remote && <Badge label="Remote" variant="cyan" size="md" />}
-          {salary && <Badge label={salary} variant="emerald" size="md" />}
-          {listing.organization_type && listing.organization_type !== "business" && (
-            <Badge
-              label={listing.organization_type === "city" ? "City" : "School"}
-              variant="purple"
-              size="md"
-            />
-          )}
-        </div>
-
-        {/* Details */}
-        <div className="space-y-2 mb-5">
+      {/* Detail rows */}
+      <div className="px-5 pt-4">
+        <ul
+          className="space-y-2"
+          style={{ color: "var(--ink-strong)", fontFamily: "var(--font-body), Inter, sans-serif" }}
+        >
           {(listing.location || business?.address) && (
-            <div className="flex items-center gap-2 text-sm c-meta">
-              <span><Icon name="pin" size={16} /></span>
+            <li className="flex items-center gap-2 text-[14px]">
+              <Icon name="pin" size={15} />
               <span>{listing.location || business?.address?.split(",")[0]}</span>
-            </div>
+            </li>
           )}
-          <div className="flex items-center gap-2 text-sm c-meta">
-            <span><Icon name="calendar" size={16} /></span>
+          <li className="flex items-center gap-2 text-[14px]">
+            <Icon name="calendar" size={15} />
             <span>
               Posted{" "}
               {new Date(listing.created_at).toLocaleDateString("en-US", {
@@ -230,96 +249,148 @@ export default async function JobDetailPage({
                 year: "numeric",
               })}
             </span>
-          </div>
+          </li>
           {listing.application_deadline && (
-            <div className="flex items-center gap-2 text-sm text-coral">
-              <span><Icon name="clock" size={16} /></span>
+            <li
+              className="flex items-center gap-2 text-[14px]"
+              style={{ color: "var(--red-c, #c0392b)" }}
+            >
+              <Icon name="clock" size={15} />
               <span>
-                Deadline:{" "}
-                {new Date(listing.application_deadline).toLocaleDateString(
-                  "en-US",
-                  {
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric",
-                  }
-                )}
+                Deadline{" "}
+                {new Date(listing.application_deadline).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
               </span>
-            </div>
+            </li>
           )}
-          <div className="flex items-center gap-2 text-sm c-meta">
-            <span><Icon name="document" size={16} /></span>
-            <span>{listing.application_count} application{listing.application_count !== 1 ? "s" : ""}</span>
-          </div>
+          <li className="flex items-center gap-2 text-[14px]">
+            <Icon name="document" size={15} />
+            <span>
+              {listing.application_count} application
+              {listing.application_count !== 1 ? "s" : ""}
+            </span>
+          </li>
           {listing.contact_email && (
-            <div className="flex items-center gap-2 text-sm c-meta">
-              <span><Icon name="mail" size={16} /></span>
+            <li className="flex items-center gap-2 text-[14px]">
+              <Icon name="mail" size={15} />
               <span>{listing.contact_email}</span>
-            </div>
+            </li>
           )}
           {listing.contact_phone && (
-            <div className="flex items-center gap-2 text-sm c-meta">
-              <span><Icon name="phone" size={16} /></span>
+            <li className="flex items-center gap-2 text-[14px]">
+              <Icon name="phone" size={15} />
               <span>{listing.contact_phone}</span>
-            </div>
+            </li>
           )}
-        </div>
-
-        {/* Posted by */}
-        {poster && (
-          <div
-            className="flex items-center gap-2 mb-4 px-3 py-2 c-frame"
-            style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
-          >
-            <div
-              className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden shrink-0"
-              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
-            >
-              {poster.avatar_url ? (
-                <img src={poster.avatar_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-[10px] font-bold c-meta">
-                  {poster.display_name?.[0]?.toUpperCase() ?? "?"}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] c-meta">
-              Posted by <span className="font-medium" style={{ color: "var(--ink-strong)" }}>{poster.display_name}</span>
-            </p>
-          </div>
-        )}
+        </ul>
       </div>
 
-      {/* Divider */}
-      <div className="divider-subtle mx-5 mb-5" />
-
       {/* Description */}
-      <div className="px-5 mb-5">
-        <h2 className="font-heading font-bold text-base mb-2" style={{ color: "var(--ink-strong)" }}>Description</h2>
-        <div className="text-sm c-meta leading-relaxed whitespace-pre-line">
+      <div className="px-5 pt-7">
+        <p
+          className="c-kicker mb-2"
+          style={{ fontSize: 10, letterSpacing: "0.18em", color: "var(--ink-strong)", opacity: 0.65 }}
+        >
+          § DESCRIPTION
+        </p>
+        <div className="c-rule-hair mb-3" />
+        <p
+          className="c-body whitespace-pre-line"
+          style={{ fontSize: 15, lineHeight: 1.55 }}
+        >
           {listing.description}
-        </div>
+        </p>
       </div>
 
       {/* Requirements */}
       {listing.requirements && (
-        <>
-          <div className="divider-subtle mx-5 mb-5" />
-          <div className="px-5 mb-5">
-            <h2 className="font-heading font-bold text-base mb-2" style={{ color: "var(--ink-strong)" }}>
-              Requirements
-            </h2>
-            <div className="text-sm c-meta leading-relaxed whitespace-pre-line">
+        <div className="px-5 pt-7">
+          <p
+            className="c-kicker mb-2"
+            style={{ fontSize: 10, letterSpacing: "0.18em", color: "var(--ink-strong)", opacity: 0.65 }}
+          >
+            § REQUIREMENTS
+          </p>
+          <div className="c-rule-hair mb-3" />
+          {reqBullets ? (
+            <ul className="space-y-2">
+              {reqBullets.map((b, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2 c-body"
+                  style={{ fontSize: 15, lineHeight: 1.5 }}
+                >
+                  <span
+                    className="shrink-0"
+                    style={{
+                      color: "var(--gold-c)",
+                      marginTop: 8,
+                      width: 6,
+                      height: 6,
+                      background: "var(--gold-c)",
+                      border: "1px solid var(--ink-strong)",
+                      display: "inline-block",
+                    }}
+                  />
+                  <span>{b}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p
+              className="c-body whitespace-pre-line"
+              style={{ fontSize: 15, lineHeight: 1.55 }}
+            >
               {listing.requirements}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Posted-by attribution (compact) */}
+      {poster && poster.display_name && (
+        <div className="px-5 pt-6">
+          <div
+            className="flex items-center gap-2 px-3 py-2"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <div
+              className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center shrink-0"
+              style={{ background: "var(--paper)", border: "2px solid var(--rule-strong-c)" }}
+            >
+              {poster.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={poster.avatar_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span
+                  className="c-card-t"
+                  style={{ fontSize: 10, color: "var(--ink-strong)" }}
+                >
+                  {poster.display_name?.[0]?.toUpperCase() ?? "?"}
+                </span>
+              )}
             </div>
+            <p
+              className="c-meta"
+              style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.85 }}
+            >
+              Posted by{" "}
+              <span style={{ fontWeight: 700, opacity: 1 }}>{poster.display_name}</span>
+            </p>
           </div>
-        </>
+        </div>
       )}
 
       {/* Apply Button */}
-      <div className="px-5 mt-6">
+      <div className="px-5 mt-7">
         {hasApplied ? (
-          <div className="c-badge-ok inline-flex items-center gap-2 px-4 py-2 w-full justify-center">
+          <div className="c-badge-ok inline-flex items-center gap-2 px-4 py-3 w-full justify-center">
             Applied <Icon name="check" size={16} />
           </div>
         ) : user ? (
