@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import Tag from "@/components/ui/editorial/Tag";
 import HeroBlock from "@/components/ui/editorial/HeroBlock";
 import CityFilterChip from "@/components/ui/CityFilterChip";
 import { createClient } from "@/lib/supabase/client";
@@ -110,16 +109,29 @@ function SectionHead({
   return (
     <div className="mb-3">
       <div className="flex items-baseline gap-3">
-        <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+        <span
+          className="c-hero tabular-nums"
+          style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+        >
           № {num}
         </span>
-        <span className="text-[10px] font-bold tracking-editorial uppercase" style={{ color: "var(--ink-mute)" }}>
+        <span
+          className="c-kicker"
+          style={{ fontSize: 10, color: "var(--ink-strong)", opacity: 0.7 }}
+        >
           {kicker}
         </span>
         <span className="ml-auto rule-hairline flex-1 self-center" />
         {meta && <span className="shrink-0">{meta}</span>}
       </div>
-      {sub && <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>{sub}</p>}
+      {sub && (
+        <p
+          className="c-meta mt-1"
+          style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.6 }}
+        >
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
@@ -436,29 +448,60 @@ export default function BusinessPage() {
                 >
                   <div className="absolute inset-x-0 bottom-0 p-5 z-10">
                     <div className="flex items-center gap-2 mb-2">
-                      <Tag tone="gold" size="xs">Featured</Tag>
-                      <Tag tone="ghost" size="xs">{editorsPick.category}</Tag>
-                      {editorsPick.rating_avg > 0 && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gold tabular-nums">
+                      <span className="c-badge c-badge-gold">FEATURED</span>
+                      <span
+                        className="c-badge"
+                        style={{
+                          background: "rgba(0,0,0,0.5)",
+                          color: "var(--gold-c)",
+                          border: "1px solid rgba(212,175,55,0.4)",
+                        }}
+                      >
+                        {editorsPick.category}
+                      </span>
+                      {editorsPick.rating_avg > 0 && (editorsPick.rating_count ?? 0) > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1 tabular-nums"
+                          style={{
+                            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                            fontWeight: 800,
+                            fontSize: 11,
+                            color: "var(--gold-c)",
+                          }}
+                        >
                           <Icon name="star" size={11} className="text-gold" />
                           {Number(editorsPick.rating_avg).toFixed(1)}
                         </span>
                       )}
                     </div>
-                    <h3 className="font-display text-[28px] leading-[1.05] text-white mb-1.5 line-clamp-2">
-                      {editorsPick.name}
+                    <h3
+                      className="c-hero mb-1.5 line-clamp-2"
+                      style={{
+                        fontSize: 30,
+                        lineHeight: 0.95,
+                        letterSpacing: "-0.012em",
+                        color: "#fff",
+                      }}
+                    >
+                      {editorsPick.name.toUpperCase()}.
                     </h3>
                     {editorsPick.description && (
-                      <p className="text-[12px] text-ivory/70 leading-relaxed line-clamp-2 max-w-md mb-3">
+                      <p
+                        className="c-serif-it line-clamp-2 max-w-md mb-3"
+                        style={{ fontSize: 13, color: "rgba(255,255,255,0.8)" }}
+                      >
                         {editorsPick.description}
                       </p>
                     )}
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gold text-midnight text-[10px] font-bold uppercase tracking-editorial-tight group-hover:bg-gold-light transition-colors">
+                    <span
+                      className="c-badge c-badge-gold inline-flex items-center gap-1.5"
+                      style={{ padding: "6px 12px", fontSize: 10 }}
+                    >
                       {editorsPick.accepts_orders
-                        ? "Order Now"
+                        ? "ORDER NOW"
                         : editorsPick.accepts_bookings
-                        ? "Book"
-                        : "Visit"}
+                        ? "BOOK"
+                        : "VISIT"}
                       <Icon name="arrow-right-thin" size={11} />
                     </span>
                   </div>
@@ -476,9 +519,9 @@ export default function BusinessPage() {
                   kicker="Today's Deals"
                   sub="Live promotions from local businesses"
                   meta={
-                    <Tag tone="gold" size="xs">
-                      {deals.length} active
-                    </Tag>
+                    <span className="c-badge c-badge-gold">
+                      {deals.length} ACTIVE
+                    </span>
                   }
                 />
               </div>
@@ -534,7 +577,7 @@ export default function BusinessPage() {
                           )}
                           {biz.is_featured && (
                             <div className="absolute top-2 left-2">
-                              <Tag tone="gold" size="xs">Featured</Tag>
+                              <span className="c-badge c-badge-gold">FEATURED</span>
                             </div>
                           )}
                           {biz.rating_avg > 0 && (biz.rating_count ?? 0) > 0 && (
@@ -546,7 +589,15 @@ export default function BusinessPage() {
                               }}
                             >
                               <Icon name="star" size={11} className="text-gold" />
-                              <span className="text-[10px] font-bold text-gold tabular-nums">
+                              <span
+                                className="tabular-nums"
+                                style={{
+                                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                                  fontWeight: 800,
+                                  fontSize: 10,
+                                  color: "var(--gold-c)",
+                                }}
+                              >
                                 {Number(biz.rating_avg).toFixed(1)}
                               </span>
                             </div>
@@ -554,19 +605,24 @@ export default function BusinessPage() {
                         </div>
                         <div className="p-3">
                           <h3
-                            className="font-display text-[15px] leading-tight truncate"
-                            style={{ color: "var(--ink-strong)" }}
+                            className="c-card-t truncate"
+                            style={{ fontSize: 14, color: "var(--ink-strong)" }}
                           >
                             {biz.name}
                           </h3>
                           <p
-                            className="text-[10px] uppercase tracking-editorial-tight font-semibold mt-0.5"
-                            style={{ color: "var(--ink-mute)" }}
+                            className="c-kicker mt-0.5"
+                            style={{
+                              fontSize: 9,
+                              color: "var(--ink-strong)",
+                              opacity: 0.65,
+                              letterSpacing: "0.14em",
+                            }}
                           >
                             {biz.category}
                             {biz.city?.name && (
                               <>
-                                <span className="mx-1.5" style={{ color: "var(--ink-faint)" }}>·</span>
+                                <span className="mx-1.5" style={{ opacity: 0.5 }}>·</span>
                                 <span style={{ textTransform: "none", letterSpacing: 0 }}>
                                   {biz.city.name}
                                 </span>
@@ -591,8 +647,8 @@ export default function BusinessPage() {
                   kicker="Featured Shops"
                   sub="Hand-picked local standouts"
                   meta={
-                    <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums">
-                      {otherFeatured.length} listed
+                    <span className="c-badge c-badge-gold tabular-nums">
+                      {otherFeatured.length} LISTED
                     </span>
                   }
                 />
@@ -638,14 +694,24 @@ export default function BusinessPage() {
                           </div>
                           <div className="flex-1 min-w-0">
                             <p
-                              className="text-[10px] uppercase tracking-editorial-tight font-semibold truncate"
-                              style={{ color: "var(--ink-mute)" }}
+                              className="c-kicker truncate"
+                              style={{
+                                fontSize: 9,
+                                letterSpacing: "0.16em",
+                                color: "var(--ink-strong)",
+                                opacity: 0.65,
+                              }}
                             >
                               {deal.business_name}
                             </p>
                             <p
-                              className="font-display text-[14px] leading-tight truncate"
-                              style={{ color: "var(--ink-strong)" }}
+                              className="c-card-t truncate"
+                              style={{
+                                fontSize: 14,
+                                color: "var(--ink-strong)",
+                                lineHeight: 1.15,
+                                marginTop: 2,
+                              }}
                             >
                               {deal.title}
                             </p>
@@ -659,17 +725,27 @@ export default function BusinessPage() {
                               }}
                             >
                               <p
-                                className="text-[11px] font-bold font-mono tracking-wider"
-                                style={{ color: "var(--gold-c)" }}
+                                className="font-mono tabular-nums"
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  letterSpacing: "0.08em",
+                                  color: "var(--gold-c)",
+                                }}
                               >
                                 {deal.promo_code}
                               </p>
                             </div>
                             <p
-                              className="text-[8px] mt-0.5 uppercase tracking-editorial-tight"
-                              style={{ color: "var(--ink-mute)" }}
+                              className="c-kicker mt-1"
+                              style={{
+                                fontSize: 9,
+                                letterSpacing: "0.14em",
+                                color: "var(--ink-strong)",
+                                opacity: 0.55,
+                              }}
                             >
-                              Valid til {formatValidUntil(deal.valid_until)}
+                              VALID TIL {formatValidUntil(deal.valid_until).toUpperCase()}
                             </p>
                           </div>
                         </div>
@@ -690,7 +766,12 @@ export default function BusinessPage() {
                   kicker={`New in ${filterCity?.name ?? "Your City"}`}
                   sub="Recently opened"
                   meta={
-                    <Tag tone="coral" size="xs">Just opened</Tag>
+                    <span
+                      className="c-badge"
+                      style={{ background: "var(--red-c, #c0392b)", color: "#fff" }}
+                    >
+                      JUST OPENED
+                    </span>
                   }
                 />
               </div>
@@ -720,11 +801,22 @@ export default function BusinessPage() {
                         <Icon name={badgeIcons[badge] || "tag"} size={14} style={{ color: "var(--gold-c)" }} />
                       </div>
                       <div className="text-left">
-                        <p className="text-[11px] font-bold leading-tight" style={{ color: "var(--ink-strong)" }}>
+                        <p
+                          className="c-card-t"
+                          style={{ fontSize: 12, color: "var(--ink-strong)", lineHeight: 1.15 }}
+                        >
                           {formatBadgeLabel(badge)}
                         </p>
-                        <p className="text-[9px] uppercase tracking-editorial-tight font-semibold" style={{ color: "var(--ink-mute)" }}>
-                          {count} business{count !== 1 ? "es" : ""}
+                        <p
+                          className="c-kicker"
+                          style={{
+                            fontSize: 9,
+                            letterSpacing: "0.14em",
+                            color: "var(--ink-strong)",
+                            opacity: 0.6,
+                          }}
+                        >
+                          {count} BUSINESS{count !== 1 ? "ES" : ""}
                         </p>
                       </div>
                     </button>
@@ -757,11 +849,22 @@ export default function BusinessPage() {
                           <Icon name={cat.iconName} size={18} style={{ color: "var(--gold-c)" }} />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-display text-[14px] leading-tight truncate" style={{ color: "var(--ink-strong)" }}>
+                          <p
+                            className="c-card-t truncate"
+                            style={{ fontSize: 14, color: "var(--ink-strong)", lineHeight: 1.15 }}
+                          >
                             {cat.label}
                           </p>
-                          <p className="text-[9px] uppercase tracking-editorial-tight font-semibold mt-0.5" style={{ color: "var(--ink-mute)" }}>
-                            {count} listed
+                          <p
+                            className="c-kicker mt-0.5"
+                            style={{
+                              fontSize: 9,
+                              letterSpacing: "0.14em",
+                              color: "var(--ink-strong)",
+                              opacity: 0.6,
+                            }}
+                          >
+                            {count} LISTED
                           </p>
                         </div>
                       </button>
@@ -794,8 +897,8 @@ export default function BusinessPage() {
               }
               sub="All listings, alphabetical by relevance"
               meta={
-                <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums">
-                  {filtered.length} result{filtered.length !== 1 ? "s" : ""}
+                <span className="c-badge c-badge-gold tabular-nums">
+                  {filtered.length} RESULT{filtered.length !== 1 ? "S" : ""}
                 </span>
               }
             />
@@ -819,11 +922,24 @@ export default function BusinessPage() {
 
               {filtered.length === 0 && (
                 <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
+                  <div
+                    className="w-16 h-16 mx-auto mb-4 flex items-center justify-center"
+                    style={{ background: "var(--ink-strong)" }}
+                  >
                     <Icon name="search" size={28} style={{ color: "var(--gold-c)" }} />
                   </div>
-                  <p className="font-display text-[17px] mb-1" style={{ color: "var(--ink-strong)" }}>No businesses found</p>
-                  <p className="text-[11px]" style={{ color: "var(--ink-mute)" }}>Try a different search or category</p>
+                  <p
+                    className="c-card-t mb-1"
+                    style={{ fontSize: 16, color: "var(--ink-strong)" }}
+                  >
+                    NO BUSINESSES FOUND
+                  </p>
+                  <p
+                    className="c-meta"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.65 }}
+                  >
+                    Try a different search or category
+                  </p>
                 </div>
               )}
             </div>
@@ -837,15 +953,21 @@ export default function BusinessPage() {
                   <Icon name="megaphone" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-[17px] leading-tight" style={{ color: "var(--ink-strong)" }}>
-                    Promote Your Business
+                  <p
+                    className="c-card-t leading-tight"
+                    style={{ fontSize: 15, color: "var(--ink-strong)" }}
+                  >
+                    PROMOTE YOUR BUSINESS
                   </p>
-                  <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
+                  <p
+                    className="c-serif-it mt-0.5"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+                  >
                     Run deals, get featured &amp; reach all of {filterCity?.name ?? "your city"}
                   </p>
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
-                  Start
+                <span className="shrink-0 c-badge c-badge-gold inline-flex items-center gap-1 press">
+                  START
                   <Icon name="arrow-right-thin" size={11} />
                 </span>
               </div>
@@ -859,15 +981,21 @@ export default function BusinessPage() {
                   <Icon name="store" size={22} style={{ color: "var(--gold-c)" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-display text-[17px] leading-tight" style={{ color: "var(--ink-strong)" }}>
-                    Own a Business in {filterCity?.name ?? "Your City"}?
+                  <p
+                    className="c-card-t leading-tight"
+                    style={{ fontSize: 15, color: "var(--ink-strong)" }}
+                  >
+                    OWN A BUSINESS IN {(filterCity?.name ?? "Your City").toUpperCase()}?
                   </p>
-                  <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-mute)" }}>
+                  <p
+                    className="c-serif-it mt-0.5"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+                  >
                     Get listed, earn city badges &amp; connect with customers
                   </p>
                 </div>
-                <span className="shrink-0 inline-flex items-center gap-1 px-3 py-2 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold text-midnight press">
-                  Apply
+                <span className="shrink-0 c-badge c-badge-gold inline-flex items-center gap-1 press">
+                  APPLY
                   <Icon name="arrow-right-thin" size={11} />
                 </span>
               </div>
@@ -903,34 +1031,44 @@ function DealCard({ deal, index }: { deal: RealDeal; index: number }) {
             >
               <Icon name={iconName} size={18} style={{ color: "var(--gold-c)" }} />
             </div>
-            <Tag tone="coral" size="xs">{deal.discount_label}</Tag>
+            <span className="c-badge c-badge-gold">{deal.discount_label}</span>
           </div>
 
           <h3
-            className="font-display text-[15px] leading-tight mb-1 line-clamp-2"
-            style={{ color: "var(--ink-strong)" }}
+            className="c-card-t mb-1 line-clamp-2"
+            style={{ fontSize: 14, lineHeight: 1.2, color: "var(--ink-strong)" }}
           >
             {deal.title}
           </h3>
           <p
-            className="text-[10px] mb-2 line-clamp-2 leading-relaxed"
-            style={{ color: "var(--ink-mute)" }}
+            className="c-body mb-3 line-clamp-2"
+            style={{ fontSize: 12, lineHeight: 1.45, color: "var(--ink-strong)", opacity: 0.75 }}
           >
             {deal.description}
           </p>
 
           <div className="flex items-center justify-between gap-2">
             <p
-              className="text-[9px] uppercase tracking-editorial-tight font-semibold truncate"
-              style={{ color: "var(--ink-mute)" }}
+              className="c-kicker truncate"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.16em",
+                color: "var(--ink-strong)",
+                opacity: 0.65,
+              }}
             >
               {deal.business_name}
             </p>
             <p
-              className="text-[9px] font-semibold shrink-0 tabular-nums"
-              style={{ color: "var(--ink-mute)" }}
+              className="c-kicker shrink-0 tabular-nums"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.14em",
+                color: "var(--ink-strong)",
+                opacity: 0.55,
+              }}
             >
-              {formatValidUntil(deal.valid_until)}
+              {formatValidUntil(deal.valid_until).toUpperCase()}
             </p>
           </div>
 
@@ -943,8 +1081,13 @@ function DealCard({ deal, index }: { deal: RealDeal; index: number }) {
               }}
             >
               <span
-                className="text-[10px] font-bold font-mono tracking-wider"
-                style={{ color: "var(--gold-c)" }}
+                className="font-mono"
+                style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: "0.08em",
+                  color: "var(--gold-c)",
+                }}
               >
                 {deal.promo_code}
               </span>
@@ -984,15 +1127,30 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
           )}
 
           <div className="absolute top-2.5 left-2.5">
-            <Tag tone={isNew ? "coral" : "gold"} size="xs">
-              {isNew ? "New" : "Featured"}
-            </Tag>
+            {isNew ? (
+              <span
+                className="c-badge"
+                style={{ background: "var(--red-c, #c0392b)", color: "#fff" }}
+              >
+                NEW
+              </span>
+            ) : (
+              <span className="c-badge c-badge-gold">FEATURED</span>
+            )}
           </div>
 
-          {biz.rating_avg > 0 && (
+          {biz.rating_avg > 0 && (biz.rating_count ?? 0) > 0 && (
             <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm px-2 py-0.5 flex items-center gap-1 border border-gold/20">
               <Icon name="star" size={11} className="text-gold" />
-              <span className="text-[10px] font-bold text-gold tabular-nums">
+              <span
+                className="tabular-nums"
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 10,
+                  color: "var(--gold-c)",
+                }}
+              >
                 {Number(biz.rating_avg).toFixed(1)}
               </span>
             </div>
@@ -1001,30 +1159,44 @@ function FeaturedCard({ biz, index, isNew }: { biz: Business; index: number; isN
 
         {/* Info */}
         <div className="p-3">
-          <h3 className="font-display text-[15px] leading-tight mb-0.5 truncate" style={{ color: "var(--ink-strong)" }}>
+          <h3
+            className="c-card-t mb-0.5 truncate"
+            style={{ fontSize: 14, color: "var(--ink-strong)", lineHeight: 1.15 }}
+          >
             {biz.name}
           </h3>
-          <p className="text-[10px] mb-2.5 line-clamp-1 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
+          <p
+            className="c-body mb-2.5 line-clamp-1"
+            style={{ fontSize: 12, lineHeight: 1.4, color: "var(--ink-strong)", opacity: 0.75 }}
+          >
             {biz.description}
           </p>
 
           <div className="flex items-center justify-between gap-2">
             <div className="flex flex-wrap gap-1">
-              <Tag tone="ghost" size="xs">{biz.category}</Tag>
+              <span
+                className="c-badge"
+                style={{
+                  background: "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "1px solid var(--rule-strong-c)",
+                }}
+              >
+                {biz.category.toUpperCase()}
+              </span>
               {biz.badges?.slice(0, 1).map((badge) => (
-                <Tag
+                <span
                   key={badge}
-                  tone={isLocallyOwnedBadge(badge) ? "gold" : "default"}
-                  size="xs"
+                  className={isLocallyOwnedBadge(badge) ? "c-badge c-badge-gold" : "c-badge c-badge-ink"}
                 >
-                  {formatBadgeLabel(badge)}
-                </Tag>
+                  {formatBadgeLabel(badge).toUpperCase()}
+                </span>
               ))}
             </div>
             {(biz.accepts_orders || biz.accepts_bookings) && (
-              <Tag tone="gold" size="xs">
-                {biz.accepts_orders ? "Order" : "Book"}
-              </Tag>
+              <span className="c-badge c-badge-gold">
+                {biz.accepts_orders ? "ORDER" : "BOOK"}
+              </span>
             )}
           </div>
         </div>
@@ -1089,7 +1261,7 @@ function BusinessRow({ biz }: { biz: Business }) {
           )}
           {biz.is_featured && (
             <div className="absolute top-2 left-2">
-              <Tag tone="gold" size="xs">Featured</Tag>
+              <span className="c-badge c-badge-gold">FEATURED</span>
             </div>
           )}
         </div>
@@ -1098,13 +1270,24 @@ function BusinessRow({ biz }: { biz: Business }) {
         <div className="flex-1 min-w-0 p-3.5">
           {/* Name + Rating */}
           <div className="flex items-start justify-between gap-2 mb-0.5">
-            <h3 className="font-display text-[17px] leading-tight group-hover:text-gold transition-colors truncate" style={{ color: "var(--ink-strong)" }}>
+            <h3
+              className="c-card-t group-hover:text-gold transition-colors truncate"
+              style={{ fontSize: 16, color: "var(--ink-strong)", lineHeight: 1.15 }}
+            >
               {biz.name}
             </h3>
-            {biz.rating_avg > 0 && (
+            {biz.rating_avg > 0 && (biz.rating_count ?? 0) > 0 && (
               <div className="flex items-center gap-1 shrink-0">
                 <Icon name="star" size={12} className="text-gold" />
-                <span className="text-[11px] font-bold text-gold tabular-nums">
+                <span
+                  className="tabular-nums"
+                  style={{
+                    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 11,
+                    color: "var(--gold-c)",
+                  }}
+                >
                   {Number(biz.rating_avg).toFixed(1)}
                 </span>
               </div>
@@ -1112,19 +1295,37 @@ function BusinessRow({ biz }: { biz: Business }) {
           </div>
 
           {/* Category · City meta */}
-          <p className="text-[11px] mb-1.5 truncate" style={{ color: "var(--ink-mute)" }}>
-            <span className="uppercase tracking-editorial-tight font-semibold">{biz.category}</span>
+          <p
+            className="c-kicker mb-1.5 truncate"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.16em",
+              color: "var(--ink-strong)",
+              opacity: 0.7,
+            }}
+          >
+            {biz.category.toUpperCase()}
             {biz.city?.name && (
               <>
-                <span className="mx-1.5" style={{ color: "var(--ink-faint)" }}>·</span>
-                <span>{biz.city.name}</span>
+                <span className="mx-1.5" style={{ opacity: 0.5 }}>·</span>
+                <span style={{ textTransform: "none", letterSpacing: 0 }}>
+                  {biz.city.name}
+                </span>
               </>
             )}
           </p>
 
           {/* Description */}
           {biz.description && (
-            <p className="text-[11px] mb-2 line-clamp-1 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
+            <p
+              className="c-body mb-2 line-clamp-1"
+              style={{
+                fontSize: 12,
+                lineHeight: 1.4,
+                color: "var(--ink-strong)",
+                opacity: 0.75,
+              }}
+            >
               {biz.description}
             </p>
           )}
@@ -1132,19 +1333,32 @@ function BusinessRow({ biz }: { biz: Business }) {
           {/* Status + Address row */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             {hoursLabel && (
-              <Tag tone={isOpen ? "emerald" : "coral"} size="xs">
+              <span
+                className={isOpen ? "c-badge c-badge-ok" : "c-badge c-badge-live"}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+              >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    isOpen ? "bg-emerald animate-pulse" : "bg-coral/60"
+                  className={`inline-block w-1.5 h-1.5 rounded-full ${
+                    isOpen ? "bg-white animate-pulse" : "bg-white/70"
                   }`}
                 />
-                {isOpen ? "Open" : "Closed"}
-              </Tag>
+                {isOpen ? "OPEN" : "CLOSED"}
+              </span>
             )}
             {biz.address && (
-              <span className="text-[9px] truncate inline-flex items-center gap-1" style={{ color: "var(--ink-mute)" }}>
+              <span
+                className="c-kicker truncate inline-flex items-center gap-1"
+                style={{
+                  fontSize: 9,
+                  letterSpacing: "0.12em",
+                  color: "var(--ink-strong)",
+                  opacity: 0.65,
+                }}
+              >
                 <Icon name="pin" size={10} className="text-gold/60" />
-                {biz.address.split(",")[0]}
+                <span style={{ textTransform: "none", letterSpacing: 0 }}>
+                  {biz.address.split(",")[0]}
+                </span>
               </span>
             )}
           </div>
@@ -1152,28 +1366,43 @@ function BusinessRow({ biz }: { biz: Business }) {
           {/* Tag row + CTA */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {biz.account_type === "ads_only" && (
-              <Tag tone="ghost" size="xs">
+              <span
+                className="c-badge"
+                style={{
+                  background: "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "1px solid var(--rule-strong-c)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                }}
+              >
                 <Icon name="globe" size={9} />
-                Chain
-              </Tag>
+                CHAIN
+              </span>
             )}
             {biz.badges?.slice(0, 2).map((badge) => (
-              <Tag
+              <span
                 key={badge}
-                tone={isLocallyOwnedBadge(badge) ? "gold" : "default"}
-                size="xs"
+                className={
+                  isLocallyOwnedBadge(badge) ? "c-badge c-badge-gold" : "c-badge c-badge-ink"
+                }
+                style={{ display: "inline-flex", alignItems: "center", gap: 4 }}
               >
                 <Icon name={badgeIcons[badge] || "tag"} size={9} />
-                {formatBadgeLabel(badge)}
-              </Tag>
+                {formatBadgeLabel(badge).toUpperCase()}
+              </span>
             ))}
 
             <span className="ml-auto shrink-0">
               {biz.accepts_orders || biz.accepts_bookings ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-editorial-tight bg-gold/15 text-gold group-hover:bg-gold group-hover:text-midnight transition-colors">
-                  <Icon name={biz.accepts_orders ? "cart" : "calendar"} size={11} />
-                  {biz.accepts_orders ? "Order" : "Book"}
-                  <Icon name="arrow-right-thin" size={11} />
+                <span
+                  className="c-badge c-badge-gold inline-flex items-center gap-1.5"
+                  style={{ padding: "5px 10px", fontSize: 9 }}
+                >
+                  <Icon name={biz.accepts_orders ? "cart" : "calendar"} size={10} />
+                  {biz.accepts_orders ? "ORDER" : "BOOK"}
+                  <Icon name="arrow-right-thin" size={10} />
                 </span>
               ) : (
                 <Icon
