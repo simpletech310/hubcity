@@ -47,9 +47,10 @@ export async function PATCH(request: Request) {
           .select("channel:channels!inner(owner_id)")
           .eq("id", id)
           .maybeSingle();
-        const channel = Array.isArray(data?.channel)
-          ? (data?.channel[0] as { owner_id: string } | undefined)
-          : ((data?.channel as { owner_id: string } | null) ?? undefined);
+        const raw = (data?.channel ?? null) as unknown;
+        const channel = Array.isArray(raw)
+          ? (raw[0] as { owner_id: string } | undefined)
+          : ((raw as { owner_id: string } | null) ?? undefined);
         owns = channel?.owner_id === user.id;
         break;
       }
