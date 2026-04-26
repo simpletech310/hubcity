@@ -67,117 +67,30 @@ function isLocallyOwnedBadge(badge: string): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// Hardcoded deals & promos for businesses (until DB has them)
+// Real deals shape — sourced from the `business_deals` table joined to
+// `businesses`. The page only renders deals/promo codes/trending if real
+// rows come back; no hardcoded placeholders.
 // ---------------------------------------------------------------------------
 
-interface LocalDeal {
+interface RealDeal {
   id: string;
-  businessName: string;
-  businessSlug: string;
-  category: string;
+  business_id: string;
+  business_name: string;
+  business_slug: string;
+  business_category: string;
   title: string;
   description: string;
-  discount: string;
-  promoCode?: string;
-  validUntil: string;
-  iconName: IconName;
+  discount_label: string;
+  promo_code: string | null;
+  valid_until: string;
 }
 
-interface TrendingBiz {
-  name: string;
-  slug: string;
-  category: string;
-  tagline: string;
-  iconName: IconName;
-  stat: string;
-  statLabel: string;
+function formatValidUntil(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
-
-const localDeals: LocalDeal[] = [
-  {
-    id: "d1",
-    businessName: "Compton Cuts Barbershop",
-    businessSlug: "compton-cuts",
-    category: "barber",
-    title: "Fresh Fade Friday",
-    description: "20% off all fades every Friday",
-    discount: "20% OFF",
-    validUntil: "Every Friday",
-    iconName: "scissors",
-  },
-  {
-    id: "d2",
-    businessName: "Compton Auto Care",
-    businessSlug: "compton-auto-care",
-    category: "auto",
-    title: "Spring Tune-Up Special",
-    description: "Oil change + tire rotation bundle",
-    discount: "$49.99",
-    promoCode: "SPRING25",
-    validUntil: "Apr 30",
-    iconName: "car",
-  },
-  {
-    id: "d3",
-    businessName: "Glow Up Beauty Lounge",
-    businessSlug: "glow-up-beauty",
-    category: "beauty",
-    title: "New Client Special",
-    description: "Full set nails + complimentary brow shape",
-    discount: "30% OFF",
-    promoCode: "GLOWUP",
-    validUntil: "Apr 15",
-    iconName: "sparkle",
-  },
-  {
-    id: "d4",
-    businessName: "Culture Fitness",
-    businessSlug: "hub-city-fitness",
-    category: "health",
-    title: "No Sign-Up Fee",
-    description: "Join this month & skip the enrollment fee",
-    discount: "FREE",
-    validUntil: "Mar 31",
-    iconName: "heart-pulse",
-  },
-  {
-    id: "d5",
-    businessName: "Compton Fashion District",
-    businessSlug: "compton-fashion",
-    category: "retail",
-    title: "Spring Collection Drop",
-    description: "Buy 2 get 1 free on new arrivals",
-    discount: "B2G1",
-    validUntil: "Apr 7",
-    iconName: "shopping",
-  },
-  {
-    id: "d6",
-    businessName: "City Sounds Entertainment",
-    businessSlug: "city-sounds",
-    category: "entertainment",
-    title: "Weekend DJ Packages",
-    description: "Book a weekend event & get free lighting",
-    discount: "SAVE $200",
-    promoCode: "SOUNDS24",
-    validUntil: "Apr 30",
-    iconName: "music",
-  },
-];
-
-const trendingBusinesses: TrendingBiz[] = [
-  { name: "Compton Cuts", slug: "compton-cuts", category: "barber", tagline: "The freshest fades in the city", iconName: "scissors", stat: "340+", statLabel: "cuts/mo" },
-  { name: "Culture Fitness", slug: "hub-city-fitness", category: "health", tagline: "Where Compton gets strong", iconName: "heart-pulse", stat: "1.2K", statLabel: "members" },
-  { name: "Glow Up Beauty", slug: "glow-up-beauty", category: "beauty", tagline: "Look good, feel good", iconName: "sparkle", stat: "4.9", statLabel: "rating" },
-  { name: "Compton Auto Care", slug: "compton-auto-care", category: "auto", tagline: "Trusted since 2005", iconName: "wrench", stat: "18yrs", statLabel: "serving" },
-];
-
-const quickActions: { label: string; iconName: IconName; filter: string }[] = [
-  { label: "Deals", iconName: "flame", filter: "deals" },
-  { label: "New", iconName: "sparkle", filter: "new" },
-  { label: "Top Rated", iconName: "star", filter: "top" },
-  { label: "Black Owned", iconName: "verified", filter: "black_owned" },
-];
 
 // ---------------------------------------------------------------------------
 // Small building block: numbered section header (matches health page pattern)
@@ -225,6 +138,7 @@ export default function BusinessPage() {
   );
   const [activeCategory, setActiveCategory] = useState("all");
   const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [deals, setDeals] = useState<RealDeal[]>([]);
   const [search, setSearch] = useState("");
   const [quickFilter, setQuickFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -257,8 +171,64 @@ export default function BusinessPage() {
         query = query.eq("category", activeCategory);
       }
 
-      const { data } = await query;
-      setBusinesses((data as Business[]) ?? []);
+      // Real deals — current window, joined to the parent business so the
+      // card can show a link + the business's name/category.
+      const dealsQ = supabase
+        .from("business_deals")
+        .select(
+          "id, business_id, title, description, discount_label, promo_code, valid_until, business:businesses!inner(id, name, slug, category, is_published)"
+        )
+        .eq("is_active", true)
+        .lte("valid_from", new Date().toISOString())
+        .gte("valid_until", new Date().toISOString())
+        .order("valid_until", { ascending: true })
+        .limit(24);
+
+      const [bizR, dealsR] = await Promise.all([query, dealsQ]);
+      setBusinesses((bizR.data as Business[]) ?? []);
+
+      // Hydrate deals into a flat shape for rendering. Drop deals whose
+      // parent business isn't published (RLS will already do this for
+      // anonymous users, but keep the guard for service-role contexts).
+      type JoinedBiz = {
+        id: string;
+        name: string;
+        slug: string;
+        category: string;
+        is_published: boolean;
+      };
+      type DealRow = {
+        id: string;
+        business_id: string;
+        title: string;
+        description: string;
+        discount_label: string;
+        promo_code: string | null;
+        valid_until: string;
+        // Supabase client returns joined relations as either an object
+        // or array depending on the relationship cardinality. We coerce
+        // to the first row regardless.
+        business: JoinedBiz | JoinedBiz[] | null;
+      };
+      const flatDeals: RealDeal[] = ((dealsR.data ?? []) as unknown as DealRow[])
+        .map((d) => {
+          const b = Array.isArray(d.business) ? d.business[0] : d.business;
+          if (!b || !b.is_published) return null;
+          return {
+            id: d.id,
+            business_id: d.business_id,
+            business_name: b.name,
+            business_slug: b.slug,
+            business_category: b.category,
+            title: d.title,
+            description: d.description,
+            discount_label: d.discount_label,
+            promo_code: d.promo_code,
+            valid_until: d.valid_until,
+          } satisfies RealDeal;
+        })
+        .filter((x): x is RealDeal => x !== null);
+      setDeals(flatDeals);
       setLoading(false);
     }
     fetchData();
@@ -292,7 +262,24 @@ export default function BusinessPage() {
   const editorsPick = featured[0]; // one spotlight per load max
   const otherFeatured = featured.slice(1);
   const newBusinesses = businesses.filter((b) => b.badges?.includes("new_business"));
-  const totalCount = businesses.length;
+
+  // Real "trending" — score by featured first, then activity signals
+  // (vote_count, rating_count, rating_avg). Pulls from the same
+  // businesses fetch so it always reflects the current city scope.
+  const trending = useMemo(() => {
+    return [...businesses]
+      .map((b) => {
+        const ratingScore = (b.rating_avg ?? 0) * Math.log((b.rating_count ?? 0) + 1);
+        const featureBonus = b.is_featured ? 100 : 0;
+        const voteScore = (b.vote_count ?? 0);
+        return { biz: b, score: featureBonus + ratingScore + voteScore };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 6)
+      .map((x) => x.biz);
+  }, [businesses]);
+
+  const promoDeals = deals.filter((d) => !!d.promo_code);
 
   const allBadges = useMemo(() => {
     const set = new Set<string>();
@@ -454,66 +441,117 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 02 · Today's Deals ──────────────────────────────── */}
-          {(quickFilter === null || quickFilter === "deals") && (
+          {/* ── № 02 · Today's Deals — real DB rows only ──────────── */}
+          {(quickFilter === null || quickFilter === "deals") && deals.length > 0 && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
                   num="02"
                   kicker="Today's Deals"
-                  sub="Promos & specials running now"
+                  sub="Live promotions from local businesses"
                   meta={
                     <Tag tone="gold" size="xs">
-                      {localDeals.length} active
+                      {deals.length} active
                     </Tag>
                   }
                 />
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {localDeals.map((deal, i) => (
+                {deals.map((deal, i) => (
                   <DealCard key={deal.id} deal={deal} index={i} />
                 ))}
               </div>
             </section>
           )}
 
-          {/* ── № 03 · Trending ──────────────────────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && (
+          {/* ── № 03 · Trending — real biz scored by activity ─────── */}
+          {activeCategory === "all" && !search && !quickFilter && trending.length > 0 && (
             <section className="mb-6">
               <div className="px-5">
                 <SectionHead
                   num="03"
                   kicker={`Trending in ${filterCity?.name ?? "Your City"}`}
-                  sub="Most talked about this week"
+                  sub="Featured shops + most-rated this week"
                 />
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {trendingBusinesses.map((biz, i) => (
-                  <Link
-                    key={biz.slug}
-                    href={`/business/${biz.slug}`}
-                    className="shrink-0 w-[170px] animate-slide-in press"
-                    style={{ animationDelay: `${i * 80}ms` }}
-                  >
-                    <div className="p-4 h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
-                      <div className="w-10 h-10 flex items-center justify-center mb-3" style={{ background: "var(--ink-strong)" }}>
-                        <Icon name={biz.iconName} size={18} style={{ color: "var(--gold-c)" }} />
+                {trending.map((biz, i) => {
+                  const iconName = categoryIcons[biz.category] ?? "store";
+                  const cover = biz.image_urls?.[0];
+                  return (
+                    <Link
+                      key={biz.id}
+                      href={`/business/${biz.slug}`}
+                      className="shrink-0 w-[180px] animate-slide-in press"
+                      style={{ animationDelay: `${i * 80}ms` }}
+                    >
+                      <div
+                        className="overflow-hidden h-full"
+                        style={{
+                          background: "var(--paper-warm)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        <div
+                          className="aspect-[4/3] relative overflow-hidden"
+                          style={{
+                            background: "var(--ink-strong)",
+                            borderBottom: "2px solid var(--rule-strong-c)",
+                          }}
+                        >
+                          {cover ? (
+                            <Image src={cover} alt={biz.name} fill className="object-cover" />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <Icon name={iconName} size={28} style={{ color: "var(--gold-c)" }} />
+                            </div>
+                          )}
+                          {biz.is_featured && (
+                            <div className="absolute top-2 left-2">
+                              <Tag tone="gold" size="xs">Featured</Tag>
+                            </div>
+                          )}
+                          {biz.rating_avg > 0 && (biz.rating_count ?? 0) > 0 && (
+                            <div
+                              className="absolute top-2 right-2 px-2 py-0.5 flex items-center gap-1"
+                              style={{
+                                background: "rgba(0,0,0,0.6)",
+                                border: "1px solid rgba(212,175,55,0.35)",
+                              }}
+                            >
+                              <Icon name="star" size={11} className="text-gold" />
+                              <span className="text-[10px] font-bold text-gold tabular-nums">
+                                {Number(biz.rating_avg).toFixed(1)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-3">
+                          <h3
+                            className="font-display text-[15px] leading-tight truncate"
+                            style={{ color: "var(--ink-strong)" }}
+                          >
+                            {biz.name}
+                          </h3>
+                          <p
+                            className="text-[10px] uppercase tracking-editorial-tight font-semibold mt-0.5"
+                            style={{ color: "var(--ink-mute)" }}
+                          >
+                            {biz.category}
+                            {biz.city?.name && (
+                              <>
+                                <span className="mx-1.5" style={{ color: "var(--ink-faint)" }}>·</span>
+                                <span style={{ textTransform: "none", letterSpacing: 0 }}>
+                                  {biz.city.name}
+                                </span>
+                              </>
+                            )}
+                          </p>
+                        </div>
                       </div>
-                      <h3 className="font-display text-[15px] leading-tight truncate mb-0.5" style={{ color: "var(--ink-strong)" }}>
-                        {biz.name}
-                      </h3>
-                      <p className="text-[10px] line-clamp-1 mb-2.5" style={{ color: "var(--ink-mute)" }}>{biz.tagline}</p>
-                      <div className="flex items-baseline gap-1">
-                        <span className="font-display text-[18px] leading-none tabular-nums" style={{ color: "var(--gold-c)" }}>
-                          {biz.stat}
-                        </span>
-                        <span className="text-[9px] uppercase tracking-editorial-tight font-semibold" style={{ color: "var(--ink-mute)" }}>
-                          {biz.statLabel}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -541,44 +579,78 @@ export default function BusinessPage() {
             </section>
           )}
 
-          {/* ── № 05 · Promo Codes ────────────────────────────────── */}
-          {activeCategory === "all" && !search && !quickFilter && (
+          {/* ── № 05 · Promo Codes — real DB only ──────────────────── */}
+          {activeCategory === "all" && !search && !quickFilter && promoDeals.length > 0 && (
             <section className="mb-6 px-5">
-              <SectionHead num="05" kicker="Promo Codes" sub="Use at checkout" />
+              <SectionHead
+                num="05"
+                kicker="Promo Codes"
+                sub="Tap to copy, then use at checkout"
+              />
               <div className="space-y-2.5 stagger">
-                {localDeals
-                  .filter((d) => d.promoCode)
-                  .map((deal) => (
-                    <div
+                {promoDeals.map((deal) => {
+                  const iconName = categoryIcons[deal.business_category] ?? "store";
+                  return (
+                    <Link
                       key={deal.id}
-                      className="p-3.5 transition-colors"
-                      style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+                      href={`/business/${deal.business_slug}`}
+                      className="block press"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 flex items-center justify-center shrink-0" style={{ background: "var(--ink-strong)" }}>
-                          <Icon name={deal.iconName} size={16} style={{ color: "var(--gold-c)" }} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[10px] uppercase tracking-editorial-tight font-semibold truncate" style={{ color: "var(--ink-mute)" }}>
-                            {deal.businessName}
-                          </p>
-                          <p className="font-display text-[14px] leading-tight truncate" style={{ color: "var(--ink-strong)" }}>
-                            {deal.title}
-                          </p>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          <div className="px-2.5 py-1" style={{ background: "var(--paper)", border: "2px dashed var(--rule-strong-c)" }}>
-                            <p className="text-[11px] font-bold font-mono tracking-wider" style={{ color: "var(--gold-c)" }}>
-                              {deal.promoCode}
+                      <div
+                        className="p-3.5 transition-colors"
+                        style={{
+                          background: "var(--paper-warm)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className="w-10 h-10 flex items-center justify-center shrink-0"
+                            style={{ background: "var(--ink-strong)" }}
+                          >
+                            <Icon name={iconName} size={16} style={{ color: "var(--gold-c)" }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-[10px] uppercase tracking-editorial-tight font-semibold truncate"
+                              style={{ color: "var(--ink-mute)" }}
+                            >
+                              {deal.business_name}
+                            </p>
+                            <p
+                              className="font-display text-[14px] leading-tight truncate"
+                              style={{ color: "var(--ink-strong)" }}
+                            >
+                              {deal.title}
                             </p>
                           </div>
-                          <p className="text-[8px] mt-0.5 uppercase tracking-editorial-tight" style={{ color: "var(--ink-mute)" }}>
-                            Valid til {deal.validUntil}
-                          </p>
+                          <div className="shrink-0 text-right">
+                            <div
+                              className="px-2.5 py-1"
+                              style={{
+                                background: "var(--paper)",
+                                border: "2px dashed var(--rule-strong-c)",
+                              }}
+                            >
+                              <p
+                                className="text-[11px] font-bold font-mono tracking-wider"
+                                style={{ color: "var(--gold-c)" }}
+                              >
+                                {deal.promo_code}
+                              </p>
+                            </div>
+                            <p
+                              className="text-[8px] mt-0.5 uppercase tracking-editorial-tight"
+                              style={{ color: "var(--ink-mute)" }}
+                            >
+                              Valid til {formatValidUntil(deal.valid_until)}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </Link>
+                  );
+                })}
               </div>
             </section>
           )}
@@ -820,42 +892,70 @@ export default function BusinessPage() {
 // Deal Card (horizontal scroller)
 // ---------------------------------------------------------------------------
 
-function DealCard({ deal, index }: { deal: LocalDeal; index: number }) {
+function DealCard({ deal, index }: { deal: RealDeal; index: number }) {
+  const iconName = categoryIcons[deal.business_category] ?? "store";
   return (
     <Link
-      href={`/business/${deal.businessSlug}`}
+      href={`/business/${deal.business_slug}`}
       className="shrink-0 w-[220px] animate-slide-in press"
       style={{ animationDelay: `${index * 80}ms` }}
     >
-      <div className="overflow-hidden h-full" style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}>
+      <div
+        className="overflow-hidden h-full"
+        style={{ background: "var(--paper-warm)", border: "2px solid var(--rule-strong-c)" }}
+      >
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <div className="w-10 h-10 flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
-              <Icon name={deal.iconName} size={18} style={{ color: "var(--gold-c)" }} />
+            <div
+              className="w-10 h-10 flex items-center justify-center"
+              style={{ background: "var(--ink-strong)" }}
+            >
+              <Icon name={iconName} size={18} style={{ color: "var(--gold-c)" }} />
             </div>
-            <Tag tone="coral" size="xs">{deal.discount}</Tag>
+            <Tag tone="coral" size="xs">{deal.discount_label}</Tag>
           </div>
 
-          <h3 className="font-display text-[15px] leading-tight mb-1 line-clamp-2" style={{ color: "var(--ink-strong)" }}>
+          <h3
+            className="font-display text-[15px] leading-tight mb-1 line-clamp-2"
+            style={{ color: "var(--ink-strong)" }}
+          >
             {deal.title}
           </h3>
-          <p className="text-[10px] mb-2 line-clamp-2 leading-relaxed" style={{ color: "var(--ink-mute)" }}>
+          <p
+            className="text-[10px] mb-2 line-clamp-2 leading-relaxed"
+            style={{ color: "var(--ink-mute)" }}
+          >
             {deal.description}
           </p>
 
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[9px] uppercase tracking-editorial-tight font-semibold truncate" style={{ color: "var(--ink-mute)" }}>
-              {deal.businessName}
+            <p
+              className="text-[9px] uppercase tracking-editorial-tight font-semibold truncate"
+              style={{ color: "var(--ink-mute)" }}
+            >
+              {deal.business_name}
             </p>
-            <p className="text-[9px] font-semibold shrink-0 tabular-nums" style={{ color: "var(--ink-mute)" }}>
-              {deal.validUntil}
+            <p
+              className="text-[9px] font-semibold shrink-0 tabular-nums"
+              style={{ color: "var(--ink-mute)" }}
+            >
+              {formatValidUntil(deal.valid_until)}
             </p>
           </div>
 
-          {deal.promoCode && (
-            <div className="mt-3 px-2 py-1.5 text-center" style={{ background: "var(--paper)", border: "2px dashed var(--rule-strong-c)" }}>
-              <span className="text-[10px] font-bold font-mono tracking-wider" style={{ color: "var(--gold-c)" }}>
-                {deal.promoCode}
+          {deal.promo_code && (
+            <div
+              className="mt-3 px-2 py-1.5 text-center"
+              style={{
+                background: "var(--paper)",
+                border: "2px dashed var(--rule-strong-c)",
+              }}
+            >
+              <span
+                className="text-[10px] font-bold font-mono tracking-wider"
+                style={{ color: "var(--gold-c)" }}
+              >
+                {deal.promo_code}
               </span>
             </div>
           )}
