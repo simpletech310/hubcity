@@ -295,13 +295,13 @@ export default async function BusinessDetailPage({
     .limit(3);
 
   // Fetch active food challenges for this vendor
-  const today = new Date().toISOString().split("T")[0];
+  const todayDate = new Date().toISOString().split("T")[0];
   const { data: challengesData } = await supabase
     .from("food_challenges")
     .select("*")
     .eq("business_id", biz.id)
     .eq("is_active", true)
-    .gte("end_date", today)
+    .gte("end_date", todayDate)
     .order("start_date", { ascending: true });
   const activeChallenges = (challengesData ?? []) as import("@/types/database").FoodChallenge[];
 
