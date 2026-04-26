@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Input from "@/components/ui/Input";
+import { SITE_NAME } from "@/lib/branding";
 import type { ResourceCategory } from "@/types/database";
 
 const RESOURCE_CATEGORIES: { value: ResourceCategory; label: string }[] = [
@@ -140,10 +141,10 @@ export default function ProviderSignupPage() {
             fontSize: 22,
           }}
         >
-          K
+          {SITE_NAME.slice(0, 1).toUpperCase()}
         </div>
         <span className="c-hero" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
-          Knect
+          {SITE_NAME}
         </span>
       </div>
 

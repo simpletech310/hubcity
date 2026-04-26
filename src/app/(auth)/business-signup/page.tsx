@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import Input from "@/components/ui/Input";
 import { useActiveCity } from "@/hooks/useActiveCity";
+import { SITE_NAME } from "@/lib/branding";
 import type { BusinessCategory } from "@/types/database";
 
 const BUSINESS_CATEGORIES: { value: BusinessCategory; label: string }[] = [
@@ -198,10 +199,10 @@ export default function BusinessSignupPage() {
             fontSize: 22,
           }}
         >
-          K
+          {SITE_NAME.slice(0, 1).toUpperCase()}
         </div>
         <span className="c-hero" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
-          Knect
+          {SITE_NAME}
         </span>
       </div>
 

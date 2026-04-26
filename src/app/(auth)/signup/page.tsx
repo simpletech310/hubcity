@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import Input from "@/components/ui/Input";
+import { SITE_NAME } from "@/lib/branding";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -53,10 +54,10 @@ export default function SignupPage() {
             fontSize: 22,
           }}
         >
-          K
+          {SITE_NAME.slice(0, 1).toUpperCase()}
         </div>
         <span className="c-hero" style={{ fontSize: 26, color: "var(--ink-strong)" }}>
-          Knect
+          {SITE_NAME}
         </span>
       </div>
 
