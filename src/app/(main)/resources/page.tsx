@@ -758,9 +758,20 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
               </span>
             </div>
           )}
-          {/* Status pill top-left */}
+          {/* Status block top-left */}
           <div className="absolute top-2 left-2">
-            <Tag tone={statusTone} size="xs">{status.label}</Tag>
+            <span
+              className={`c-badge ${
+                statusTone === "emerald"
+                  ? "c-badge-ok"
+                  : statusTone === "coral"
+                  ? "c-badge-live"
+                  : "c-badge-gold"
+              }`}
+              style={{ padding: "3px 7px", fontSize: 9 }}
+            >
+              {status.label.toUpperCase()}
+            </span>
           </div>
         </div>
 
@@ -781,12 +792,21 @@ function ResourceCard({ resource: r, urgent }: { resource: Resource; urgent?: bo
             </p>
           )}
 
-          {/* Tag row */}
+          {/* Tag row — block badges */}
           <div className="flex items-center gap-1.5 flex-wrap mt-2.5">
-            <Tag tone="gold" size="xs">{r.category}</Tag>
-            {r.is_free && <Tag tone="emerald" size="xs">Free</Tag>}
+            <span className="c-badge c-badge-gold" style={{ padding: "3px 7px", fontSize: 9 }}>
+              {String(r.category).toUpperCase()}
+            </span>
+            {r.is_free && (
+              <span className="c-badge c-badge-ok" style={{ padding: "3px 7px", fontSize: 9 }}>
+                FREE
+              </span>
+            )}
             {r.eligibility && (
-              <span className="c-badge-ink inline-flex px-2 py-0.5 truncate max-w-[120px]" style={{ fontSize: 9 }}>
+              <span
+                className="c-badge c-badge-ink truncate max-w-[140px]"
+                style={{ padding: "3px 7px", fontSize: 9 }}
+              >
                 {r.eligibility}
               </span>
             )}
