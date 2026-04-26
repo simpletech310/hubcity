@@ -3,8 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import Card from "@/components/ui/Card";
-import Badge from "@/components/ui/Badge";
 import SaveButton from "@/components/ui/SaveButton";
 import ApplyButton from "@/components/ui/ApplyButton";
 import { createClient } from "@/lib/supabase/server";
@@ -24,20 +22,6 @@ const categoryIcons: Record<string, IconName> = {
   utilities: "lightbulb",
 };
 
-const statusVariant: Record<string, "emerald" | "coral" | "cyan" | "gold"> = {
-  open: "emerald",
-  closed: "coral",
-  upcoming: "cyan",
-  limited: "gold",
-};
-
-const statusLabel: Record<string, string> = {
-  open: "Open",
-  closed: "Closed",
-  upcoming: "Coming Soon",
-  limited: "Limited",
-};
-
 const categoryLabels: Record<string, string> = {
   business: "Business",
   housing: "Housing",
@@ -52,6 +36,26 @@ const categoryLabels: Record<string, string> = {
   utilities: "Utilities",
 };
 
+const statusLabel: Record<string, string> = {
+  open: "Open",
+  closed: "Closed",
+  upcoming: "Coming Soon",
+  limited: "Limited",
+};
+
+function statusBadgeClass(status: string): string {
+  switch (status) {
+    case "open":
+      return "c-badge-ok";
+    case "closed":
+      return "c-badge-live";
+    case "upcoming":
+    case "limited":
+    default:
+      return "c-badge-gold";
+  }
+}
+
 export default async function ResourceDetailPage({
   params,
 }: {
@@ -60,7 +64,6 @@ export default async function ResourceDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  // UUIDs are 36 chars with hyphens. If it doesn't match, try slug first.
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
   let resource = null;
   if (!isUuid) {
@@ -100,16 +103,17 @@ export default async function ResourceDetailPage({
       : null;
 
   return (
-    <article className="min-h-dvh animate-fade-in pb-24">
+    <article className="culture-surface min-h-dvh animate-fade-in pb-24">
       {/* Header bar */}
-      <div className="px-4 pt-3 pb-3 flex items-center justify-between">
+      <div className="px-5 pt-4 pb-3 flex items-center justify-between">
         <Link
           href="/resources"
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-gold press"
+          className="c-kicker inline-flex items-center gap-1.5 press"
+          style={{ color: "var(--ink-strong)" }}
         >
           <svg
-            width="16"
-            height="16"
+            width="14"
+            height="14"
             fill="none"
             stroke="currentColor"
             strokeWidth="2.5"
@@ -124,7 +128,10 @@ export default async function ResourceDetailPage({
 
       {/* Hero image */}
       {res.image_url && (
-        <div className="relative w-full aspect-[16/10] mb-4 overflow-hidden">
+        <div
+          className="relative w-full aspect-[16/10] overflow-hidden"
+          style={{ borderTop: "2px solid var(--rule-strong-c)", borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
           <Image
             src={res.image_url}
             alt={res.name}
@@ -137,94 +144,112 @@ export default async function ResourceDetailPage({
       )}
 
       {/* Title block */}
-      <div className="px-4">
-        <div className="flex items-center gap-2 flex-wrap mb-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-txt-secondary">
-            <Icon name={icon} size={12} />
-            {categoryName}
+      <div className="px-5 pt-5">
+        <div className="flex items-center gap-2 flex-wrap mb-3">
+          <span
+            className="c-kicker inline-flex items-center gap-1.5"
+            style={{ color: "var(--ink-strong)", opacity: 0.7 }}
+          >
+            <Icon name={icon} size={11} style={{ color: "var(--ink-strong)" }} />
+            § {categoryName.toUpperCase()}
           </span>
-          <Badge
-            label={statusLabel[res.status] ?? res.status}
-            variant={statusVariant[res.status] ?? "gold"}
-            size="sm"
-          />
-          {res.is_free && <Badge label="Free" variant="emerald" size="sm" />}
+          <span className={`c-badge ${statusBadgeClass(res.status)}`} style={{ padding: "4px 8px", fontSize: 10 }}>
+            {(statusLabel[res.status] ?? res.status).toUpperCase()}
+          </span>
+          {res.is_free && (
+            <span className="c-badge c-badge-ok" style={{ padding: "4px 8px", fontSize: 10 }}>
+              FREE
+            </span>
+          )}
         </div>
 
-        <h1 className="text-2xl font-heading font-bold leading-tight">
+        <h1 className="c-hero" style={{ fontSize: 32, lineHeight: 1.02, color: "var(--ink-strong)" }}>
           {res.name}
         </h1>
         {res.organization && (
-          <p className="mt-1 text-sm text-txt-secondary">{res.organization}</p>
+          <p className="c-meta mt-2" style={{ fontSize: 12 }}>
+            {res.organization}
+          </p>
         )}
       </div>
 
       {/* Description */}
       {res.description && (
-        <section className="px-4 mt-5">
-          <p className="text-[15px] leading-relaxed text-white/90">
+        <section className="px-5 mt-5">
+          <p className="c-body" style={{ color: "var(--ink-strong)" }}>
             {res.description}
           </p>
         </section>
       )}
 
-      {/* Key facts row */}
+      {/* Deadline / Spots row */}
       {(deadlineLabel || spotsLeft != null) && (
-        <section className="px-4 mt-5 grid grid-cols-2 gap-3">
+        <section className="px-5 mt-5 grid grid-cols-2 gap-3">
           {deadlineLabel && (
-            <Card className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-txt-secondary">
-                Deadline
+            <div
+              className="p-3 c-frame text-center"
+              style={{ background: "var(--paper-warm)" }}
+            >
+              <p className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>
+                DEADLINE
               </p>
-              <p className="mt-1 text-sm font-bold text-gold">{deadlineLabel}</p>
-            </Card>
+              <p className="c-card-t mt-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+                {deadlineLabel}
+              </p>
+            </div>
           )}
           {spotsLeft != null && (
-            <Card className="text-center">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-txt-secondary">
-                Spots Left
+            <div
+              className="p-3 c-frame text-center"
+              style={{ background: "var(--paper-warm)" }}
+            >
+              <p className="c-kicker" style={{ fontSize: 9, opacity: 0.7 }}>
+                SPOTS LEFT
               </p>
-              <p className="mt-1 text-sm font-bold text-gold">
+              <p className="c-card-t mt-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
                 {spotsLeft} of {res.max_spots}
               </p>
-            </Card>
+            </div>
           )}
         </section>
       )}
 
       {/* Eligibility / Requirements */}
       {res.eligibility && (
-        <section className="px-4 mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
-            Requirements
-          </h2>
-          <Card>
-            <p className="text-sm leading-relaxed text-white/90">
+        <section className="px-5 mt-6">
+          <p className="c-kicker mb-2" style={{ fontSize: 10, opacity: 0.7 }}>
+            § REQUIREMENTS
+          </p>
+          <div className="c-frame p-4" style={{ background: "var(--paper-warm)" }}>
+            <p className="c-body" style={{ color: "var(--ink-strong)" }}>
               {res.eligibility}
             </p>
-          </Card>
+          </div>
         </section>
       )}
 
       {/* Contact info */}
       {(res.address || res.phone || res.website || res.hours) && (
-        <section className="px-4 mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
-            Contact
-          </h2>
-          <Card className="space-y-3">
+        <section className="px-5 mt-6">
+          <p className="c-kicker mb-2" style={{ fontSize: 10, opacity: 0.7 }}>
+            § CONTACT
+          </p>
+          <div className="c-frame p-4 space-y-3" style={{ background: "var(--paper-warm)" }}>
             {res.address && (
               <div className="flex items-start gap-3">
-                <Icon name="pin" size={16} className="text-gold mt-0.5 shrink-0" />
-                <p className="text-sm text-white/90">{res.address}</p>
+                <Icon name="pin" size={16} style={{ color: "var(--ink-strong)", marginTop: 2 }} />
+                <p className="c-body" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
+                  {res.address}
+                </p>
               </div>
             )}
             {res.phone && (
               <div className="flex items-start gap-3">
-                <Icon name="phone" size={16} className="text-gold mt-0.5 shrink-0" />
+                <Icon name="phone" size={16} style={{ color: "var(--ink-strong)", marginTop: 2 }} />
                 <a
                   href={`tel:${res.phone}`}
-                  className="text-sm text-gold font-medium"
+                  className="c-body font-semibold"
+                  style={{ fontSize: 13, color: "var(--ink-strong)" }}
                 >
                   {res.phone}
                 </a>
@@ -232,13 +257,15 @@ export default async function ResourceDetailPage({
             )}
             {res.hours && (
               <div className="flex items-start gap-3">
-                <Icon name="clock" size={16} className="text-gold mt-0.5 shrink-0" />
-                <p className="text-sm text-white/90">{res.hours}</p>
+                <Icon name="clock" size={16} style={{ color: "var(--ink-strong)", marginTop: 2 }} />
+                <p className="c-body" style={{ fontSize: 13, color: "var(--ink-strong)" }}>
+                  {res.hours}
+                </p>
               </div>
             )}
             {res.website && (
               <div className="flex items-start gap-3">
-                <Icon name="globe" size={16} className="text-gold mt-0.5 shrink-0" />
+                <Icon name="globe" size={16} style={{ color: "var(--ink-strong)", marginTop: 2 }} />
                 <a
                   href={
                     res.website.startsWith("http")
@@ -247,27 +274,34 @@ export default async function ResourceDetailPage({
                   }
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-gold truncate"
+                  className="c-body truncate"
+                  style={{ fontSize: 13, color: "var(--ink-strong)" }}
                 >
                   {res.website.replace(/^https?:\/\//, "")}
                 </a>
               </div>
             )}
-          </Card>
+          </div>
         </section>
       )}
 
       {/* Tags */}
       {res.match_tags && res.match_tags.length > 0 && (
-        <section className="px-4 mt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-txt-secondary mb-2">
-            Tags
-          </h2>
+        <section className="px-5 mt-6">
+          <p className="c-kicker mb-2" style={{ fontSize: 10, opacity: 0.7 }}>
+            § TAGS
+          </p>
           <div className="flex flex-wrap gap-1.5">
             {res.match_tags.map((tag) => (
               <span
                 key={tag}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.06] text-white/80 border border-border-subtle"
+                className="c-meta px-2.5 py-1"
+                style={{
+                  fontSize: 11,
+                  color: "var(--ink-strong)",
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
               >
                 {tag}
               </span>
@@ -277,7 +311,7 @@ export default async function ResourceDetailPage({
       )}
 
       {/* Apply CTA */}
-      <section className="px-4 mt-8">
+      <section className="px-5 mt-8">
         <ApplyButton
           resourceId={res.id}
           resourceName={res.name}
