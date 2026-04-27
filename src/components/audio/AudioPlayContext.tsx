@@ -4,12 +4,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
 import { muxAudioStreamUrl, resolveMuxAudioUrl } from "@/lib/audio/seed";
+import { createClient as createBrowserClient } from "@/lib/supabase/client";
 
 /**
  * A single playable item — track from an album OR podcast episode.
@@ -131,6 +133,98 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
   // before the user clicks play.
   const prefetchedAdRef = useRef<AudioAd | null>(null);
   const prefetchKeyRef = useRef<string | null>(null);
+
+  // Mirror state.queue / state.index in refs so async callbacks (the
+  // "fetch the next track when we run off the queue" fallback below)
+  // always read the latest values without re-binding.
+  const queueRef = useRef<PlayableItem[]>([]);
+  const indexRef = useRef<number>(-1);
+  // One pre-fetched "next discovery track" stashed during playback so a
+  // tap on the next button can swap synchronously inside the user gesture
+  // (matches the iOS pre-roll-ad pattern).
+  const prefetchedNextRef = useRef<PlayableItem | null>(null);
+
+  // Keep refs synced with state so async callbacks see fresh values.
+  useEffect(() => {
+    queueRef.current = state.queue;
+    indexRef.current = state.index;
+  }, [state.queue, state.index]);
+
+  /**
+   * Fetch a published Mux audio track from the DB to extend the queue
+   * when the listener walks past its end. Excludes anything already in
+   * the queue and prefers freshness (newest first), then picks at random
+   * within the top 15 to keep things from feeling on-rails. Returns null
+   * if nothing's available.
+   */
+  const fetchDiscoveryTrack = useCallback(
+    async (excludeIds: string[]): Promise<PlayableItem | null> => {
+      try {
+        const supabase = createBrowserClient();
+        let q = supabase
+          .from("tracks")
+          .select(
+            "id, title, mux_playback_id, duration_seconds, channel_id, album:albums(slug, title, cover_art_url)",
+          )
+          .eq("is_published", true)
+          .eq("mux_status", "ready")
+          .not("mux_playback_id", "is", null);
+        if (excludeIds.length > 0) {
+          q = q.not("id", "in", `(${excludeIds.join(",")})`);
+        }
+        const { data } = await q
+          .order("created_at", { ascending: false })
+          .limit(15);
+        if (!data || data.length === 0) return null;
+        type Row = {
+          id: string;
+          title: string;
+          mux_playback_id: string;
+          duration_seconds: number | null;
+          channel_id: string | null;
+          album:
+            | { slug: string; title: string; cover_art_url: string | null }
+            | { slug: string; title: string; cover_art_url: string | null }[]
+            | null;
+        };
+        const rows = data as unknown as Row[];
+        const pick = rows[Math.floor(Math.random() * rows.length)];
+        const album = Array.isArray(pick.album) ? pick.album[0] : pick.album;
+        return {
+          id: pick.id,
+          kind: "track",
+          title: pick.title,
+          subtitle: album?.title ?? null,
+          coverUrl: album?.cover_art_url ?? null,
+          muxPlaybackId: pick.mux_playback_id,
+          durationSeconds: pick.duration_seconds,
+          channelId: pick.channel_id,
+          context: album?.slug
+            ? { kind: "album", slug: album.slug, title: album.title }
+            : null,
+        };
+      } catch {
+        return null;
+      }
+    },
+    [],
+  );
+
+  /**
+   * Warm the "next discovery track" cache so a forthcoming tap on the
+   * next button can swap synchronously (iOS gesture chain compatibility).
+   * Called whenever a track starts playing.
+   */
+  const prefetchNext = useCallback(() => {
+    if (prefetchedNextRef.current) return;
+    const exclude = [
+      ...queueRef.current.map((q) => q.id),
+      ...(prefetchedNextRef.current ? [(prefetchedNextRef.current as PlayableItem).id] : []),
+    ];
+    void fetchDiscoveryTrack(exclude).then((next) => {
+      if (next) prefetchedNextRef.current = next;
+    });
+  }, [fetchDiscoveryTrack]);
 
   const _registerAudio = useCallback((el: HTMLAudioElement | null) => {
     audioRef.current = el;
@@ -271,8 +365,11 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       }));
       // Warm up the next ad (will be served on next tap / next track).
       prefetchAd({ itemId: item.id, channelId: item.channelId ?? null });
+      // Also warm the next discovery track so an immediate skip-forward
+      // tap can swap synchronously inside that gesture.
+      prefetchNext();
     },
-    [driveContent, driveAd, prefetchAd]
+    [driveContent, driveAd, prefetchAd, prefetchNext]
   );
 
   const play = useCallback(
@@ -329,10 +426,57 @@ export function AudioPlayProvider({ children }: { children: ReactNode }) {
       if (nextItem && nextIdx >= 0) {
         modeRef.current = "content";
         driveContent(nextItem);
-        // No pre-roll on manual prev/next — feels punitive.
+        // Warm the next discovery track so the user can keep tapping.
+        prefetchNext();
+        return;
       }
+
+      // Fell off the queue. Forward → walk into a discovery track.
+      // Backward at index 0 → no-op (standard music-player behavior).
+      if (direction !== 1) return;
+
+      // FAST PATH: prefetched track ready — drive synchronously inside
+      // the user gesture so iOS Safari plays it.
+      const prefetched = prefetchedNextRef.current;
+      if (prefetched) {
+        prefetchedNextRef.current = null;
+        setState((s) => ({
+          ...s,
+          current: prefetched,
+          queue: [...s.queue, prefetched],
+          index: s.queue.length,
+          position: 0,
+          duration: prefetched.durationSeconds ?? s.duration,
+          mode: "content",
+          ad: null,
+        }));
+        modeRef.current = "content";
+        driveContent(prefetched);
+        prefetchNext();
+        return;
+      }
+
+      // SLOW PATH: nothing prefetched. Async-fetch then drive. iOS may
+      // not autoplay the swap, but every desktop / Android browser will.
+      const exclude = queueRef.current.map((q) => q.id);
+      void fetchDiscoveryTrack(exclude).then((fresh) => {
+        if (!fresh) return;
+        setState((s) => ({
+          ...s,
+          current: fresh,
+          queue: [...s.queue, fresh],
+          index: s.queue.length,
+          position: 0,
+          duration: fresh.durationSeconds ?? s.duration,
+          mode: "content",
+          ad: null,
+        }));
+        modeRef.current = "content";
+        driveContent(fresh);
+        prefetchNext();
+      });
     },
-    [driveContent]
+    [driveContent, fetchDiscoveryTrack, prefetchNext]
   );
 
   const next = useCallback(() => advance(1), [advance]);
