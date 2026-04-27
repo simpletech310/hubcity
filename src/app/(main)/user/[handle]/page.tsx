@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
@@ -462,21 +461,7 @@ export default async function PublicProfilePage({
 
   return (
     <div className="culture-surface animate-fade-in pb-24 min-h-dvh">
-      {/* --- BACK TO DISCOVER --- */}
-      <div className="px-5 pt-4 pb-1">
-        <Link
-          href="/creators"
-          className="c-kicker inline-flex items-center gap-1.5 press"
-          style={{ color: "var(--ink-strong)", letterSpacing: "0.14em", fontSize: 11 }}
-        >
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M10 12L6 8l4-4" />
-          </svg>
-          Back to Discover
-        </Link>
-      </div>
-
-      {/* --- HERO (cover + avatar + role chips + stats + CTAs + socials) --- */}
+      {/* --- HERO (editorial masthead + avatar + role chips + stats + CTAs + socials) --- */}
       <ProfileHero
         profile={profile}
         activeRoles={activeRoles}

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 import ProfileActionButtons from "./ProfileActionButtons";
 import ProfileRoleChips, {
@@ -100,17 +101,101 @@ export default function ProfileHero({
   else kickerParts.push("MEMBER");
   const kickerText = `§ ${kickerParts.join(" · ")}`;
 
+  // Issue + volume labels — same treatment as /home, /jobs, /events.
+  const today = new Date();
+  const volLabel = `VOL.${today.getFullYear() % 100}`;
+  const issueLabel = `ISS.${(() => {
+    const onejan = new Date(today.getFullYear(), 0, 1);
+    return Math.ceil(
+      ((today.getTime() - onejan.getTime()) / 86400000 + onejan.getDay() + 1) / 7,
+    );
+  })()}`;
+
   return (
     <>
-      {/* --- HEADER: framed avatar + kicker + display name --- */}
+      {/* --- EDITORIAL MASTHEAD: ← back · § VOL · ISSUE PROFILE --- */}
       <div
-        className="px-[18px] pt-4 pb-6"
+        className="px-[18px] pt-4 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            href="/creators"
+            className="c-kicker inline-flex items-center gap-1.5 press"
+            style={{ color: "var(--ink-strong)", letterSpacing: "0.16em", fontSize: 11 }}
+          >
+            <svg
+              width="14"
+              height="14"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
+              <path d="M10 12L6 8l4-4" />
+            </svg>
+            BACK
+          </Link>
+          <span
+            className="c-kicker"
+            style={{
+              fontSize: 10,
+              opacity: 0.55,
+              color: "var(--ink-strong)",
+              letterSpacing: "0.18em",
+            }}
+          >
+            § {volLabel} · {issueLabel} · PROFILE
+          </span>
+        </div>
+      </div>
+
+      {/* --- HERO: kicker + display name big · avatar to the right --- */}
+      <div
+        className="px-[18px] pt-5 pb-6"
         style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
       >
-        <div className="flex items-center gap-[14px]">
+        <div className="flex items-start gap-4">
+          <div className="flex-1 min-w-0">
+            <span
+              className="c-kicker inline-block"
+              style={{
+                background: "var(--ink-strong)",
+                color: "var(--gold-c)",
+                padding: "3px 8px",
+                fontSize: 9,
+                letterSpacing: "0.18em",
+              }}
+            >
+              {kickerText}
+            </span>
+            <h1
+              className="c-hero mt-3"
+              style={{
+                fontSize: 48,
+                lineHeight: 0.86,
+                letterSpacing: "-0.02em",
+                color: "var(--ink-strong)",
+              }}
+            >
+              {profile.display_name.toUpperCase()}.
+            </h1>
+            <div
+              className="c-kicker mt-2"
+              style={{
+                color: "var(--ink-strong)",
+                opacity: 0.6,
+                fontSize: 10,
+                letterSpacing: "0.18em",
+              }}
+            >
+              @{profile.handle}
+              {profile.district && ` · DISTRICT ${profile.district}`}
+            </div>
+          </div>
           <div
             className="c-frame-strong shrink-0 overflow-hidden"
-            style={{ width: 88, height: 88 }}
+            style={{ width: 96, height: 96 }}
           >
             {avatarSrc ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -125,7 +210,7 @@ export default function ProfileHero({
                 style={{
                   background: "var(--ink-strong)",
                   color: "var(--gold-c)",
-                  fontSize: 30,
+                  fontSize: 32,
                 }}
               >
                 {profile.display_name
@@ -136,41 +221,24 @@ export default function ProfileHero({
               </div>
             )}
           </div>
-          <div className="flex-1 min-w-0">
-            <span
-              className="c-kicker inline-block"
-              style={{
-                background: "var(--ink-strong)",
-                color: "var(--gold-c)",
-                padding: "3px 8px",
-              }}
-            >
-              {kickerText}
-            </span>
-            <h1
-              className="c-hero mt-[10px]"
-              style={{ fontSize: 38, lineHeight: 0.86 }}
-            >
-              {profile.display_name}
-            </h1>
-            <div className="c-kicker mt-2" style={{ color: "var(--ink-mute)" }}>
-              @{profile.handle}
-              {profile.district && " · DISTRICT " + profile.district}
-            </div>
-          </div>
         </div>
 
         {profile.bio && (
           <p
-            className="c-serif-it mt-[14px]"
-            style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink-soft)" }}
+            className="c-serif-it mt-4"
+            style={{
+              fontSize: 15,
+              lineHeight: 1.5,
+              color: "var(--ink-strong)",
+              opacity: 0.85,
+            }}
           >
             {profile.bio}
           </p>
         )}
 
         {activeRoles.length > 0 && (
-          <div className="mt-[14px]">
+          <div className="mt-4">
             <ProfileRoleChips
               roles={activeRoles}
               subLabels={subLabels}
@@ -190,7 +258,7 @@ export default function ProfileHero({
             key={stat.label}
             className="text-center"
             style={{
-              padding: "16px 14px",
+              padding: "20px 14px 18px",
               borderRight:
                 i < stats.length - 1 ? "2px solid var(--rule-strong-c)" : "none",
               background: i === 0 ? "var(--gold-c)" : "var(--paper)",
@@ -198,11 +266,24 @@ export default function ProfileHero({
           >
             <div
               className="c-display c-tabnum"
-              style={{ fontSize: 28, lineHeight: 0.9 }}
+              style={{
+                fontSize: 32,
+                lineHeight: 0.9,
+                letterSpacing: "-0.015em",
+                color: "var(--ink-strong)",
+              }}
             >
               {stat.value}
             </div>
-            <div className="c-kicker mt-1.5" style={{ fontSize: 9 }}>
+            <div
+              className="c-kicker mt-2"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.18em",
+                color: "var(--ink-strong)",
+                opacity: i === 0 ? 0.85 : 0.6,
+              }}
+            >
               {stat.label}
             </div>
           </div>
