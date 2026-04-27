@@ -47,45 +47,122 @@ export default async function HistoryPage() {
 
       {/* Timeline */}
       <section className="px-5">
-        <div className="text-center mb-10">
-          <span className="c-kicker" style={{ color: "var(--ink-strong)" }}>
+        <div
+          className="flex items-baseline gap-3 pb-2 mb-6"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <span
+            className="c-kicker"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              color: "var(--ink-strong)",
+              opacity: 0.7,
+            }}
+          >
+            § A CITY OF FIRSTS
+          </span>
+          <span
+            className="c-badge c-badge-gold tabular-nums ml-auto"
+            style={{ fontSize: 9 }}
+          >
             {firstYear} — {lastYear}
           </span>
-          <h2 className="c-hero mt-2" style={{ color: "var(--ink-strong)", fontSize: "2rem" }}>
-            A City of Firsts
-          </h2>
-          <p className="c-body mt-2 max-w-sm mx-auto" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
-            Generations of resilience, creativity, and cultural impact that
-            changed the world.
-          </p>
         </div>
+        <p
+          className="c-serif-it mb-8 max-w-sm"
+          style={{
+            fontSize: 14,
+            lineHeight: 1.45,
+            color: "var(--ink-strong)",
+            opacity: 0.75,
+          }}
+        >
+          Generations of resilience, creativity, and cultural impact that
+          changed the world.
+        </p>
         {timelineItems.length > 0 ? (
           <TimelineView items={timelineItems} />
         ) : (
-          <p className="text-center py-12 c-serif-it" style={{ fontSize: 14, color: "var(--ink-strong)", opacity: 0.6 }}>
-            We&apos;re still gathering {cityName}&apos;s history. Check back soon.
-          </p>
+          <div
+            className="text-center py-12 px-6"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <p
+              className="c-serif-it"
+              style={{
+                fontSize: 14,
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              We&apos;re still gathering {cityName}&apos;s history. Check back soon.
+            </p>
+          </div>
         )}
       </section>
 
       {/* CTA */}
       <section className="px-5">
         <div
-          className="p-6 text-center"
+          className="p-6"
           style={{
-            background: "var(--paper-warm)",
+            background: "var(--ink-strong)",
             border: "2px solid var(--rule-strong-c)",
           }}
         >
-          <h3 className="c-hero" style={{ fontSize: "1.5rem", color: "var(--ink-strong)" }}>
-            Help tell the story
+          <span
+            className="c-kicker"
+            style={{
+              fontSize: 10,
+              letterSpacing: "0.18em",
+              color: "var(--gold-c)",
+            }}
+          >
+            § JOIN THE RECORD
+          </span>
+          <h3
+            className="c-hero mt-2"
+            style={{
+              fontSize: 26,
+              lineHeight: 0.95,
+              letterSpacing: "-0.012em",
+              color: "#fff",
+            }}
+          >
+            HELP TELL THE STORY.
           </h3>
-          <p className="c-body mt-2 max-w-md mx-auto" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+          <p
+            className="c-serif-it mt-2"
+            style={{
+              fontSize: 14,
+              lineHeight: 1.45,
+              color: "rgba(255,255,255,0.85)",
+            }}
+          >
             Know a piece of {cityName} history that should be here? Share it
             with the Museum to help preserve the culture.
           </p>
-          <a href="/culture/discussions" className="c-btn c-btn-primary c-btn-sm inline-block mt-4">
-            Start a Discussion
+          <a
+            href="/culture/discussions"
+            className="inline-flex items-center gap-1.5 mt-4 press"
+            style={{
+              padding: "10px 16px",
+              background: "var(--gold-c)",
+              color: "var(--ink-strong)",
+              border: "2px solid var(--gold-c)",
+              fontFamily: "var(--font-archivo), Archivo, sans-serif",
+              fontWeight: 800,
+              fontSize: 11,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              boxShadow: "0 2px 0 rgba(0,0,0,0.25)",
+            }}
+          >
+            Start a Discussion →
           </a>
         </div>
       </section>

@@ -45,31 +45,90 @@ export default async function ExhibitsPage() {
 
       {/* Featured Exhibits */}
       {featured.length > 0 && (
-        <section className="px-5 space-y-3">
-          {featured.map((exhibit) => (
-            <ExhibitCard key={exhibit.id} exhibit={exhibit} featured />
-          ))}
+        <section className="px-5">
+          <div
+            className="flex items-baseline gap-3 pb-2 mb-4"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              § FEATURED
+            </span>
+            <span
+              className="c-badge c-badge-gold tabular-nums ml-auto"
+              style={{ fontSize: 9 }}
+            >
+              {featured.length} {featured.length === 1 ? "EXHIBIT" : "EXHIBITS"}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {featured.map((exhibit) => (
+              <ExhibitCard key={exhibit.id} exhibit={exhibit} featured />
+            ))}
+          </div>
         </section>
       )}
 
       {/* All Exhibits */}
-      <section className="px-5">
-        {regular.length > 0 ? (
+      {regular.length > 0 && (
+        <section className="px-5">
+          <div
+            className="flex items-baseline gap-3 pb-2 mb-4"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              § ON VIEW
+            </span>
+            <span
+              className="c-badge c-badge-ink tabular-nums ml-auto"
+              style={{ fontSize: 9 }}
+            >
+              {regular.length} {regular.length === 1 ? "EXHIBIT" : "EXHIBITS"}
+            </span>
+          </div>
           <div className="grid grid-cols-2 gap-3">
             {regular.map((exhibit) => (
               <ExhibitCard key={exhibit.id} exhibit={exhibit} />
             ))}
           </div>
-        ) : allExhibits.length === 0 ? (
-          <div className="text-center py-16">
-            <span className="text-5xl block mb-3"><Icon name="palette" size={28} /></span>
-            <p className="text-sm font-medium mb-1">Exhibits coming soon</p>
-            <p className="text-xs text-txt-secondary">
+        </section>
+      )}
+
+      {/* Empty state */}
+      {allExhibits.length === 0 && (
+        <section className="px-5">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <Icon name="palette" size={32} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
+            <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>
+              Exhibits coming soon
+            </p>
+            <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
               The museum is preparing new collections for you to explore.
             </p>
           </div>
-        ) : null}
-      </section>
+        </section>
+      )}
     </div>
   );
 }

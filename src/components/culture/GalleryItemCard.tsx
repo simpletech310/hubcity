@@ -1,54 +1,98 @@
 import Link from "next/link";
-import Badge from "@/components/ui/Badge";
+import Image from "next/image";
 import type { GalleryItem, GalleryItemType } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 
-const typeBadge: Record<GalleryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
-  artwork: { label: "Artwork", variant: "gold" },
-  photo: { label: "Photo", variant: "cyan" },
-  artifact: { label: "Artifact", variant: "purple" },
-  document: { label: "Document", variant: "emerald" },
-  poster: { label: "Poster", variant: "coral" },
+const TYPE_LABEL: Record<GalleryItemType, string> = {
+  artwork: "ARTWORK",
+  photo: "PHOTO",
+  artifact: "ARTIFACT",
+  document: "DOCUMENT",
+  poster: "POSTER",
 };
 
 interface GalleryItemCardProps {
   item: GalleryItem;
 }
 
+/**
+ * Editorial Hub City gallery tile. Square ink frame around the image,
+ * gold § TYPE chip top-left, c-card-t title and Fraunces italic byline
+ * on the bottom ink wash. Replaces the legacy `rounded-2xl border-
+ * border-subtle card-glow text-white from-midnight` dark-theme card.
+ */
 export default function GalleryItemCard({ item }: GalleryItemCardProps) {
-  const badge = typeBadge[item.item_type] ?? { label: item.item_type, variant: "gold" as const };
+  const label = TYPE_LABEL[item.item_type] ?? item.item_type.toUpperCase();
+  const cover = item.image_urls?.[0];
 
   return (
     <Link
       href={`/culture/gallery/${item.slug}`}
-      className="group block relative overflow-hidden rounded-2xl border border-border-subtle card-glow transition-all duration-300 hover:border-gold/20"
+      className="group block relative overflow-hidden press"
+      style={{
+        background: "var(--ink-strong)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
     >
-      <div className="relative aspect-square bg-white/5">
-        {item.image_urls[0] ? (
-          <img
-            src={item.image_urls[0]}
+      <div className="relative aspect-square w-full">
+        {cover ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <Image
+            src={cover}
             alt={item.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            fill
+            sizes="210px"
+            className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/[0.02] flex items-center justify-center">
-            <span className="text-3xl"><Icon name="frame" size={28} /></span>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Icon name="frame" size={28} style={{ color: "var(--gold-c)" }} />
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent opacity-80" />
-      </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <Badge label={badge.label} variant={badge.variant} />
-        <h3 className="font-heading font-bold text-[13px] text-white mt-1.5 leading-tight line-clamp-2 group-hover:text-gold transition-colors">
-          {item.title}
-        </h3>
-        {item.artist_name && (
-          <p className="text-[10px] text-txt-secondary mt-0.5">
-            {item.artist_name}
-            {item.year_created && ` · ${item.year_created}`}
-          </p>
-        )}
+        {/* Bottom ink wash for legibility */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(26,21,18,0.15) 0%, transparent 35%, rgba(26,21,18,0.92) 100%)",
+          }}
+        />
+
+        {/* Type chip — top-left */}
+        <span
+          className="absolute top-2 left-2 c-badge c-badge-gold"
+          style={{ fontSize: 9 }}
+        >
+          § {label}
+        </span>
+
+        {/* Title block — bottom */}
+        <div className="absolute inset-x-0 bottom-0 p-2.5">
+          <h3
+            className="c-card-t line-clamp-2"
+            style={{
+              fontSize: 13,
+              lineHeight: 1.15,
+              letterSpacing: "0.005em",
+              color: "#fff",
+            }}
+          >
+            {item.title}
+          </h3>
+          {(item.artist_name || item.year_created) && (
+            <p
+              className="c-serif-it mt-1 line-clamp-1"
+              style={{
+                fontSize: 10.5,
+                lineHeight: 1.3,
+                color: "rgba(255,255,255,0.78)",
+              }}
+            >
+              {[item.artist_name, item.year_created].filter(Boolean).join(" · ")}
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   );

@@ -1,14 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import PersonCard from "@/components/culture/PersonCard";
-import PersonCardFeatured from "@/components/culture/PersonCardFeatured";
-import Spotlight from "@/components/ui/Spotlight";
-import EditorialHeader from "@/components/ui/EditorialHeader";
-import AdZone from "@/components/ui/AdZone";
-import Chip from "@/components/ui/Chip";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import type { NotablePerson, NotablePersonCategory } from "@/types/database";
@@ -35,27 +31,26 @@ const CATEGORY_KICKERS: Record<NotablePersonCategory, string> = {
   other: "NOTABLE FIGURES",
 };
 
-const CATEGORY_TITLES: Record<NotablePersonCategory, string> = {
-  music: "Music",
-  sports: "Sports",
-  politics: "Politics",
-  activism: "Activism",
-  arts: "Arts",
-  education: "Education",
-  business: "Business",
-  other: "Notable Figures",
+const CATEGORY_LABEL: Record<NotablePersonCategory, string> = {
+  music: "MUSIC",
+  sports: "SPORTS",
+  politics: "POLITICS",
+  activism: "ACTIVISM",
+  arts: "ARTS",
+  education: "EDUCATION",
+  business: "BUSINESS",
+  other: "NOTABLE",
 };
 
-const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
-  music: { label: "Music", variant: "gold" },
-  sports: { label: "Sports", variant: "emerald" },
-  politics: { label: "Politics", variant: "purple" },
-  activism: { label: "Activism", variant: "coral" },
-  arts: { label: "Arts", variant: "cyan" },
-  business: { label: "Business", variant: "gold" },
-  education: { label: "Education", variant: "emerald" },
-  other: { label: "Notable", variant: "cyan" },
-};
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 export default function PeoplePage() {
   const [people, setPeople] = useState<NotablePerson[]>([]);
@@ -76,6 +71,12 @@ export default function PeoplePage() {
   }, [activeCategory]);
 
   const heroPerson = people[0] ?? null;
+  const rest = people.slice(1);
+
+  const sectionKicker =
+    activeCategory === "all"
+      ? "§ LEGENDS OF COMPTON"
+      : `§ ${CATEGORY_KICKERS[activeCategory as NotablePersonCategory] ?? "NOTABLE FIGURES"}`;
 
   return (
     <div className="space-y-6 pb-20">
@@ -97,113 +98,229 @@ export default function PeoplePage() {
         </div>
       </div>
 
-      {/* Hero Spotlight — only in "All" view */}
-      {!loading && activeCategory === "all" && heroPerson && (
-        <div className="px-5">
-          <Spotlight
-            title={heroPerson.name}
-            subtitle={heroPerson.title ?? undefined}
-            imageUrl={heroPerson.portrait_url ?? undefined}
-            href={`/culture/people/${heroPerson.slug}`}
-            kicker="LEGENDS OF COMPTON"
-            badge={categoryBadge[heroPerson.category]}
-            height="h-[340px]"
-          />
-        </div>
-      )}
-
-      {/* Editorial header for filtered view */}
-      {!loading && activeCategory !== "all" && (
-        <div className="px-5">
-          <EditorialHeader
-            kicker={CATEGORY_KICKERS[activeCategory as NotablePersonCategory] ?? "NOTABLE FIGURES"}
-            title={CATEGORY_TITLES[activeCategory as NotablePersonCategory] ?? "Notable People"}
-          />
-        </div>
-      )}
-
-      {/* Category filter chips */}
+      {/* Category filter chips — editorial pill row */}
       <div className="flex gap-2 px-5 overflow-x-auto scrollbar-hide pb-1">
-        {categories.map((cat) => (
-          <Chip
-            key={cat.value}
-            label={cat.label}
-            iconName={cat.iconName}
-            active={activeCategory === cat.value}
-            onClick={() => setActiveCategory(cat.value)}
-          />
-        ))}
+        {categories.map((cat) => {
+          const active = activeCategory === cat.value;
+          return (
+            <button
+              key={cat.value}
+              onClick={() => setActiveCategory(cat.value)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 press"
+              style={{
+                padding: "7px 12px",
+                background: active ? "var(--gold-c)" : "var(--paper-warm)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 800,
+                fontSize: 10.5,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                boxShadow: active ? "0 2px 0 rgba(0,0,0,0.18)" : "none",
+              }}
+            >
+              <Icon name={cat.iconName} size={13} />
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Loading state */}
       {loading && (
         <div className="px-5 space-y-4">
-          <div className="skeleton h-[200px]" />
+          <div
+            style={{
+              aspectRatio: "3 / 2",
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          />
           <div className="grid grid-cols-3 gap-1">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="skeleton aspect-square" />
+              <div
+                key={i}
+                className="aspect-square"
+                style={{
+                  background: "var(--paper-warm)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              />
             ))}
           </div>
         </div>
       )}
 
-      {/* "All" view — Instagram Explorer-style 3-column grid */}
-      {!loading && activeCategory === "all" && (
-        <div className="space-y-6">
-          <section className="px-3">
-            {people.length > 1 ? (
-              <div className="grid grid-cols-3 gap-1">
-                {people.slice(1).map((person) => (
-                  <PersonCard key={person.id} person={person} compact />
-                ))}
-              </div>
-            ) : people.length === 0 ? (
-              <div
-                className="text-center py-16 px-6 mx-2"
-                style={{
-                  background: "var(--paper)",
-                  border: "2px solid var(--rule-strong-c)",
-                }}
-              >
-                <Icon name="person" size={48} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
-                <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>People profiles coming soon</p>
-                <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
-                  We&apos;re documenting the stories of Compton&apos;s most influential figures.
-                </p>
-              </div>
-            ) : null}
-          </section>
-
-          <div className="px-5">
-            <AdZone zone="feed_banner" />
+      {/* Section kicker bar */}
+      {!loading && people.length > 0 && (
+        <div className="px-5">
+          <div
+            className="flex items-baseline gap-3 pb-2"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              {sectionKicker}
+            </span>
+            <span
+              className="c-badge c-badge-gold tabular-nums ml-auto"
+              style={{ fontSize: 9 }}
+            >
+              {people.length} {people.length === 1 ? "FIGURE" : "FIGURES"}
+            </span>
           </div>
         </div>
       )}
 
-      {/* Filtered category view — 2-col grid with full cards */}
-      {!loading && activeCategory !== "all" && (
+      {/* Editorial featured spotlight — full-bleed magazine cover */}
+      {!loading && heroPerson && (
         <section className="px-5">
-          {people.length > 0 ? (
-            <div className="grid grid-cols-2 gap-3">
-              {people.map((person) => (
-                <PersonCard key={person.id} person={person} />
-              ))}
-            </div>
-          ) : (
+          <Link
+            href={`/culture/people/${heroPerson.slug}`}
+            className="group block relative overflow-hidden press"
+            style={{
+              aspectRatio: "3 / 2",
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            {heroPerson.portrait_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={heroPerson.portrait_url}
+                alt={heroPerson.name}
+                className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-500"
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center"
+                style={{
+                  color: "var(--gold-c)",
+                  fontFamily: "var(--font-anton), Anton, sans-serif",
+                  fontSize: 120,
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                {initials(heroPerson.name)}
+              </div>
+            )}
+
+            {/* Ink wash */}
             <div
-              className="text-center py-16 px-6"
+              className="absolute inset-0 pointer-events-none"
               style={{
-                background: "var(--paper)",
-                border: "2px solid var(--rule-strong-c)",
+                background:
+                  "linear-gradient(180deg, rgba(26,21,18,0.2) 0%, transparent 40%, rgba(26,21,18,0.92) 100%)",
               }}
+            />
+
+            {/* Category chip */}
+            <span
+              className="absolute top-3 left-3 c-badge c-badge-gold"
+              style={{ fontSize: 10 }}
             >
-              <Icon name="person" size={48} style={{ color: "var(--ink-strong)" }} className="mx-auto mb-3" />
-              <p className="c-card-t mb-1" style={{ fontSize: 14, color: "var(--ink-strong)" }}>People profiles coming soon</p>
-              <p className="c-body" style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}>
-                We&apos;re documenting the stories of Compton&apos;s most influential figures.
-              </p>
+              § {CATEGORY_LABEL[heroPerson.category] ?? heroPerson.category.toUpperCase()}
+            </span>
+
+            {/* Featured chip */}
+            <span
+              className="absolute top-3 right-3 c-badge c-badge-gold inline-flex items-center gap-1"
+              style={{ fontSize: 10 }}
+            >
+              <Icon name="star" size={10} />
+              FEATURE
+            </span>
+
+            {/* Title block */}
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <h2
+                className="c-hero"
+                style={{
+                  fontSize: 32,
+                  lineHeight: 0.95,
+                  letterSpacing: "-0.012em",
+                  color: "#fff",
+                }}
+              >
+                {heroPerson.name.toUpperCase()}.
+              </h2>
+              {heroPerson.title && (
+                <p
+                  className="c-serif-it mt-1.5 line-clamp-2"
+                  style={{
+                    fontSize: 13,
+                    lineHeight: 1.35,
+                    color: "rgba(255,255,255,0.85)",
+                  }}
+                >
+                  {heroPerson.title}
+                </p>
+              )}
             </div>
-          )}
+          </Link>
+        </section>
+      )}
+
+      {/* "All" view — 3-column explorer grid for the rest */}
+      {!loading && activeCategory === "all" && rest.length > 0 && (
+        <section className="px-3">
+          <div className="grid grid-cols-3 gap-1">
+            {rest.map((person) => (
+              <PersonCard key={person.id} person={person} compact />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Filtered category view — 2-col grid with full cards */}
+      {!loading && activeCategory !== "all" && rest.length > 0 && (
+        <section className="px-5">
+          <div className="grid grid-cols-2 gap-3">
+            {rest.map((person) => (
+              <PersonCard key={person.id} person={person} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Empty state */}
+      {!loading && people.length === 0 && (
+        <section className="px-5">
+          <div
+            className="text-center py-16 px-6"
+            style={{
+              background: "var(--paper-warm)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            <Icon
+              name="person"
+              size={32}
+              style={{ color: "var(--ink-strong)" }}
+              className="mx-auto mb-3"
+            />
+            <p
+              className="c-card-t mb-1"
+              style={{ fontSize: 14, color: "var(--ink-strong)" }}
+            >
+              People profiles coming soon
+            </p>
+            <p
+              className="c-body"
+              style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+            >
+              We&apos;re documenting the stories of Compton&apos;s most influential figures.
+            </p>
+          </div>
         </section>
       )}
     </div>

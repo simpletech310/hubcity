@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import CultureHero from "@/components/culture/CultureHero";
 import MuseumNav from "@/components/culture/MuseumNav";
 import GalleryItemCard from "@/components/culture/GalleryItemCard";
-import Chip from "@/components/ui/Chip";
 import type { GalleryItem } from "@/types/database";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 
-const itemTypes = [
+const itemTypes: { label: string; value: string; icon: IconName }[] = [
   { label: "All", value: "all", icon: "frame" },
   { label: "Artwork", value: "artwork", icon: "palette" },
   { label: "Photos", value: "photo", icon: "film" },
@@ -56,23 +55,74 @@ export default function GalleryPage() {
         </div>
       </div>
 
-      {/* Type filter */}
+      {/* Type filter — editorial pills */}
       <div className="flex gap-2 px-5 overflow-x-auto scrollbar-hide pb-1">
-        {itemTypes.map((type) => (
-          <Chip
-            key={type.value}
-            label={type.label}
-            icon={<Icon name={type.icon as IconName} size={14} />}
-            active={activeType === type.value}
-            onClick={() => setActiveType(type.value)}
-          />
-        ))}
+        {itemTypes.map((type) => {
+          const active = activeType === type.value;
+          return (
+            <button
+              key={type.value}
+              onClick={() => setActiveType(type.value)}
+              className="inline-flex items-center gap-1.5 whitespace-nowrap shrink-0 press"
+              style={{
+                padding: "7px 12px",
+                background: active ? "var(--gold-c)" : "var(--paper-warm)",
+                color: "var(--ink-strong)",
+                border: "2px solid var(--rule-strong-c)",
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 800,
+                fontSize: 10.5,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                boxShadow: active ? "0 2px 0 rgba(0,0,0,0.18)" : "none",
+              }}
+            >
+              <Icon name={type.icon} size={13} />
+              {type.label}
+            </button>
+          );
+        })}
       </div>
+
+      {/* Section kicker */}
+      {!loading && items.length > 0 && (
+        <div className="px-5">
+          <div
+            className="flex items-baseline gap-3 pb-2"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.18em",
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              § FROM THE COLLECTION
+            </span>
+            <span
+              className="c-badge c-badge-gold tabular-nums ml-auto"
+              style={{ fontSize: 9 }}
+            >
+              {items.length} {items.length === 1 ? "WORK" : "WORKS"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="px-5 grid grid-cols-2 gap-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="skeleton aspect-square" />
+            <div
+              key={i}
+              className="aspect-square"
+              style={{
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            />
           ))}
         </div>
       ) : items.length > 0 ? (
