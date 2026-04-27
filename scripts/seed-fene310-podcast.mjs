@@ -35,6 +35,7 @@ const supabase = createClient(
 );
 
 const FENE_USER_ID = "0cbc4a18-8b20-411b-971c-3c28205b84ae";
+const FENE_CHANNEL_ID = "d7c399f6-878c-4fe6-b91b-f6a3691d5418";
 const FENE_HANDLE = "fene310";
 const ASSETS_DIR =
   "/Users/tj/Documents/Claude/Projects/HubCity MVP/Assets/Compton Accounts/Amassadors/post fene310";
@@ -52,6 +53,50 @@ const AUDIO_MUX_IDS = [
   "GhKpV5Pc7x3PPRNBbfZ7tfjRVpkDivx3ga5SdK4ZkS00",
   "UrwbK00012al02HCAGiYMhHOn6rvJ00hl9mZLhLHo02go2Ko",
   "gYB4G2cW8pndjg8RrHEOlijUuHAaDy02w8jHgYTnf3xE",
+];
+
+// Reuse existing Mux video playback ids — pool sourced from
+// `SELECT DISTINCT mux_playback_id, duration FROM channel_videos`.
+// These are the same assets the cinema rails reuse so demo
+// playback works without uploading anything new.
+const VIDEO_MUX_IDS = [
+  { id: "s7aVWw1Vt02sNGAdHcmt7Qoe3umHLSwUWKCWezt4428s", duration: 1125 },
+  { id: "fvOt6Yr4VjM4cMi4wQ7qlSedZfWTr1z00yG4uH5QURmU", duration: 533 },
+  { id: "rSMMGbdyVKzX3As01C7014EmA9f4r8f7o0201ujDUuwV101w", duration: 776 },
+];
+
+// Video podcast episodes — same titles as the audio episodes (so
+// the show feels coherent across both surfaces) but only 3 of them
+// to keep the channel rail tight. Each lines up with the matching
+// audio episode by episode_number so listeners can choose audio
+// vs. video for the same conversation.
+const VIDEO_EPISODES = [
+  {
+    epNumber: 1,
+    title: "Real Negus Wednesday — Ep 1: Why I Started #RNW",
+    description:
+      "The pilot of Real Negus Wednesday on video. Fene310 sets the table " +
+      "for the season — what we're talking about, why Wednesday, and who " +
+      "this is for. [hub-fene-podcast]",
+    isFeatured: true,
+  },
+  {
+    epNumber: 2,
+    title: "Real Negus Wednesday — Ep 2: Boundaries Before Brunch",
+    description:
+      "On the video pod this week: setting boundaries early so you don't " +
+      "end up in situations you can't text yourself out of. [hub-fene-podcast]",
+    isFeatured: false,
+  },
+  {
+    epNumber: 4,
+    title: "Real Negus Wednesday — Ep 4: Compton Energy",
+    description:
+      "Why representing the city ain't a fall-back, it's a flex. Local " +
+      "guests pull up. Video drop on Frequency + here on Live. " +
+      "[hub-fene-podcast]",
+    isFeatured: false,
+  },
 ];
 
 const EPISODES = [
@@ -281,10 +326,49 @@ async function main() {
     postIdx++;
   }
 
+  // 8. Video podcast — channel_videos rows on Fene's channel so the
+  //    show ALSO appears on /live (Featured + Recently Added rails)
+  //    and on her channel page. Same cover image as the audio
+  //    podcast, mux_playback_ids reused from the existing video pool.
+  console.log("\n[channel_videos]");
+  // Wipe prior runs so we don't duplicate when rerun.
+  await supabase
+    .from("channel_videos")
+    .delete()
+    .eq("channel_id", FENE_CHANNEL_ID)
+    .ilike("description", "%[hub-fene-podcast]%");
+
+  for (let i = 0; i < VIDEO_EPISODES.length; i++) {
+    const ep = VIDEO_EPISODES[i];
+    const mux = VIDEO_MUX_IDS[i % VIDEO_MUX_IDS.length];
+    const { error } = await supabase.from("channel_videos").insert({
+      channel_id: FENE_CHANNEL_ID,
+      title: ep.title,
+      description: ep.description,
+      video_type: ep.isFeatured ? "featured" : "on_demand",
+      mux_playback_id: mux.id,
+      duration: mux.duration,
+      thumbnail_url: coverUrl,
+      status: "ready",
+      is_published: true,
+      is_featured: ep.isFeatured,
+      published_at: new Date(
+        Date.now() - (VIDEO_EPISODES.length - i - 1) * 7 * 86400000,
+      ).toISOString(),
+    });
+    if (error) console.warn(`  ! ${ep.title}: ${error.message}`);
+    else
+      console.log(
+        `  ✓ Ep ${ep.epNumber} on Fene's channel${ep.isFeatured ? " (FEATURED)" : ""}`,
+      );
+  }
+
   console.log(
     "\n→ verify:" +
-      "\n   /frequency              (Podcasts rail should show Real Negus Wednesday)" +
-      `\n   /user/${FENE_HANDLE}    (new image + text posts about #RNW)`,
+      "\n   /frequency              (Podcasts rail · Real Negus Wednesday tile)" +
+      `\n   /user/${FENE_HANDLE}    (new image + text posts about #RNW)` +
+      `\n   /live/channel/${FENE_CHANNEL_ID}  (video podcast episodes listed)` +
+      "\n   /live                   (Featured rail + Recently Added pick up Ep 1)",
   );
 }
 

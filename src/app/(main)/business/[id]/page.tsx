@@ -8,6 +8,7 @@ import SaveButton from "@/components/ui/SaveButton";
 import { createClient } from "@/lib/supabase/server";
 import type { Business, BusinessReview } from "@/types/database";
 import { SITE_DOMAIN, SITE_NAME } from "@/lib/branding";
+import { buildOg } from "@/lib/og";
 import ReviewSection from "./ReviewSection";
 import BusinessTabs from "./BusinessTabs";
 import ChallengeCard from "@/components/food/ChallengeCard";
@@ -85,31 +86,21 @@ export async function generateMetadata({
   if (!biz) {
     return { title: "Business not found" };
   }
-  const url = `${SITE_DOMAIN}/business/${biz.slug || biz.id}`;
+  // Standardize through buildOg so businesses get the same /api/og
+  // fallback every other entity does when they're missing a hero
+  // image. Keeps the business JSON-LD downstream untouched.
   const description =
     biz.description?.slice(0, 200) ||
     `${biz.name} on ${SITE_NAME} — ${biz.category} in ${biz.city?.name || "Compton"}.`;
-  const heroImage = biz.image_urls?.[0];
-
-  return {
-    title: `${biz.name} — ${SITE_NAME}`,
+  const kicker = (biz.category || biz.business_type || "BUSINESS").toUpperCase();
+  return buildOg({
+    title: biz.name,
     description,
-    openGraph: {
-      title: biz.name,
-      description,
-      url,
-      siteName: SITE_NAME,
-      type: "website",
-      images: heroImage ? [{ url: heroImage, width: 1200, height: 630, alt: biz.name }] : undefined,
-    },
-    twitter: {
-      card: heroImage ? "summary_large_image" : "summary",
-      title: biz.name,
-      description,
-      images: heroImage ? [heroImage] : undefined,
-    },
-    alternates: { canonical: url },
-  };
+    image: biz.image_urls?.[0] ?? null,
+    type: "website",
+    path: `/business/${biz.slug || biz.id}`,
+    kicker,
+  });
 }
 
 function buildLocalBusinessJsonLd(biz: Business, profileUrl: string): Record<string, unknown> {

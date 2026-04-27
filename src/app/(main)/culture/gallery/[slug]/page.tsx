@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import Badge from "@/components/ui/Badge";
 import type { GalleryItemType } from "@/types/database";
 import Icon from "@/components/ui/Icon";
+import { buildOg } from "@/lib/og";
 
 const typeBadge: Record<GalleryItemType, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
   artwork: { label: "Artwork", variant: "gold" },
@@ -12,6 +14,37 @@ const typeBadge: Record<GalleryItemType, { label: string; variant: "gold" | "eme
   document: { label: "Document", variant: "emerald" },
   poster: { label: "Poster", variant: "coral" },
 };
+
+/**
+ * OpenGraph + Twitter cards for gallery items so a Compton artwork
+ * or museum artifact unfurls richly when shared. Falls through to
+ * the /api/og branded fallback when an item has no cover image.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data: item } = await supabase
+    .from("gallery_items")
+    .select("title, description, cover_image_url, item_type, slug, id, artist_name, year_created")
+    .or(`slug.eq.${slug},id.eq.${slug}`)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (!item) return { title: "Gallery item not found" };
+  const kind = (item.item_type ?? "ARTWORK").toString().toUpperCase();
+  const meta = item.description ?? [item.artist_name, item.year_created].filter(Boolean).join(" · ");
+  return buildOg({
+    title: item.title,
+    description: meta || "From the Compton culture gallery.",
+    image: item.cover_image_url ?? null,
+    type: "article",
+    path: `/culture/gallery/${item.slug || item.id}`,
+    kicker: `GALLERY · ${kind}`,
+  });
+}
 
 export default async function GalleryItemDetailPage({
   params,

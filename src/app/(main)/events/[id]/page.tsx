@@ -49,6 +49,7 @@ export async function generateMetadata({
     image: ev.image_url ?? null,
     type: "article",
     path: `/events/${ev.slug || ev.id}`,
+    kicker: ev.is_ticketed ? "TICKETED EVENT" : "EVENT",
   });
   // Layer JSON-LD via `other` for crawlers.
   const jsonLd = {

@@ -31,6 +31,7 @@ export async function generateMetadata({
     image: album.cover_art_url ?? null,
     type: "music.album",
     path: `/frequency/album/${album.slug}`,
+    kicker: `FREQUENCY · ${(album.release_type ?? "RELEASE").toUpperCase()}`,
   });
   const jsonLd = {
     "@context": "https://schema.org",

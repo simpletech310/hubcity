@@ -71,6 +71,37 @@ export const metadata: Metadata = {
   },
   description:
     "The editorial field guide to your scene. Discover independents, events, creators, and the culture that moves your community.",
+  // ── Default Open Graph + Twitter cards ─────────────────────
+  // Platform-wide defaults that show up when a page doesn't generate
+  // its own metadata. Per-entity pages (`/events/[id]`, `/business/
+  // [id]`, etc.) override via `generateMetadata()` + the buildOg
+  // helper. Any page without its own image falls through to
+  // /api/og — a programmatic 1200x630 branded card — so shared
+  // links never unfurl blank.
+  openGraph: {
+    type: "website",
+    siteName: "Culture",
+    locale: "en_US",
+    url: "https://hubcity.4everforward.net",
+    title: "Culture — Your City, Curated",
+    description:
+      "The editorial field guide to your scene. Discover independents, events, creators, and the culture that moves your community.",
+    images: [
+      {
+        url: "/api/og?title=Culture&kicker=Your%20City%2C%20Curated",
+        width: 1200,
+        height: 630,
+        alt: "Culture — Your City, Curated",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Culture — Your City, Curated",
+    description:
+      "Discover independents, events, creators, and the culture that moves your community.",
+    images: ["/api/og?title=Culture&kicker=Your%20City%2C%20Curated"],
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

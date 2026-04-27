@@ -51,6 +51,7 @@ export async function generateMetadata({
     image: group.image_url || group.avatar_url || null,
     type: "article",
     path: `/groups/${group.slug || group.id}`,
+    kicker: "GROUP",
   });
 }
 

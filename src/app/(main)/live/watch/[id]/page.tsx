@@ -31,6 +31,7 @@ export async function generateMetadata({
     image: thumb,
     type: "video.other",
     path: `/live/watch/${video.id}`,
+    kicker: "ON AIR",
   });
   const jsonLd = {
     "@context": "https://schema.org",

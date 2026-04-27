@@ -59,6 +59,7 @@ export async function generateMetadata({
     image: profile.avatar_url ?? null,
     type: "profile",
     path: `/user/${profile.handle}`,
+    kicker: "CREATOR",
   });
 }
 
