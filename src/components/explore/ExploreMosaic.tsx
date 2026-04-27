@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Icon from "@/components/ui/Icon";
-import Badge from "@/components/ui/Badge";
 import type {
   ExploreItem,
   ExploreKind,
@@ -45,33 +44,47 @@ function formatDate(dateStr?: string) {
 }
 
 function MosaicTile({ item }: { item: ExploreItem }) {
-  const accent = item.accentColor ?? "#F2A900";
   const date = formatDate(item.meta?.date);
 
-  // Creator tile — no image? Render a gradient avatar tile
+  // Creator tile — no image? Square ink frame with a gold initial.
   if (item.kind === "creator" && !item.image_url) {
     return (
       <Link
         href={item.href}
-        className="mb-2 break-inside-avoid block group press rounded-xl overflow-hidden border border-white/[0.06] relative"
+        className="mb-2 break-inside-avoid block group press relative overflow-hidden"
+        style={{
+          background: "var(--paper-warm)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
         <div
           className="flex flex-col items-center justify-center gap-2 p-5 text-center"
-          style={{
-            aspectRatio: "1 / 1",
-            background: `linear-gradient(135deg, ${accent}30, ${accent}08 70%, transparent)`,
-          }}
+          style={{ aspectRatio: "1 / 1" }}
         >
           <div
-            className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-heading font-bold"
-            style={{ background: `${accent}40`, color: "white" }}
+            className="w-14 h-14 flex items-center justify-center"
+            style={{
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+              color: "var(--gold-c)",
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 28,
+              lineHeight: 1,
+            }}
           >
             {item.title.charAt(0).toUpperCase()}
           </div>
-          <p className="text-[12px] font-semibold text-white line-clamp-1 w-full">
+          <p
+            className="c-card-t line-clamp-1 w-full"
+            style={{ fontSize: 12, color: "var(--ink-strong)" }}
+          >
             {item.title}
           </p>
-          {item.chip && <Badge label={item.chip.label} variant={item.chip.variant} />}
+          {item.chip && (
+            <span className="c-badge c-badge-gold">
+              {item.chip.label.toUpperCase()}
+            </span>
+          )}
         </div>
       </Link>
     );
@@ -80,11 +93,12 @@ function MosaicTile({ item }: { item: ExploreItem }) {
   return (
     <Link
       href={item.href}
-      className="mb-2 break-inside-avoid block group press rounded-xl overflow-hidden relative border border-white/[0.04] hover:border-white/20 transition-colors"
+      className="mb-2 break-inside-avoid block group press relative overflow-hidden"
+      style={{ border: "2px solid var(--rule-strong-c)" }}
     >
       <div
-        className="relative w-full overflow-hidden bg-white/[0.04]"
-        style={ratioStyle(item.aspectHint)}
+        className="relative w-full overflow-hidden"
+        style={{ background: "var(--ink-strong)", ...ratioStyle(item.aspectHint) }}
       >
         {item.image_url ? (
           <Image
@@ -95,70 +109,128 @@ function MosaicTile({ item }: { item: ExploreItem }) {
             className="object-cover group-hover:scale-[1.04] transition-transform duration-500"
           />
         ) : (
-          <div
-            className="w-full h-full flex items-center justify-center"
-            style={{ background: `linear-gradient(135deg, ${accent}30, transparent)` }}
-          >
-            <Icon name="photo" size={28} className="text-white/30" />
+          <div className="w-full h-full flex items-center justify-center">
+            <Icon name="photo" size={28} style={{ color: "var(--gold-c)", opacity: 0.4 }} />
           </div>
         )}
 
-        {/* Darken gradient for readability of overlay text */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+        {/* Ink wash so overlay text reads against any photo */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(26,21,18,0.25) 0%, transparent 35%, rgba(26,21,18,0.85) 100%)",
+          }}
+        />
 
         {/* Top-left: chip or date pill */}
         {item.kind === "event" && date ? (
           <div
-            className="absolute top-2 left-2 rounded-lg overflow-hidden backdrop-blur-md"
-            style={{ background: "rgba(10,10,10,0.75)" }}
+            className="absolute top-2 left-2 overflow-hidden"
+            style={{
+              background: "var(--paper)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
           >
             <div
-              className="px-2 py-0.5 text-[9px] font-bold text-center uppercase tracking-wider"
-              style={{ background: `${accent}DD`, color: "#0A0A0A" }}
+              className="px-2 py-0.5 c-kicker text-center"
+              style={{
+                background: "var(--gold-c)",
+                color: "var(--ink-strong)",
+                fontSize: 9,
+                letterSpacing: "0.16em",
+              }}
             >
               {date.month}
             </div>
-            <div className="px-2 py-0.5 text-center">
-              <p className="text-[13px] font-heading font-bold leading-none">
+            <div className="px-2 py-1 text-center">
+              <p
+                className="tabular-nums"
+                style={{
+                  fontFamily: "var(--font-archivo-narrow), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  lineHeight: 1,
+                  color: "var(--ink-strong)",
+                }}
+              >
                 {date.day}
               </p>
             </div>
           </div>
         ) : item.chip ? (
           <div className="absolute top-2 left-2">
-            <Badge label={item.chip.label} variant={item.chip.variant} />
+            <span className="c-badge c-badge-gold">
+              {item.chip.label.toUpperCase()}
+            </span>
           </div>
         ) : null}
 
         {/* Top-right: AD label for chain businesses */}
         {item.meta?.isAd && (
-          <div className="absolute top-2 right-2 px-1.5 py-0.5 text-[8px] font-bold bg-black/70 backdrop-blur-sm text-white/80 rounded tracking-wider">
+          <span
+            className="absolute top-2 right-2 c-badge"
+            style={{
+              background: "rgba(0,0,0,0.7)",
+              color: "var(--gold-c)",
+              border: "1px solid rgba(212,175,55,0.45)",
+              fontSize: 8,
+            }}
+          >
             AD
-          </div>
+          </span>
         )}
 
         {/* Bottom overlay: title + subtitle / author */}
         <div className="absolute inset-x-0 bottom-0 p-2.5">
-          <p className="text-[12px] font-bold text-white line-clamp-1 drop-shadow-sm">
+          <p
+            className="c-card-t line-clamp-1"
+            style={{
+              fontSize: 12,
+              lineHeight: 1.15,
+              color: "var(--paper)",
+            }}
+          >
             {item.title}
           </p>
           {item.kind === "post" && item.meta?.author ? (
             <div className="flex items-center gap-1.5 mt-1">
               {item.meta.author.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={item.meta.author.avatar_url}
                   alt=""
-                  className="w-4 h-4 rounded-full object-cover"
+                  className="w-4 h-4 object-cover"
+                  style={{ border: "1px solid var(--gold-c)" }}
                 />
               ) : (
-                <div className="w-4 h-4 rounded-full bg-white/20" />
+                <div
+                  className="w-4 h-4"
+                  style={{ background: "var(--gold-c)" }}
+                />
               )}
-              <span className="text-[10px] text-white/80 line-clamp-1">
+              <span
+                className="c-kicker line-clamp-1"
+                style={{
+                  fontSize: 9,
+                  letterSpacing: "0.14em",
+                  color: "var(--gold-c)",
+                  opacity: 0.95,
+                }}
+              >
                 @{item.meta.author.handle}
               </span>
             </div>
           ) : item.subtitle ? (
-            <p className="text-[10px] text-white/60 line-clamp-1 mt-0.5">
+            <p
+              className="c-meta line-clamp-1 mt-0.5"
+              style={{
+                fontSize: 10,
+                color: "var(--paper)",
+                opacity: 0.7,
+                textTransform: "none",
+              }}
+            >
               {item.subtitle}
             </p>
           ) : null}
@@ -272,9 +344,17 @@ export default function ExploreMosaic({ items }: ExploreMosaicProps) {
       </div>
 
       {/* Count */}
-      <div className="px-5 pt-2 pb-1">
-        <p className="c-meta" style={{ fontSize: 10, opacity: 0.55 }}>
-          {filtered.length} {filtered.length === 1 ? "result" : "results"}
+      <div className="px-5 pt-3 pb-1">
+        <p
+          className="c-kicker"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            color: "var(--ink-strong)",
+            opacity: 0.55,
+          }}
+        >
+          {filtered.length} {filtered.length === 1 ? "RESULT" : "RESULTS"}
         </p>
       </div>
 

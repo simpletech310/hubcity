@@ -6,7 +6,6 @@ import Link from "next/link";
 import AdZone from "@/components/ui/AdZone";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
-import Tag from "@/components/ui/editorial/Tag";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { useKnownCities } from "@/hooks/useActiveCity";
@@ -191,36 +190,65 @@ export default function EventsPage() {
           </div>
 
           <div className="relative z-10 px-5 pt-8 pb-8 min-h-[360px] flex flex-col justify-end">
-            {/* Live tag if today — coral IS the status color */}
+            {/* Live chip when the hero event is today */}
             {isToday(heroEvent.start_date) && (
-              <div className="inline-flex self-start items-center gap-2 px-3 py-1.5 rounded-lg bg-coral/20 border border-coral/40 mb-4">
-                <span className="w-1.5 h-1.5 rounded-full bg-coral animate-pulse" />
-                <span className="font-heading text-[10px] font-bold text-coral tracking-[0.1em]">
-                  HAPPENING TODAY
-                </span>
-              </div>
+              <span
+                className="c-badge c-badge-live inline-flex items-center gap-1.5 self-start mb-4"
+              >
+                <span
+                  className="inline-block animate-pulse"
+                  style={{ width: 6, height: 6, background: "#fff" }}
+                />
+                HAPPENING TODAY
+              </span>
             )}
 
-            {/* Category + date — gold only, no per-category tint */}
+            {/* Category + date — gold chip + kicker */}
             <div className="flex items-center gap-2 mb-3 flex-wrap">
-              <Tag tone="gold" size="sm">
-                {heroEvent.category}
-              </Tag>
-              <span className="text-[11px] font-bold uppercase tracking-editorial" style={{ color: "var(--ink-strong)", opacity: 0.7 }}>
+              <span className="c-badge c-badge-gold">
+                {heroEvent.category.toUpperCase()}
+              </span>
+              <span
+                className="c-kicker"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "#fff",
+                  opacity: 0.85,
+                }}
+              >
                 {formatEventDate(heroEvent.start_date).full}
               </span>
             </div>
 
-            {/* Title — editorial display */}
-            <h1 className="font-display text-[36px] leading-[0.95] tracking-tight mb-3 text-white max-w-[340px] drop-shadow-lg">
-              {heroEvent.title}
+            {/* Title — c-hero with editorial . terminator */}
+            <h1
+              className="c-hero mb-3 max-w-[340px] drop-shadow-lg"
+              style={{
+                fontSize: 38,
+                lineHeight: 0.92,
+                letterSpacing: "-0.012em",
+                color: "#fff",
+              }}
+            >
+              {heroEvent.title.toUpperCase()}.
             </h1>
 
             {/* Thin gold rule under the title */}
-            <span className="block h-[2px] w-10 bg-gold mb-4" />
+            <span
+              className="block mb-4"
+              style={{ height: 2, width: 40, background: "var(--gold-c)" }}
+            />
 
-            {/* Location + RSVP */}
-            <div className="flex items-center gap-4 text-[12px] text-ivory/70 mb-6 flex-wrap">
+            {/* Location + RSVP — Inter body for readability over the photo */}
+            <div
+              className="flex items-center gap-4 mb-6 flex-wrap"
+              style={{
+                fontFamily: "var(--font-body), Inter, sans-serif",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.8)",
+              }}
+            >
               {heroEvent.location_name && (
                 <span className="flex items-center gap-1.5">
                   <Icon name="pin" size={14} className="text-gold" />
@@ -228,7 +256,10 @@ export default function EventsPage() {
                 </span>
               )}
               {(heroEvent.rsvp_count ?? 0) > 0 && (
-                <span className="flex items-center gap-1.5 text-gold tabular-nums font-semibold">
+                <span
+                  className="flex items-center gap-1.5 tabular-nums"
+                  style={{ color: "var(--gold-c)", fontWeight: 700 }}
+                >
                   <Icon name="users" size={14} />
                   {heroEvent.rsvp_count?.toLocaleString()} going
                 </span>
@@ -300,9 +331,19 @@ export default function EventsPage() {
         ))}
       </div>
 
-      {/* Interest tag filter */}
-      <div className="px-[14px] mb-2">
-        <p className="c-kicker mb-2 px-1" style={{ fontSize: 10, opacity: 0.7 }}>§ FILTER BY INTEREST</p>
+      {/* Interest tag filter — Hub City editorial chips */}
+      <div className="px-[14px] mb-3">
+        <p
+          className="c-kicker mb-2 px-1"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            color: "var(--ink-strong)",
+            opacity: 0.7,
+          }}
+        >
+          § FILTER BY INTEREST
+        </p>
         <TagFilterRow value={tagFilter} onChange={setTagFilter} />
       </div>
 
@@ -340,19 +381,41 @@ export default function EventsPage() {
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <div className="flex items-baseline gap-3">
-                  <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  <span
+                    className="c-hero tabular-nums"
+                    style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                  >
                     № 01
                   </span>
-                  <span className="c-kicker" style={{ opacity: 0.65 }}>
-                    Happening Today
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    HAPPENING TODAY
                   </span>
-                  <Tag tone="coral" size="xs">
-                    <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
-                    {todayEvents.length} live
-                  </Tag>
+                  <span
+                    className="c-badge c-badge-live inline-flex items-center gap-1"
+                    style={{ fontSize: 9 }}
+                  >
+                    <span
+                      className="inline-block animate-pulse"
+                      style={{ width: 5, height: 5, background: "#fff" }}
+                    />
+                    {todayEvents.length} LIVE
+                  </span>
                   <span className="ml-auto rule-hairline flex-1 self-center" />
                 </div>
-                <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Live events going on right now</p>
+                <p
+                  className="c-meta mt-1"
+                  style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.6 }}
+                >
+                  Live events going on right now
+                </p>
               </div>
               <div className="space-y-2.5 stagger px-5">
                 {todayEvents.slice(0, 5).map((event) => (
@@ -369,18 +432,37 @@ export default function EventsPage() {
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <div className="flex items-baseline gap-3">
-                  <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                  <span
+                    className="c-hero tabular-nums"
+                    style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                  >
                     № {todayEvents.length > 0 ? "02" : "01"}
                   </span>
-                  <span className="c-kicker" style={{ opacity: 0.65 }}>
-                    This Week
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    THIS WEEK
                   </span>
                   <span className="ml-auto rule-hairline flex-1 self-center" />
-                  <span className="text-[10px] font-bold tracking-editorial uppercase text-gold tabular-nums whitespace-nowrap">
+                  <span
+                    className="c-badge c-badge-gold tabular-nums"
+                    style={{ fontSize: 9 }}
+                  >
                     {thisWeekEvents.length}
                   </span>
                 </div>
-                <p className="text-[11px] mt-1" style={{ color: "var(--ink-mute)" }}>Don&apos;t miss out</p>
+                <p
+                  className="c-meta mt-1"
+                  style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.6 }}
+                >
+                  Don&apos;t miss out
+                </p>
               </div>
               <div className="space-y-2.5 stagger px-5">
                 {thisWeekEvents.slice(0, 5).map((event) => (
@@ -396,11 +478,22 @@ export default function EventsPage() {
           {featured.length > 0 && activeCategory === "all" && (
             <section className="px-5 mb-8">
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                <span
+                  className="c-hero tabular-nums"
+                  style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                >
                   № {todayEvents.length > 0 && thisWeekEvents.length > 0 ? "03" : todayEvents.length > 0 || thisWeekEvents.length > 0 ? "02" : "01"}
                 </span>
-                <span className="c-kicker" style={{ opacity: 0.65 }}>
-                  Can&apos;t Miss
+                <span
+                  className="c-kicker"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.18em",
+                    color: "var(--ink-strong)",
+                    opacity: 0.7,
+                  }}
+                >
+                  CAN&apos;T MISS
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
               </div>
@@ -423,11 +516,22 @@ export default function EventsPage() {
           {activeCategory === "all" && (
             <section className="px-5 mb-8">
               <div className="flex items-baseline gap-3 mb-3">
-                <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                <span
+                  className="c-hero tabular-nums"
+                  style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                >
                   № 04
                 </span>
-                <span className="c-kicker" style={{ opacity: 0.65 }}>
-                  Browse by Category
+                <span
+                  className="c-kicker"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.18em",
+                    color: "var(--ink-strong)",
+                    opacity: 0.7,
+                  }}
+                >
+                  BROWSE BY CATEGORY
                 </span>
                 <span className="ml-auto rule-hairline flex-1 self-center" />
               </div>
@@ -474,14 +578,30 @@ export default function EventsPage() {
               return (
                 <>
                   <div className="flex items-baseline gap-3 mb-3">
-                    <span className="font-display text-gold text-[22px] leading-none tabular-nums">
+                    <span
+                      className="c-hero tabular-nums"
+                      style={{ fontSize: 22, lineHeight: 1, color: "var(--gold-c)" }}
+                    >
                       № 05
                     </span>
-                    <span className="c-kicker" style={{ opacity: 0.65 }}>
-                      {activeCategory === "all" ? "All Upcoming" : `${categories.find(c => c.value === activeCategory)?.label ?? ""} Events`}
+                    <span
+                      className="c-kicker"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: "0.18em",
+                        color: "var(--ink-strong)",
+                        opacity: 0.7,
+                      }}
+                    >
+                      {(activeCategory === "all"
+                        ? "All Upcoming"
+                        : `${categories.find((c) => c.value === activeCategory)?.label ?? ""} Events`).toUpperCase()}
                     </span>
                     <span className="ml-auto rule-hairline flex-1 self-center" />
-                    <span className="text-[10px] font-bold tracking-editorial uppercase tabular-nums whitespace-nowrap" style={{ color: "var(--ink-mute)" }}>
+                    <span
+                      className="c-badge c-badge-gold tabular-nums"
+                      style={{ fontSize: 9 }}
+                    >
                       {visibleList.length}/{sourceList.length}
                     </span>
                   </div>
@@ -615,23 +735,40 @@ function EventListRow({ event, live = false }: { event: Event; live?: boolean })
             </div>
             {/* Tags row */}
             <div className="flex items-center gap-1.5 flex-wrap mt-2">
-              <Tag tone="gold" size="xs">
-                {event.category}
-              </Tag>
+              <span className="c-badge c-badge-gold">
+                {event.category.toUpperCase()}
+              </span>
               {live && (
-                <Tag tone="coral" size="xs">
-                  <span className="w-1 h-1 rounded-full bg-coral animate-pulse" />
-                  Live
-                </Tag>
+                <span
+                  className="c-badge c-badge-live inline-flex items-center gap-1"
+                  style={{ fontSize: 9 }}
+                >
+                  <span
+                    className="inline-block animate-pulse"
+                    style={{ width: 4, height: 4, background: "#fff" }}
+                  />
+                  LIVE
+                </span>
               )}
               {event.is_featured && (
-                <Tag tone="gold" size="xs">
+                <span
+                  className="c-badge c-badge-gold inline-flex items-center gap-1"
+                  style={{ fontSize: 9 }}
+                >
                   <Icon name="star" size={8} />
-                  Featured
-                </Tag>
+                  FEATURED
+                </span>
               )}
               {(event.rsvp_count ?? 0) > 0 && (
-                <span className="inline-flex items-center gap-1 text-[10px] text-gold font-semibold tabular-nums">
+                <span
+                  className="inline-flex items-center gap-1 tabular-nums"
+                  style={{
+                    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                    fontWeight: 800,
+                    fontSize: 10,
+                    color: "var(--gold-c)",
+                  }}
+                >
                   <Icon name="users" size={10} />
                   {event.rsvp_count}
                 </span>
@@ -667,12 +804,12 @@ function EventCardFeatured({ event }: { event: Event }) {
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
           <div className="absolute inset-0 bg-gradient-to-r from-midnight/50 to-transparent" />
 
-          {/* Featured tag */}
+          {/* Featured chip */}
           <div className="absolute top-3 left-3">
-            <Tag tone="gold" size="sm">
+            <span className="c-badge c-badge-gold inline-flex items-center gap-1">
               <Icon name="star" size={9} />
-              Featured
-            </Tag>
+              FEATURED
+            </span>
           </div>
 
           {/* Editorial date block */}
@@ -690,11 +827,29 @@ function EventCardFeatured({ event }: { event: Event }) {
 
           {/* Bottom info overlay */}
           <div className="absolute bottom-0 inset-x-0 p-4">
-            <h3 className="font-display text-[22px] leading-tight text-white mb-2 drop-shadow-lg">
-              {event.title}
+            <h3
+              className="c-hero mb-2 drop-shadow-lg"
+              style={{
+                fontSize: 22,
+                lineHeight: 0.95,
+                letterSpacing: "-0.008em",
+                color: "#fff",
+              }}
+            >
+              {event.title.toUpperCase()}.
             </h3>
-            <span className="block h-[2px] w-8 bg-gold mb-2" />
-            <div className="flex items-center gap-3 text-[11px] text-ivory/70">
+            <span
+              className="block mb-2"
+              style={{ height: 2, width: 32, background: "var(--gold-c)" }}
+            />
+            <div
+              className="flex items-center gap-3"
+              style={{
+                fontFamily: "var(--font-body), Inter, sans-serif",
+                fontSize: 12,
+                color: "rgba(255,255,255,0.8)",
+              }}
+            >
               {event.location_name && (
                 <span className="flex items-center gap-1">
                   <Icon name="pin" size={11} className="text-gold" />
@@ -709,21 +864,46 @@ function EventCardFeatured({ event }: { event: Event }) {
           </div>
         </div>
 
-        <div className="p-3.5 flex items-center justify-between gap-2" style={{ background: "var(--paper-warm)", borderTop: "2px solid var(--rule-strong-c)" }}>
+        <div
+          className="p-3.5 flex items-center justify-between gap-2"
+          style={{
+            background: "var(--paper-warm)",
+            borderTop: "2px solid var(--rule-strong-c)",
+          }}
+        >
           <div className="flex items-center gap-1.5 flex-wrap">
-            <Tag tone="gold" size="xs">{event.category}</Tag>
+            <span className="c-badge c-badge-gold">
+              {event.category.toUpperCase()}
+            </span>
             {event.district && (
-              <Tag tone="default" size="xs">District {event.district}</Tag>
+              <span
+                className="c-badge"
+                style={{
+                  background: "var(--paper)",
+                  color: "var(--ink-strong)",
+                  border: "1px solid var(--rule-strong-c)",
+                }}
+              >
+                DIST. {event.district}
+              </span>
             )}
             {(event.rsvp_count ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-gold font-semibold tabular-nums">
+              <span
+                className="inline-flex items-center gap-1 tabular-nums"
+                style={{
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 10,
+                  color: "var(--gold-c)",
+                }}
+              >
                 <Icon name="users" size={10} />
-                {event.rsvp_count?.toLocaleString()} going
+                {event.rsvp_count?.toLocaleString()} GOING
               </span>
             )}
           </div>
-          <span className="c-badge-gold inline-flex items-center gap-1 px-2.5 py-1 shrink-0">
-            Tickets
+          <span className="c-badge c-badge-gold inline-flex items-center gap-1 shrink-0">
+            TICKETS
             <Icon name="arrow-right-thin" size={11} />
           </span>
         </div>

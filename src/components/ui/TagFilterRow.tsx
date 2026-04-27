@@ -15,6 +15,11 @@ interface TagFilterRowProps {
 /**
  * Single-select horizontal scrollable chip row for browse pages.
  * "All" affordance clears the filter.
+ *
+ * Editorial Hub City treatment: square corners, gold-on-ink active
+ * state, paper-warm idle. Per-tag rainbow colors (red, purple, cyan…)
+ * appear as a tiny leading dot so the tag's visual identity is kept
+ * without breaking the platform's gold/ink rhythm.
  */
 export default function TagFilterRow({
   value,
@@ -26,24 +31,37 @@ export default function TagFilterRow({
     ? INTEREST_TAGS.filter((t) => only.includes(t.value))
     : INTEREST_TAGS;
 
+  const chipBase: React.CSSProperties = {
+    height: 32,
+    padding: "0 12px",
+    fontFamily: "var(--font-archivo), Archivo, sans-serif",
+    fontWeight: 800,
+    fontSize: 10,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+  };
+
   return (
     <div
       className={
-        "flex gap-1.5 overflow-x-auto no-scrollbar px-1 py-1 " +
+        "flex gap-1.5 overflow-x-auto scrollbar-hide px-1 py-1 " +
         (className ?? "")
       }
     >
       <button
         type="button"
         onClick={() => onChange(null)}
-        className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide press transition-colors"
+        className="shrink-0 inline-flex items-center gap-1.5 press transition-colors"
         style={{
-          background: value === null ? "var(--gold-c, #F2A900)" : "var(--paper-warm, rgba(255,255,255,0.06))",
-          color: value === null ? "#000" : "var(--ink-strong, #fff)",
-          border: `2px solid ${value === null ? "var(--gold-c, #F2A900)" : "var(--rule-strong-c, rgba(255,255,255,0.18))"}`,
+          ...chipBase,
+          background: value === null ? "var(--gold-c)" : "var(--paper-warm)",
+          color: "var(--ink-strong)",
+          border: `2px solid ${
+            value === null ? "var(--ink-strong)" : "var(--rule-strong-c)"
+          }`,
         }}
       >
-        All
+        ALL
       </button>
 
       {visible.map((tag) => {
@@ -53,17 +71,30 @@ export default function TagFilterRow({
             key={tag.value}
             type="button"
             onClick={() => onChange(active ? null : tag.value)}
-            className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide press transition-colors"
+            className="shrink-0 inline-flex items-center gap-1.5 press transition-colors"
             style={{
-              background: active ? tag.color : "var(--paper-warm, rgba(255,255,255,0.06))",
-              color: active ? "#000" : "var(--ink-strong, #fff)",
-              border: `2px solid ${active ? tag.color : "var(--rule-strong-c, rgba(255,255,255,0.18))"}`,
+              ...chipBase,
+              background: active ? "var(--gold-c)" : "var(--paper-warm)",
+              color: "var(--ink-strong)",
+              border: `2px solid ${
+                active ? "var(--ink-strong)" : "var(--rule-strong-c)"
+              }`,
             }}
           >
+            <span
+              aria-hidden
+              className="inline-block shrink-0"
+              style={{
+                width: 7,
+                height: 7,
+                background: tag.color,
+                border: "1px solid var(--ink-strong)",
+              }}
+            />
             <Icon
               name={tag.icon}
               size={11}
-              style={{ color: active ? "#000" : "currentColor" }}
+              style={{ color: "var(--ink-strong)" }}
             />
             {tag.label}
           </button>
