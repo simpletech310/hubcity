@@ -128,7 +128,7 @@ export default function ReelsViewer({
 
   return (
     <div
-      className="fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full bg-black z-[60]"
+      className="fixed top-0 left-1/2 -translate-x-1/2 max-w-[430px] w-full bg-black z-[210]"
       style={{
         height: ITEM_HEIGHT,
       }}

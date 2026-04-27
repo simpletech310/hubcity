@@ -941,13 +941,29 @@ export default function CultureTV({
           {/* ── Trending on Culture TV ── */}
           {trendingVideos.length > 0 && (
             <section className="mb-8">
-              <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#E84855" }}>
-                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  TRENDING
-                </h2>
+              <div className="px-5 mb-3">
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    § TRENDING
+                  </span>
+                  <span
+                    className="c-badge c-badge-gold tabular-nums ml-auto"
+                    style={{ fontSize: 9 }}
+                  >
+                    HOT NOW
+                  </span>
+                </div>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {trendingVideos.map((video, i) => (
@@ -956,28 +972,49 @@ export default function CultureTV({
                       className="relative overflow-hidden mb-2"
                       style={{ border: "2px solid var(--rule-strong-c)" }}
                     >
-                      <div className="aspect-video bg-gradient-to-br from-coral/15 via-midnight to-gold/10 flex items-center justify-center">
+                      <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
                         {video.mux_playback_id ? (
                           <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`} alt={video.title} className="w-full h-full object-cover" />
                         ) : (
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-gold/30"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--gold-c)", opacity: 0.4 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
                         )}
                         <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                          <div className="w-10 h-10 rounded-full bg-gold/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--color-midnight)" className="ml-0.5"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "var(--gold-c)", border: "2px solid var(--ink-strong)" }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="ml-0.5" style={{ color: "var(--ink-strong)" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
                           </div>
                         </div>
-                        {/* Rank badge */}
-                        <div className="absolute top-2 left-2 w-6 h-6 rounded-md bg-coral/90 flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-white">{i + 1}</span>
+                        {/* Rank badge — editorial */}
+                        <div
+                          className="absolute top-2 left-2 px-1.5 py-0.5 c-kicker tabular-nums"
+                          style={{
+                            background: "var(--gold-c)",
+                            color: "var(--ink-strong)",
+                            border: "2px solid var(--ink-strong)",
+                            fontSize: 10,
+                            letterSpacing: "0.06em",
+                          }}
+                        >
+                          № {String(i + 1).padStart(2, "0")}
                         </div>
-                        {video.duration && <div className="absolute bottom-1.5 right-1.5 bg-black/70 rounded px-1 py-0.5 text-[9px] font-mono text-white">{formatDuration(video.duration)}</div>}
+                        {video.duration && (
+                          <div
+                            className="absolute bottom-1.5 right-1.5 px-1 py-0.5 c-kicker"
+                            style={{
+                              background: "var(--paper)",
+                              color: "var(--ink-strong)",
+                              border: "1.5px solid var(--rule-strong-c)",
+                              fontSize: 9,
+                            }}
+                          >
+                            {formatDuration(video.duration)}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <h3 className="font-heading font-bold text-[12px] line-clamp-2 mb-0.5">{video.title}</h3>
+                    <h3 className="c-card-t line-clamp-2 mb-0.5" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{video.title}</h3>
                     <div className="flex items-center gap-1.5">
-                      {video.channel && <p className="text-[10px] text-txt-secondary truncate">{video.channel.name}</p>}
-                      <span className="text-[10px] text-txt-secondary">· {formatViews(video.view_count)} views</span>
+                      {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
+                      <span className="c-meta">· {formatViews(video.view_count)} VIEWS</span>
                     </div>
                   </button>
                 ))}
@@ -1146,13 +1183,29 @@ export default function CultureTV({
           {/* ── Featured Videos ── */}
           {featuredVideos.length > 0 && (
             <section className="mb-8">
-              <div className="flex items-center justify-between px-5 mb-3">
-                <h2 className="c-hero flex items-center gap-2" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: "var(--gold-c)" }}>
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                  </svg>
-                  FEATURED
-                </h2>
+              <div className="px-5 mb-3">
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    § FEATURED
+                  </span>
+                  <span
+                    className="c-badge c-badge-gold tabular-nums ml-auto"
+                    style={{ fontSize: 9 }}
+                  >
+                    {featuredVideos.length} {featuredVideos.length === 1 ? "VIDEO" : "VIDEOS"}
+                  </span>
+                </div>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {featuredVideos.map((video) => (
@@ -1184,17 +1237,33 @@ export default function CultureTV({
 
           {/* ── Channels scroller ── */}
           <section className="mb-8">
-            <div className="flex items-center justify-between px-5 mb-3">
-              <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>CHANNELS</h2>
-              <button
-                onClick={() => setActiveTab("channels")}
-                className="c-meta press"
-                style={{ color: "var(--ink-strong)" }}
-              >SEE ALL →</button>
+            <div className="px-5 mb-3">
+              <div
+                className="flex items-baseline gap-3 pb-2"
+                style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+              >
+                <span
+                  className="c-kicker"
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.18em",
+                    color: "var(--ink-strong)",
+                    opacity: 0.7,
+                  }}
+                >
+                  § CHANNELS
+                </span>
+                <span
+                  className="c-badge c-badge-gold tabular-nums ml-auto"
+                  style={{ fontSize: 9 }}
+                >
+                  {channels.length} ON AIR
+                </span>
+              </div>
             </div>
             <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
-              {channels.slice(0, 15).map((ch) => (
-                <ChannelBubble key={ch.id} channel={ch} />
+              {channels.map((ch) => (
+                <ChannelTile key={ch.id} channel={ch} />
               ))}
             </div>
           </section>
@@ -1203,7 +1272,28 @@ export default function CultureTV({
           {recentVideos.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
-                <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>RECENTLY ADDED</h2>
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    § RECENTLY ADDED
+                  </span>
+                  <span
+                    className="c-badge c-badge-ink tabular-nums ml-auto"
+                    style={{ fontSize: 9 }}
+                  >
+                    {Math.min(10, recentVideos.length)} OF {recentVideos.length}
+                  </span>
+                </div>
               </div>
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {recentVideos.slice(0, 10).map((video) => (
@@ -1847,6 +1937,91 @@ function ChannelBubble({ channel: ch }: { channel: Channel }) {
         </div>
       </div>
       <span className="c-meta text-center w-16 truncate" style={{ color: "var(--ink-strong)" }}>{ch.name}</span>
+    </Link>
+  );
+}
+
+/**
+ * Editorial Hub City channel tile — square ink frame with gold §
+ * banner footer. Replaces the legacy circle avatars in the /live
+ * Channels rail so the rail reads as a row of mini magazine covers
+ * instead of profile bubbles.
+ */
+function ChannelTile({ channel: ch }: { channel: Channel }) {
+  return (
+    <Link
+      href={`/live/channel/${ch.id}`}
+      className="shrink-0 press"
+      style={{ width: 124 }}
+    >
+      <div
+        className="relative overflow-hidden"
+        style={{
+          aspectRatio: "1 / 1",
+          background: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
+      >
+        {ch.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={ch.avatar_url}
+            alt={ch.name}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              color: "var(--gold-c)",
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 44,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {channelInitials(ch.name)}
+          </div>
+        )}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, transparent 55%, rgba(26,21,18,0.92) 100%)",
+          }}
+        />
+        {ch.is_live_simulated && (
+          <span
+            className="absolute top-1.5 left-1.5 c-badge-live"
+            style={{ fontSize: 8 }}
+          >
+            ON AIR
+          </span>
+        )}
+        <div className="absolute inset-x-0 bottom-0 px-2 py-1.5">
+          <p
+            className="c-card-t line-clamp-1"
+            style={{
+              fontSize: 11,
+              lineHeight: 1.15,
+              color: "var(--paper)",
+            }}
+          >
+            {ch.name}
+          </p>
+        </div>
+      </div>
+      <p
+        className="c-kicker mt-1.5 truncate"
+        style={{
+          fontSize: 9,
+          letterSpacing: "0.16em",
+          color: "var(--ink-strong)",
+          opacity: 0.6,
+        }}
+      >
+        {(ch.type ?? "channel").toString().toUpperCase()}
+      </p>
     </Link>
   );
 }

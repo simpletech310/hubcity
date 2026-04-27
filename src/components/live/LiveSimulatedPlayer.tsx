@@ -479,11 +479,16 @@ export default function LiveSimulatedPlayer({
                   const v = b.video;
                   const s = v.show;
                   return (
-                    <Link
+                    <div
                       key={b.id}
-                      href={`/live/watch/${v.id}`}
-                      className="press shrink-0"
-                      style={{ width: 116, scrollSnapAlign: "start" }}
+                      className="shrink-0"
+                      aria-disabled
+                      style={{
+                        width: 116,
+                        scrollSnapAlign: "start",
+                        cursor: "default",
+                        opacity: 0.85,
+                      }}
                     >
                       <div
                         style={{
@@ -524,7 +529,7 @@ export default function LiveSimulatedPlayer({
                       >
                         {s?.title ?? v.title}
                       </p>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

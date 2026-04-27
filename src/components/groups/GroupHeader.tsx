@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import Icon from "@/components/ui/Icon";
 
 interface GroupInfo {
@@ -60,6 +61,13 @@ export default function GroupHeader({ group, isMember, myRole, myStatus, joining
           style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
         >
           <Image src={group.image_url} alt="" width={430} height={160} className="w-full h-full object-cover" />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(26,21,18,0.4) 0%, transparent 50%)",
+            }}
+          />
         </div>
       ) : (
         <div
@@ -70,6 +78,31 @@ export default function GroupHeader({ group, isMember, myRole, myStatus, joining
           }}
         />
       )}
+
+      {/* ← BACK chip — pinned top-left so listeners can always
+       *  return to /groups in one tap, no matter how deep they
+       *  scrolled inside the group. */}
+      <Link
+        href="/groups"
+        className="absolute top-3 left-3 z-20 inline-flex items-center gap-1.5 press"
+        style={{
+          padding: "6px 10px",
+          background: "var(--gold-c)",
+          color: "var(--ink-strong)",
+          border: "2px solid var(--ink-strong)",
+          fontFamily: "var(--font-archivo), Archivo, sans-serif",
+          fontWeight: 800,
+          fontSize: 10,
+          letterSpacing: "0.18em",
+          textTransform: "uppercase",
+          boxShadow: "0 2px 0 rgba(0,0,0,0.25)",
+        }}
+      >
+        <span aria-hidden style={{ fontSize: 12, lineHeight: 1 }}>
+          ←
+        </span>
+        GROUPS
+      </Link>
 
       <div className="relative px-5 -mt-10 pb-4">
         {/* Avatar + title row */}
