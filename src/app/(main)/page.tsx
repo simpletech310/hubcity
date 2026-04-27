@@ -25,6 +25,26 @@ function timeAgo(dateStr: string): string {
   return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
 }
 
+/**
+ * Fisher-Yates shuffle then take the first N. Used to keep the home
+ * page feeling alive on every load — instead of always showing the
+ * same top-rated 3 businesses / soonest 3 events / newest 3 posts,
+ * we pull a wider pool from the DB and pick a random subset per
+ * request. Safe because the page is `dynamic = "force-dynamic"`,
+ * so each visit re-runs the queries AND re-shuffles.
+ */
+function pickRandom<T>(arr: T[], n: number): T[] {
+  if (!arr || arr.length === 0) return [];
+  if (arr.length <= n) return arr.slice();
+  // Fisher-Yates over a copy so we don't mutate the caller's array.
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy.slice(0, n);
+}
+
 type UpcomingStream = {
   id: string;
   title: string;
@@ -102,6 +122,9 @@ export default async function HomePage({
     { data: activeDealsRaw },
   ] = await Promise.all([
     supabase.auth.getUser(),
+    // Local Favorites pool — we pull a wider top-rated set so the
+    // section can randomize 3 of N each render instead of always
+    // showing the same top 5.
     scopeToCity(
       supabase
         .from("businesses")
@@ -110,7 +133,9 @@ export default async function HomePage({
         .eq("is_published", true),
     )
       .order("rating_avg", { ascending: false })
-      .limit(8),
+      .limit(20),
+    // Events pool — soonest 18 upcoming so "Where the Block Goes"
+    // randomizes 3 different shows on every visit.
     scopeToCity(
       supabase
         .from("events")
@@ -119,13 +144,16 @@ export default async function HomePage({
     )
       .gte("start_date", todayIso)
       .order("start_date", { ascending: true })
-      .limit(6),
+      .limit(18),
     scopeToCity(
       supabase
         .from("live_streams")
         .select("id, title, category, mux_playback_id, status, viewer_count")
         .eq("status", "active"),
     ).limit(3),
+    // Posts pool — drives Dispatches + (fallback) Picked-for-You.
+    // Widened 8 → 24 so the section can shuffle 3 different voices
+    // on every load instead of always showing the same newest 3.
     scopeToCity(
       supabase
         .from("posts")
@@ -135,7 +163,7 @@ export default async function HomePage({
         .eq("is_published", true),
     )
       .order("created_at", { ascending: false })
-      .limit(8),
+      .limit(24),
     scopeToCity(
       supabase
         .from("city_alerts")
@@ -201,6 +229,7 @@ export default async function HomePage({
     // Active deals — newest first. Joined to the parent business so the
     // tile can render brand context + a link. Page hides the rail when
     // no rows come back so freshly-deployed instances don't show empties.
+    // Bumped 6 → 15 so the on-page render can shuffle 3 of 15 per visit.
     supabase
       .from("business_deals")
       .select(
@@ -210,7 +239,7 @@ export default async function HomePage({
       .lte("valid_from", nowIso)
       .gte("valid_until", nowIso)
       .order("created_at", { ascending: false })
-      .limit(6),
+      .limit(15),
   ]);
 
   // ── Personalization data (logged-in only, all errors are non-fatal) ──────
@@ -313,7 +342,7 @@ export default async function HomePage({
             .in("category", matchedCategories),
         )
           .order("rating_avg", { ascending: false })
-          .limit(4);
+          .limit(12);
         interestBusinesses = intBiz ?? [];
       }
     } catch {
@@ -326,12 +355,15 @@ export default async function HomePage({
   const featuredBusinesses = businesses ?? [];
   const pulsePosts: Post[] = mergedPosts;
 
-  // Creator posts for the "For You" rail: prefer media-first
+  // Creator posts for the "For You" rail: prefer media-first.
+  // Pool sized to give pickRandom() something to shuffle (we render 3
+  // of these per visit). 12 keeps the page responsive while still
+  // looking different on each load.
   const mediaPosts = pulsePosts
     .filter((p) => p.image_url || p.video_url || p.mux_playback_id)
-    .slice(0, 4);
+    .slice(0, 12);
   const displayPosts =
-    mediaPosts.length >= 2 ? mediaPosts : pulsePosts.slice(0, 4);
+    mediaPosts.length >= 2 ? mediaPosts : pulsePosts.slice(0, 12);
 
   const trendingReels: TrendingReel[] = trendingReelsRaw ?? [];
   const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
@@ -647,7 +679,7 @@ export default async function HomePage({
             title="Where the Block Goes."
           />
           <div className="px-[18px] pb-5">
-            {events.slice(0, 3).map((e, i) => {
+            {pickRandom(events, 3).map((e, i) => {
               const d = new Date(e.start_date);
               const timeStr = d
                 .toLocaleTimeString("en-US", {
@@ -688,7 +720,7 @@ export default async function HomePage({
           </div>
           <div className="overflow-x-auto scrollbar-hide pb-2">
             <div className="flex gap-3 px-[18px]">
-              {activeDeals.map((d) => (
+              {pickRandom(activeDeals, 3).map((d) => (
                 <Link
                   key={d.id}
                   href={`/business/${d.business_slug}`}
@@ -815,7 +847,7 @@ export default async function HomePage({
             Unfiltered.
           </h2>
           <div className="mt-4">
-            {mergedPosts.slice(0, 3).map((p) => {
+            {pickRandom(mergedPosts, 3).map((p) => {
               const author =
                 p.author?.handle ??
                 p.author?.display_name?.toLowerCase().replace(/\s+/g, "") ??
@@ -869,7 +901,7 @@ export default async function HomePage({
           <CultureSectionHead kicker="§ FOR YOU" title="Picked for You." />
           <div className="px-[18px] pb-5">
             {interestBusinesses.length > 0
-              ? interestBusinesses.slice(0, 4).map((b, i) => (
+              ? pickRandom(interestBusinesses, 3).map((b, i) => (
                   <CultureNumberedRow
                     key={b.id}
                     n={String(i + 1).padStart(2, "0")}
@@ -886,7 +918,7 @@ export default async function HomePage({
                     topRule={i > 0}
                   />
                 ))
-              : displayPosts.slice(0, 3).map((p, i) => (
+              : pickRandom(displayPosts, 3).map((p, i) => (
                   <CultureNumberedRow
                     key={p.id}
                     n={String(i + 1).padStart(2, "0")}
@@ -910,7 +942,7 @@ export default async function HomePage({
             title="Local Favorites."
           />
           <div className="px-[18px] pb-5">
-            {featuredBusinesses.slice(0, 5).map((b, i) => (
+            {pickRandom(featuredBusinesses, 3).map((b, i) => (
               <CultureNumberedRow
                 key={b.id}
                 n={String(i + 1).padStart(2, "0")}
