@@ -13,6 +13,25 @@ import type {
   VideoAd,
 } from "@/types/database";
 
+/**
+ * Collapse duplicate channel_videos rows that share the same Mux
+ * playback id. The Adiz "Westside Party" music video is intentionally
+ * duplicated across the Adiz channel + the flagship knect-tv-live
+ * channel so it shows up in the on-air rotation, but the FEATURED +
+ * RECENTLY ADDED rails should only show one tile per asset.
+ */
+function dedupeVideosByPlaybackId(videos: ChannelVideo[]): ChannelVideo[] {
+  const seen = new Set<string>();
+  const out: ChannelVideo[] = [];
+  for (const v of videos) {
+    const key = v.mux_playback_id || v.id;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(v);
+  }
+  return out;
+}
+
 export default async function LivePage({
   searchParams,
 }: {
@@ -179,8 +198,8 @@ export default async function LivePage({
       <CultureTV
         channels={(rawChannels as Channel[]) || []}
         streams={(rawStreams as LiveStream[]) || []}
-        featuredVideos={(rawFeatured as ChannelVideo[]) || []}
-        recentVideos={(rawRecent as ChannelVideo[]) || []}
+        featuredVideos={dedupeVideosByPlaybackId((rawFeatured as ChannelVideo[]) || [])}
+        recentVideos={dedupeVideosByPlaybackId((rawRecent as ChannelVideo[]) || [])}
         shows={(rawShows as Show[]) || []}
         timeBlocks={(rawTimeBlocks as TimeBlock[]) || []}
         liveSchedule={(rawSchedule as unknown as ScheduledBroadcast[]) || []}

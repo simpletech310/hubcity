@@ -973,8 +973,10 @@ export default function CultureTV({
                       style={{ border: "2px solid var(--rule-strong-c)" }}
                     >
                       <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
-                        {video.mux_playback_id ? (
-                          <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`} alt={video.title} className="w-full h-full object-cover" />
+                        {video.thumbnail_url ? (
+                          <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+                        ) : video.mux_playback_id ? (
+                          <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&fit_mode=smartcrop`} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
                         ) : (
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: "var(--gold-c)", opacity: 0.4 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
                         )}
@@ -1011,7 +1013,17 @@ export default function CultureTV({
                         )}
                       </div>
                     </div>
-                    <h3 className="c-card-t line-clamp-2 mb-0.5" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{video.title}</h3>
+                    <h3
+                      className="c-card-t line-clamp-2 mb-0.5"
+                      style={{
+                        fontSize: 12,
+                        lineHeight: 1.2,
+                        color: "var(--ink-strong)",
+                        minHeight: "2.4em",
+                      }}
+                    >
+                      {video.title}
+                    </h3>
                     <div className="flex items-center gap-1.5">
                       {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
                       <span className="c-meta">· {formatViews(video.view_count)} VIEWS</span>
@@ -1371,18 +1383,34 @@ export default function CultureTV({
 
           {/* ── Browse by Category ── */}
           <section className="mb-8 px-5">
-            <h2 className="c-hero mb-3" style={{ fontSize: 22, color: "var(--ink-strong)" }}>BROWSE BY CATEGORY</h2>
+            <div
+              className="flex items-baseline gap-3 pb-2 mb-3"
+              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+            >
+              <span
+                className="c-kicker"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "var(--ink-strong)",
+                  opacity: 0.7,
+                }}
+              >
+                § BROWSE BY CATEGORY
+              </span>
+            </div>
             <div className="grid grid-cols-3 gap-2.5">
               {[
-                { label: "Sports", icon: "trophy", color: "#3B82F6", gradient: "from-hc-blue/30 to-hc-blue/5" },
-                { label: "Music", icon: "music", color: "#8B5CF6", gradient: "from-hc-purple/30 to-hc-purple/5" },
-                { label: "News", icon: "megaphone", color: "#06B6D4", gradient: "from-cyan/30 to-cyan/5" },
-                { label: "Culture", icon: "theater", color: "#EF4444", gradient: "from-coral/30 to-coral/5" },
-                { label: "Podcasts", icon: "music", color: "#FF6B6B", gradient: "from-coral/30 to-coral/5" },
-                { label: "Education", icon: "book", color: "#22C55E", gradient: "from-emerald/30 to-emerald/5" },
+                { label: "Sports", icon: "trophy", color: "#3B82F6", href: "/live?type=sports" },
+                { label: "Music", icon: "music", color: "#8B5CF6", href: "/frequency" },
+                { label: "News", icon: "megaphone", color: "#06B6D4", href: "/live?type=news" },
+                { label: "Culture", icon: "theater", color: "#EF4444", href: "/culture" },
+                { label: "Podcasts", icon: "music", color: "#FF6B6B", href: "/podcasts" },
+                { label: "Education", icon: "book", color: "#22C55E", href: "/live?type=education" },
               ].map((cat, i) => (
-                <button
+                <Link
                   key={i}
+                  href={cat.href}
                   className="relative overflow-hidden p-3 text-left press group"
                   style={{
                     background: "var(--paper)",
@@ -1393,7 +1421,7 @@ export default function CultureTV({
                   <div className="absolute top-0 left-0 right-0" style={{ height: 3, background: cat.color }} />
                   <span className="block mb-1.5 mt-1"><Icon name={cat.icon as IconName} size={22} style={{ color: cat.color }} /></span>
                   <span className="c-card-t" style={{ fontSize: 12 }}>{cat.label.toUpperCase()}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </section>
@@ -2035,10 +2063,10 @@ function VideoCardLarge({ video, onPlay }: { video: ChannelVideo; onPlay: () => 
         style={{ border: "2px solid var(--rule-strong-c)" }}
       >
         <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
-          {video.mux_playback_id ? (
-            <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=520&height=292&time=5`} alt={video.title} className="w-full h-full object-cover" />
-          ) : video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+          {video.thumbnail_url ? (
+            <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+          ) : video.mux_playback_id ? (
+            <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=520&height=292&fit_mode=smartcrop`} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--gold-c)", opacity: 0.4 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
@@ -2051,7 +2079,17 @@ function VideoCardLarge({ video, onPlay }: { video: ChannelVideo; onPlay: () => 
           <div className="absolute top-2 left-2"><span className="c-badge-gold" style={{ fontSize: 9 }}>FEATURED</span></div>
         </div>
       </div>
-      <h3 className="c-card-t line-clamp-2 mb-1" style={{ fontSize: 13, color: "var(--ink-strong)" }}>{video.title}</h3>
+      <h3
+        className="c-card-t line-clamp-2 mb-1"
+        style={{
+          fontSize: 13,
+          lineHeight: 1.2,
+          color: "var(--ink-strong)",
+          minHeight: "2.4em",
+        }}
+      >
+        {video.title}
+      </h3>
       <div className="flex items-center gap-1.5">
         {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
         <span className="c-meta">· {formatViews(video.view_count)} VIEWS</span>
@@ -2069,10 +2107,10 @@ function VideoCardSmall({ video, onPlay, badgeLabel }: { video: ChannelVideo; on
         style={{ border: "2px solid var(--rule-strong-c)" }}
       >
         <div className="aspect-video flex items-center justify-center" style={{ background: "var(--ink-strong)" }}>
-          {video.mux_playback_id ? (
-            <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=360&height=202&time=5`} alt={video.title} className="w-full h-full object-cover" />
-          ) : video.thumbnail_url ? (
-            <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+          {video.thumbnail_url ? (
+            <img src={video.thumbnail_url} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
+          ) : video.mux_playback_id ? (
+            <img src={`https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=360&height=202&fit_mode=smartcrop`} alt={video.title} className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" style={{ color: "var(--gold-c)", opacity: 0.35 }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
           )}
@@ -2085,7 +2123,17 @@ function VideoCardSmall({ video, onPlay, badgeLabel }: { video: ChannelVideo; on
           {badgeLabel && <div className="absolute top-1.5 left-1.5"><span className="c-badge-ink" style={{ fontSize: 9 }}>{badgeLabel.toUpperCase()}</span></div>}
         </div>
       </div>
-      <h3 className="c-card-t line-clamp-2" style={{ fontSize: 12, color: "var(--ink-strong)" }}>{video.title}</h3>
+      <h3
+        className="c-card-t line-clamp-2"
+        style={{
+          fontSize: 12,
+          lineHeight: 1.2,
+          color: "var(--ink-strong)",
+          minHeight: "2.4em",
+        }}
+      >
+        {video.title}
+      </h3>
       <div className="flex items-center gap-1 mt-0.5">
         {video.channel && <p className="c-meta truncate">{video.channel.name}</p>}
         {video.published_at && <span className="c-meta">· {timeAgo(video.published_at)}</span>}
