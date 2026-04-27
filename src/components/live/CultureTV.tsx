@@ -139,6 +139,37 @@ function timeAgo(dateStr: string) {
   return `${weeks}w ago`;
 }
 
+/**
+ * Stable shuffle for the Explore grid. Uses a date-keyed seed so the
+ * tile order is consistent for the duration of a render but feels
+ * fresh across visits — picks `n` tiles weighted toward variety
+ * across kinds (event/shop/deal/exhibit).
+ */
+function pickRandomExplore<T extends { kind: string }>(
+  list: T[],
+  n: number,
+): T[] {
+  if (list.length <= n) return list;
+  // Bucket by kind so we don't get all-events or all-shops on a
+  // small data set — round-robin pulls keep the grid mixed.
+  const buckets = new Map<string, T[]>();
+  for (const t of list) {
+    const arr = buckets.get(t.kind) ?? [];
+    arr.push(t);
+    buckets.set(t.kind, arr);
+  }
+  const order = Array.from(buckets.values());
+  const out: T[] = [];
+  let idx = 0;
+  while (out.length < n) {
+    const bucket = order[idx % order.length];
+    if (bucket.length > 0) out.push(bucket.shift()!);
+    idx++;
+    if (order.every((b) => b.length === 0)) break;
+  }
+  return out;
+}
+
 // ── Props ──────────────────────────────────────────────────
 interface CultureTVProps {
   channels: Channel[];
@@ -167,7 +198,21 @@ interface CultureTVProps {
   dramaVideos?: ChannelVideo[];
   comedyVideos?: ChannelVideo[];
   musicVideos?: ChannelVideo[];
+  /** Heterogeneous "Things to Do" tiles — events / featured shops /
+   *  active deals / culture exhibits. Renders as the EXPLORE 2-col
+   *  grid that replaces the legacy Compton Local lock-screen. */
+  exploreTiles?: ExploreTile[];
 }
+
+export type ExploreTile = {
+  id: string;
+  kind: "event" | "shop" | "deal" | "exhibit";
+  label: string;
+  title: string;
+  meta: string | null;
+  image: string;
+  href: string;
+};
 
 export default function CultureTV({
   channels: allChannels,
@@ -194,6 +239,7 @@ export default function CultureTV({
   dramaVideos = [],
   comedyVideos = [],
   musicVideos = [],
+  exploreTiles = [],
 }: CultureTVProps) {
   // ── Scope gating: hide local channels/videos unless address-verified ──
   const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
@@ -1278,12 +1324,14 @@ export default function CultureTV({
             </section>
           )}
 
-          {/* ── Compton Local (verified-address only) ── */}
+          {/* ── Compton Local (verified-only — keeps the bubble row
+                for verified members; lock-screen for everyone else
+                was retired in favor of the Explore grid below). ── */}
           {isVerified && localChannels.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
                 <h2 className="c-hero" style={{ fontSize: 22, color: "var(--ink-strong)" }}>
-                  🌉 COMPTON <span style={{ color: "var(--gold-c)" }}>LOCAL</span>
+                  COMPTON <span style={{ color: "var(--gold-c)" }}>LOCAL</span>
                 </h2>
                 <p className="c-serif-it mt-0.5" style={{ fontSize: 13 }}>
                   Channels for verified Compton members
@@ -1296,35 +1344,120 @@ export default function CultureTV({
               </div>
             </section>
           )}
-          {!isVerified && (
-            <section className="mb-8 px-5">
-              <Link
-                href="/profile"
-                className="block p-5 press transition-colors"
-                style={{
-                  background: "var(--paper)",
-                  border: "2px solid var(--rule-strong-c)",
-                  color: "var(--ink-strong)",
-                }}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">🌉</span>
-                  <div className="flex-1">
-                    <h3 className="c-card-t mb-1" style={{ fontSize: 14 }}>
-                      COMPTON LOCAL — LOCKED
-                    </h3>
-                    <p className="c-body-sm">
-                      Verify your Compton address to unlock school, city, and local scene channels
-                      made for members.
-                    </p>
-                    <p className="mt-2 c-kicker" style={{ fontSize: 10, color: "var(--gold-c)" }}>VERIFY ADDRESS →</p>
-                  </div>
+
+          {/* ── Explore — what's happening around the city.
+                Heterogeneous tiles (events / shops / deals / exhibits)
+                routed through the same destinations the home Explore
+                rail uses, so the listener doesn't dead-end on a
+                "verify your address" wall. ── */}
+          {exploreTiles.length > 0 && (
+            <section className="mb-8">
+              <div className="px-5 mb-3">
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-kicker"
+                    style={{
+                      fontSize: 10,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.7,
+                    }}
+                  >
+                    § EXPLORE
+                  </span>
+                  <span
+                    className="c-serif-it"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+                  >
+                    Things to do.
+                  </span>
                 </div>
-              </Link>
+              </div>
+              <div className="grid grid-cols-2 gap-2.5 px-5">
+                {pickRandomExplore(exploreTiles, 6).map((tile) => (
+                  <Link
+                    key={tile.id}
+                    href={tile.href}
+                    className="block press relative overflow-hidden"
+                    style={{
+                      aspectRatio: "1 / 1",
+                      background: "var(--ink-strong)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={tile.image}
+                      alt={tile.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                    <span
+                      className="absolute top-1.5 left-1.5 c-kicker"
+                      style={{
+                        fontSize: 8,
+                        letterSpacing: "0.14em",
+                        background:
+                          tile.kind === "deal"
+                            ? "var(--gold-c)"
+                            : tile.kind === "event" || tile.kind === "exhibit"
+                              ? "var(--ink-strong)"
+                              : "var(--paper)",
+                        color:
+                          tile.kind === "deal" || tile.kind === "shop"
+                            ? "var(--ink-strong)"
+                            : "var(--gold-c)",
+                        padding: "2px 5px",
+                        border:
+                          tile.kind === "shop"
+                            ? "1px solid var(--rule-strong-c)"
+                            : undefined,
+                      }}
+                    >
+                      {tile.label}
+                    </span>
+                    <div
+                      className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.92) 100%)",
+                      }}
+                    >
+                      <p
+                        className="c-card-t line-clamp-2"
+                        style={{
+                          fontSize: 12,
+                          color: "var(--paper)",
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {tile.title}
+                      </p>
+                      {tile.meta && (
+                        <p
+                          className="c-meta line-clamp-1"
+                          style={{
+                            fontSize: 9,
+                            color: "var(--paper)",
+                            opacity: 0.78,
+                          }}
+                        >
+                          {tile.meta}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </section>
           )}
 
-          {/* ── Featured Videos ── */}
+          {/* ── Featured · single elevated poster hero, then a thin
+                row of supporting features. Replaces the legacy
+                horizontal scroll so the lead pick reads as a real
+                editorial cover instead of one tile in a strip. ── */}
           {featuredVideos.length > 0 && (
             <section className="mb-8">
               <div className="px-5 mb-3">
@@ -1344,18 +1477,35 @@ export default function CultureTV({
                     § FEATURED
                   </span>
                   <span
-                    className="c-badge c-badge-gold tabular-nums ml-auto"
-                    style={{ fontSize: 9 }}
+                    className="c-serif-it"
+                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
                   >
-                    {featuredVideos.length} {featuredVideos.length === 1 ? "VIDEO" : "VIDEOS"}
+                    Hand-picked this week.
                   </span>
                 </div>
               </div>
-              <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
-                {featuredVideos.map((video) => (
-                  <VideoCardLarge key={video.id} video={video} onPlay={() => playVideo(video)} />
-                ))}
+
+              {/* Lead poster — full width 16:9 with editorial gold rule */}
+              <div className="px-5">
+                <FeaturedHeroCard
+                  video={featuredVideos[0]}
+                  onPlay={() => playVideo(featuredVideos[0])}
+                />
               </div>
+
+              {/* Supporting features (2..n) → thin 3-col grid below.
+                  Hidden when only one featured video exists. */}
+              {featuredVideos.length > 1 && (
+                <div className="mt-3 px-5 grid grid-cols-3 gap-2.5">
+                  {featuredVideos.slice(1, 7).map((v) => (
+                    <FeaturedSupportTile
+                      key={v.id}
+                      video={v}
+                      onPlay={() => playVideo(v)}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
@@ -1379,7 +1529,10 @@ export default function CultureTV({
             </section>
           )}
 
-          {/* ── Channels scroller ── */}
+          {/* ── Channels — elevated grid. Flagship media channels
+                lead, then community channels with avatars, then the
+                rest. The "View all" footer routes into the dedicated
+                CHANNELS tab so the rail stays compact. ── */}
           <section className="mb-8">
             <div className="px-5 mb-3">
               <div
@@ -1398,6 +1551,12 @@ export default function CultureTV({
                   § CHANNELS
                 </span>
                 <span
+                  className="c-serif-it"
+                  style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+                >
+                  By Compton, for Compton.
+                </span>
+                <span
                   className="c-badge c-badge-gold tabular-nums ml-auto"
                   style={{ fontSize: 9 }}
                 >
@@ -1405,10 +1564,29 @@ export default function CultureTV({
                 </span>
               </div>
             </div>
-            <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-1">
-              {channels.map((ch) => (
-                <ChannelTile key={ch.id} channel={ch} />
-              ))}
+            <div className="px-5">
+              <div className="grid grid-cols-3 gap-2.5">
+                {sortChannelsForRail(channels)
+                  .slice(0, 9)
+                  .map((ch) => (
+                    <ChannelTileLarge key={ch.id} channel={ch} />
+                  ))}
+              </div>
+              {channels.length > 9 && (
+                <button
+                  onClick={() => setActiveTab("channels")}
+                  className="press w-full mt-3 py-2.5 c-kicker text-center"
+                  style={{
+                    background: "var(--paper)",
+                    border: "2px solid var(--rule-strong-c)",
+                    color: "var(--ink-strong)",
+                    fontSize: 10,
+                    letterSpacing: "0.18em",
+                  }}
+                >
+                  VIEW ALL {channels.length} CHANNELS →
+                </button>
+              )}
             </div>
           </section>
 
@@ -1513,7 +1691,11 @@ export default function CultureTV({
             </div>
           </section>
 
-          {/* ── Browse by Category ── */}
+          {/* ── Browse by Category — every tile routes to a working
+                surface (no dead ?type= filters). Sports/News land on
+                the events listing scoped to their category, Music +
+                Podcasts on /frequency, Culture on the culture index,
+                Education on the public meetings calendar. ── */}
           <section className="mb-8 px-5">
             <div
               className="flex items-baseline gap-3 pb-2 mb-3"
@@ -1530,15 +1712,24 @@ export default function CultureTV({
               >
                 § BROWSE BY CATEGORY
               </span>
+              <span
+                className="c-serif-it"
+                style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
+              >
+                What are you in the mood for?
+              </span>
             </div>
             <div className="grid grid-cols-3 gap-2.5">
               {[
-                { label: "Sports", icon: "trophy", color: "#3B82F6", href: "/live?type=sports" },
+                { label: "Sports", icon: "trophy", color: "#3B82F6", href: "/events?category=sports" },
                 { label: "Music", icon: "music", color: "#8B5CF6", href: "/frequency" },
-                { label: "News", icon: "megaphone", color: "#06B6D4", href: "/live?type=news" },
+                { label: "News", icon: "megaphone", color: "#06B6D4", href: "/city-hall" },
                 { label: "Culture", icon: "theater", color: "#EF4444", href: "/culture" },
-                { label: "Podcasts", icon: "music", color: "#FF6B6B", href: "/podcasts" },
-                { label: "Education", icon: "book", color: "#22C55E", href: "/live?type=education" },
+                { label: "Podcasts", icon: "music", color: "#FF6B6B", href: "/frequency#podcasts" },
+                { label: "Education", icon: "book", color: "#22C55E", href: "/city-data/meetings" },
+                { label: "Events", icon: "calendar", color: "#F2A900", href: "/events" },
+                { label: "Shop", icon: "shopping", color: "#E84855", href: "/business" },
+                { label: "Food", icon: "utensils", color: "#FF7A45", href: "/food" },
               ].map((cat, i) => (
                 <Link
                   key={i}
@@ -2518,5 +2709,345 @@ function VerticalPosterRail({
         </div>
       </div>
     </section>
+  );
+}
+
+// ─── Section helpers added with the /live polish pass ──────────
+
+/**
+ * Sort channels for the "elevated" 3-col rail at the top of /live.
+ * Order = flagship media channels (knect-tv-live, culture, etc.)
+ * → community channels with avatars (signals an actually-set-up
+ * page) → everything else. Stable within each bucket so the
+ * rail doesn't shuffle on every render.
+ */
+function sortChannelsForRail<T extends Channel>(channels: T[]): T[] {
+  const score = (c: T): number => {
+    if (c.slug === "knect-tv-live") return 0; // flagship lead
+    if (c.slug === "culture") return 1;
+    if (c.type === "media") return 2;
+    if (c.avatar_url) return 3;
+    return 4;
+  };
+  return [...channels].sort((a, b) => score(a) - score(b));
+}
+
+/**
+ * Featured hero — single big editorial poster card. 16:9 thumbnail
+ * with a gold play disc, kicker badge, and gradient legibility wash.
+ * Replaces the legacy horizontal scroll of medium "Featured" cards
+ * so the lead pick reads as the magazine's lead photo.
+ */
+function FeaturedHeroCard({
+  video,
+  onPlay,
+}: {
+  video: ChannelVideo;
+  onPlay: () => void;
+}) {
+  const thumb =
+    video.thumbnail_url ||
+    (video.mux_playback_id
+      ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=900&height=506&fit_mode=smartcrop`
+      : null);
+  return (
+    <button
+      onClick={onPlay}
+      className="press group block w-full text-left"
+      style={{
+        background: "var(--paper)",
+        border: "3px solid var(--rule-strong-c)",
+      }}
+    >
+      <div
+        className="relative overflow-hidden"
+        style={{ aspectRatio: "16 / 9", background: "var(--ink-strong)" }}
+      >
+        {thumb ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={thumb}
+            alt={video.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              style={{ color: "var(--gold-c)", opacity: 0.5 }}
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        )}
+
+        {/* Top-row badges */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <span
+            className="c-badge c-badge-gold"
+            style={{ fontSize: 9, letterSpacing: "0.18em" }}
+          >
+            FEATURED
+          </span>
+          {video.channel?.name && (
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.16em",
+                background: "rgba(26,21,18,0.78)",
+                color: "var(--paper)",
+                padding: "3px 6px",
+              }}
+            >
+              {video.channel.name.toUpperCase()}
+            </span>
+          )}
+        </div>
+
+        {/* Bottom-right duration */}
+        {video.duration && (
+          <div
+            className="absolute bottom-3 right-3 c-kicker"
+            style={{
+              fontSize: 10,
+              padding: "3px 6px",
+              background: "var(--paper)",
+              color: "var(--ink-strong)",
+              border: "1.5px solid var(--rule-strong-c)",
+            }}
+          >
+            {formatDuration(video.duration)}
+          </div>
+        )}
+
+        {/* Gradient + center play disc */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.0) 50%, rgba(26,21,18,0.85) 100%)",
+          }}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div
+            className="w-16 h-16 flex items-center justify-center group-hover:scale-105 transition-transform"
+            style={{
+              background: "var(--gold-c)",
+              border: "3px solid var(--ink-strong)",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+            }}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="var(--ink-strong)"
+              style={{ marginLeft: 3 }}
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* Caption strip */}
+      <div className="px-4 py-3" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
+        <h3
+          className="c-card-t line-clamp-2"
+          style={{
+            fontSize: 16,
+            lineHeight: 1.18,
+            color: "var(--ink-strong)",
+          }}
+        >
+          {video.title}
+        </h3>
+        <div className="flex items-center gap-1.5 mt-1">
+          {video.channel?.name && (
+            <span
+              className="c-kicker"
+              style={{
+                fontSize: 9,
+                letterSpacing: "0.16em",
+                color: "var(--ink-strong)",
+                opacity: 0.7,
+              }}
+            >
+              § {video.channel.name.toUpperCase()}
+            </span>
+          )}
+          {video.view_count > 0 && (
+            <span
+              className="c-meta"
+              style={{ color: "var(--ink-strong)", opacity: 0.55 }}
+            >
+              · {formatViews(video.view_count)} VIEWS
+            </span>
+          )}
+        </div>
+      </div>
+    </button>
+  );
+}
+
+/**
+ * Compact featured tile rendered below the hero. 16:9 thumbnail +
+ * truncated title, no inner padding — the row reads as a thin
+ * supporting strip beneath the lead poster.
+ */
+function FeaturedSupportTile({
+  video,
+  onPlay,
+}: {
+  video: ChannelVideo;
+  onPlay: () => void;
+}) {
+  const thumb =
+    video.thumbnail_url ||
+    (video.mux_playback_id
+      ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=320&height=180&fit_mode=smartcrop`
+      : null);
+  return (
+    <button onClick={onPlay} className="press text-left group">
+      <div
+        className="relative overflow-hidden"
+        style={{
+          aspectRatio: "16 / 9",
+          background: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
+      >
+        {thumb && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={thumb}
+            alt={video.title}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        )}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+          <div
+            className="w-8 h-8 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--ink-strong)",
+            }}
+          >
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="var(--ink-strong)"
+              style={{ marginLeft: 2 }}
+            >
+              <polygon points="5 3 19 12 5 21 5 3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <p
+        className="c-card-t line-clamp-2 mt-1.5"
+        style={{
+          fontSize: 11,
+          lineHeight: 1.2,
+          color: "var(--ink-strong)",
+        }}
+      >
+        {video.title}
+      </p>
+    </button>
+  );
+}
+
+/**
+ * Larger channel tile used by the elevated /live channel grid.
+ * 1:1 frame, name overlay, type kicker beneath. Reads as a row of
+ * mini magazine covers — the same visual rhythm as the cinema
+ * vertical-poster rails so /live feels coherent top-to-bottom.
+ */
+function ChannelTileLarge({ channel: ch }: { channel: Channel }) {
+  return (
+    <Link
+      href={`/live/channel/${ch.id}`}
+      className="block press"
+    >
+      <div
+        className="relative overflow-hidden"
+        style={{
+          aspectRatio: "1 / 1",
+          background: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
+      >
+        {ch.avatar_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={ch.avatar_url}
+            alt={ch.name}
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : (
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              color: "var(--gold-c)",
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 36,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {channelInitials(ch.name)}
+          </div>
+        )}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(26,21,18,0.9) 100%)",
+          }}
+        />
+        {ch.type === "media" && (
+          <span
+            className="absolute top-1.5 left-1.5 c-kicker"
+            style={{
+              fontSize: 8,
+              letterSpacing: "0.14em",
+              background: "var(--gold-c)",
+              color: "var(--ink-strong)",
+              padding: "2px 5px",
+            }}
+          >
+            FLAGSHIP
+          </span>
+        )}
+        {ch.is_live_simulated && ch.type !== "media" && (
+          <span
+            className="absolute top-1.5 left-1.5 c-badge-live"
+            style={{ fontSize: 8 }}
+          >
+            ON AIR
+          </span>
+        )}
+        <div className="absolute inset-x-0 bottom-0 px-2 py-1.5">
+          <p
+            className="c-card-t line-clamp-1"
+            style={{
+              fontSize: 11,
+              lineHeight: 1.15,
+              color: "var(--paper)",
+            }}
+          >
+            {ch.name}
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }

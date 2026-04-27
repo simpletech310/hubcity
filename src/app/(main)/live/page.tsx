@@ -134,6 +134,126 @@ export default async function LivePage({
       .limit(8),
   ]);
 
+  // ── Explore tiles — heterogeneous mix of upcoming events,
+  //     featured local businesses, active deals, and culture
+  //     exhibits. Replaces the legacy "Compton Local — Locked"
+  //     CTA on /live with the same "Things to Do" surface
+  //     the home page Explore rail uses. Capped tight so the
+  //     grid stays balanced; CultureTV picks 6 to render.
+  const todayDate = new Date().toISOString().split("T")[0];
+  const [
+    { data: rawExploreEvents },
+    { data: rawExploreBusinesses },
+    { data: rawExploreDeals },
+    { data: rawExploreExhibits },
+  ] = await Promise.all([
+    supabase
+      .from("events")
+      .select("id, slug, title, image_url, start_date, location_name, is_ticketed")
+      .eq("is_published", true)
+      .gte("start_date", todayDate)
+      .not("image_url", "is", null)
+      .order("start_date", { ascending: true })
+      .limit(8),
+    supabase
+      .from("businesses")
+      .select("id, slug, name, image_urls, category, rating_avg")
+      .eq("is_published", true)
+      .eq("is_featured", true)
+      .order("rating_avg", { ascending: false, nullsFirst: false })
+      .limit(8),
+    supabase
+      .from("business_deals")
+      .select(
+        "id, title, discount_label, business_id, businesses:businesses(slug, name, image_urls)",
+      )
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("culture_galleries")
+      .select("id, slug, title, cover_image_url, artist_name, year_created")
+      .eq("is_published", true)
+      .not("cover_image_url", "is", null)
+      .order("year_created", { ascending: false, nullsFirst: false })
+      .limit(6),
+  ]);
+
+  type ExploreTile = {
+    id: string;
+    kind: "event" | "shop" | "deal" | "exhibit";
+    label: string;
+    title: string;
+    meta: string | null;
+    image: string;
+    href: string;
+  };
+  const exploreTiles: ExploreTile[] = [];
+  for (const e of rawExploreEvents ?? []) {
+    if (!e.image_url) continue;
+    const d = new Date(e.start_date);
+    exploreTiles.push({
+      id: `event-${e.id}`,
+      kind: "event",
+      label: e.is_ticketed ? "TICKETED" : "EVENT",
+      title: e.title,
+      meta: d
+        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        .toUpperCase(),
+      image: e.image_url,
+      href: `/events/${e.slug || e.id}`,
+    });
+  }
+  for (const b of rawExploreBusinesses ?? []) {
+    const cover = b.image_urls?.[0];
+    if (!cover) continue;
+    exploreTiles.push({
+      id: `shop-${b.id}`,
+      kind: "shop",
+      label: (b.category ?? "SHOP").toUpperCase(),
+      title: b.name,
+      meta: b.rating_avg ? `★ ${Number(b.rating_avg).toFixed(1)}` : null,
+      image: cover,
+      href: `/business/${b.slug}`,
+    });
+  }
+  for (const raw of rawExploreDeals ?? []) {
+    // Supabase typing leans toward array-of-relation by default; the
+    // runtime gives us a single object via the FK join. Coerce
+    // through unknown so the downstream tile push stays clean.
+    const d = raw as unknown as {
+      id: string;
+      title: string;
+      discount_label: string;
+      businesses:
+        | { slug: string; name: string; image_urls: string[] | null }
+        | null;
+    };
+    const cover = d.businesses?.image_urls?.[0];
+    if (!cover || !d.businesses) continue;
+    exploreTiles.push({
+      id: `deal-${d.id}`,
+      kind: "deal",
+      label: d.discount_label,
+      title: d.title,
+      meta: d.businesses.name.toUpperCase(),
+      image: cover,
+      href: `/business/${d.businesses.slug}`,
+    });
+  }
+  for (const g of rawExploreExhibits ?? []) {
+    if (!g.cover_image_url) continue;
+    exploreTiles.push({
+      id: `exhibit-${g.id}`,
+      kind: "exhibit",
+      label: "EXHIBIT",
+      title: g.title,
+      meta: [g.artist_name, g.year_created].filter(Boolean).join(" · ") || null,
+      image: g.cover_image_url,
+      href: `/culture/gallery/${g.slug}`,
+    });
+  }
+
   // Fetch all shows (for the on-demand poster grid)
   const { data: rawShows } = await supabase
     .from("shows")
@@ -267,6 +387,7 @@ export default async function LivePage({
         dramaVideos={(rawDrama as ChannelVideo[]) || []}
         comedyVideos={(rawComedy as ChannelVideo[]) || []}
         musicVideos={dedupeVideosByPlaybackId((rawMusic as ChannelVideo[]) || [])}
+        exploreTiles={exploreTiles}
       />
     </div>
   );
