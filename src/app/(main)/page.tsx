@@ -193,6 +193,7 @@ export default async function HomePage({
     { data: activeDealsRaw },
     { data: cultureExhibitsRaw },
     { data: cultureGalleryRaw },
+    { data: foodChallengesRaw },
   ] = await Promise.all([
     supabase.auth.getUser(),
     // Local Favorites pool — we pull a wider top-rated set so the
@@ -330,6 +331,16 @@ export default async function HomePage({
       .eq("is_published", true)
       .order("display_order", { ascending: true })
       .limit(40),
+    // Food / collection challenges — drives the Explore rail. Active only.
+    supabase
+      .from("food_challenges")
+      .select(
+        "id, slug, name, description, image_url, challenge_type, end_date, participant_count",
+      )
+      .eq("is_active", true)
+      .gte("end_date", todayIso)
+      .order("end_date", { ascending: true })
+      .limit(8),
   ]);
 
   // ── Personalization data (logged-in only, all errors are non-fatal) ──────
@@ -458,6 +469,30 @@ export default async function HomePage({
   const trendingReels: TrendingReel[] = trendingReelsRaw ?? [];
   const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
 
+  // Flatten the joined deals shape — Supabase JS may return `business`
+  // as an object or a single-item array depending on the relationship,
+  // so coerce to the first row regardless. Lifted above the Explore /
+  // Culture tile builders below so they can reference activeDeals.
+  const activeDeals = ((activeDealsRaw ?? []) as unknown as ActiveDeal[])
+    .map((d) => {
+      const b = Array.isArray(d.business) ? d.business[0] : d.business;
+      if (!b || !b.is_published) return null;
+      return {
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        discount_label: d.discount_label,
+        promo_code: d.promo_code,
+        valid_until: d.valid_until,
+        business_id: b.id,
+        business_name: b.name,
+        business_slug: b.slug,
+        business_category: b.category,
+        business_cover: b.image_urls?.[0] ?? null,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
   // Culture pool — flatten exhibits + gallery items into a single
   // shuffled list of image-led tiles. Drives the new rail under
   // Deals Dropped. Each tile has a kind so the chip can label it.
@@ -509,28 +544,93 @@ export default async function HomePage({
     });
   }
 
-  // Flatten the joined deals shape — Supabase JS may return `business`
-  // as an object or a single-item array depending on the relationship,
-  // so coerce to the first row regardless.
-  const activeDeals = ((activeDealsRaw ?? []) as unknown as ActiveDeal[])
-    .map((d) => {
-      const b = Array.isArray(d.business) ? d.business[0] : d.business;
-      if (!b || !b.is_published) return null;
-      return {
-        id: d.id,
-        title: d.title,
-        description: d.description,
-        discount_label: d.discount_label,
-        promo_code: d.promo_code,
-        valid_until: d.valid_until,
-        business_id: b.id,
-        business_name: b.name,
-        business_slug: b.slug,
-        business_category: b.category,
-        business_cover: b.image_urls?.[0] ?? null,
-      };
-    })
-    .filter((x): x is NonNullable<typeof x> => x !== null);
+  // Explore pool — heterogeneous tiles that replace the legacy
+  // "Local Favorites" rail. Mixes food challenges + active deals +
+  // featured businesses + upcoming events so the home page surfaces
+  // the same variety a citizen would find tabbing across the
+  // category pages.
+  type ExploreTile = {
+    id: string;
+    kind: "challenge" | "deal" | "shop" | "event";
+    label: string;
+    title: string;
+    meta: string | null;
+    image: string | null;
+    href: string;
+  };
+  const exploreTiles: ExploreTile[] = [];
+  for (const c of (foodChallengesRaw ?? []) as Array<{
+    id: string;
+    slug: string;
+    name: string;
+    description: string | null;
+    image_url: string | null;
+    challenge_type: string | null;
+    end_date: string;
+    participant_count: number | null;
+  }>) {
+    if (!c.image_url) continue;
+    const days = Math.max(
+      0,
+      Math.ceil(
+        (new Date(c.end_date).getTime() - Date.now()) / (24 * 3600 * 1000),
+      ),
+    );
+    exploreTiles.push({
+      id: `challenge-${c.id}`,
+      kind: "challenge",
+      label: "CHALLENGE",
+      title: c.name,
+      meta:
+        days <= 0
+          ? "ENDS TODAY"
+          : days === 1
+            ? "1 DAY LEFT"
+            : `${days} DAYS LEFT`,
+      image: c.image_url,
+      href: `/food/challenges/${c.slug}`,
+    });
+  }
+  for (const d of activeDeals.slice(0, 6)) {
+    if (!d.business_cover) continue;
+    exploreTiles.push({
+      id: `deal-${d.id}`,
+      kind: "deal",
+      label: d.discount_label,
+      title: d.title,
+      meta: d.business_name.toUpperCase(),
+      image: d.business_cover,
+      href: `/business/${d.business_slug}`,
+    });
+  }
+  for (const b of (businesses ?? []).slice(0, 8)) {
+    const cover = b.image_urls?.[0];
+    if (!cover) continue;
+    exploreTiles.push({
+      id: `shop-${b.id}`,
+      kind: "shop",
+      label: (b.category ?? "SHOP").toUpperCase(),
+      title: b.name,
+      meta: b.rating_avg ? `★ ${Number(b.rating_avg).toFixed(1)}` : null,
+      image: cover,
+      href: `/business/${b.slug}`,
+    });
+  }
+  for (const e of (events ?? []).slice(0, 6)) {
+    if (!e.image_url) continue;
+    const d = new Date(e.start_date);
+    exploreTiles.push({
+      id: `event-${e.id}`,
+      kind: "event",
+      label: "EVENT",
+      title: e.title,
+      meta: d
+        .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+        .toUpperCase(),
+      image: e.image_url,
+      href: `/events/${e.id}`,
+    });
+  }
 
   // ── Derived UI values ────────────────────────────────────────────────────
   // The label tracks the *filter* city when one is set, and only falls back
@@ -580,24 +680,14 @@ export default async function HomePage({
   // stream lead. Each slide renders a magazine-cover spread with
   // its own kicker, image, title, subtitle, and CTA.
   const topStream = liveStreams?.[0];
+  // Hero is now a culture-driven slideshow — random exhibits + gallery
+  // pieces + featured artwork. Each slide links to the artwork itself
+  // so visitors can open the full piece. Falls back to events / streams
+  // only if no culture content is available (rare).
   const heroSlides: HeroSlide[] = (() => {
     const slides: HeroSlide[] = [];
 
-    if (topStream) {
-      slides.push({
-        id: `stream-${topStream.id}`,
-        kicker: "§ LIVE NOW",
-        title: topStream.title,
-        subtitle: "Live on Hub City — open the stream.",
-        meta: "ON AIR · NOW",
-        cta: "WATCH LIVE",
-        href: `/live/${topStream.id}`,
-        imageUrl: topStream.mux_playback_id
-          ? `https://image.mux.com/${topStream.mux_playback_id}/thumbnail.jpg`
-          : null,
-      });
-    }
-
+    // 1. Featured longread (when curated) takes the lead slot.
     if (featuredArt) {
       slides.push({
         id: `art-${featuredArt.slug ?? "feature"}`,
@@ -611,23 +701,57 @@ export default async function HomePage({
       });
     }
 
-    for (const e of (events ?? []).slice(0, 5)) {
-      const d = new Date(e.start_date);
-      const meta = `${d
-        .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
-        .toUpperCase()}${e.location_name ? ` · ${e.location_name.toUpperCase()}` : ""}`;
+    // 2. Random culture tiles — shuffle the pool so each load shows
+    //    different artwork. Up to 5 culture slides per hero.
+    for (const tile of pickRandom(cultureTiles, 5)) {
       slides.push({
-        id: `event-${e.id}`,
-        kicker: "§ UPCOMING",
-        title: e.title,
-        subtitle: e.location_name
-          ? `Live at ${e.location_name}.`
-          : "Mark the calendar.",
-        meta,
-        cta: "RSVP →",
-        href: `/events/${e.id}`,
-        imageUrl: e.image_url ?? null,
+        id: `culture-${tile.id}`,
+        kicker: tile.kind === "exhibit" ? "§ EXHIBIT" : "§ ARTWORK",
+        title: tile.title,
+        subtitle: tile.meta,
+        meta: tile.kind === "exhibit" ? "ON VIEW" : "VIEW PIECE",
+        cta: "OPEN ↗",
+        href: tile.href,
+        imageUrl: tile.image,
       });
+    }
+
+    // 3. If we still don't have enough slides (no culture content yet),
+    //    fall back to upcoming events + the live stream so the hero
+    //    isn't empty.
+    if (slides.length < 3) {
+      if (topStream) {
+        slides.push({
+          id: `stream-${topStream.id}`,
+          kicker: "§ LIVE NOW",
+          title: topStream.title,
+          subtitle: "Live on Hub City — open the stream.",
+          meta: "ON AIR · NOW",
+          cta: "WATCH LIVE",
+          href: `/live/${topStream.id}`,
+          imageUrl: topStream.mux_playback_id
+            ? `https://image.mux.com/${topStream.mux_playback_id}/thumbnail.jpg`
+            : null,
+        });
+      }
+      for (const e of (events ?? []).slice(0, 3)) {
+        const d = new Date(e.start_date);
+        const meta = `${d
+          .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+          .toUpperCase()}${e.location_name ? ` · ${e.location_name.toUpperCase()}` : ""}`;
+        slides.push({
+          id: `event-${e.id}`,
+          kicker: "§ UPCOMING",
+          title: e.title,
+          subtitle: e.location_name
+            ? `Live at ${e.location_name}.`
+            : "Mark the calendar.",
+          meta,
+          cta: "RSVP →",
+          href: `/events/${e.id}`,
+          imageUrl: e.image_url ?? null,
+        });
+      }
     }
 
     if (slides.length === 0) {
@@ -847,117 +971,10 @@ export default async function HomePage({
         </>
       )}
 
-      {/* § DEALS — live promo codes from local businesses */}
-      {activeDeals.length > 0 && (
-        <section>
-          <div className="px-[18px] pt-6">
-            <div className="flex items-baseline gap-3">
-              <span className="c-kicker">§ DEALS DROPPED</span>
-              <span className="ml-auto c-kicker" style={{ opacity: 0.55 }}>
-                {activeDeals.length} ACTIVE
-              </span>
-            </div>
-            <div className="c-rule mt-2 mb-3" />
-          </div>
-          <div className="overflow-x-auto scrollbar-hide pb-2">
-            <div className="flex gap-3 px-[18px]">
-              {pickRandom(activeDeals, 3).map((d) => (
-                <Link
-                  key={d.id}
-                  href={`/business/${d.business_slug}`}
-                  className="shrink-0 w-[230px] press"
-                >
-                  <div
-                    className="overflow-hidden h-full"
-                    style={{
-                      background: "var(--paper-warm)",
-                      border: "2px solid var(--rule-strong-c)",
-                    }}
-                  >
-                    {d.business_cover ? (
-                      <div
-                        className="aspect-[4/3] relative overflow-hidden"
-                        style={{ background: "var(--ink-strong)" }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={d.business_cover}
-                          alt={d.business_name}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        <span
-                          className="c-badge c-badge-gold absolute"
-                          style={{ top: 10, right: 10 }}
-                        >
-                          {d.discount_label}
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className="px-4 pt-4 flex items-center justify-end"
-                        style={{ background: "var(--paper-warm)" }}
-                      >
-                        <span className="c-badge c-badge-gold">
-                          {d.discount_label}
-                        </span>
-                      </div>
-                    )}
-                    <div className="px-4 py-3">
-                      <p
-                        className="c-kicker truncate"
-                        style={{
-                          fontSize: 9,
-                          letterSpacing: "0.16em",
-                          color: "var(--ink-strong)",
-                          opacity: 0.65,
-                        }}
-                      >
-                        {d.business_name.toUpperCase()}
-                      </p>
-                      <p
-                        className="c-card-t mt-1 line-clamp-2"
-                        style={{
-                          fontSize: 14,
-                          lineHeight: 1.2,
-                          color: "var(--ink-strong)",
-                        }}
-                      >
-                        {d.title}
-                      </p>
-                      {d.promo_code && (
-                        <div
-                          className="mt-2.5 px-2 py-1 text-center"
-                          style={{
-                            background: "var(--paper)",
-                            border: "2px dashed var(--rule-strong-c)",
-                          }}
-                        >
-                          <span
-                            className="font-mono"
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 800,
-                              letterSpacing: "0.08em",
-                              color: "var(--gold-c)",
-                            }}
-                          >
-                            {d.promo_code}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* § CULTURE RIGHT NOW — random exhibits + gallery pieces from
-            /culture. Image-heavy mosaic tile to break up the text-led
-            rails above (Dispatches, Local Favorites). Refreshes on
-            every load via pickRandom + force-dynamic. */}
+            /culture. Moved up directly after § TONIGHT so the home page
+            leads with images before the text-heavy Dispatches block.
+            Image-heavy mosaic refreshes on every load. */}
       {cultureTiles.length > 0 && (
         <section className="pt-6">
           <div className="px-[18px] mb-3">
@@ -1124,76 +1141,238 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* § FOR YOU (personalization) */}
-      {(followedIds.length > 0 && displayPosts.length > 0) ||
-      interestBusinesses.length > 0 ? (
-        <>
-          <CultureSectionHead kicker="§ FOR YOU" title="Picked for You." />
-          <div className="px-[18px] pb-5">
-            {interestBusinesses.length > 0
-              ? pickRandom(interestBusinesses, 3).map((b, i) => (
-                  <CultureNumberedRow
-                    key={b.id}
-                    n={String(i + 1).padStart(2, "0")}
-                    kicker={(b.category ?? "").toUpperCase()}
-                    title={b.name}
-                    meta={
-                      b.rating_avg
-                        ? `★ ${Number(b.rating_avg).toFixed(1)}`
-                        : undefined
-                    }
-                    img={b.image_urls?.[0] ?? undefined}
-                    imgAlt={b.name}
-                    href={`/business/${b.slug}`}
-                    topRule={i > 0}
-                  />
-                ))
-              : pickRandom(displayPosts, 3).map((p, i) => (
-                  <CultureNumberedRow
-                    key={p.id}
-                    n={String(i + 1).padStart(2, "0")}
-                    kicker={(p.author?.display_name ?? "community").toUpperCase()}
-                    title={(p.body ?? "").slice(0, 80) || "Untitled"}
-                    meta={timeAgo(p.created_at)}
-                    img={p.image_url ?? undefined}
-                    href="/pulse"
-                    topRule={i > 0}
-                  />
-                ))}
+      {/* § EXPLORE — heterogeneous mix of food challenges + deals +
+            featured businesses + upcoming events. Replaces the legacy
+            "Picked for You" + "Local Favorites" rails so the home page
+            surfaces the same variety the dedicated category pages do. */}
+      {exploreTiles.length > 0 && (
+        <section className="pt-2 pb-6">
+          <div className="px-[18px] mb-3">
+            <div
+              className="flex items-baseline gap-3 pb-2"
+              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+            >
+              <span
+                className="c-display c-tabnum"
+                style={{
+                  fontSize: 22,
+                  color: "var(--gold-c)",
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                §
+              </span>
+              <div className="flex flex-col">
+                <span
+                  className="c-kicker"
+                  style={{ fontSize: 10, letterSpacing: "0.18em" }}
+                >
+                  EXPLORE
+                </span>
+                <span
+                  className="c-serif-it"
+                  style={{
+                    fontSize: 12,
+                    color: "var(--ink-strong)",
+                    opacity: 0.65,
+                  }}
+                >
+                  Things to do, eat, and find.
+                </span>
+              </div>
+            </div>
           </div>
-        </>
-      ) : null}
-
-      {/* § ON THE BLOCK — featured businesses */}
-      {featuredBusinesses.length > 0 && (
-        <>
-          <CultureSectionHead
-            kicker="§ ON THE BLOCK"
-            title="Local Favorites."
-          />
-          <div className="px-[18px] pb-5">
-            {pickRandom(featuredBusinesses, 3).map((b, i) => (
-              <CultureNumberedRow
-                key={b.id}
-                n={String(i + 1).padStart(2, "0")}
-                kicker={(b.category ?? "").toUpperCase()}
-                title={b.name}
-                meta={[
-                  b.rating_avg
-                    ? `★ ${Number(b.rating_avg).toFixed(1)}`
-                    : null,
-                  b.address ?? null,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-                img={b.image_urls?.[0] ?? undefined}
-                imgAlt={b.name}
-                href={`/business/${b.slug}`}
-                topRule={i > 0}
-              />
+          <div className="grid grid-cols-2 gap-2.5 px-[18px]">
+            {pickRandom(exploreTiles, 6).map((tile) => (
+              <Link
+                key={tile.id}
+                href={tile.href}
+                className="block press relative overflow-hidden"
+                style={{
+                  aspectRatio: "1/1",
+                  background: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                }}
+              >
+                {tile.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={tile.image}
+                    alt={tile.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                )}
+                <span
+                  className="absolute top-1.5 left-1.5 c-kicker"
+                  style={{
+                    fontSize: 8,
+                    letterSpacing: "0.14em",
+                    background:
+                      tile.kind === "deal"
+                        ? "var(--gold-c)"
+                        : tile.kind === "challenge"
+                          ? "var(--ink-strong)"
+                          : tile.kind === "event"
+                            ? "var(--ink-strong)"
+                            : "var(--paper)",
+                    color:
+                      tile.kind === "deal"
+                        ? "var(--ink-strong)"
+                        : tile.kind === "shop"
+                          ? "var(--ink-strong)"
+                          : "var(--gold-c)",
+                    padding: "2px 5px",
+                    border:
+                      tile.kind === "shop"
+                        ? "1px solid var(--rule-strong-c)"
+                        : undefined,
+                  }}
+                >
+                  {tile.label}
+                </span>
+                <div
+                  className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.9) 100%)",
+                  }}
+                >
+                  <p
+                    className="c-card-t line-clamp-2"
+                    style={{
+                      fontSize: 12,
+                      color: "var(--paper)",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {tile.title}
+                  </p>
+                  {tile.meta && (
+                    <p
+                      className="c-meta line-clamp-1"
+                      style={{
+                        fontSize: 9,
+                        color: "var(--paper)",
+                        opacity: 0.78,
+                      }}
+                    >
+                      {tile.meta}
+                    </p>
+                  )}
+                </div>
+              </Link>
             ))}
           </div>
-        </>
+        </section>
+      )}
+
+      {/* § DEALS DROPPED — moved down so the home page leads with image
+            content (Culture + Explore) before showing promo codes. */}
+      {activeDeals.length > 0 && (
+        <section>
+          <div className="px-[18px] pt-2">
+            <div className="flex items-baseline gap-3">
+              <span className="c-kicker">§ DEALS DROPPED</span>
+              <span className="ml-auto c-kicker" style={{ opacity: 0.55 }}>
+                {activeDeals.length} ACTIVE
+              </span>
+            </div>
+            <div className="c-rule mt-2 mb-3" />
+          </div>
+          <div className="overflow-x-auto scrollbar-hide pb-2">
+            <div className="flex gap-3 px-[18px]">
+              {pickRandom(activeDeals, 3).map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/business/${d.business_slug}`}
+                  className="shrink-0 w-[230px] press"
+                >
+                  <div
+                    className="overflow-hidden h-full"
+                    style={{
+                      background: "var(--paper-warm)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    {d.business_cover ? (
+                      <div
+                        className="aspect-[4/3] relative overflow-hidden"
+                        style={{ background: "var(--ink-strong)" }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={d.business_cover}
+                          alt={d.business_name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <span
+                          className="c-badge c-badge-gold absolute"
+                          style={{ top: 10, right: 10 }}
+                        >
+                          {d.discount_label}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        className="px-4 pt-4 flex items-center justify-end"
+                        style={{ background: "var(--paper-warm)" }}
+                      >
+                        <span className="c-badge c-badge-gold">
+                          {d.discount_label}
+                        </span>
+                      </div>
+                    )}
+                    <div className="px-4 py-3">
+                      <p
+                        className="c-kicker truncate"
+                        style={{
+                          fontSize: 9,
+                          letterSpacing: "0.16em",
+                          color: "var(--ink-strong)",
+                          opacity: 0.65,
+                        }}
+                      >
+                        {d.business_name.toUpperCase()}
+                      </p>
+                      <p
+                        className="c-card-t mt-1 line-clamp-2"
+                        style={{
+                          fontSize: 14,
+                          lineHeight: 1.2,
+                          color: "var(--ink-strong)",
+                        }}
+                      >
+                        {d.title}
+                      </p>
+                      {d.promo_code && (
+                        <div
+                          className="mt-2.5 px-2 py-1 text-center"
+                          style={{
+                            background: "var(--paper)",
+                            border: "2px dashed var(--rule-strong-c)",
+                          }}
+                        >
+                          <span
+                            className="font-mono"
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              color: "var(--gold-c)",
+                            }}
+                          >
+                            {d.promo_code}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* § ON THE MENU — food vendors (low priority, smaller rail) */}
