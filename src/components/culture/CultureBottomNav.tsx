@@ -19,7 +19,7 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   {
     id: "home",
-    label: "FEED",
+    label: "HOME",
     href: "/",
     match: [/^\/$/, /^\/food/, /^\/events/, /^\/business/, /^\/resources/, /^\/jobs/, /^\/pulse/],
     icon: ({ size = 22, strokeWidth = 1.6 }) => (
