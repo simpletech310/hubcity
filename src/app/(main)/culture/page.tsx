@@ -28,6 +28,8 @@ type Exhibit = {
   description: string | null;
   cover_image_url: string | null;
   wing: string | null;
+  era: string | null;
+  tags: string[] | null;
   is_featured: boolean | null;
 };
 
@@ -116,7 +118,7 @@ export default async function CulturePage({
         .eq("is_published", true)
         .order("is_featured", { ascending: false })
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(14),
     ),
     scope(
       supabase
@@ -315,6 +317,28 @@ export default async function CulturePage({
       className="culture-surface min-h-dvh mx-auto max-w-[430px] relative"
       style={{ paddingBottom: 120 }}
     >
+      {/* City switcher bar — pinned at the very top so the listener
+       *  always knows which city's culture they're reading and can
+       *  swap in one tap. Replaces the small chip we hid below the
+       *  masthead that no one ever saw. */}
+      <div
+        className="px-[18px] pt-3 pb-3 flex items-center justify-between gap-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <span
+          className="c-kicker"
+          style={{
+            fontSize: 10,
+            letterSpacing: "0.18em",
+            color: "var(--ink-strong)",
+            opacity: 0.7,
+          }}
+        >
+          § READING FROM
+        </span>
+        <CityFilterChip align="right" />
+      </div>
+
       {/* Masthead block — title sits on one line at 60px so "CULTURE."
        *  fits a 430px viewport without the typewriter line-break the
        *  legacy CULT— / URE. layout used. */}
@@ -338,7 +362,6 @@ export default async function CulturePage({
           Printed weekly from {city.name}. The music, the food, the fits, the
           streets. Edited by the block, for the block.
         </p>
-        <div className="mt-3"><CityFilterChip /></div>
       </div>
 
       {/* Marquee */}
@@ -463,6 +486,140 @@ export default async function CulturePage({
             </div>
           </div>
         </div>
+      )}
+
+      {/* § THE LONGREADS — editorial stack of every other exhibit
+       *  rendered as a magazine spread (cover + kicker + headline +
+       *  italic teaser + read affordance). Skips the feature already
+       *  rendered above and the two used inside the Reading Room. */}
+      {exhibits.length > 3 && (
+        <section className="px-[18px] pb-7">
+          <div
+            className="flex items-baseline gap-3 pb-2 mb-5"
+            style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+          >
+            <span
+              className="c-kicker"
+              style={{ fontSize: 10, letterSpacing: "0.18em", opacity: 0.7 }}
+            >
+              § THE LONGREADS
+            </span>
+            <span
+              className="c-badge c-badge-gold tabular-nums ml-auto"
+              style={{ fontSize: 9 }}
+            >
+              {exhibits.length - 3} {exhibits.length - 3 === 1 ? "STORY" : "STORIES"}
+            </span>
+          </div>
+          <div className="space-y-7">
+            {exhibits.slice(3).map((e, i) => {
+              const num = String(i + 3).padStart(2, "0");
+              const minutes = Math.max(
+                4,
+                Math.min(14, Math.round((e.description?.length ?? 800) / 220)),
+              );
+              return (
+                <Link
+                  key={e.id}
+                  href={`/culture/exhibits/${e.slug || e.id}`}
+                  className="block press"
+                >
+                  <div
+                    className="c-kicker"
+                    style={{
+                      fontSize: 9,
+                      letterSpacing: "0.18em",
+                      color: "var(--ink-strong)",
+                      opacity: 0.6,
+                    }}
+                  >
+                    № {num} · {(e.wing ?? e.tags?.[0] ?? "LONGREAD").toString().toUpperCase()}
+                    {" · "}
+                    {minutes} MIN
+                  </div>
+                  <h3
+                    className="c-hero mt-1.5"
+                    style={{
+                      fontSize: 30,
+                      lineHeight: 0.95,
+                      letterSpacing: "-0.012em",
+                      color: "var(--ink-strong)",
+                    }}
+                  >
+                    {e.title.toUpperCase()}.
+                  </h3>
+                  <div
+                    className="relative w-full overflow-hidden mt-3"
+                    style={{
+                      aspectRatio: "3 / 2",
+                      background: "var(--ink-strong)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    {e.cover_image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={e.cover_image_url}
+                        alt={e.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full c-ph" aria-hidden />
+                    )}
+                    {e.era && (
+                      <span
+                        className="absolute top-2 left-2 c-badge c-badge-gold"
+                        style={{ fontSize: 9 }}
+                      >
+                        § {e.era}
+                      </span>
+                    )}
+                  </div>
+                  {e.description && (
+                    <p
+                      className="c-serif-it mt-3"
+                      style={{
+                        fontSize: 14,
+                        lineHeight: 1.5,
+                        color: "var(--ink-strong)",
+                        opacity: 0.85,
+                      }}
+                    >
+                      {e.description.slice(0, 220)}
+                      {e.description.length > 220 ? "…" : ""}
+                    </p>
+                  )}
+                  <div
+                    className="mt-3 flex items-center justify-between gap-3"
+                    style={{ borderTop: "1px solid var(--rule-c)", paddingTop: 10 }}
+                  >
+                    <span
+                      className="c-kicker"
+                      style={{
+                        fontSize: 9,
+                        letterSpacing: "0.18em",
+                        color: "var(--ink-strong)",
+                        opacity: 0.6,
+                      }}
+                    >
+                      HUB CITY EDITORS
+                    </span>
+                    <span
+                      className="c-kicker"
+                      style={{
+                        fontSize: 10,
+                        letterSpacing: "0.18em",
+                        color: "var(--gold-c)",
+                      }}
+                    >
+                      READ →
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
       )}
 
       {/* Reading Room 2x2 asymmetric */}
