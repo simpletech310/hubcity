@@ -179,10 +179,21 @@ export default async function CreatorsPage({
   const posts = (postsRes.data ?? []) as CreatorPost[];
   const reels = (reelsRes.data ?? []) as CreatorReel[];
   const channels = (channelsRes.data ?? []) as CreatorChannel[];
-  type CreatorAlbum = { id: string; slug: string; title: string; cover_art_url: string | null; creator_id: string };
+  type CreatorAlbum = { id: string; slug: string; title: string; cover_art_url: string | null; creator_id: string; release_date?: string | null };
   type CreatorGalleryImage = { id: string; image_url: string; caption: string | null; owner_id: string };
   const albums = (albumsRes.data ?? []) as CreatorAlbum[];
   const galleryImages = (galleryRes.data ?? []) as CreatorGalleryImage[];
+
+  type HotPoster = {
+    id: string;
+    kind: "track" | "film" | "art";
+    title: string;
+    image: string | null;
+    creator_handle: string | null;
+    creator_name: string | null;
+    href: string;
+    sort_ts: number;
+  };
 
   const channelIds = channels.map((c) => c.id);
   let videos: CreatorVideo[] = [];
@@ -222,6 +233,64 @@ export default async function CreatorsPage({
   }
   const creatorById = new Map<string, CreatorProfile>();
   for (const c of creators) creatorById.set(c.id, c);
+
+  // Unified "Hot Right Now" poster feed — songs (albums), films (channel
+  // videos), and art (gallery images) interleaved by recency. Each tile
+  // is a 2:3 magazine-style poster with a kind chip and creator
+  // attribution. Posters tap into the canonical detail page for that
+  // medium so the rail doubles as discovery.
+  const hotPosters: HotPoster[] = [];
+  for (const a of albums) {
+    if (!a.cover_art_url) continue;
+    const c = creatorById.get(a.creator_id);
+    hotPosters.push({
+      id: `track:${a.id}`,
+      kind: "track",
+      title: a.title,
+      image: a.cover_art_url,
+      creator_handle: c?.handle ?? null,
+      creator_name: c?.display_name ?? null,
+      href: `/frequency/album/${a.slug}`,
+      sort_ts: a.release_date ? new Date(a.release_date).getTime() : 0,
+    });
+  }
+  for (const v of videos) {
+    const ch = channels.find((c) => c.id === v.channel_id);
+    const c = ch ? creatorById.get(ch.owner_id) : null;
+    const thumb =
+      v.thumbnail_url ??
+      (v.mux_playback_id
+        ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=400&height=600&time=5&fit_mode=smartcrop`
+        : null);
+    if (!thumb) continue;
+    hotPosters.push({
+      id: `film:${v.id}`,
+      kind: "film",
+      title: v.title,
+      image: thumb,
+      creator_handle: c?.handle ?? null,
+      creator_name: c?.display_name ?? null,
+      href: `/live/watch/${v.id}`,
+      // Videos already came back ordered by published_at desc; assign
+      // a descending pseudo-timestamp so order is preserved when mixed.
+      sort_ts: Date.now() - videos.indexOf(v) * 1000,
+    });
+  }
+  for (const g of galleryImages) {
+    const c = creatorById.get(g.owner_id);
+    if (!c?.handle) continue;
+    hotPosters.push({
+      id: `art:${g.id}`,
+      kind: "art",
+      title: g.caption?.slice(0, 60) || `${c.display_name} — work`,
+      image: g.image_url,
+      creator_handle: c.handle,
+      creator_name: c.display_name,
+      href: `/user/${c.handle}`,
+      sort_ts: Date.now() - galleryImages.indexOf(g) * 500,
+    });
+  }
+  hotPosters.sort((a, b) => b.sort_ts - a.sort_ts);
 
   const albumsByCreator = new Map<string, CreatorAlbum[]>();
   for (const a of albums) {
@@ -730,8 +799,8 @@ export default async function CreatorsPage({
         </section>
       )}
 
-      {/* ── № 01 · HOT RIGHT NOW — reels + videos strip ─────────── */}
-      {(reels.length > 0 || videos.length > 0) && (
+      {/* ── № 01 · HOT RIGHT NOW — poster grid: songs / films / art ─ */}
+      {hotPosters.length > 0 && (
         <section className="mt-7 mb-7">
           <div className="px-5 mb-4">
             <div
@@ -748,18 +817,18 @@ export default async function CreatorsPage({
                 HOT RIGHT NOW
               </span>
               <Link
-                href="/reels"
+                href="/frequency"
                 className="ml-auto c-kicker"
                 style={{ fontSize: 9, color: "var(--gold-c)" }}
               >
-                ALL REELS ↗
+                ALL CULTURE ↗
               </Link>
             </div>
             <p
               className="c-serif-it mt-2"
               style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.6 }}
             >
-              The newest drops across reels and channels — playing tonight.
+              Latest songs, films, and artwork from the city.
             </p>
           </div>
 
@@ -767,199 +836,78 @@ export default async function CreatorsPage({
             className="flex overflow-x-auto scrollbar-hide gap-3 pb-2"
             style={{ paddingLeft: 20, paddingRight: 20 }}
           >
-            {/* Reels — tall 9:16 tiles */}
-            {reels.slice(0, 8).map((reel) => {
-              const creator = creatorById.get(reel.author_id);
+            {hotPosters.slice(0, 12).map((poster) => {
+              const KIND_LABEL: Record<HotPoster["kind"], string> = {
+                track: "TRACK",
+                film: "FILM",
+                art: "ART",
+              };
               return (
                 <Link
-                  key={reel.id}
-                  href="/reels"
+                  key={poster.id}
+                  href={poster.href}
                   className="shrink-0 press"
-                  style={{ width: 132 }}
+                  style={{ width: 140 }}
                 >
                   <div
                     className="relative overflow-hidden"
                     style={{
-                      aspectRatio: "9/16",
+                      aspectRatio: "2 / 3",
                       background: "var(--ink-strong)",
                       border: "2px solid var(--rule-strong-c)",
                     }}
                   >
-                    {reel.poster_url && (
+                    {poster.image && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={reel.poster_url}
-                        alt=""
+                        src={poster.image}
+                        alt={poster.title}
                         className="w-full h-full object-cover"
                       />
                     )}
-                    {/* Ink vignette */}
+                    {/* Bottom-up ink wash so the title pops */}
                     <div
                       className="absolute inset-0"
                       style={{
                         background:
-                          "linear-gradient(180deg, rgba(26,21,18,0.35) 0%, transparent 40%, rgba(26,21,18,0.75) 100%)",
+                          "linear-gradient(180deg, rgba(26,21,18,0.25) 0%, transparent 35%, rgba(26,21,18,0.85) 100%)",
                       }}
                     />
-                    {/* REEL chip */}
-                    <div
-                      className="absolute top-1.5 left-1.5 inline-flex items-center gap-1 px-1.5"
-                      style={{
-                        background: "var(--paper)",
-                        border: "1.5px solid var(--rule-strong-c)",
-                        height: 15,
-                      }}
+                    {/* Kind chip — top-left */}
+                    <span
+                      className="absolute top-2 left-2 c-badge c-badge-gold"
+                      style={{ fontSize: 9, padding: "3px 7px" }}
                     >
-                      <span
+                      § {KIND_LABEL[poster.kind]}
+                    </span>
+                    {/* Bottom block — title + creator */}
+                    <div className="absolute inset-x-0 bottom-0 p-2">
+                      <p
+                        className="c-card-t line-clamp-2"
                         style={{
-                          width: 4,
-                          height: 4,
-                          background: "var(--gold-c)",
-                          display: "inline-block",
-                        }}
-                      />
-                      <span className="c-kicker" style={{ fontSize: 7 }}>
-                        REEL
-                      </span>
-                    </div>
-                    {/* Play tile */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div
-                        className="flex items-center justify-center"
-                        style={{
-                          width: 36,
-                          height: 36,
-                          background: "var(--gold-c)",
-                          border: "2px solid var(--paper)",
-                          boxShadow: "2px 2px 0 rgba(0,0,0,0.35)",
+                          fontSize: 11,
+                          lineHeight: 1.15,
+                          color: "var(--paper)",
+                          letterSpacing: "0.005em",
                         }}
                       >
-                        <svg width="11" height="11" fill="var(--ink-strong)" viewBox="0 0 10 10">
-                          <polygon points="3,2 9,5 3,8" />
-                        </svg>
-                      </div>
-                    </div>
-                    {/* Creator name bottom */}
-                    {creator && (
-                      <div className="absolute bottom-0 inset-x-0 p-2">
+                        {poster.title}
+                      </p>
+                      {poster.creator_handle && (
                         <p
-                          className="c-kicker"
-                          style={{ fontSize: 9, color: "var(--paper)", opacity: 0.95 }}
+                          className="c-kicker mt-1"
+                          style={{
+                            fontSize: 8,
+                            letterSpacing: "0.16em",
+                            color: "var(--gold-c)",
+                            opacity: 0.95,
+                          }}
                         >
-                          @{creator.handle}
+                          @{poster.creator_handle}
                         </p>
-                      </div>
-                    )}
-                    {/* Like count */}
-                    {reel.like_count > 0 && (
-                      <div
-                        className="absolute top-1.5 right-1.5 inline-flex items-center gap-0.5 px-1"
-                        style={{
-                          background: "rgba(26,21,18,0.7)",
-                          height: 14,
-                        }}
-                      >
-                        <svg width="8" height="8" viewBox="0 0 24 24" fill="var(--gold-c)">
-                          <path d="M12 21s-8-4.5-8-10.5a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 6-8 10.5-8 10.5z" />
-                        </svg>
-                        <span className="c-kicker" style={{ fontSize: 7, color: "var(--paper)" }}>
-                          {reel.like_count >= 1000
-                            ? `${(reel.like_count / 1000).toFixed(1)}k`
-                            : reel.like_count}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </Link>
-              );
-            })}
-
-            {/* Videos — 16:9 tiles, wider */}
-            {videos.slice(0, 5).map((v) => {
-              const ch = channels.find((c) => c.id === v.channel_id);
-              const creator = ch ? creatorById.get(ch.owner_id) : null;
-              const thumb =
-                v.thumbnail_url ??
-                (v.mux_playback_id
-                  ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=320&height=180&time=5`
-                  : null);
-              return (
-                <Link
-                  key={v.id}
-                  href={`/live/watch/${v.id}`}
-                  className="shrink-0 press"
-                  style={{ width: 220 }}
-                >
-                  <div
-                    className="relative overflow-hidden"
-                    style={{
-                      aspectRatio: "16/9",
-                      background: "var(--ink-strong)",
-                      border: "2px solid var(--rule-strong-c)",
-                    }}
-                  >
-                    {thumb && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={thumb} alt={v.title} className="w-full h-full object-cover" />
-                    )}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background:
-                          "linear-gradient(180deg, transparent 45%, rgba(26,21,18,0.82) 100%)",
-                      }}
-                    />
-                    {/* Play tile */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div
-                        className="flex items-center justify-center"
-                        style={{
-                          width: 40,
-                          height: 40,
-                          background: "var(--gold-c)",
-                          border: "2px solid var(--paper)",
-                          boxShadow: "2px 2px 0 rgba(0,0,0,0.35)",
-                        }}
-                      >
-                        <svg width="12" height="12" fill="var(--ink-strong)" viewBox="0 0 10 10">
-                          <polygon points="3,2 9,5 3,8" />
-                        </svg>
-                      </div>
+                      )}
                     </div>
-                    {/* Duration */}
-                    {v.duration && (
-                      <div
-                        className="absolute bottom-1.5 right-1.5 px-1.5 c-kicker"
-                        style={{
-                          background: "rgba(0,0,0,0.78)",
-                          color: "#fff",
-                          fontSize: 9,
-                        }}
-                      >
-                        {Math.floor(v.duration / 60)}:
-                        {Math.floor(v.duration % 60)
-                          .toString()
-                          .padStart(2, "0")}
-                      </div>
-                    )}
-                    {/* Creator */}
-                    {creator && (
-                      <div className="absolute bottom-1.5 left-2">
-                        <p
-                          className="c-kicker"
-                          style={{ fontSize: 9, color: "var(--paper)", opacity: 0.9 }}
-                        >
-                          @{creator.handle}
-                        </p>
-                      </div>
-                    )}
                   </div>
-                  <p
-                    className="c-card-t mt-1.5 line-clamp-2"
-                    style={{ fontSize: 12, color: "var(--ink-strong)", lineHeight: 1.25 }}
-                  >
-                    {v.title}
-                  </p>
                 </Link>
               );
             })}

@@ -162,12 +162,14 @@ export default function ReelsViewer({
         ))}
       </div>
 
-      {/* Top header — printed label on translucent ink gradient */}
-      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 z-20 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(26,21,18,0.6) 0%, rgba(26,21,18,0.2) 60%, transparent 100%)",
-        }}
+      {/* Floating BACK button — sits at z-[80] so it stays above the
+       *  top gradient (z-20), the per-reel engagement icons (no
+       *  explicit z), and the global top nav (sticky z-50). The
+       *  bigger pt-safe wrapper keeps the button clear of iOS notches
+       *  and Chrome's address-bar fade. */}
+      <div
+        className="absolute top-0 left-0 z-[80] pointer-events-none"
+        style={{ paddingTop: "max(12px, env(safe-area-inset-top, 0px))", paddingLeft: 12 }}
       >
         <button
           onClick={() => {
@@ -190,22 +192,25 @@ export default function ReelsViewer({
           }}
           className="inline-flex items-center gap-1.5 press pointer-events-auto"
           style={{
-            height: 32,
-            padding: "0 12px 0 10px",
+            height: 36,
+            padding: "0 14px 0 11px",
             background: "var(--gold-c)",
             border: "2px solid var(--ink-strong)",
             color: "var(--ink-strong)",
             fontFamily: "var(--font-archivo), Archivo, sans-serif",
             fontWeight: 800,
-            fontSize: 11,
+            fontSize: 12,
             letterSpacing: "0.16em",
             textTransform: "uppercase",
+            // The button casts a shadow against the live video so it
+            // always reads regardless of the underlying frame.
+            boxShadow: "0 2px 8px rgba(0,0,0,0.35)",
           }}
           aria-label="Back"
         >
           <svg
-            width="14"
-            height="14"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -217,6 +222,21 @@ export default function ReelsViewer({
           </svg>
           BACK
         </button>
+      </div>
+
+      {/* Top header — printed label on translucent ink gradient.
+       *  Kept below the BACK button (z-20 < z-80) so it doesn't
+       *  swallow the click. */}
+      <div className="absolute top-0 left-0 right-0 flex items-center justify-between p-3 z-20 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(26,21,18,0.6) 0%, rgba(26,21,18,0.2) 60%, transparent 100%)",
+        }}
+      >
+        {/* Spacer where the back button visually sits (button is now
+         *  hoisted into its own z-[80] wrapper above so it never gets
+         *  eaten by overlays). */}
+        <div style={{ width: 100, height: 36 }} aria-hidden="true" />
         <div
           className="inline-flex items-center gap-1.5 px-2 pointer-events-none"
           style={{
