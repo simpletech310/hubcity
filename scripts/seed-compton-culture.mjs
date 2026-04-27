@@ -45,10 +45,10 @@ const img = (file) =>
 const EXHIBITS = [
   {
     slug: "voices-of-compton",
-    title: "Voices of Compton",
-    subtitle: "Fifty years of community organizing",
+    title: "Proud Origins",
+    subtitle: "Come with the flag of your origin",
     description:
-      "A spring exhibition built from oral histories, photographs, and field recordings spanning fifty years of Compton organizing — from the housing battles of the 1970s to today's youth-led mutual-aid networks. Curated in partnership with families across the city.",
+      "A spring exhibition built around the Compton Museum's Proud Origins Walk — fifty years of oral histories, photographs, and field recordings from the families that made this city. Spanning the housing battles of the 1970s, the immigrant-led mutual-aid networks of the 1990s, and the youth-led organizing of today. Curated in partnership with families across Compton, who were asked one question: where does your block come from?",
     curator_note:
       "We let the city tell its own story this season. The wall texts are quotes — not curators.",
     era: "1975 — Present",

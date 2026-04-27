@@ -301,16 +301,8 @@ export default async function CulturePage({
     "ART · ON THE WALLS",
   ];
 
-  // Split feature title across two/three lines (uppercase)
-  const featureTitleRaw = feature?.title ?? "CULTURE ON THE BLOCK";
-  const featureWords = featureTitleRaw.toUpperCase().split(/\s+/);
-  const featureLines: string[] = (() => {
-    if (featureWords.length <= 1) return featureWords;
-    if (featureWords.length === 2) return featureWords;
-    // 3+ words: try to break evenly
-    const mid = Math.ceil(featureWords.length / 2);
-    return [featureWords.slice(0, mid).join(" "), featureWords.slice(mid).join(" ")];
-  })();
+  // Feature longread title (uppercased + . terminator at render time)
+  const featureTitleRaw = feature?.title ?? "Culture on the block";
 
   return (
     <div
@@ -388,14 +380,13 @@ export default async function CulturePage({
           <div className="c-kicker mb-2.5">§ HERITAGE · LONGREAD</div>
           <h2
             className="c-display"
-            style={{ fontSize: 66, lineHeight: 0.82 }}
+            style={{
+              fontSize: 44,
+              lineHeight: 0.92,
+              letterSpacing: "-0.012em",
+            }}
           >
-            {featureLines.map((line, i) => (
-              <span key={i}>
-                {line}
-                {i < featureLines.length - 1 && <br />}
-              </span>
-            ))}
+            {featureTitleRaw.toUpperCase()}.
           </h2>
           {feature.description && (
             <p
