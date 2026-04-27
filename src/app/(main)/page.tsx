@@ -733,17 +733,11 @@ export default async function HomePage({
         </section>
       )}
 
-      {/* § TRENDING */}
+      {/* § TRENDING — header sits below the moments inside <TrendingStrip> */}
       {(trendingReels.length > 0 || trendingEvents.length > 0) && (
-        <section>
-          <div className="px-[18px] pt-6">
-            <div className="c-kicker">§ TRENDING NOW</div>
-          </div>
-          <div className="px-[18px]">
-            <div className="c-rule mt-2 mb-3" />
-          </div>
+        <div className="pt-4">
           <TrendingStrip reels={trendingReels} events={trendingEvents} />
-        </section>
+        </div>
       )}
 
       {/* Live on the Block — LiveNowBanner in ink block */}

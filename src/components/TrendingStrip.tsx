@@ -46,27 +46,10 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
 
   return (
     <section>
-      {/* Header row — DM Mono kicker on paper with a bottom ink rule */}
+      {/* Horizontal scroll container — moments + events scroll above the
+       *  § TRENDING NOW · WHAT'S HOT ↗ caption row that sits underneath. */}
       <div
-        className="flex items-center justify-between px-[18px] pb-2"
-        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-      >
-        <span className="c-kicker" style={{ opacity: 0.7 }}>
-          § TRENDING NOW
-        </span>
-        <Link
-          href="/reels"
-          className="c-kicker inline-flex items-center gap-1"
-          style={{ color: "var(--gold-c)" }}
-        >
-          <Icon name="trending" size={10} />
-          WHAT&rsquo;S HOT ↗
-        </Link>
-      </div>
-
-      {/* Horizontal scroll container */}
-      <div
-        className="flex overflow-x-auto scrollbar-hide px-[18px] py-3"
+        className="flex overflow-x-auto scrollbar-hide px-[18px] pt-3 pb-2"
         style={{ gap: 10 }}
       >
         {/* Reel cards (104 px wide, 9/16 aspect) */}
@@ -279,6 +262,25 @@ export default function TrendingStrip({ reels, events }: TrendingStripProps) {
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* Caption row — sits beneath the scroller. § TRENDING NOW on the
+       *  left, gold WHAT'S HOT ↗ link to the moments page on the right. */}
+      <div
+        className="flex items-center justify-between px-[18px] py-2"
+        style={{ borderTop: "2px solid var(--rule-strong-c)" }}
+      >
+        <span className="c-kicker" style={{ opacity: 0.7 }}>
+          § TRENDING NOW
+        </span>
+        <Link
+          href="/reels"
+          className="c-kicker inline-flex items-center gap-1"
+          style={{ color: "var(--gold-c)" }}
+        >
+          <Icon name="trending" size={10} />
+          WHAT&rsquo;S HOT ↗
+        </Link>
       </div>
     </section>
   );
