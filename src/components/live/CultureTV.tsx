@@ -140,25 +140,36 @@ function timeAgo(dateStr: string) {
 }
 
 /**
- * Stable shuffle for the Explore grid. Uses a date-keyed seed so the
- * tile order is consistent for the duration of a render but feels
- * fresh across visits — picks `n` tiles weighted toward variety
- * across kinds (event/shop/deal/exhibit).
+ * Pick `n` tiles for the Explore grid, balanced across kinds so the
+ * grid never clusters all-events or all-shops on a small data set.
+ * Each bucket is Fisher-Yates shuffled before round-robin picking,
+ * so the same input list yields a different visible 6 on every
+ * call — the ExploreRail relies on this for its 2-minute refresh
+ * and on-mount re-pick.
  */
 function pickRandomExplore<T extends { kind: string }>(
   list: T[],
   n: number,
 ): T[] {
-  if (list.length <= n) return list;
-  // Bucket by kind so we don't get all-events or all-shops on a
-  // small data set — round-robin pulls keep the grid mixed.
+  if (list.length === 0) return [];
   const buckets = new Map<string, T[]>();
   for (const t of list) {
     const arr = buckets.get(t.kind) ?? [];
     arr.push(t);
     buckets.set(t.kind, arr);
   }
+  for (const arr of buckets.values()) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
   const order = Array.from(buckets.values());
+  // Shuffle the bucket order too so "events" doesn't always lead.
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
   const out: T[] = [];
   let idx = 0;
   while (out.length < n) {
@@ -241,24 +252,21 @@ export default function CultureTV({
   musicVideos = [],
   exploreTiles = [],
 }: CultureTVProps) {
-  // ── Scope gating: hide local channels/videos unless address-verified ──
-  const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
-    if (!c) return false;
-    // Culture TV Live is always visible (even though scope=national, it's our flagship)
-    if ((c as unknown as { slug?: string }).slug === "knect-tv-live") return true;
-    if (c.scope === "national") return true;
-    if (c.scope === "local") return isVerified;
-    // Legacy rows with no scope: treat by type
-    if (c.type && LOCAL_CHANNEL_TYPES.includes(c.type)) return isVerified;
-    return true;
-  };
-  const channels = allChannels.filter((c) => c.slug !== "knect-tv-live" && visible(c));
+  // ── Scope gating retired ───────────────────────────────────────
+  // Originally every `scope=local` channel/video was hidden until
+  // the listener verified their Compton address. That was too
+  // aggressive — most platform channels (Fene310, Adiz, the rest of
+  // the local creators) live at scope=local and the rail looked
+  // nearly empty for unverified users. Now ALL active channels
+  // show in the main rails; the "Compton Local" bubble strip above
+  // stays verified-only so members still get a perk for verifying.
+  const channels = allChannels.filter((c) => c.slug !== "knect-tv-live");
   const localChannels = allChannels.filter(
     (c) => c.scope === "local" || (c.type && LOCAL_CHANNEL_TYPES.includes(c.type))
   );
-  const featuredVideos = allFeaturedVideos.filter((v) => !v.channel || visible(v.channel));
-  const recentVideos = allRecentVideos.filter((v) => !v.channel || visible(v.channel));
-  const timeBlocks = allTimeBlocks.filter((tb) => !tb.channel || visible(tb.channel));
+  const featuredVideos = allFeaturedVideos;
+  const recentVideos = allRecentVideos;
+  const timeBlocks = allTimeBlocks;
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabId>("home");
   // What video LiveSimulatedPlayer is currently on-air with. Null while
@@ -1346,146 +1354,30 @@ export default function CultureTV({
           )}
 
           {/* ── Explore — what's happening around the city.
-                Heterogeneous tiles (events / shops / deals / exhibits)
-                routed through the same destinations the home Explore
-                rail uses, so the listener doesn't dead-end on a
-                "verify your address" wall. ── */}
+                Heterogeneous tiles routed through the same
+                destinations the home Explore rail uses. Render is
+                client-paced so the picks freshen on every visit
+                + every 2 minutes while the page stays open. ── */}
           {exploreTiles.length > 0 && (
-            <section className="mb-8">
-              <div className="px-5 mb-3">
-                <div
-                  className="flex items-baseline gap-3 pb-2"
-                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-                >
-                  <span
-                    className="c-kicker"
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: "0.18em",
-                      color: "var(--ink-strong)",
-                      opacity: 0.7,
-                    }}
-                  >
-                    § EXPLORE
-                  </span>
-                  <span
-                    className="c-serif-it"
-                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
-                  >
-                    Things to do.
-                  </span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 px-5">
-                {pickRandomExplore(exploreTiles, 6).map((tile) => (
-                  <Link
-                    key={tile.id}
-                    href={tile.href}
-                    className="block press relative overflow-hidden"
-                    style={{
-                      aspectRatio: "1 / 1",
-                      background: "var(--ink-strong)",
-                      border: "2px solid var(--rule-strong-c)",
-                    }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={tile.image}
-                      alt={tile.title}
-                      className="absolute inset-0 w-full h-full object-cover"
-                    />
-                    <span
-                      className="absolute top-1.5 left-1.5 c-kicker"
-                      style={{
-                        fontSize: 8,
-                        letterSpacing: "0.14em",
-                        background:
-                          tile.kind === "deal"
-                            ? "var(--gold-c)"
-                            : tile.kind === "event" || tile.kind === "exhibit"
-                              ? "var(--ink-strong)"
-                              : "var(--paper)",
-                        color:
-                          tile.kind === "deal" || tile.kind === "shop"
-                            ? "var(--ink-strong)"
-                            : "var(--gold-c)",
-                        padding: "2px 5px",
-                        border:
-                          tile.kind === "shop"
-                            ? "1px solid var(--rule-strong-c)"
-                            : undefined,
-                      }}
-                    >
-                      {tile.label}
-                    </span>
-                    <div
-                      className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2"
-                      style={{
-                        background:
-                          "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.92) 100%)",
-                      }}
-                    >
-                      <p
-                        className="c-card-t line-clamp-2"
-                        style={{
-                          fontSize: 12,
-                          color: "var(--paper)",
-                          lineHeight: 1.2,
-                        }}
-                      >
-                        {tile.title}
-                      </p>
-                      {tile.meta && (
-                        <p
-                          className="c-meta line-clamp-1"
-                          style={{
-                            fontSize: 9,
-                            color: "var(--paper)",
-                            opacity: 0.78,
-                          }}
-                        >
-                          {tile.meta}
-                        </p>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
+            <ExploreRail tiles={exploreTiles} />
           )}
 
-          {/* ── Featured · single elevated poster hero, then a thin
-                row of supporting features. Replaces the legacy
-                horizontal scroll so the lead pick reads as a real
-                editorial cover instead of one tile in a strip. ── */}
+          {/* ── Featured · single elevated VERTICAL poster hero,
+                then a thin row of supporting features. Heading uses
+                the same § kicker / Anton-display title pattern as
+                the cinema rails (Comedy / Action) so the section
+                visually rhymes with the rest of the page. ── */}
           {featuredVideos.length > 0 && (
             <section className="mb-8">
-              <div className="px-5 mb-3">
-                <div
-                  className="flex items-baseline gap-3 pb-2"
-                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-                >
-                  <span
-                    className="c-kicker"
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: "0.18em",
-                      color: "var(--ink-strong)",
-                      opacity: 0.7,
-                    }}
-                  >
-                    § FEATURED
-                  </span>
-                  <span
-                    className="c-serif-it"
-                    style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
-                  >
-                    Hand-picked this week.
-                  </span>
-                </div>
-              </div>
+              <SectionRailHeader
+                kicker="FEATURED"
+                title="Hand-picked"
+                accent={`§ ${featuredVideos.length}`}
+              />
 
-              {/* Lead poster — full width 16:9 with editorial gold rule */}
+              {/* Lead poster — vertical 2:3 so the full movie poster
+                  is visible without cropping. Centered in a column
+                  to keep the rest of the page rhythm intact. */}
               <div className="px-5">
                 <FeaturedHeroCard
                   video={featuredVideos[0]}
@@ -1493,10 +1385,10 @@ export default function CultureTV({
                 />
               </div>
 
-              {/* Supporting features (2..n) → thin 3-col grid below.
-                  Hidden when only one featured video exists. */}
+              {/* Supporting features (2..n) → thin 3-col grid below
+                  the hero. Hidden when only one featured exists. */}
               {featuredVideos.length > 1 && (
-                <div className="mt-3 px-5 grid grid-cols-3 gap-2.5">
+                <div className="mt-4 px-5 grid grid-cols-3 gap-2.5">
                   {featuredVideos.slice(1, 7).map((v) => (
                     <FeaturedSupportTile
                       key={v.id}
@@ -1534,36 +1426,11 @@ export default function CultureTV({
                 rest. The "View all" footer routes into the dedicated
                 CHANNELS tab so the rail stays compact. ── */}
           <section className="mb-8">
-            <div className="px-5 mb-3">
-              <div
-                className="flex items-baseline gap-3 pb-2"
-                style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-              >
-                <span
-                  className="c-kicker"
-                  style={{
-                    fontSize: 10,
-                    letterSpacing: "0.18em",
-                    color: "var(--ink-strong)",
-                    opacity: 0.7,
-                  }}
-                >
-                  § CHANNELS
-                </span>
-                <span
-                  className="c-serif-it"
-                  style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.7 }}
-                >
-                  By Compton, for Compton.
-                </span>
-                <span
-                  className="c-badge c-badge-gold tabular-nums ml-auto"
-                  style={{ fontSize: 9 }}
-                >
-                  {channels.length} ON AIR
-                </span>
-              </div>
-            </div>
+            <SectionRailHeader
+              kicker="CHANNELS"
+              title="By Compton, for Compton"
+              accent={`§ ${channels.length} ON AIR`}
+            />
             <div className="px-5">
               <div className="grid grid-cols-3 gap-2.5">
                 {sortChannelsForRail(channels)
@@ -1574,13 +1441,21 @@ export default function CultureTV({
               </div>
               {channels.length > 9 && (
                 <button
-                  onClick={() => setActiveTab("channels")}
+                  onClick={() => {
+                    setActiveTab("channels");
+                    // Scroll back to the top of the page so the user
+                    // lands on the channels tab list, not deep in the
+                    // place they were when they clicked VIEW ALL.
+                    if (typeof window !== "undefined") {
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }
+                  }}
                   className="press w-full mt-3 py-2.5 c-kicker text-center"
                   style={{
-                    background: "var(--paper)",
+                    background: "var(--ink-strong)",
                     border: "2px solid var(--rule-strong-c)",
-                    color: "var(--ink-strong)",
-                    fontSize: 10,
+                    color: "var(--gold-c)",
+                    fontSize: 11,
                     letterSpacing: "0.18em",
                   }}
                 >
@@ -1590,33 +1465,15 @@ export default function CultureTV({
             </div>
           </section>
 
-          {/* ── Recently Added ── */}
+          {/* ── Recently Added — matches the cinema-rail heading
+                pattern (kicker + Anton title + accent). ── */}
           {recentVideos.length > 0 && (
             <section className="mb-8">
-              <div className="px-5 mb-3">
-                <div
-                  className="flex items-baseline gap-3 pb-2"
-                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-                >
-                  <span
-                    className="c-kicker"
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: "0.18em",
-                      color: "var(--ink-strong)",
-                      opacity: 0.7,
-                    }}
-                  >
-                    § RECENTLY ADDED
-                  </span>
-                  <span
-                    className="c-badge c-badge-ink tabular-nums ml-auto"
-                    style={{ fontSize: 9 }}
-                  >
-                    {Math.min(10, recentVideos.length)} OF {recentVideos.length}
-                  </span>
-                </div>
-              </div>
+              <SectionRailHeader
+                kicker="RECENTLY ADDED"
+                title="Fresh drops"
+                accent={`§ ${Math.min(10, recentVideos.length)} OF ${recentVideos.length}`}
+              />
               <div className="flex gap-3 px-5 overflow-x-auto scrollbar-hide pb-2">
                 {recentVideos.slice(0, 10).map((video) => (
                   <VideoCardSmall key={video.id} video={video} onPlay={() => playVideo(video)} />
@@ -2699,6 +2556,13 @@ function VerticalPosterRail({
                     fontSize: 11,
                     color: "var(--ink-strong)",
                     lineHeight: 1.2,
+                    // Long titles like "Spider-Man: Across the Spider-
+                    // Verse" used to bust the 132px tile because
+                    // line-clamp won't break unbreakable hyphenated
+                    // tokens. `anywhere` gives the wrapper permission
+                    // to break inside the word as a last resort.
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
                   }}
                 >
                   {v.title}
@@ -2733,10 +2597,10 @@ function sortChannelsForRail<T extends Channel>(channels: T[]): T[] {
 }
 
 /**
- * Featured hero — single big editorial poster card. 16:9 thumbnail
- * with a gold play disc, kicker badge, and gradient legibility wash.
- * Replaces the legacy horizontal scroll of medium "Featured" cards
- * so the lead pick reads as the magazine's lead photo.
+ * Featured hero — single VERTICAL poster card (2:3 aspect, full
+ * movie-poster visible without cropping). Bigger Anton-display
+ * title beneath, mirroring the cinema-rail typography. Replaces
+ * the legacy 16:9 hero so cinema posters read like cinema posters.
  */
 function FeaturedHeroCard({
   video,
@@ -2745,10 +2609,12 @@ function FeaturedHeroCard({
   video: ChannelVideo;
   onPlay: () => void;
 }) {
-  const thumb =
+  // Vertical poster source — prefer thumbnail_url (curated poster art);
+  // fall back to a smartcrop Mux thumbnail at 2:3.
+  const poster =
     video.thumbnail_url ||
     (video.mux_playback_id
-      ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=900&height=506&fit_mode=smartcrop`
+      ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=600&height=900&fit_mode=smartcrop`
       : null);
   return (
     <button
@@ -2757,24 +2623,25 @@ function FeaturedHeroCard({
       style={{
         background: "var(--paper)",
         border: "3px solid var(--rule-strong-c)",
+        boxShadow: "4px 4px 0 var(--rule-strong-c)",
       }}
     >
       <div
         className="relative overflow-hidden"
-        style={{ aspectRatio: "16 / 9", background: "var(--ink-strong)" }}
+        style={{ aspectRatio: "2 / 3", background: "var(--ink-strong)" }}
       >
-        {thumb ? (
+        {poster ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={thumb}
+            src={poster}
             alt={video.title}
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <svg
-              width="48"
-              height="48"
+              width="56"
+              height="56"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -2790,7 +2657,7 @@ function FeaturedHeroCard({
         <div className="absolute top-3 left-3 flex items-center gap-2">
           <span
             className="c-badge c-badge-gold"
-            style={{ fontSize: 9, letterSpacing: "0.18em" }}
+            style={{ fontSize: 10, letterSpacing: "0.18em", padding: "3px 7px" }}
           >
             FEATURED
           </span>
@@ -2826,29 +2693,22 @@ function FeaturedHeroCard({
           </div>
         )}
 
-        {/* Gradient + center play disc */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.0) 50%, rgba(26,21,18,0.85) 100%)",
-          }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
+        {/* Center play disc */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
-            className="w-16 h-16 flex items-center justify-center group-hover:scale-105 transition-transform"
+            className="w-20 h-20 flex items-center justify-center group-hover:scale-105 transition-transform"
             style={{
               background: "var(--gold-c)",
               border: "3px solid var(--ink-strong)",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.45)",
             }}
           >
             <svg
-              width="22"
-              height="22"
+              width="26"
+              height="26"
               viewBox="0 0 24 24"
               fill="var(--ink-strong)"
-              style={{ marginLeft: 3 }}
+              style={{ marginLeft: 4 }}
             >
               <polygon points="5 3 19 12 5 21 5 3" />
             </svg>
@@ -2856,19 +2716,29 @@ function FeaturedHeroCard({
         </div>
       </div>
 
-      {/* Caption strip */}
-      <div className="px-4 py-3" style={{ borderTop: "2px solid var(--rule-strong-c)" }}>
+      {/* Caption strip — Anton-display title to match the cinema
+          rails (Comedy / Action / Drama). overflow-wrap:anywhere
+          guarantees a long colon-titled poster name like
+          "Spider-Man: Across the Spider-Verse" can never bust the
+          card edge. */}
+      <div
+        className="px-4 py-3.5"
+        style={{ borderTop: "3px solid var(--rule-strong-c)" }}
+      >
         <h3
-          className="c-card-t line-clamp-2"
+          className="c-hero line-clamp-2"
           style={{
-            fontSize: 16,
-            lineHeight: 1.18,
+            fontSize: 26,
+            lineHeight: 1.02,
+            letterSpacing: "-0.01em",
             color: "var(--ink-strong)",
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
           }}
         >
           {video.title}
         </h3>
-        <div className="flex items-center gap-1.5 mt-1">
+        <div className="flex items-center gap-1.5 mt-1.5">
           {video.channel?.name && (
             <span
               className="c-kicker"
@@ -2957,6 +2827,8 @@ function FeaturedSupportTile({
           fontSize: 11,
           lineHeight: 1.2,
           color: "var(--ink-strong)",
+          overflowWrap: "anywhere",
+          wordBreak: "break-word",
         }}
       >
         {video.title}
@@ -3049,5 +2921,181 @@ function ChannelTileLarge({ channel: ch }: { channel: Channel }) {
         </div>
       </div>
     </Link>
+  );
+}
+
+/**
+ * Shared section rail header — kicker line + Anton-display title +
+ * right-aligned accent label (count or tagline). Replaces the
+ * one-off "§ FEATURED" / "§ RECENTLY ADDED" / "§ CHANNELS" headers
+ * so every rail on /live shares a single typographic system that
+ * matches the cinema rails (Comedy / Action / Drama).
+ */
+function SectionRailHeader({
+  kicker,
+  title,
+  accent,
+}: {
+  kicker: string;
+  title: string;
+  accent?: string;
+}) {
+  return (
+    <div className="px-5 mb-3">
+      <div
+        className="flex items-baseline gap-3 pb-2"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <span
+          className="c-display c-tabnum"
+          style={{
+            fontSize: 22,
+            color: "var(--gold-c)",
+            lineHeight: 1,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          §
+        </span>
+        <div className="flex flex-col min-w-0">
+          <span
+            className="c-kicker"
+            style={{ fontSize: 10, letterSpacing: "0.18em" }}
+          >
+            {kicker}
+          </span>
+          <span
+            className="c-hero"
+            style={{
+              fontSize: 22,
+              color: "var(--ink-strong)",
+              lineHeight: 1,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {title}
+          </span>
+        </div>
+        {accent && (
+          <span
+            className="ml-auto c-serif-it tabular-nums shrink-0"
+            style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.55 }}
+          >
+            {accent}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Explore rail — heterogeneous "Things to Do" tiles. Re-shuffles
+ * the visible 6 on mount and again every 2 minutes the page stays
+ * open. Kind-balanced (round-robins event/shop/deal/exhibit) so
+ * the grid never clusters one category. The shuffle is
+ * client-only; the server-rendered tile list stays stable so
+ * SEO/crawlers see consistent content.
+ */
+function ExploreRail({ tiles }: { tiles: ExploreTile[] }) {
+  const [picks, setPicks] = useState<ExploreTile[]>(() =>
+    pickRandomExplore(tiles, 6),
+  );
+  // Re-shuffle on mount (so the picks differ from the SSR set the
+  // user just saw) + every 2 minutes the tab stays open.
+  useEffect(() => {
+    setPicks(pickRandomExplore(tiles, 6));
+    const id = setInterval(
+      () => setPicks(pickRandomExplore(tiles, 6)),
+      120_000,
+    );
+    return () => clearInterval(id);
+  }, [tiles]);
+
+  return (
+    <section className="mb-8">
+      <SectionRailHeader
+        kicker="EXPLORE"
+        title="Things to do"
+        accent="§ THIS WEEK"
+      />
+      <div className="grid grid-cols-2 gap-2.5 px-5">
+        {picks.map((tile) => (
+          <Link
+            key={tile.id}
+            href={tile.href}
+            className="block press relative overflow-hidden"
+            style={{
+              aspectRatio: "1 / 1",
+              background: "var(--ink-strong)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tile.image}
+              alt={tile.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <span
+              className="absolute top-1.5 left-1.5 c-kicker"
+              style={{
+                fontSize: 8,
+                letterSpacing: "0.14em",
+                background:
+                  tile.kind === "deal"
+                    ? "var(--gold-c)"
+                    : tile.kind === "event" || tile.kind === "exhibit"
+                      ? "var(--ink-strong)"
+                      : "var(--paper)",
+                color:
+                  tile.kind === "deal" || tile.kind === "shop"
+                    ? "var(--ink-strong)"
+                    : "var(--gold-c)",
+                padding: "2px 5px",
+                border:
+                  tile.kind === "shop"
+                    ? "1px solid var(--rule-strong-c)"
+                    : undefined,
+              }}
+            >
+              {tile.label}
+            </span>
+            <div
+              className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.92) 100%)",
+              }}
+            >
+              <p
+                className="c-card-t line-clamp-2"
+                style={{
+                  fontSize: 12,
+                  color: "var(--paper)",
+                  lineHeight: 1.2,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
+                }}
+              >
+                {tile.title}
+              </p>
+              {tile.meta && (
+                <p
+                  className="c-meta line-clamp-1"
+                  style={{
+                    fontSize: 9,
+                    color: "var(--paper)",
+                    opacity: 0.78,
+                  }}
+                >
+                  {tile.meta}
+                </p>
+              )}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
