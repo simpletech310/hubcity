@@ -107,7 +107,6 @@ export default async function CulturePage({
     exhibitCountRes,
     galleryCountRes,
     peopleCountRes,
-    libraryCountRes,
     creatorPool,
   ] = await Promise.all([
     scope(
@@ -159,12 +158,6 @@ export default async function CulturePage({
     scope(
       supabase
         .from("notable_people")
-        .select("id", { count: "exact", head: true })
-        .eq("is_published", true),
-    ),
-    scope(
-      supabase
-        .from("library_items")
         .select("id", { count: "exact", head: true })
         .eq("is_published", true),
     ),
@@ -227,7 +220,6 @@ export default async function CulturePage({
     exhibits: exhibitCountRes.count ?? 0,
     gallery: galleryCountRes.count ?? 0,
     people: peopleCountRes.count ?? 0,
-    library: libraryCountRes.count ?? 0,
   };
 
   // Feature the first exhibit as the hero longread
@@ -285,13 +277,14 @@ export default async function CulturePage({
     });
   }
 
-  // Sections list (navigation rail)
+  // Sections list (navigation rail) — Library was retired so the
+  // page focuses on exhibits, gallery, people, history, calendar,
+  // and historic landmarks.
   const sections = [
     { href: "/culture/exhibits", label: "EXHIBITS", meta: counts.exhibits ? `${counts.exhibits} ON VIEW` : "NEW" },
     { href: "/culture/gallery", label: "GALLERY", meta: counts.gallery ? `${counts.gallery} PIECES` : "COLLECTION" },
     { href: "/culture/people", label: "PEOPLE", meta: counts.people ? `${counts.people} FIGURES` : "LEGENDS" },
     { href: "/culture/history", label: "HISTORY", meta: `${city.name.toUpperCase()} TIMELINE` },
-    { href: "/culture/library", label: "LIBRARY", meta: counts.library ? `${counts.library} READS` : "BOOKS" },
     { href: "/culture/events", label: "EVENTS", meta: "CULTURAL CALENDAR" },
     { href: "/culture/landmarks", label: "LANDMARKS", meta: "HISTORIC SITES" },
   ];
