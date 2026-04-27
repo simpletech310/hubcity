@@ -333,100 +333,393 @@ export default function CultureTV({
     );
   }
 
-  // ── Inline Video Player ──────────────────────────────────
+  // ── Inline Video Player — editorial Hub City styling ────────
   if (playingVideo && playingVideo.mux_playback_id) {
     return (
       <div className="animate-fade-in">
-        <div className="flex items-center gap-3 px-5 pt-4 mb-4">
-          <button onClick={() => setPlayingVideo(null)} className="w-9 h-9 rounded-full bg-white/[0.06] border border-border-subtle flex items-center justify-center text-txt-secondary press hover:text-white transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-bold text-base truncate">{playingVideo.title}</h1>
-          </div>
-        </div>
-        <div className="px-5 mb-4">
-          <div
-            className="overflow-hidden"
-            style={{ border: "2px solid var(--rule-strong-c)" }}
+        {/* Sticky black/gold back header — matches /live/watch */}
+        <div
+          className="sticky top-0 z-30 flex items-center gap-3 px-4 py-2.5"
+          style={{
+            background: "var(--ink-strong)",
+            borderBottom: "2px solid var(--gold-c)",
+            color: "var(--paper)",
+          }}
+        >
+          <button
+            onClick={() => setPlayingVideo(null)}
+            className="w-9 h-9 flex items-center justify-center press shrink-0"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--paper)",
+              color: "var(--ink-strong)",
+            }}
+            aria-label="Back"
           >
-            <MuxPlayer playbackId={playingVideo.mux_playback_id} streamType="on-demand" autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: playingVideo.title, viewer_user_id: userId || "anon" }} />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div
+            className="c-kicker"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.18em" }}
+          >
+            § ON AIR · WATCH
           </div>
         </div>
-        <div className="px-5 space-y-3">
-          <h2 className="font-heading font-bold text-lg">{playingVideo.title}</h2>
+
+        {/* Full-bleed player */}
+        <div
+          className="overflow-hidden"
+          style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+        >
+          <MuxPlayer
+            playbackId={playingVideo.mux_playback_id}
+            streamType="on-demand"
+            autoPlay
+            accentColor="#F2A900"
+            style={{ aspectRatio: "16/9", width: "100%" }}
+            metadata={{
+              video_title: playingVideo.title,
+              viewer_user_id: userId || "anon",
+            }}
+          />
+        </div>
+
+        {/* Title + meta — paper-warm slab */}
+        <div
+          style={{
+            padding: "14px 18px",
+            background: "var(--paper-warm)",
+            borderBottom: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <h2
+            className="c-card-t mb-2"
+            style={{ fontSize: 17, lineHeight: 1.15, color: "var(--ink-strong)" }}
+          >
+            {playingVideo.title}
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="c-meta" style={{ fontSize: 11 }}>
+              {formatViews(playingVideo.view_count)} views
+            </span>
+            {playingVideo.published_at && (
+              <>
+                <span className="c-meta" style={{ opacity: 0.4 }}>·</span>
+                <span className="c-meta" style={{ fontSize: 11 }}>
+                  {timeAgo(playingVideo.published_at)}
+                </span>
+              </>
+            )}
+            {playingVideo.duration && (
+              <>
+                <span className="c-meta" style={{ opacity: 0.4 }}>·</span>
+                <span className="c-meta" style={{ fontSize: 11 }}>
+                  {formatDuration(playingVideo.duration)}
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Channel + description */}
+        <div className="px-[18px] py-4 space-y-4">
           {playingVideo.channel && (
-            <Link href={`/live/channel/${playingVideo.channel.id}`} className="flex items-center gap-2 press">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-royal to-hc-purple flex items-center justify-center text-gold font-heading text-[10px] font-bold overflow-hidden">
+            <Link
+              href={`/live/channel/${playingVideo.channel.id}`}
+              className="flex items-center gap-3 press"
+              style={{
+                padding: "10px 12px",
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div
+                className="w-10 h-10 overflow-hidden flex items-center justify-center shrink-0"
+                style={{
+                  background: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--gold-c)",
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 11,
+                }}
+              >
                 {playingVideo.channel.avatar_url ? (
-                  <img src={playingVideo.channel.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : channelInitials(playingVideo.channel.name)}
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={playingVideo.channel.avatar_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  channelInitials(playingVideo.channel.name)
+                )}
               </div>
-              <span className="text-sm text-txt-secondary">{playingVideo.channel.name}</span>
+              <div className="min-w-0">
+                <p
+                  className="c-kicker"
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: "0.16em",
+                    color: "var(--ink-strong)",
+                    opacity: 0.65,
+                  }}
+                >
+                  CHANNEL
+                </p>
+                <p
+                  className="c-card-t truncate"
+                  style={{ fontSize: 14, color: "var(--ink-strong)", marginTop: 2 }}
+                >
+                  {playingVideo.channel.name}
+                </p>
+              </div>
+              <span
+                className="ml-auto c-kicker"
+                style={{
+                  fontSize: 10,
+                  color: "var(--gold-c)",
+                  letterSpacing: "0.16em",
+                }}
+              >
+                VISIT →
+              </span>
             </Link>
           )}
-          <div className="flex items-center gap-3 text-[11px] text-txt-secondary">
-            <span>{formatViews(playingVideo.view_count)} views</span>
-            {playingVideo.published_at && <span>· {timeAgo(playingVideo.published_at)}</span>}
-            {playingVideo.duration && <span>· {formatDuration(playingVideo.duration)}</span>}
-          </div>
-          {playingVideo.description && <p className="text-sm text-txt-secondary leading-relaxed">{playingVideo.description}</p>}
 
-          {/* Up Next */}
-          {recentVideos.length > 1 && (
-            <div className="pt-4 border-t border-border-subtle">
-              <h3 className="font-heading font-bold text-sm mb-3">Up Next</h3>
-              <div className="space-y-3">
-                {recentVideos.filter(v => v.id !== playingVideo.id).slice(0, 5).map((video) => (
-                  <VideoCardRow key={video.id} video={video} onPlay={() => playVideo(video)} />
-                ))}
-              </div>
-            </div>
+          {playingVideo.description && (
+            <p
+              className="c-body"
+              style={{
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: "var(--ink-strong)",
+                opacity: 0.85,
+              }}
+            >
+              {playingVideo.description}
+            </p>
           )}
         </div>
+
+        {/* Up Next — editorial kicker + numbered rows */}
+        {recentVideos.length > 1 && (
+          <div className="px-[18px] pt-4 pb-8">
+            <div className="flex items-baseline gap-3 mb-3">
+              <span
+                className="c-kicker"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "var(--ink-strong)",
+                  opacity: 0.7,
+                }}
+              >
+                § UP NEXT
+              </span>
+              <span className="ml-auto rule-hairline flex-1 self-center" />
+            </div>
+            <div className="space-y-3">
+              {recentVideos
+                .filter((v) => v.id !== playingVideo.id)
+                .slice(0, 5)
+                .map((video) => (
+                  <VideoCardRow
+                    key={video.id}
+                    video={video}
+                    onPlay={() => playVideo(video)}
+                  />
+                ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  // ── Watching Live Stream ─────────────────────────────────
+  // ── Watching Live Stream — editorial Hub City styling ───────
   if (watchingStream && watchingStream.mux_playback_id) {
     return (
       <div className="animate-fade-in">
-        <div className="flex items-center gap-3 px-5 pt-4 mb-4">
-          <button onClick={() => setWatchingStream(null)} className="w-9 h-9 rounded-full bg-white/[0.06] border border-border-subtle flex items-center justify-center text-txt-secondary press hover:text-white transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-          </button>
-          <div className="flex-1 min-w-0">
-            <h1 className="font-heading font-bold text-base truncate">{watchingStream.title}</h1>
-          </div>
-          {watchingStream.status === "active" && <Badge label="LIVE" variant="coral" shine />}
-        </div>
-        <div className="px-5 mb-4">
-          <div
-            className="overflow-hidden"
-            style={{ border: "2px solid var(--rule-strong-c)" }}
+        {/* Sticky black/gold back header */}
+        <div
+          className="sticky top-0 z-30 flex items-center gap-3 px-4 py-2.5"
+          style={{
+            background: "var(--ink-strong)",
+            borderBottom: "2px solid var(--gold-c)",
+            color: "var(--paper)",
+          }}
+        >
+          <button
+            onClick={() => setWatchingStream(null)}
+            className="w-9 h-9 flex items-center justify-center press shrink-0"
+            style={{
+              background: "var(--gold-c)",
+              border: "2px solid var(--paper)",
+              color: "var(--ink-strong)",
+            }}
+            aria-label="Back"
           >
-            <MuxPlayer playbackId={watchingStream.mux_playback_id} streamType={watchingStream.status === "active" ? "live" : "on-demand"} autoPlay accentColor="#F2A900" style={{ aspectRatio: "16/9", width: "100%" }} metadata={{ video_title: watchingStream.title, viewer_user_id: userId || "anon" }} />
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div
+            className="c-kicker flex-1"
+            style={{ fontSize: 10, color: "var(--gold-c)", letterSpacing: "0.18em" }}
+          >
+            § ON AIR · LIVE
           </div>
+          {watchingStream.status === "active" && (
+            <span
+              className="c-badge c-badge-live inline-flex items-center gap-1.5"
+            >
+              <span
+                className="inline-block animate-pulse"
+                style={{ width: 6, height: 6, background: "#fff" }}
+              />
+              LIVE
+            </span>
+          )}
         </div>
-        <div className="px-5 space-y-3">
-          <h2 className="font-heading font-bold text-lg">{watchingStream.title}</h2>
+
+        {/* Full-bleed player */}
+        <div
+          className="overflow-hidden"
+          style={{ borderBottom: "3px solid var(--rule-strong-c)" }}
+        >
+          <MuxPlayer
+            playbackId={watchingStream.mux_playback_id}
+            streamType={watchingStream.status === "active" ? "live" : "on-demand"}
+            autoPlay
+            accentColor="#F2A900"
+            style={{ aspectRatio: "16/9", width: "100%" }}
+            metadata={{
+              video_title: watchingStream.title,
+              viewer_user_id: userId || "anon",
+            }}
+          />
+        </div>
+
+        {/* Title + viewer count — paper-warm slab */}
+        <div
+          style={{
+            padding: "14px 18px",
+            background: "var(--paper-warm)",
+            borderBottom: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <h2
+            className="c-card-t mb-2"
+            style={{ fontSize: 17, lineHeight: 1.15, color: "var(--ink-strong)" }}
+          >
+            {watchingStream.title}
+          </h2>
+          {watchingStream.viewer_count > 0 && (
+            <p
+              className="c-meta"
+              style={{
+                fontSize: 11,
+                color: "var(--ink-strong)",
+                opacity: 0.75,
+              }}
+            >
+              <span style={{ color: "var(--red-c, #c0392b)", fontWeight: 800 }}>
+                {watchingStream.viewer_count}
+              </span>{" "}
+              {watchingStream.viewer_count === 1 ? "viewer" : "viewers"} tuned in
+            </p>
+          )}
+        </div>
+
+        {/* Creator + description */}
+        <div className="px-[18px] py-4 space-y-4">
           {watchingStream.creator && (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-coral to-coral flex items-center justify-center text-[10px] font-bold text-white overflow-hidden">
+            <div
+              className="flex items-center gap-3"
+              style={{
+                padding: "10px 12px",
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+              }}
+            >
+              <div
+                className="w-10 h-10 overflow-hidden flex items-center justify-center shrink-0"
+                style={{
+                  background: "var(--ink-strong)",
+                  border: "2px solid var(--rule-strong-c)",
+                  color: "var(--gold-c)",
+                  fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                  fontWeight: 800,
+                  fontSize: 13,
+                }}
+              >
                 {watchingStream.creator.avatar_url ? (
-                  <img src={watchingStream.creator.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : watchingStream.creator.display_name?.[0]?.toUpperCase() || "?"}
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={watchingStream.creator.avatar_url}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  watchingStream.creator.display_name?.[0]?.toUpperCase() || "?"
+                )}
               </div>
-              <span className="text-sm text-txt-secondary">{watchingStream.creator.display_name}</span>
-              {watchingStream.viewer_count > 0 && (
-                <span className="text-[11px] text-txt-secondary ml-auto">
-                  <span className="text-coral font-bold">{watchingStream.viewer_count}</span> watching
-                </span>
-              )}
+              <div className="min-w-0">
+                <p
+                  className="c-kicker"
+                  style={{
+                    fontSize: 9,
+                    letterSpacing: "0.16em",
+                    color: "var(--ink-strong)",
+                    opacity: 0.65,
+                  }}
+                >
+                  STREAMING NOW
+                </p>
+                <p
+                  className="c-card-t truncate"
+                  style={{ fontSize: 14, color: "var(--ink-strong)", marginTop: 2 }}
+                >
+                  {watchingStream.creator.display_name}
+                </p>
+              </div>
             </div>
           )}
-          {watchingStream.description && <p className="text-sm text-txt-secondary">{watchingStream.description}</p>}
+
+          {watchingStream.description && (
+            <p
+              className="c-body"
+              style={{
+                fontSize: 14,
+                lineHeight: 1.55,
+                color: "var(--ink-strong)",
+                opacity: 0.85,
+              }}
+            >
+              {watchingStream.description}
+            </p>
+          )}
           {watchingStream.status === "active" && (
             <div
               className="p-4 flex items-center gap-3"
