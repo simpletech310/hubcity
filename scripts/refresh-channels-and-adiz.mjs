@@ -86,28 +86,25 @@ async function adizPolish() {
     }
   }
 
-  // Westside Party cover (PNG) → post-images bucket.
+  // Westside Party cover (PNG) → post-images bucket. Uploaded for
+  // archival but NOT wired into albums.cover_art_url or
+  // channel_videos.thumbnail_url — the source PNG is 1697x930 (wide
+  // music-video frame) and doesn't crop into the 1:1 FEATURED SINGLE
+  // hero on /frequency. The square (930x930) cover is managed by
+  // scripts/upload-westside-square-cover.mjs and lives at
+  // adizthebam/westside-party-cover-square.png. Don't re-wire here or
+  // the wide version will overwrite it.
   const coverPath = join(ADIZ_FOLDER, WESTSIDE_COVER_FILE);
   if (statSync(coverPath).size > 0) {
-    const coverUrl = await uploadFile(
+    await uploadFile(
       "post-images",
       "adizthebam/westside-party-cover.png",
       coverPath,
       "image/png",
     );
-    if (coverUrl) {
-      // Album cover (frequency) + channel_video thumbnail (live) all
-      // point at this single asset so /frequency and /live agree.
-      await supabase
-        .from("albums")
-        .update({ cover_art_url: coverUrl })
-        .eq("slug", "westside-party");
-      await supabase
-        .from("channel_videos")
-        .update({ thumbnail_url: coverUrl })
-        .eq("mux_playback_id", "EaCHsgmWo7xkN00Pun5uVna7Bb02FzUDtZTY01q00NqRXAg");
-      console.log(`  ✓ Westside Party cover wired (${coverUrl})`);
-    }
+    console.log(
+      `  ✓ Westside Party (wide) cover archived — square version stays wired`,
+    );
   }
 }
 

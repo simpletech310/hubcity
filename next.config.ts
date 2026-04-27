@@ -2,6 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    // Vercel's free-tier image-optimization quota is finite, and at
+    // demo scale (~thousands of seeded posts/events/business covers)
+    // we've been blowing through it — `/_next/image` starts returning
+    // HTTP 402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED, which renders
+    // every <Image> as a broken thumbnail. Bypassing optimization
+    // ships the source URLs straight through. We trade webp/avif +
+    // responsive resizing for actually-rendering images, which is the
+    // right call until the project is on a paid Vercel tier.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

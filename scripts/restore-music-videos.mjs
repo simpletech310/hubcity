@@ -34,8 +34,10 @@ const supabase = createClient(
 );
 
 const MUSIC_TAG = "[hub-music-rail]";
+// Square (930x930) cover — the original 1697x930 PNG didn't crop nicely
+// into the 1:1 FEATURED SINGLE hero. See scripts/upload-westside-square-cover.mjs.
 const WESTSIDE_COVER =
-  "https://fahqtnwwikvocpvvfgqi.supabase.co/storage/v1/object/public/post-images/adizthebam/westside-party-cover.png";
+  "https://fahqtnwwikvocpvvfgqi.supabase.co/storage/v1/object/public/post-images/adizthebam/westside-party-cover-square.png";
 
 async function findChannel(slug) {
   const { data } = await supabase

@@ -813,6 +813,12 @@ export default async function BusinessDetailPage({
                 key={svc.id}
                 style={{
                   display: "flex",
+                  // Add-ons block below uses `flexBasis: 100%` to push
+                  // itself to a new row under the service name + price.
+                  // Without flexWrap, all three children fight for the
+                  // same row and the add-ons get squeezed to a single
+                  // character wide. Wrap fixes the layout cleanly.
+                  flexWrap: "wrap",
                   alignItems: "baseline",
                   gap: 12,
                   padding: "14px 0",
