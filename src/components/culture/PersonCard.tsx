@@ -1,17 +1,15 @@
 import Link from "next/link";
-import Badge from "@/components/ui/Badge";
-import Icon from "@/components/ui/Icon";
 import type { NotablePerson, NotablePersonCategory } from "@/types/database";
 
-const categoryBadge: Record<NotablePersonCategory, { label: string; variant: "gold" | "emerald" | "cyan" | "coral" | "purple" }> = {
-  music: { label: "Music", variant: "gold" },
-  sports: { label: "Sports", variant: "emerald" },
-  politics: { label: "Politics", variant: "purple" },
-  activism: { label: "Activism", variant: "coral" },
-  arts: { label: "Arts", variant: "cyan" },
-  business: { label: "Business", variant: "gold" },
-  education: { label: "Education", variant: "emerald" },
-  other: { label: "Notable", variant: "cyan" },
+const CATEGORY_LABEL: Record<NotablePersonCategory, string> = {
+  music: "MUSIC",
+  sports: "SPORTS",
+  politics: "POLITICS",
+  activism: "ACTIVISM",
+  arts: "ARTS",
+  business: "BUISINESS",
+  education: "EDUCATION",
+  other: "NOTABLE",
 };
 
 interface PersonCardProps {
@@ -19,35 +17,83 @@ interface PersonCardProps {
   compact?: boolean;
 }
 
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+/**
+ * Editorial Hub City PersonCard. Square ink-frame avatar with a gold
+ * Anton-display initial when no portrait — replaces the legacy gray
+ * gradient + Icon ghost that made every portrait-less person tile look
+ * empty. Two modes:
+ *   compact = true → 1:1 explorer-grid tile
+ *   compact = false → 3:4 portrait card with name + title + lifespan
+ *                     beneath in the standard editorial vocabulary.
+ */
 export default function PersonCard({ person, compact = false }: PersonCardProps) {
-  const badge = categoryBadge[person.category] ?? { label: person.category, variant: "gold" as const };
   const lifespan = person.birth_year
     ? person.death_year
       ? `${person.birth_year} – ${person.death_year}`
       : `b. ${person.birth_year}`
     : null;
+  const label = CATEGORY_LABEL[person.category] ?? person.category.toUpperCase();
 
-  // Compact mode: explorer grid tile — portrait fills card, name overlay at bottom
+  // Compact mode — 1:1 tile for the explorer grid
   if (compact) {
     return (
       <Link
         href={`/culture/people/${person.slug}`}
-        className="group relative block aspect-square rounded-xl overflow-hidden"
+        className="group relative block aspect-square overflow-hidden press"
+        style={{
+          background: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
       >
         {person.portrait_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={person.portrait_url}
             alt={person.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center">
-            <Icon name="person" size={40} className="text-txt-secondary" />
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              color: "var(--gold-c)",
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 56,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {initials(person.name)}
           </div>
         )}
-        {/* Bottom gradient + name */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-10 pb-2.5 px-2.5">
-          <p className="font-heading font-bold text-xs text-white leading-tight group-hover:text-gold transition-colors">
+
+        {/* Bottom ink wash + name */}
+        <div
+          className="absolute inset-x-0 bottom-0 px-2 pt-8 pb-2"
+          style={{
+            background:
+              "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.85) 100%)",
+          }}
+        >
+          <p
+            className="c-card-t line-clamp-2"
+            style={{
+              fontSize: 11,
+              lineHeight: 1.15,
+              color: "var(--paper)",
+              letterSpacing: "0.005em",
+            }}
+          >
             {person.name}
           </p>
         </div>
@@ -55,43 +101,92 @@ export default function PersonCard({ person, compact = false }: PersonCardProps)
     );
   }
 
-  // Default mode: full card with badge, title, lifespan
+  // Default — 3:4 portrait card with editorial info block underneath
   return (
     <Link
       href={`/culture/people/${person.slug}`}
-      className="group block rounded-2xl border border-border-subtle bg-white/[0.02] overflow-hidden card-glow transition-all duration-300 hover:border-gold/20"
+      className="group block press"
     >
-      {/* Portrait */}
-      <div className="relative aspect-[3/4] bg-white/5">
+      {/* Portrait frame */}
+      <div
+        className="relative overflow-hidden"
+        style={{
+          aspectRatio: "3 / 4",
+          background: "var(--ink-strong)",
+          border: "2px solid var(--rule-strong-c)",
+        }}
+      >
         {person.portrait_url ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={person.portrait_url}
             alt={person.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-gold/5 to-purple-900/10 flex items-center justify-center">
-            <Icon name="person" size={40} className="text-txt-secondary" />
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{
+              color: "var(--gold-c)",
+              fontFamily: "var(--font-anton), Anton, sans-serif",
+              fontSize: 84,
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            {initials(person.name)}
           </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-midnight via-transparent to-transparent" />
 
-        {/* Category badge */}
-        <div className="absolute top-3 left-3">
-          <Badge label={badge.label} variant={badge.variant} />
-        </div>
+        <span className="absolute top-2 left-2 c-badge c-badge-gold" style={{ fontSize: 9 }}>
+          § {label}
+        </span>
       </div>
 
-      {/* Info */}
-      <div className="p-3 -mt-8 relative z-10">
-        <h3 className="font-heading font-bold text-sm text-white group-hover:text-gold transition-colors">
+      {/* Info block underneath the portrait — editorial paper card */}
+      <div
+        className="px-3 py-3"
+        style={{
+          background: "var(--paper-warm)",
+          border: "2px solid var(--rule-strong-c)",
+          borderTop: "none",
+        }}
+      >
+        <h3
+          className="c-card-t line-clamp-1"
+          style={{
+            fontSize: 14,
+            lineHeight: 1.15,
+            color: "var(--ink-strong)",
+          }}
+        >
           {person.name}
         </h3>
         {person.title && (
-          <p className="text-[11px] text-txt-secondary mt-0.5">{person.title}</p>
+          <p
+            className="c-meta line-clamp-1 mt-1"
+            style={{
+              fontSize: 11,
+              color: "var(--ink-strong)",
+              opacity: 0.75,
+              textTransform: "none",
+            }}
+          >
+            {person.title}
+          </p>
         )}
         {lifespan && (
-          <p className="text-[10px] text-txt-secondary mt-1">{lifespan}</p>
+          <p
+            className="c-kicker mt-1 tabular-nums"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              color: "var(--ink-strong)",
+              opacity: 0.55,
+            }}
+          >
+            {lifespan}
+          </p>
         )}
       </div>
     </Link>
