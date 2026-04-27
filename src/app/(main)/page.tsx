@@ -976,87 +976,30 @@ export default async function HomePage({
             leads with images before the text-heavy Dispatches block.
             Image-heavy mosaic refreshes on every load. */}
       {cultureTiles.length > 0 && (
-        <section className="pt-6">
-          <div className="px-[18px] mb-3">
-            <div
-              className="flex items-baseline gap-3 pb-2"
-              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        <section className="pb-8">
+          <CultureSectionHead
+            kicker="§ CULTURE RIGHT NOW"
+            title="Compton, in Frame."
+          >
+            <Link
+              href="/culture/gallery"
+              className="c-kicker press inline-block mt-1"
+              style={{
+                fontSize: 10,
+                color: "var(--gold-c)",
+                letterSpacing: "0.16em",
+              }}
             >
-              <span
-                className="c-display c-tabnum"
-                style={{
-                  fontSize: 22,
-                  color: "var(--gold-c)",
-                  lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                §
-              </span>
-              <div className="flex flex-col">
-                <span
-                  className="c-kicker"
-                  style={{ fontSize: 10, letterSpacing: "0.18em" }}
-                >
-                  CULTURE RIGHT NOW
-                </span>
-                <span
-                  className="c-serif-it"
-                  style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.65 }}
-                >
-                  Compton, in frame.
-                </span>
-              </div>
-              <Link
-                href="/culture/gallery"
-                className="ml-auto c-kicker press"
-                style={{
-                  fontSize: 9,
-                  color: "var(--gold-c)",
-                  letterSpacing: "0.16em",
-                }}
-              >
-                ALL ↗
-              </Link>
+              ALL ↗
+            </Link>
+          </CultureSectionHead>
+          <div className="px-[18px]">
+            <div className="grid grid-cols-3 gap-2">
+              {pickRandom(cultureTiles, 6).map((t) => (
+                <CultureTileCard key={t.id} tile={t} aspect="1/1" />
+              ))}
             </div>
           </div>
-          {(() => {
-            const picks = pickRandom(cultureTiles, 6);
-            // Mosaic layout: row 1 = 1 wide hero + 2 stacked squares;
-            // row 2 = 3 squares. Falls back to a simple 3-grid if we
-            // somehow get fewer than 4 tiles.
-            const [t0, t1, t2, t3, t4, t5] = picks;
-            if (picks.length < 4) {
-              return (
-                <div className="grid grid-cols-3 gap-2 px-[18px]">
-                  {picks.map((t) => (
-                    <CultureTileCard key={t.id} tile={t} aspect="1/1" />
-                  ))}
-                </div>
-              );
-            }
-            return (
-              <div className="px-[18px] space-y-2">
-                <div className="grid grid-cols-3 gap-2">
-                  {/* Hero spans 2 cols */}
-                  <div className="col-span-2">
-                    <CultureTileCard tile={t0} aspect="4/3" />
-                  </div>
-                  <div className="grid grid-rows-2 gap-2">
-                    <CultureTileCard tile={t1} aspect="2/1" />
-                    <CultureTileCard tile={t2} aspect="2/1" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  {[t3, t4, t5]
-                    .filter((t): t is CultureTile => Boolean(t))
-                    .map((t) => (
-                      <CultureTileCard key={t.id} tile={t} aspect="1/1" />
-                    ))}
-                </div>
-              </div>
-            );
-          })()}
         </section>
       )}
 
@@ -1146,43 +1089,11 @@ export default async function HomePage({
             "Picked for You" + "Local Favorites" rails so the home page
             surfaces the same variety the dedicated category pages do. */}
       {exploreTiles.length > 0 && (
-        <section className="pt-2 pb-6">
-          <div className="px-[18px] mb-3">
-            <div
-              className="flex items-baseline gap-3 pb-2"
-              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
-            >
-              <span
-                className="c-display c-tabnum"
-                style={{
-                  fontSize: 22,
-                  color: "var(--gold-c)",
-                  lineHeight: 1,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                §
-              </span>
-              <div className="flex flex-col">
-                <span
-                  className="c-kicker"
-                  style={{ fontSize: 10, letterSpacing: "0.18em" }}
-                >
-                  EXPLORE
-                </span>
-                <span
-                  className="c-serif-it"
-                  style={{
-                    fontSize: 12,
-                    color: "var(--ink-strong)",
-                    opacity: 0.65,
-                  }}
-                >
-                  Things to do, eat, and find.
-                </span>
-              </div>
-            </div>
-          </div>
+        <section className="pb-6">
+          <CultureSectionHead
+            kicker="§ EXPLORE"
+            title="Things to Do."
+          />
           <div className="grid grid-cols-2 gap-2.5 px-[18px]">
             {pickRandom(exploreTiles, 6).map((tile) => (
               <Link
@@ -1263,114 +1174,6 @@ export default async function HomePage({
                 </div>
               </Link>
             ))}
-          </div>
-        </section>
-      )}
-
-      {/* § DEALS DROPPED — moved down so the home page leads with image
-            content (Culture + Explore) before showing promo codes. */}
-      {activeDeals.length > 0 && (
-        <section>
-          <div className="px-[18px] pt-2">
-            <div className="flex items-baseline gap-3">
-              <span className="c-kicker">§ DEALS DROPPED</span>
-              <span className="ml-auto c-kicker" style={{ opacity: 0.55 }}>
-                {activeDeals.length} ACTIVE
-              </span>
-            </div>
-            <div className="c-rule mt-2 mb-3" />
-          </div>
-          <div className="overflow-x-auto scrollbar-hide pb-2">
-            <div className="flex gap-3 px-[18px]">
-              {pickRandom(activeDeals, 3).map((d) => (
-                <Link
-                  key={d.id}
-                  href={`/business/${d.business_slug}`}
-                  className="shrink-0 w-[230px] press"
-                >
-                  <div
-                    className="overflow-hidden h-full"
-                    style={{
-                      background: "var(--paper-warm)",
-                      border: "2px solid var(--rule-strong-c)",
-                    }}
-                  >
-                    {d.business_cover ? (
-                      <div
-                        className="aspect-[4/3] relative overflow-hidden"
-                        style={{ background: "var(--ink-strong)" }}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={d.business_cover}
-                          alt={d.business_name}
-                          className="absolute inset-0 w-full h-full object-cover"
-                        />
-                        <span
-                          className="c-badge c-badge-gold absolute"
-                          style={{ top: 10, right: 10 }}
-                        >
-                          {d.discount_label}
-                        </span>
-                      </div>
-                    ) : (
-                      <div
-                        className="px-4 pt-4 flex items-center justify-end"
-                        style={{ background: "var(--paper-warm)" }}
-                      >
-                        <span className="c-badge c-badge-gold">
-                          {d.discount_label}
-                        </span>
-                      </div>
-                    )}
-                    <div className="px-4 py-3">
-                      <p
-                        className="c-kicker truncate"
-                        style={{
-                          fontSize: 9,
-                          letterSpacing: "0.16em",
-                          color: "var(--ink-strong)",
-                          opacity: 0.65,
-                        }}
-                      >
-                        {d.business_name.toUpperCase()}
-                      </p>
-                      <p
-                        className="c-card-t mt-1 line-clamp-2"
-                        style={{
-                          fontSize: 14,
-                          lineHeight: 1.2,
-                          color: "var(--ink-strong)",
-                        }}
-                      >
-                        {d.title}
-                      </p>
-                      {d.promo_code && (
-                        <div
-                          className="mt-2.5 px-2 py-1 text-center"
-                          style={{
-                            background: "var(--paper)",
-                            border: "2px dashed var(--rule-strong-c)",
-                          }}
-                        >
-                          <span
-                            className="font-mono"
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 800,
-                              letterSpacing: "0.08em",
-                              color: "var(--gold-c)",
-                            }}
-                          >
-                            {d.promo_code}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
           </div>
         </section>
       )}
