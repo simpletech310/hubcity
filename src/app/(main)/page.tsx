@@ -2,6 +2,7 @@ import Link from "next/link";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
 import TrendingStrip from "@/components/TrendingStrip";
 import type { TrendingReel, TrendingEvent } from "@/components/TrendingStrip";
+import EventSliderHero, { type HeroSlide } from "@/components/home/EventSliderHero";
 import {
   CultureMarquee,
   CultureSectionHead,
@@ -403,39 +404,75 @@ export default async function HomePage({
       : ["TONIGHT ON THE BLOCK", "NEW EVENTS DROPPED", "HUB CITY PRESS"];
   })();
 
-  // Hero poster image + copy
+  // Hero slider — paginated upcoming events + a featured-art / live
+  // stream lead. Each slide renders a magazine-cover spread with
+  // its own kicker, image, title, subtitle, and CTA.
   const topStream = liveStreams?.[0];
-  const heroImage: string | null =
-    featuredArt?.imageUrl ??
-    (topStream?.mux_playback_id
-      ? `https://image.mux.com/${topStream.mux_playback_id}/thumbnail.jpg`
-      : null) ??
-    events?.[0]?.image_url ??
-    trendingReelsRaw?.[0]?.poster_url ??
-    mergedPosts.find((p) => p.image_url)?.image_url ??
-    null;
-  const heroTitleRaw =
-    featuredArt?.title ??
-    topStream?.title ??
-    events?.[0]?.title ??
-    `Hub ${cityName}`;
-  // Split title into 2 stacked Anton lines if possible
-  const heroTitleWords = heroTitleRaw.split(/\s+/);
-  const heroLineBreak = Math.ceil(heroTitleWords.length / 2);
-  const heroLine1 = heroTitleWords.slice(0, heroLineBreak).join(" ");
-  const heroLine2 = heroTitleWords.slice(heroLineBreak).join(" ");
-  const heroSubtitle = featuredArt?.artist
-    ? `By ${featuredArt.artist}`
-    : topStream
-      ? "Live on Hub City now."
-      : events?.[0]?.location_name ?? `${cityName} — the weekly cultural field guide.`;
-  const heroHref = featuredArt?.slug
-    ? `/art/${featuredArt.slug}`
-    : topStream
-      ? `/live/${topStream.id}`
-      : events?.[0]
-        ? `/events/${events[0].id}`
-        : `/culture`;
+  const heroSlides: HeroSlide[] = (() => {
+    const slides: HeroSlide[] = [];
+
+    if (topStream) {
+      slides.push({
+        id: `stream-${topStream.id}`,
+        kicker: "§ LIVE NOW",
+        title: topStream.title,
+        subtitle: "Live on Hub City — open the stream.",
+        meta: "ON AIR · NOW",
+        cta: "WATCH LIVE",
+        href: `/live/${topStream.id}`,
+        imageUrl: topStream.mux_playback_id
+          ? `https://image.mux.com/${topStream.mux_playback_id}/thumbnail.jpg`
+          : null,
+      });
+    }
+
+    if (featuredArt) {
+      slides.push({
+        id: `art-${featuredArt.slug ?? "feature"}`,
+        kicker: "§ FEATURE",
+        title: featuredArt.title,
+        subtitle: featuredArt.artist ? `By ${featuredArt.artist}` : null,
+        meta: "READ · 8 MIN",
+        cta: "OPEN ↗",
+        href: featuredArt.slug ? `/art/${featuredArt.slug}` : "/culture",
+        imageUrl: featuredArt.imageUrl ?? null,
+      });
+    }
+
+    for (const e of (events ?? []).slice(0, 5)) {
+      const d = new Date(e.start_date);
+      const meta = `${d
+        .toLocaleDateString("en-US", { month: "short", day: "2-digit" })
+        .toUpperCase()}${e.location_name ? ` · ${e.location_name.toUpperCase()}` : ""}`;
+      slides.push({
+        id: `event-${e.id}`,
+        kicker: "§ UPCOMING",
+        title: e.title,
+        subtitle: e.location_name
+          ? `Live at ${e.location_name}.`
+          : "Mark the calendar.",
+        meta,
+        cta: "RSVP →",
+        href: `/events/${e.id}`,
+        imageUrl: e.image_url ?? null,
+      });
+    }
+
+    if (slides.length === 0) {
+      slides.push({
+        id: "fallback-culture",
+        kicker: "§ HUB CITY",
+        title: `Hub ${cityName}`,
+        subtitle: `${cityName} — the weekly cultural field guide.`,
+        meta: dateLabel,
+        cta: "OPEN ↗",
+        href: "/culture",
+        imageUrl: null,
+      });
+    }
+
+    return slides.slice(0, 6);
+  })();
 
   // Discover chips (top-level category filter)
   const discoverChips = [
@@ -506,90 +543,102 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* Hero poster — full-bleed 1:1 */}
-      <Link
-        href={heroHref}
-        className="block relative overflow-hidden"
-        style={{ aspectRatio: "1 / 1" }}
-      >
-        {heroImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={heroImage}
-            alt={heroTitleRaw}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 c-ph" aria-hidden />
-        )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, transparent 30%, rgba(26,21,18,0.85) 100%)",
-          }}
-        />
-        <span
-          className="c-badge c-badge-gold absolute"
-          style={{ top: 14, left: 14 }}
-        >
-          § FEATURED
-        </span>
-        <div className="absolute inset-x-0 bottom-0 px-[18px] py-6">
-          <h1
-            style={{
-              fontFamily: "var(--font-anton), Anton, sans-serif",
-              fontSize: 60,
-              lineHeight: 0.82,
-              color: "#F3EEDC",
-              textTransform: "uppercase",
-              letterSpacing: "-0.02em",
-              margin: 0,
-            }}
-          >
-            {heroLine1}
-            {heroLine2 && <br />}
-            {heroLine2}
-          </h1>
-          <p
-            style={{
-              marginTop: 12,
-              maxWidth: "80%",
-              fontSize: 13,
-              color: "#F3EEDC",
-              fontFamily: "var(--font-body), Inter, sans-serif",
-              lineHeight: 1.45,
-              opacity: 0.9,
-            }}
-          >
-            {heroSubtitle}
-          </p>
-          <div className="flex items-center gap-2.5 mt-4">
-            <span
-              style={{
-                padding: "8px 14px",
-                background: "#F3EEDC",
-                color: "#1a1512",
-                fontFamily: "var(--font-archivo), Archivo, sans-serif",
-                fontWeight: 900,
-                fontSize: 11,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-              }}
+      {/* Hero slider — paginated cover of upcoming events + features */}
+      <EventSliderHero slides={heroSlides} />
+
+      {/* § MOMENTS — recent reels as a poster rail. Refreshes
+       *  every page load (force-dynamic) so the home page always
+       *  reflects what listeners just dropped. */}
+      {trendingReels.length > 0 && (
+        <section className="pt-5">
+          <div className="px-[18px] mb-3">
+            <div
+              className="flex items-baseline gap-3 pb-2"
+              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
             >
-              {topStream ? "WATCH LIVE" : featuredArt ? "READ · 8 MIN" : "OPEN ↗"}
-            </span>
-            {featuredArt?.artist && (
               <span
                 className="c-kicker"
-                style={{ color: "rgba(243,238,220,0.7)" }}
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.18em",
+                  color: "var(--ink-strong)",
+                  opacity: 0.7,
+                }}
               >
-                BY {featuredArt.artist.toUpperCase()}
+                § MOMENTS
               </span>
-            )}
+              <span
+                className="c-badge c-badge-gold tabular-nums ml-auto"
+                style={{ fontSize: 9 }}
+              >
+                {trendingReels.length} NEW
+              </span>
+            </div>
           </div>
-        </div>
-      </Link>
+          <div className="overflow-x-auto scrollbar-hide pb-1">
+            <div className="flex gap-2 px-[18px]">
+              {trendingReels.slice(0, 8).map((r) => (
+                <Link
+                  key={r.id}
+                  href={`/moments?r=${r.id}`}
+                  className="shrink-0 press relative overflow-hidden"
+                  style={{
+                    width: 108,
+                    aspectRatio: "9 / 16",
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  {r.poster_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={r.poster_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, transparent 50%, rgba(26,21,18,0.9) 100%)",
+                    }}
+                  />
+                  <div className="absolute inset-x-0 bottom-0 px-2 pb-2">
+                    {r.author?.display_name && (
+                      <p
+                        className="c-kicker truncate"
+                        style={{
+                          fontSize: 8.5,
+                          letterSpacing: "0.16em",
+                          color: "var(--gold-c)",
+                          opacity: 0.95,
+                        }}
+                      >
+                        @{r.author.handle ?? r.author.display_name.toLowerCase().replace(/\s+/g, "")}
+                      </p>
+                    )}
+                    {r.caption && (
+                      <p
+                        className="line-clamp-2 mt-1"
+                        style={{
+                          fontSize: 10,
+                          lineHeight: 1.2,
+                          fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                          fontWeight: 700,
+                          color: "var(--paper)",
+                        }}
+                      >
+                        {r.caption}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* § TONIGHT section */}
       {events && events.length > 0 && (
