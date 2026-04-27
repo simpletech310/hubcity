@@ -155,6 +155,11 @@ interface CultureTVProps {
   followedChannelIds: string[];
   purchasedVideoIds: string[];
   relatedToLive?: RelatedToLiveData | null;
+  /** Category rails — each renders as a vertical-poster strip with
+   *  a kicker + stamped title. Optional; rail hides when empty. */
+  familyVideos?: ChannelVideo[];
+  cartoonVideos?: ChannelVideo[];
+  docVideos?: ChannelVideo[];
 }
 
 export default function CultureTV({
@@ -172,6 +177,9 @@ export default function CultureTV({
   followedChannelIds: initialFollowed,
   purchasedVideoIds,
   relatedToLive = null,
+  familyVideos = [],
+  cartoonVideos = [],
+  docVideos = [],
 }: CultureTVProps) {
   // ── Scope gating: hide local channels/videos unless address-verified ──
   const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
@@ -1032,6 +1040,39 @@ export default function CultureTV({
                 ))}
               </div>
             </section>
+          )}
+
+          {/* ── Family rail (vertical posters) ── */}
+          {familyVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ FAMILY"
+              title="Family Picks"
+              accent="Watch with the whole house."
+              videos={familyVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Cartoons rail (vertical posters) ── */}
+          {cartoonVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ CARTOONS"
+              title="Cartoons & Kids"
+              accent="Saturday-morning energy, all week."
+              videos={cartoonVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Documentaries rail (vertical posters) ── */}
+          {docVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ DOCS"
+              title="Documentaries"
+              accent="The real story, fully sourced."
+              videos={docVideos}
+              onPlay={playVideo}
+            />
           )}
 
           {/* ── Culture Originals ── */}
@@ -2235,5 +2276,156 @@ function TimeBlockCard({ block }: { block: TimeBlock }) {
         </div>
       </div>
     </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// VerticalPosterRail — drop-in section for category-specific
+// rails (Family, Cartoons, Documentaries). Renders 2:3 movie-poster
+// tiles in a horizontal scroll-snap strip with a stamped editorial
+// header. Tapping a tile fires the same `playVideo` callback the
+// rest of the page uses.
+// ─────────────────────────────────────────────────────────────────
+function VerticalPosterRail({
+  kicker,
+  title,
+  accent,
+  videos,
+  onPlay,
+}: {
+  kicker: string;
+  title: string;
+  accent: string;
+  videos: ChannelVideo[];
+  onPlay: (v: ChannelVideo) => void;
+}) {
+  return (
+    <section className="mb-8">
+      <div className="px-5 mb-3">
+        <div
+          className="flex items-baseline gap-3 pb-2"
+          style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+        >
+          <span
+            className="c-display c-tabnum"
+            style={{
+              fontSize: 22,
+              color: "var(--gold-c)",
+              lineHeight: 1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            §
+          </span>
+          <div className="flex flex-col">
+            <span
+              className="c-kicker"
+              style={{ fontSize: 10, letterSpacing: "0.18em" }}
+            >
+              {kicker}
+            </span>
+            <span
+              className="c-hero"
+              style={{
+                fontSize: 22,
+                color: "var(--ink-strong)",
+                lineHeight: 1,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {title}
+            </span>
+          </div>
+          <span
+            className="ml-auto c-serif-it tabular-nums"
+            style={{ fontSize: 11, color: "var(--ink-strong)", opacity: 0.55 }}
+          >
+            {accent}
+          </span>
+        </div>
+      </div>
+      <div className="overflow-x-auto scrollbar-hide pb-2">
+        <div className="flex gap-3 px-5">
+          {videos.map((v) => {
+            const poster =
+              v.thumbnail_url ??
+              (v.mux_playback_id
+                ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=400&height=600&time=5&fit_mode=smartcrop`
+                : null);
+            return (
+              <button
+                key={v.id}
+                onClick={() => onPlay(v)}
+                className="shrink-0 press text-left"
+                style={{ width: 132 }}
+                aria-label={`Play ${v.title}`}
+              >
+                <div
+                  className="relative overflow-hidden"
+                  style={{
+                    aspectRatio: "2/3",
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                    boxShadow: "3px 3px 0 var(--rule-strong-c)",
+                  }}
+                >
+                  {poster ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={poster}
+                      alt={v.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : null}
+                  {/* Subtle bottom gradient so the play affordance sits
+                      legibly even on bright posters. */}
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background:
+                        "linear-gradient(180deg, transparent 55%, rgba(26,21,18,0.55) 100%)",
+                    }}
+                  />
+                  <div
+                    className="absolute"
+                    style={{
+                      bottom: 6,
+                      right: 6,
+                      width: 26,
+                      height: 26,
+                      background: "var(--gold-c)",
+                      border: "2px solid var(--paper)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "2px 2px 0 rgba(0,0,0,0.45)",
+                    }}
+                  >
+                    <svg
+                      width="11"
+                      height="11"
+                      fill="var(--ink-strong)"
+                      viewBox="0 0 10 10"
+                    >
+                      <polygon points="3,1.5 9,5 3,8.5" />
+                    </svg>
+                  </div>
+                </div>
+                <p
+                  className="c-card-t mt-2 line-clamp-2"
+                  style={{
+                    fontSize: 11,
+                    color: "var(--ink-strong)",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {v.title}
+                </p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }

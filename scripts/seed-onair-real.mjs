@@ -41,7 +41,10 @@ const supabase = createClient(
   { auth: { persistSession: false } },
 );
 
-const SEED_TAG = "[hub-cinema-seed]";
+const SEED_TAG_BASE = "[hub-cinema-seed";
+function seedTag(category) {
+  return `${SEED_TAG_BASE}:${category}]`;
+}
 
 // 5 real video Mux assets in the DB — cycled for playback.
 const VIDEO_MUX_IDS = [
@@ -141,7 +144,7 @@ async function wipeSeed() {
   const { data: existing } = await supabase
     .from("channel_videos")
     .select("id")
-    .ilike("description", `%${SEED_TAG}%`);
+    .ilike("description", `%${SEED_TAG_BASE}%`);
   const ids = (existing ?? []).map((r) => r.id);
   if (ids.length > 0) {
     await supabase.from("channel_videos").delete().in("id", ids);
@@ -149,50 +152,53 @@ async function wipeSeed() {
   }
 }
 
-async function seedFilms(channelId) {
-  console.log(`\n[films] seeding ${FILMS.length} into channel "Culture"…`);
-  for (let i = 0; i < FILMS.length; i += 1) {
-    const f = FILMS[i];
-    const cover = await wikipediaPoster(f.wiki);
-    if (!cover) {
-      console.warn(`  ! no iTunes poster for ${f.title} — skipping`);
-      continue;
-    }
-    const mux = pickMuxRotation(i);
-    const { error } = await supabase.from("channel_videos").insert({
-      channel_id: channelId,
-      title: f.title,
-      description: `${f.description}\n\n${SEED_TAG}`,
-      video_type: i === 0 ? "featured" : "on_demand",
-      mux_playback_id: mux.playback,
-      mux_asset_id: mux.asset,
-      duration: mux.duration,
-      thumbnail_url: cover,
-      status: "ready",
-      is_published: true,
-      is_featured: i < 2,
-      published_at: new Date(Date.now() - i * 86400000).toISOString(),
-    });
-    if (error) console.warn(`  ! ${f.title}: ${error.message}`);
-    else console.log(`  ✓ ${f.title} (${f.year})`);
-  }
-}
+// ── Family Shows + Movies (kid + family friendly) ──────────────────
+const FAMILY = [
+  { title: "Encanto", year: "2021", wiki: "Encanto", description: "Disney's Madrigal-family magic-realism musical, set in the Colombian mountains." },
+  { title: "Spider-Man: Across the Spider-Verse", year: "2023", wiki: "Spider-Man:_Across_the_Spider-Verse", description: "Sony Animation — Miles Morales meets the Spider-Society. Shameik Moore + Hailee Steinfeld." },
+  { title: "Soul", year: "2020", wiki: "Soul_(2020_film)", description: "Pixar — a middle-school music teacher gets the most unexpected jazz gig of his life." },
+  { title: "Inside Out 2", year: "2024", wiki: "Inside_Out_2", description: "Pixar — Riley turns 13 and a whole new crew of emotions takes the headquarters." },
+  { title: "Moana 2", year: "2024", wiki: "Moana_2", description: "Disney — Moana sails further than any wayfinder before her, with Maui in tow." },
+  { title: "Frozen II", year: "2019", wiki: "Frozen_II", description: "Disney — Anna and Elsa head into the unknown to save Arendelle." },
+  { title: "The Lion King", year: "2019", wiki: "The_Lion_King_(2019_film)", description: "Photoreal CGI remake of the 1994 classic — Donald Glover, Beyoncé, James Earl Jones." },
+  { title: "Sing", year: "2016", wiki: "Sing_(2016_American_film)", description: "Illumination's all-animal singing competition — Matthew McConaughey runs the theater." },
+  { title: "Akeelah and the Bee", year: "2006", wiki: "Akeelah_and_the_Bee", description: "Inglewood 11-year-old Akeelah Anderson sets her sights on the Scripps Spelling Bee." },
+  { title: "The Hate U Give", year: "2018", wiki: "The_Hate_U_Give_(film)", description: "Adapted from Angie Thomas's novel — Amandla Stenberg as Starr Carter." },
+];
 
-async function seedShows(channelId) {
-  console.log(`\n[shows] seeding ${SHOWS.length} into channel "Culture TV"…`);
-  for (let i = 0; i < SHOWS.length; i += 1) {
-    const s = SHOWS[i];
-    // tvSeason returns a current-season poster; tvShow falls back to album-style.
-    const cover = await wikipediaPoster(s.wiki);
+// ── Cartoons + Animation Series ─────────────────────────────────────
+const CARTOONS = [
+  { title: "Bluey", wiki: "Bluey_(2018_TV_series)", description: "Disney+ / ABC Australia — the Heeler family's kid-perspective adventures in Brisbane." },
+  { title: "PAW Patrol", wiki: "PAW_Patrol", description: "Nick Jr. — Ryder + the rescue puppies keep Adventure Bay safe, one mission at a time." },
+  { title: "Karma's World", wiki: "Karma's_World", description: "Netflix animated series from Ludacris — Karma Grant, the 10-year-old aspiring rapper." },
+  { title: "Doc McStuffins", wiki: "Doc_McStuffins", description: "Disney Junior — a six-year-old plays vet to her stuffed-animal patients." },
+  { title: "Star Wars: Young Jedi Adventures", wiki: "Star_Wars:_Young_Jedi_Adventures", description: "Disney+ — Padawans Kai Brightstar and Lys Solay train at the High Republic." },
+  { title: "We the People", wiki: "We_the_People_(2021_TV_series)", description: "Netflix + Higher Ground — animated civics series with songs by H.E.R., Janelle Monáe, Lin-Manuel Miranda." },
+];
+
+// ── Documentaries ──────────────────────────────────────────────────
+const DOCS = [
+  { title: "13th", year: "2016", wiki: "13th_(film)", description: "Ava DuVernay — the connection between slavery, the 13th Amendment, and U.S. mass incarceration." },
+  { title: "Summer of Soul", year: "2021", wiki: "Summer_of_Soul", description: "Questlove's Oscar-winner — the lost 1969 Harlem Cultural Festival, finally on screen." },
+];
+
+// Generic rail seeder — replaces the duplicated seedFilms/seedShows.
+async function seedRail({ channelId, items, category, label, muxOffset = 0 }) {
+  console.log(`\n[${category}] seeding ${items.length} into ${label}…`);
+  let ok = 0;
+  for (let i = 0; i < items.length; i += 1) {
+    const it = items[i];
+    const cover = await wikipediaPoster(it.wiki);
     if (!cover) {
-      console.warn(`  ! no iTunes poster for ${s.title} — skipping`);
+      console.warn(`  ! no Wikipedia poster for ${it.title} — skipping`);
       continue;
     }
-    const mux = pickMuxRotation(i + 3);
+    const mux = pickMuxRotation(i + muxOffset);
+    const yearSuffix = it.year ? ` (${it.year})` : "";
     const { error } = await supabase.from("channel_videos").insert({
       channel_id: channelId,
-      title: s.title,
-      description: `${s.description}\n\n${SEED_TAG}`,
+      title: it.title,
+      description: `${it.description}\n\n${seedTag(category)}`,
       video_type: i === 0 ? "featured" : "on_demand",
       mux_playback_id: mux.playback,
       mux_asset_id: mux.asset,
@@ -201,11 +207,15 @@ async function seedShows(channelId) {
       status: "ready",
       is_published: true,
       is_featured: i < 2,
-      published_at: new Date(Date.now() - i * 86400000 - 60000).toISOString(),
+      published_at: new Date(Date.now() - (i + muxOffset) * 86400000).toISOString(),
     });
-    if (error) console.warn(`  ! ${s.title}: ${error.message}`);
-    else console.log(`  ✓ ${s.title}`);
+    if (error) console.warn(`  ! ${it.title}: ${error.message}`);
+    else {
+      console.log(`  ✓ ${it.title}${yearSuffix}`);
+      ok += 1;
+    }
   }
+  console.log(`  → ${ok}/${items.length} landed`);
 }
 
 async function main() {
@@ -222,8 +232,12 @@ async function main() {
     process.exit(1);
   }
 
-  await seedFilms(cultureId);
-  await seedShows(tvId);
+  // Films + docs ride on the Culture channel; series ride on Culture TV.
+  await seedRail({ channelId: cultureId, items: FILMS, category: "films", label: "Culture · Films", muxOffset: 0 });
+  await seedRail({ channelId: tvId, items: SHOWS, category: "shows", label: "Culture TV · Shows", muxOffset: 15 });
+  await seedRail({ channelId: cultureId, items: FAMILY, category: "family", label: "Culture · Family", muxOffset: 27 });
+  await seedRail({ channelId: tvId, items: CARTOONS, category: "cartoons", label: "Culture TV · Cartoons", muxOffset: 37 });
+  await seedRail({ channelId: cultureId, items: DOCS, category: "docs", label: "Culture · Docs", muxOffset: 43 });
 
   console.log("\n→ visit /live to verify the new posters");
 }

@@ -94,6 +94,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "a5.mzstatic.com",
       },
+      // DiceBear — generates SVG initial-blob avatars, used as a
+      // deterministic fallback for channels without an owner photo.
+      {
+        protocol: "https",
+        hostname: "api.dicebear.com",
+      },
     ],
   },
 };

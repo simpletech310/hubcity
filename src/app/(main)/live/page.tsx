@@ -85,7 +85,43 @@ export default async function LivePage({
     .eq("is_published", true)
     .eq("status", "ready")
     .order("published_at", { ascending: false })
-    .limit(30);
+    .limit(80);
+
+  // Cinema rails — fetched separately so each category renders as its
+  // own vertical-poster strip (Family, Cartoons, Documentaries). Each
+  // seeded row is tagged "[hub-cinema-seed:<category>]" in its
+  // description by scripts/seed-onair-real.mjs.
+  const cinemaTag = (cat: string) => `%[hub-cinema-seed:${cat}]%`;
+  const [
+    { data: rawFamily },
+    { data: rawCartoons },
+    { data: rawDocs },
+  ] = await Promise.all([
+    supabase
+      .from("channel_videos")
+      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
+      .eq("is_published", true)
+      .eq("status", "ready")
+      .ilike("description", cinemaTag("family"))
+      .order("published_at", { ascending: false })
+      .limit(12),
+    supabase
+      .from("channel_videos")
+      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
+      .eq("is_published", true)
+      .eq("status", "ready")
+      .ilike("description", cinemaTag("cartoons"))
+      .order("published_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("channel_videos")
+      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
+      .eq("is_published", true)
+      .eq("status", "ready")
+      .ilike("description", cinemaTag("docs"))
+      .order("published_at", { ascending: false })
+      .limit(10),
+  ]);
 
   // Fetch all shows (for the on-demand poster grid)
   const { data: rawShows } = await supabase
@@ -210,6 +246,9 @@ export default async function LivePage({
         followedChannelIds={followedChannelIds}
         purchasedVideoIds={purchasedVideoIds}
         relatedToLive={relatedToLive}
+        familyVideos={(rawFamily as ChannelVideo[]) || []}
+        cartoonVideos={(rawCartoons as ChannelVideo[]) || []}
+        docVideos={(rawDocs as ChannelVideo[]) || []}
       />
     </div>
   );
