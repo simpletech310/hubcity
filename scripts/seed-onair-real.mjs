@@ -182,6 +182,69 @@ const DOCS = [
   { title: "Summer of Soul", year: "2021", wiki: "Summer_of_Soul", description: "Questlove's Oscar-winner — the lost 1969 Harlem Cultural Festival, finally on screen." },
 ];
 
+// ── Action ─────────────────────────────────────────────────────────
+const ACTION = [
+  { title: "John Wick: Chapter 4", year: "2023", wiki: "John_Wick:_Chapter_4", description: "Keanu Reeves' Wick takes the Table to the world stage. Chad Stahelski directs." },
+  { title: "The Equalizer 3", year: "2023", wiki: "The_Equalizer_3", description: "Denzel Washington closes the trilogy on the Amalfi Coast. Antoine Fuqua directs." },
+  { title: "The Woman King", year: "2022", wiki: "The_Woman_King", description: "Viola Davis leads the Agojie warriors of Dahomey. Gina Prince-Bythewood directs." },
+  { title: "Top Gun: Maverick", year: "2022", wiki: "Top_Gun:_Maverick", description: "Tom Cruise back in the cockpit, training the next generation. Joseph Kosinski directs." },
+  { title: "F9", year: "2021", wiki: "F9_(film)", description: "The Fast & Furious family takes on Dom's long-lost brother. Justin Lin directs." },
+  { title: "Black Panther", year: "2018", wiki: "Black_Panther_(film)", description: "Ryan Coogler's Wakanda — Chadwick Boseman, Michael B. Jordan, Lupita Nyong'o." },
+  { title: "Atomic Blonde", year: "2017", wiki: "Atomic_Blonde", description: "Charlize Theron in late-Cold-War Berlin. David Leitch directs the brutal hallway fight." },
+  { title: "Mission: Impossible — Dead Reckoning", year: "2023", wiki: "Mission:_Impossible_–_Dead_Reckoning_Part_One", description: "Tom Cruise + Christopher McQuarrie do the train. Then they do the cliff." },
+];
+
+// ── Thriller ───────────────────────────────────────────────────────
+const THRILLER = [
+  { title: "Us", year: "2019", wiki: "Us_(2019_film)", description: "Jordan Peele's tethered Wilsons. Lupita Nyong'o doing two performances." },
+  { title: "Nope", year: "2022", wiki: "Nope_(film)", description: "Jordan Peele on a horse ranch in Agua Dulce. Daniel Kaluuya, Keke Palmer, Steven Yeun." },
+  { title: "Fresh", year: "2022", wiki: "Fresh_(2022_film)", description: "Daisy Edgar-Jones + Sebastian Stan. The first 30 minutes is a rom-com. Then it isn't." },
+  { title: "Candyman", year: "2021", wiki: "Candyman_(2021_film)", description: "Nia DaCosta's reboot of the 1992 horror. Yahya Abdul-Mateen II says the name." },
+  { title: "Talk to Me", year: "2023", wiki: "Talk_to_Me_(2023_film)", description: "The Philippou brothers' Aussie séance debut. The hand. Don't take the hand." },
+];
+
+// ── Horror ─────────────────────────────────────────────────────────
+const HORROR = [
+  { title: "Smile", year: "2022", wiki: "Smile_(2022_film)", description: "Sosie Bacon's psychiatrist starts seeing the smile after every patient." },
+  { title: "Smile 2", year: "2024", wiki: "Smile_2", description: "Naomi Scott as a pop star on the eve of her world tour — and the smile." },
+  { title: "Hereditary", year: "2018", wiki: "Hereditary_(film)", description: "Ari Aster's debut. Toni Collette's grief-and-genealogy nightmare." },
+  { title: "Bird Box", year: "2018", wiki: "Bird_Box_(film)", description: "Sandra Bullock down a river, blindfolded. Susanne Bier directs." },
+  { title: "His House", year: "2020", wiki: "His_House", description: "Wunmi Mosaku + Sope Dirisu — South Sudanese refugees in a haunted English council house." },
+];
+
+// ── Staples — Black classics ───────────────────────────────────────
+const STAPLES = [
+  { title: "Love & Basketball", year: "2000", wiki: "Love_&_Basketball", description: "Sanaa Lathan + Omar Epps. Gina Prince-Bythewood's debut. Quincy and Monica." },
+  { title: "Paid in Full", year: "2002", wiki: "Paid_in_Full_(2002_film)", description: "Charles Stone III's true story — Wood Harris, Mekhi Phifer, Cam'ron in late-80s Harlem." },
+  { title: "Love Jones", year: "1997", wiki: "Love_Jones_(film)", description: "Theodore Witcher's Chicago poetry-scene romance. Larenz Tate + Nia Long." },
+  { title: "Poetic Justice", year: "1993", wiki: "Poetic_Justice_(film)", description: "John Singleton's road trip — Janet Jackson + Tupac, Maya Angelou's poems." },
+  { title: "Waiting to Exhale", year: "1995", wiki: "Waiting_to_Exhale", description: "Forest Whitaker's adaptation of Terry McMillan — Whitney, Angela, Loretta, Lela." },
+  { title: "The Best Man", year: "1999", wiki: "The_Best_Man_(1999_film)", description: "Malcolm D. Lee's wedding-weekend ensemble. Taye Diggs, Nia Long, Morris Chestnut, Sanaa Lathan." },
+  { title: "Brown Sugar", year: "2002", wiki: "Brown_Sugar_(2002_film)", description: "Rick Famuyiwa — when did you fall in love with hip-hop? Sanaa Lathan + Taye Diggs." },
+  { title: "Above the Rim", year: "1994", wiki: "Above_the_Rim", description: "Jeff Pollack's Harlem street-ball drama. Tupac Shakur, Marlon Wayans, Duane Martin." },
+  { title: "House Party", year: "1990", wiki: "House_Party_(1990_film)", description: "Reginald Hudlin's Kid 'n Play debut. Detention, the party, the parents." },
+];
+
+// ── Drama ──────────────────────────────────────────────────────────
+const DRAMA = [
+  { title: "Mudbound", year: "2017", wiki: "Mudbound_(film)", description: "Dee Rees adapts Hillary Jordan — two Mississippi families across one farm. Jason Mitchell, Mary J. Blige." },
+  { title: "Just Mercy", year: "2019", wiki: "Just_Mercy", description: "Destin Daniel Cretton — Bryan Stevenson defends Walter McMillian on death row. Michael B. Jordan, Jamie Foxx." },
+  { title: "Fences", year: "2016", wiki: "Fences_(film)", description: "Denzel Washington directs August Wilson's Pulitzer play. Viola Davis won the Oscar." },
+  { title: "The Photograph", year: "2020", wiki: "The_Photograph_(2020_film)", description: "Stella Meghie's two-generation romance. Issa Rae + Lakeith Stanfield." },
+  { title: "Concrete Cowboy", year: "2020", wiki: "Concrete_Cowboy", description: "Idris Elba in North Philly's Fletcher Street Urban Riding Club." },
+  { title: "Higher Learning", year: "1995", wiki: "Higher_Learning", description: "John Singleton on a fictional California university campus. Tyra Banks, Omar Epps, Ice Cube." },
+];
+
+// ── Comedy ─────────────────────────────────────────────────────────
+const COMEDY = [
+  { title: "Friday After Next", year: "2002", wiki: "Friday_After_Next", description: "Marcus Raboy's third Friday — Christmas in South Central. Ice Cube + Mike Epps." },
+  { title: "Barbershop", year: "2002", wiki: "Barbershop_(film)", description: "Tim Story's first ensemble — Calvin, Eddie, and a long day on 79th Street. Ice Cube, Cedric the Entertainer." },
+  { title: "Norbit", year: "2007", wiki: "Norbit", description: "Brian Robbins — Eddie Murphy plays Norbit, Rasputia, and Mr. Wong." },
+  { title: "Girls Trip", year: "2017", wiki: "Girls_Trip", description: "Malcolm D. Lee — Regina Hall, Queen Latifah, Jada Pinkett Smith, Tiffany Haddish in NOLA. Essence Fest." },
+  { title: "Coming to America", year: "1988", wiki: "Coming_to_America", description: "John Landis — Prince Akeem of Zamunda comes to Queens to find a wife. Eddie Murphy + Arsenio Hall." },
+  { title: "Don't Be a Menace", year: "1996", wiki: "Don't_Be_a_Menace_to_South_Central_While_Drinking_Your_Juice_in_the_Hood", description: "Wayans-family parody of every '90s hood movie. Shawn + Marlon, Keenen Ivory directs." },
+];
+
 // Generic rail seeder — replaces the duplicated seedFilms/seedShows.
 async function seedRail({ channelId, items, category, label, muxOffset = 0 }) {
   console.log(`\n[${category}] seeding ${items.length} into ${label}…`);
@@ -238,6 +301,91 @@ async function main() {
   await seedRail({ channelId: cultureId, items: FAMILY, category: "family", label: "Culture · Family", muxOffset: 27 });
   await seedRail({ channelId: tvId, items: CARTOONS, category: "cartoons", label: "Culture TV · Cartoons", muxOffset: 37 });
   await seedRail({ channelId: cultureId, items: DOCS, category: "docs", label: "Culture · Docs", muxOffset: 43 });
+  await seedRail({ channelId: cultureId, items: ACTION, category: "action", label: "Culture · Action", muxOffset: 45 });
+  await seedRail({ channelId: cultureId, items: THRILLER, category: "thriller", label: "Culture · Thriller", muxOffset: 53 });
+  await seedRail({ channelId: cultureId, items: HORROR, category: "horror", label: "Culture · Horror", muxOffset: 58 });
+  await seedRail({ channelId: cultureId, items: STAPLES, category: "staples", label: "Culture · Staples", muxOffset: 63 });
+  await seedRail({ channelId: cultureId, items: DRAMA, category: "drama", label: "Culture · Drama", muxOffset: 72 });
+  await seedRail({ channelId: cultureId, items: COMEDY, category: "comedy", label: "Culture · Comedy", muxOffset: 78 });
+
+  // Music rail — tag the existing real music videos (Adiz's Westside
+  // Party + Compton Av's YAYA + Mario Tory's "I'm Not Scared") with
+  // a separate marker [hub-music-rail] so /live can pull them into a
+  // dedicated music-videos rail. We deliberately use a different tag
+  // from the cinema-seed marker so wipeSeed() doesn't sweep these
+  // real platform rows out on the next rerun.
+  console.log("\n[music] tagging existing music videos…");
+  const MUSIC_TAG = "[hub-music-rail]";
+  const musicTitlePatterns = [
+    "%westside party%",
+    "%yaya%",
+    "%i'm not scared%",
+  ];
+  for (const pattern of musicTitlePatterns) {
+    const { data: rows } = await supabase
+      .from("channel_videos")
+      .select("id, title, description")
+      .ilike("title", pattern);
+    for (const row of rows ?? []) {
+      const desc = row.description ?? "";
+      if (desc.includes(MUSIC_TAG)) continue;
+      // Strip any prior cinema-seed tag (defensive) but leave the
+      // original description copy intact.
+      const cleaned = desc.replace(/\n*\[hub-(cinema-seed[^\]]*|music-rail)\]/g, "").trim();
+      const next = cleaned ? `${cleaned}\n\n${MUSIC_TAG}` : MUSIC_TAG;
+      await supabase
+        .from("channel_videos")
+        .update({ description: next })
+        .eq("id", row.id);
+      console.log(`  ✓ tagged ${row.title}`);
+    }
+  }
+
+  // Push Westside Party (the knect-tv-live copy) into the live linear
+  // rotation so it actually shows up in scheduled_broadcasts. Skip if
+  // it's already in the upcoming queue.
+  console.log("\n[rotation] adding Westside Party to live schedule…");
+  const { data: liveCh } = await supabase
+    .from("channels")
+    .select("id")
+    .eq("slug", "knect-tv-live")
+    .maybeSingle();
+  const { data: westsideRow } = await supabase
+    .from("channel_videos")
+    .select("id, duration")
+    .eq("channel_id", liveCh?.id ?? "00000000-0000-0000-0000-000000000000")
+    .ilike("title", "%westside party%")
+    .maybeSingle();
+  if (liveCh && westsideRow) {
+    const nowIso2 = new Date().toISOString();
+    const { count } = await supabase
+      .from("scheduled_broadcasts")
+      .select("id", { count: "exact", head: true })
+      .eq("channel_id", liveCh.id)
+      .eq("video_id", westsideRow.id)
+      .gte("ends_at", nowIso2);
+    if ((count ?? 0) === 0) {
+      // Drop in two slots over the next 4 hours so the rotation
+      // shows it twice for the demo loop.
+      const dur = westsideRow.duration ?? 200;
+      const slots = [60 * 30, 60 * 60 * 2 + 60 * 5]; // 30 min + 2h05 from now
+      for (let i = 0; i < slots.length; i += 1) {
+        const startsAt = new Date(Date.now() + slots[i] * 1000).toISOString();
+        const endsAt = new Date(Date.now() + (slots[i] + dur) * 1000).toISOString();
+        await supabase.from("scheduled_broadcasts").insert({
+          channel_id: liveCh.id,
+          video_id: westsideRow.id,
+          starts_at: startsAt,
+          ends_at: endsAt,
+          position: 999 + i,
+          is_ad_slot: false,
+        });
+      }
+      console.log("  ✓ Westside Party added to live rotation (2 slots)");
+    } else {
+      console.log("  ⊘ already in upcoming rotation — skipping");
+    }
+  }
 
   console.log("\n→ visit /live to verify the new posters");
 }

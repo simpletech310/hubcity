@@ -92,35 +92,46 @@ export default async function LivePage({
   // seeded row is tagged "[hub-cinema-seed:<category>]" in its
   // description by scripts/seed-onair-real.mjs.
   const cinemaTag = (cat: string) => `%[hub-cinema-seed:${cat}]%`;
+  const cinemaCategoryFetch = (cat: string, limit = 12) =>
+    supabase
+      .from("channel_videos")
+      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
+      .eq("is_published", true)
+      .eq("status", "ready")
+      .ilike("description", cinemaTag(cat))
+      .order("published_at", { ascending: false })
+      .limit(limit);
   const [
     { data: rawFamily },
     { data: rawCartoons },
     { data: rawDocs },
+    { data: rawAction },
+    { data: rawThriller },
+    { data: rawHorror },
+    { data: rawStaples },
+    { data: rawDrama },
+    { data: rawComedy },
+    { data: rawMusic },
   ] = await Promise.all([
+    cinemaCategoryFetch("family"),
+    cinemaCategoryFetch("cartoons"),
+    cinemaCategoryFetch("docs"),
+    cinemaCategoryFetch("action"),
+    cinemaCategoryFetch("thriller"),
+    cinemaCategoryFetch("horror"),
+    cinemaCategoryFetch("staples"),
+    cinemaCategoryFetch("drama"),
+    cinemaCategoryFetch("comedy"),
+    // Music rail uses a separate marker so the cinema-seed wipe
+    // doesn't accidentally delete real platform music videos.
     supabase
       .from("channel_videos")
       .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
       .eq("is_published", true)
       .eq("status", "ready")
-      .ilike("description", cinemaTag("family"))
+      .ilike("description", "%[hub-music-rail]%")
       .order("published_at", { ascending: false })
-      .limit(12),
-    supabase
-      .from("channel_videos")
-      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
-      .eq("is_published", true)
-      .eq("status", "ready")
-      .ilike("description", cinemaTag("cartoons"))
-      .order("published_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("channel_videos")
-      .select("*, channel:channels(id, name, slug, avatar_url, type, scope)")
-      .eq("is_published", true)
-      .eq("status", "ready")
-      .ilike("description", cinemaTag("docs"))
-      .order("published_at", { ascending: false })
-      .limit(10),
+      .limit(8),
   ]);
 
   // Fetch all shows (for the on-demand poster grid)
@@ -249,6 +260,13 @@ export default async function LivePage({
         familyVideos={(rawFamily as ChannelVideo[]) || []}
         cartoonVideos={(rawCartoons as ChannelVideo[]) || []}
         docVideos={(rawDocs as ChannelVideo[]) || []}
+        actionVideos={(rawAction as ChannelVideo[]) || []}
+        thrillerVideos={(rawThriller as ChannelVideo[]) || []}
+        horrorVideos={(rawHorror as ChannelVideo[]) || []}
+        staplesVideos={(rawStaples as ChannelVideo[]) || []}
+        dramaVideos={(rawDrama as ChannelVideo[]) || []}
+        comedyVideos={(rawComedy as ChannelVideo[]) || []}
+        musicVideos={dedupeVideosByPlaybackId((rawMusic as ChannelVideo[]) || [])}
       />
     </div>
   );

@@ -160,6 +160,13 @@ interface CultureTVProps {
   familyVideos?: ChannelVideo[];
   cartoonVideos?: ChannelVideo[];
   docVideos?: ChannelVideo[];
+  actionVideos?: ChannelVideo[];
+  thrillerVideos?: ChannelVideo[];
+  horrorVideos?: ChannelVideo[];
+  staplesVideos?: ChannelVideo[];
+  dramaVideos?: ChannelVideo[];
+  comedyVideos?: ChannelVideo[];
+  musicVideos?: ChannelVideo[];
 }
 
 export default function CultureTV({
@@ -180,6 +187,13 @@ export default function CultureTV({
   familyVideos = [],
   cartoonVideos = [],
   docVideos = [],
+  actionVideos = [],
+  thrillerVideos = [],
+  horrorVideos = [],
+  staplesVideos = [],
+  dramaVideos = [],
+  comedyVideos = [],
+  musicVideos = [],
 }: CultureTVProps) {
   // ── Scope gating: hide local channels/videos unless address-verified ──
   const visible = <T extends { type?: ChannelType; scope?: "national" | "local" }>(c: T) => {
@@ -1071,6 +1085,83 @@ export default function CultureTV({
               title="Documentaries"
               accent="The real story, fully sourced."
               videos={docVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Music Videos rail (vertical posters) ── */}
+          {musicVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ MUSIC"
+              title="Music Videos"
+              accent="Hub City catalog. Hit the play button."
+              videos={musicVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Action ── */}
+          {actionVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ ACTION"
+              title="Action"
+              accent="Hands up. Hands fast."
+              videos={actionVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Thriller ── */}
+          {thrillerVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ THRILLER"
+              title="Thrillers"
+              accent="Don't watch alone."
+              videos={thrillerVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Horror ── */}
+          {horrorVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ HORROR"
+              title="Horror"
+              accent="Lights on. We won't tell."
+              videos={horrorVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Staples (Black classics) ── */}
+          {staplesVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ STAPLES"
+              title="The Staples"
+              accent="The canon. Press play."
+              videos={staplesVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Drama ── */}
+          {dramaVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ DRAMA"
+              title="Drama"
+              accent="The receipts, on screen."
+              videos={dramaVideos}
+              onPlay={playVideo}
+            />
+          )}
+
+          {/* ── Comedy ── */}
+          {comedyVideos.length > 0 && (
+            <VerticalPosterRail
+              kicker="§ COMEDY"
+              title="Comedy"
+              accent="Laugh-out-loud, every aunt-approved."
+              videos={comedyVideos}
               onPlay={playVideo}
             />
           )}
