@@ -1,0 +1,48 @@
+{
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "creators": "Creators",
+    "live": "Live",
+    "frequency": "Frequency",
+    "groups": "Groups",
+    "saved": "Saved",
+    "search": "Search"
+  },
+  "auth": {
+    "login": "Log in",
+    "signup": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "continue": "Continue",
+    "logout": "Log out"
+  },
+  "actions": {
+    "share": "Share",
+    "save": "Save",
+    "saved": "Saved",
+    "follow": "Follow",
+    "following": "Following",
+    "report": "Report",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "publish": "Publish"
+  },
+  "onboarding": {
+    "step": "Step {current} of {total}",
+    "interests_title": "What pulls you in?",
+    "follow_title": "Pick a few people to follow.",
+    "language_title": "How should we talk to you?",
+    "back": "Back",
+    "continue": "Continue",
+    "finish": "Finish"
+  },
+  "empty": {
+    "no_results": "No results.",
+    "no_events": "No events yet.",
+    "no_albums": "No music published yet.",
+    "no_groups": "No communities found."
+  }
+}

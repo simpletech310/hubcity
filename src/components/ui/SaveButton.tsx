@@ -3,8 +3,17 @@
 import { useState, useEffect } from "react";
 import Icon from "@/components/ui/Icon";
 
+export type SaveableType =
+  | "business"
+  | "event"
+  | "resource"
+  | "album"
+  | "track"
+  | "group"
+  | "creator";
+
 interface SaveButtonProps {
-  itemType: "business" | "event" | "resource";
+  itemType: SaveableType;
   itemId: string;
   size?: "sm" | "md";
 }

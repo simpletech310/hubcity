@@ -33,28 +33,61 @@ export default async function SavedItemsPage() {
   const resourceIds = items
     .filter((i) => i.item_type === "resource")
     .map((i) => i.item_id);
+  const albumIds = items
+    .filter((i) => i.item_type === "album")
+    .map((i) => i.item_id);
+  const groupIds = items
+    .filter((i) => i.item_type === "group")
+    .map((i) => i.item_id);
+  const creatorIds = items
+    .filter((i) => i.item_type === "creator")
+    .map((i) => i.item_id);
 
-  const [{ data: businesses }, { data: events }, { data: resources }] =
-    await Promise.all([
-      businessIds.length > 0
-        ? supabase
-            .from("businesses")
-            .select("id, name, slug, category, address, rating_avg")
-            .in("id", businessIds)
-        : Promise.resolve({ data: [] }),
-      eventIds.length > 0
-        ? supabase
-            .from("events")
-            .select("id, title, slug, category, start_date, location_name")
-            .in("id", eventIds)
-        : Promise.resolve({ data: [] }),
-      resourceIds.length > 0
-        ? supabase
-            .from("resources")
-            .select("id, name, slug, category, organization, status")
-            .in("id", resourceIds)
-        : Promise.resolve({ data: [] }),
-    ]);
+  const [
+    { data: businesses },
+    { data: events },
+    { data: resources },
+    { data: albums },
+    { data: groups },
+    { data: creators },
+  ] = await Promise.all([
+    businessIds.length > 0
+      ? supabase
+          .from("businesses")
+          .select("id, name, slug, category, address, rating_avg")
+          .in("id", businessIds)
+      : Promise.resolve({ data: [] }),
+    eventIds.length > 0
+      ? supabase
+          .from("events")
+          .select("id, title, slug, category, start_date, location_name")
+          .in("id", eventIds)
+      : Promise.resolve({ data: [] }),
+    resourceIds.length > 0
+      ? supabase
+          .from("resources")
+          .select("id, name, slug, category, organization, status")
+          .in("id", resourceIds)
+      : Promise.resolve({ data: [] }),
+    albumIds.length > 0
+      ? supabase
+          .from("albums")
+          .select("id, slug, title, cover_art_url, release_type")
+          .in("id", albumIds)
+      : Promise.resolve({ data: [] }),
+    groupIds.length > 0
+      ? supabase
+          .from("community_groups")
+          .select("id, slug, name, description, image_url, avatar_url")
+          .in("id", groupIds)
+      : Promise.resolve({ data: [] }),
+    creatorIds.length > 0
+      ? supabase
+          .from("profiles")
+          .select("id, handle, display_name, avatar_url")
+          .in("id", creatorIds)
+      : Promise.resolve({ data: [] }),
+  ]);
 
   const categoryIcons: Record<string, string> = {
     business: "store",
@@ -206,6 +239,118 @@ export default async function SavedItemsPage() {
                   label={res.status === "open" ? "Open" : res.status}
                   variant={res.status === "open" ? "emerald" : "cyan"}
                 />
+              </div>
+            </div>
+          </Link>
+        ))}
+
+        {/* Albums */}
+        {(albums || []).map((al) => (
+          <Link key={al.id} href={`/frequency/album/${al.slug}`}>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 shrink-0 overflow-hidden"
+                  style={{
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  {al.cover_art_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={al.cover_art_url}
+                      alt={al.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
+                    {al.title}
+                  </h3>
+                  <p className="c-meta">
+                    {(al.release_type ?? "ALBUM").toString().toUpperCase()}
+                  </p>
+                </div>
+                <Badge label="Music" variant="gold" />
+              </div>
+            </div>
+          </Link>
+        ))}
+
+        {/* Groups */}
+        {(groups || []).map((g) => (
+          <Link key={g.id} href={`/groups/${g.slug || g.id}`}>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 shrink-0 overflow-hidden"
+                  style={{
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  {g.image_url || g.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={g.image_url || g.avatar_url || ""}
+                      alt={g.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
+                    {g.name}
+                  </h3>
+                  <p className="c-meta truncate">
+                    {(g.description || "").slice(0, 80)}
+                  </p>
+                </div>
+                <Badge label="Group" variant="cyan" />
+              </div>
+            </div>
+          </Link>
+        ))}
+
+        {/* Creators */}
+        {(creators || []).map((c) => (
+          <Link key={c.id} href={`/user/${c.handle}`}>
+            <div
+              className="c-frame p-3 press"
+              style={{ background: "var(--paper-soft)" }}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-11 h-11 rounded-full shrink-0 overflow-hidden"
+                  style={{
+                    background: "var(--ink-strong)",
+                    border: "2px solid var(--rule-strong-c)",
+                  }}
+                >
+                  {c.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={c.avatar_url}
+                      alt={c.display_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="c-card-t truncate" style={{ fontSize: 13 }}>
+                    {c.display_name || `@${c.handle}`}
+                  </h3>
+                  <p className="c-meta">@{c.handle}</p>
+                </div>
+                <Badge label="Creator" variant="emerald" />
               </div>
             </div>
           </Link>

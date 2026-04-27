@@ -25,16 +25,29 @@ export default async function MyAlbumsPage() {
 
   return (
     <div className="px-5 pb-12 pt-6 mx-auto max-w-2xl">
-      <div className="mb-5">
-        <p className="c-kicker" style={{ color: "var(--ink-mute)" }}>
-          § MY MUSIC
-        </p>
-        <h1
-          className="c-hero mt-1"
-          style={{ fontSize: 32, color: "var(--ink-strong)" }}
+      <div className="mb-5 flex items-end justify-between gap-3">
+        <div>
+          <p className="c-kicker" style={{ color: "var(--ink-mute)" }}>
+            § MY MUSIC
+          </p>
+          <h1
+            className="c-hero mt-1"
+            style={{ fontSize: 32, color: "var(--ink-strong)" }}
+          >
+            {rows.length} {rows.length === 1 ? "Album" : "Albums"}
+          </h1>
+        </div>
+        <Link
+          href="/dashboard/creator/albums/new"
+          className="c-kicker shrink-0 px-3 py-2"
+          style={{
+            background: "var(--ink-strong)",
+            color: "var(--gold-c)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
         >
-          {rows.length} {rows.length === 1 ? "Album" : "Albums"}
-        </h1>
+          + NEW
+        </Link>
       </div>
 
       {rows.length === 0 ? (
@@ -52,9 +65,19 @@ export default async function MyAlbumsPage() {
             className="c-serif-it mt-1"
             style={{ fontSize: 13, color: "var(--ink-mute)" }}
           >
-            Albums are uploaded via the Frequency seed scripts today —
-            ping ops to add a new release.
+            Stage a new release and add tracks once Mux uploads land.
           </p>
+          <Link
+            href="/dashboard/creator/albums/new"
+            className="c-kicker inline-block mt-4 px-4 py-2"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            + NEW RELEASE
+          </Link>
         </div>
       ) : (
         <div className="space-y-2.5">

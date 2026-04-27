@@ -24,6 +24,13 @@ interface ProfileHeroProps {
   postCount: number;
   totalLikes: number;
   galleryCount: number;
+  /**
+   * Combined "creative works" count — exhibits + gallery items (artworks) +
+   * mural commissions / works the creator has tied to their profile.
+   * Surfaced on the hero stats grid when > 0, replacing the LIKES tile so
+   * artists land on a portfolio-shaped header. Other roles ignore it.
+   */
+  artworkCount?: number;
   creatorStripeAccountId: string | null;
   currentUserId: string | null;
   isOwner: boolean;
@@ -49,6 +56,7 @@ export default function ProfileHero({
   postCount,
   totalLikes,
   galleryCount,
+  artworkCount = 0,
   creatorStripeAccountId,
   currentUserId,
   isOwner,
@@ -89,6 +97,7 @@ export default function ProfileHero({
     resourceCount,
     galleryCount,
     totalLikes,
+    artworkCount,
   });
 
   const verified = profile.verification_status === "verified";
@@ -334,6 +343,7 @@ function resolveStats(args: {
   resourceCount: number;
   galleryCount: number;
   totalLikes: number;
+  artworkCount: number;
 }): Array<{ label: string; value: string }> {
   const {
     primaryRole,
@@ -342,13 +352,23 @@ function resolveStats(args: {
     resourceCount,
     galleryCount,
     totalLikes,
+    artworkCount,
   } = args;
+
+  // When the profile has any creative works (exhibits + gallery items),
+  // promote the ARTWORK stat over LIKES — visual artists deserve a
+  // portfolio-shaped header rather than a fan-loop one. Falls back to
+  // the original LIKES tile when there's no artwork.
+  const thirdStat =
+    artworkCount > 0
+      ? { label: "ARTWORK", value: fmt(artworkCount) }
+      : { label: "LIKES", value: fmt(totalLikes) };
 
   if (primaryRole === "content_creator" && channel) {
     return [
       { label: "FOLLOWERS", value: fmt(channel.follower_count ?? 0) },
       { label: "POSTS", value: fmt(postCount) },
-      { label: "LIKES", value: fmt(totalLikes) },
+      thirdStat,
     ];
   }
 
@@ -356,7 +376,7 @@ function resolveStats(args: {
     return [
       { label: "RESOURCES", value: fmt(resourceCount) },
       { label: "POSTS", value: fmt(postCount) },
-      { label: "LIKES", value: fmt(totalLikes) },
+      thirdStat,
     ];
   }
 
@@ -364,14 +384,14 @@ function resolveStats(args: {
     return [
       { label: "POSTS", value: fmt(postCount) },
       { label: "GALLERY", value: fmt(galleryCount) },
-      { label: "LIKES", value: fmt(totalLikes) },
+      thirdStat,
     ];
   }
 
   return [
     { label: "POSTS", value: fmt(postCount) },
     { label: "GALLERY", value: fmt(galleryCount) },
-    { label: "LIKES", value: fmt(totalLikes) },
+    thirdStat,
   ];
 }
 

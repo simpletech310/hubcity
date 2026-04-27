@@ -25,14 +25,25 @@ interface CreatorCardProps {
   featured: FeaturedMedia | null;
   /** Up to 6 normalized squares for the portfolio strip. */
   work: WorkItem[];
-  stats: { reels: number; videos: number; posts: number; tracks: number };
+  stats: {
+    reels: number;
+    videos: number;
+    posts: number;
+    tracks: number;
+    /**
+     * Combined creative-works count — exhibits + gallery items / artworks
+     * the creator has tied to their profile. Lets visual artists be
+     * discovered alongside musicians, filmmakers, and creators.
+     */
+    artwork: number;
+  };
   discipline: string;
   tier: CreatorTier | null;
   sectionNum: string;
 }
 
 const KIND_ABBR: Record<FeaturedKind, string> = {
-  reel: "REEL",
+  reel: "MOMENT",
   video: "VID",
   post: "POST",
   track: "TRK",
@@ -349,10 +360,12 @@ export default function CreatorCard({
         className="px-5 pb-4 flex items-center gap-5"
         style={{ background: "var(--paper)" }}
       >
-        <Stat label="MOMENTS" value={stats.reels} />
+        {/* MOMENTS now folds reels + posts together (matches the merged
+            "Moments" section on /user/[handle]). */}
+        <Stat label="MOMENTS" value={stats.reels + stats.posts} />
         <Stat label="VIDEOS" value={stats.videos} />
-        <Stat label="POSTS" value={stats.posts} />
         <Stat label="TRACKS" value={stats.tracks} />
+        <Stat label="ARTWORK" value={stats.artwork} />
       </div>
 
       {/* CTA */}

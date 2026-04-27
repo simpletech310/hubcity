@@ -1,0 +1,16 @@
+import type { MetadataRoute } from "next";
+import { SITE_DOMAIN } from "@/lib/branding";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/api/", "/admin/", "/dashboard/"],
+      },
+    ],
+    sitemap: `${SITE_DOMAIN}/sitemap.xml`,
+    host: SITE_DOMAIN,
+  };
+}

@@ -9,6 +9,9 @@ interface DisciplineCounts {
   videos: number;
   tracks: number;
   image_posts: number;
+  /** Combined exhibits + gallery items / artworks. Visual artists rank
+   *  here when they have published creative works on /culture. */
+  artwork?: number;
 }
 
 export function deriveDiscipline(
@@ -24,13 +27,18 @@ export function deriveDiscipline(
 
   if (r !== "content_creator" && r !== "creator") return "Creator";
 
+  const artwork = counts.artwork ?? 0;
   const top = Math.max(
     counts.tracks,
     counts.videos,
     counts.image_posts,
-    counts.reels
+    counts.reels,
+    artwork,
   );
   if (top === 0) return "Creator";
+  // Artwork wins ties over image_posts because it's a stronger signal
+  // (curated portfolio vs casual feed posts).
+  if (top === artwork && artwork > 0) return "Artist";
   if (top === counts.tracks) return "Musician";
   if (top === counts.videos) return "Filmmaker";
   if (top === counts.image_posts) return "Artist";

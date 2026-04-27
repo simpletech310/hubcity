@@ -176,14 +176,14 @@ export default function GroupsPage() {
         <div className="mt-3"><CityFilterChip /></div>
       </header>
 
-      {/* Create CTA - only for officials */}
-      {userRole && ["city_ambassador", "city_official", "admin"].includes(userRole) && (
+      {/* Create CTA — any signed-in user can spin up a community group */}
+      {userRole && (
         <div className="px-5 mt-4 mb-5">
           <button
             onClick={() => setShowCreate(!showCreate)}
             className="c-btn c-btn-primary w-full press"
           >
-            {showCreate ? "CLOSE FORM" : "+ CREATE A GROUP"}
+            {showCreate ? "CLOSE FORM" : "+ START A GROUP"}
           </button>
         </div>
       )}

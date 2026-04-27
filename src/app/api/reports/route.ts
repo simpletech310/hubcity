@@ -31,12 +31,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const validTypes = ["post", "comment", "review", "business"];
+    const validTypes = [
+      "post",
+      "comment",
+      "review",
+      "business",
+      "event",
+      "group",
+      "reel",
+      "album",
+      "track",
+      "profile",
+    ];
     const validReasons = [
       "spam",
       "inappropriate",
       "harassment",
       "misinformation",
+      "hate",
+      "illegal",
       "other",
     ];
 

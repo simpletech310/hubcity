@@ -358,18 +358,42 @@ export default async function BusinessDetailPage({
   const categoryLabel = (biz.category || "local").toUpperCase();
   const cityName = biz.city?.name || "Compton";
 
-  // Primary CTA — order / book / call / visit — chosen by business type
-  const primaryCta: { label: string; href: string } | null = biz.accepts_bookings
-    ? { label: "BOOK", href: `/business/${biz.slug || biz.id}/book` }
-    : biz.accepts_orders
-      ? { label: isRetail ? "SHOP" : "ORDER", href: `/business/${biz.slug || biz.id}/order` }
-      : biz.phone
-        ? { label: "CALL", href: `tel:${biz.phone}` }
-        : biz.website
-          ? { label: "VISIT", href: biz.website.startsWith("http") ? biz.website : `https://${biz.website}` }
-          : biz.address
-            ? { label: "DIRECTIONS", href: `https://maps.google.com/?q=${encodeURIComponent(biz.address)}` }
-            : null;
+  // Primary CTAs — when a business has both `accepts_orders` AND
+  // `accepts_bookings` toggled on (e.g. an artist who sells prints AND
+  // takes mural commissions) we render BOTH buttons side-by-side.
+  // Otherwise pick the single most-relevant action.
+  const primaryCtas: { label: string; href: string; emphasis?: boolean }[] = [];
+  if (biz.accepts_orders) {
+    primaryCtas.push({
+      label: isRetail ? "SHOP" : "ORDER",
+      href: `/business/${biz.slug || biz.id}/order`,
+      emphasis: true,
+    });
+  }
+  if (biz.accepts_bookings) {
+    primaryCtas.push({
+      label: "BOOK",
+      href: `/business/${biz.slug || biz.id}/book`,
+      emphasis: true,
+    });
+  }
+  if (primaryCtas.length === 0) {
+    if (biz.phone) {
+      primaryCtas.push({ label: "CALL", href: `tel:${biz.phone}` });
+    } else if (biz.website) {
+      primaryCtas.push({
+        label: "VISIT",
+        href: biz.website.startsWith("http") ? biz.website : `https://${biz.website}`,
+      });
+    } else if (biz.address) {
+      primaryCtas.push({
+        label: "DIRECTIONS",
+        href: `https://maps.google.com/?q=${encodeURIComponent(biz.address)}`,
+      });
+    }
+  }
+  // Back-compat: most call sites still use a single `primaryCta` object.
+  const primaryCta = primaryCtas[0] ?? null;
 
   return (
     <article className="culture-surface animate-fade-in pb-safe min-h-dvh">
@@ -501,19 +525,30 @@ export default async function BusinessDetailPage({
         </div>
       </div>
 
-      {/* ── Primary CTA + icon action squares ── */}
+      {/* ── Primary CTA(s) + icon action squares ──
+           When the business has both `accepts_orders` AND `accepts_bookings`
+           on (e.g. an artist who sells prints + books mural commissions)
+           we render BOTH primary buttons side-by-side. Otherwise it's a
+           single CTA flanked by Phone + Directions affordances. */}
       {primaryCta && (
         <div style={{ padding: "0 18px 22px", display: "flex", gap: 10 }}>
-          <Link
-            href={primaryCta.href}
-            {...(primaryCta.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            className="c-btn c-btn-primary press"
-            style={{ flex: 1, textAlign: "center", padding: "14px 0", fontSize: 13 }}
-          >
-            {primaryCta.label}
-            {biz.min_order > 0 && biz.accepts_orders ? ` · $${(biz.min_order / 100).toFixed(0)}+` : ""}
-          </Link>
-          {biz.phone && primaryCta.label !== "CALL" && (
+          {primaryCtas.map((cta, idx) => (
+            <Link
+              key={cta.label}
+              href={cta.href}
+              {...(cta.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={`press ${idx === 0 ? "c-btn c-btn-primary" : "c-btn c-btn-outline"}`}
+              style={{ flex: 1, textAlign: "center", padding: "14px 0", fontSize: 13 }}
+            >
+              {cta.label}
+              {idx === 0 && biz.min_order > 0 && biz.accepts_orders && cta.label !== "BOOK"
+                ? ` · $${(biz.min_order / 100).toFixed(0)}+`
+                : ""}
+            </Link>
+          ))}
+          {/* Only show the icon affordances when there's room — drop them
+              if both primary CTAs are already present. */}
+          {primaryCtas.length === 1 && biz.phone && primaryCta.label !== "CALL" && (
             <a
               href={`tel:${biz.phone}`}
               className="c-btn-outline flex items-center justify-center press"
@@ -523,7 +558,7 @@ export default async function BusinessDetailPage({
               <Icon name="phone" size={18} />
             </a>
           )}
-          {biz.address && primaryCta.label !== "DIRECTIONS" && (
+          {primaryCtas.length === 1 && biz.address && primaryCta.label !== "DIRECTIONS" && (
             <a
               href={`https://maps.google.com/?q=${encodeURIComponent(biz.address)}`}
               target="_blank"

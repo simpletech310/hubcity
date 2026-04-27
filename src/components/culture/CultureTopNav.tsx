@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchModal from "@/components/search/SearchModal";
+import CartIconButton from "@/components/order/CartIconButton";
 import { createClient } from "@/lib/supabase/client";
 import { useActiveCity } from "@/hooks/useActiveCity";
 
@@ -157,6 +158,8 @@ export default function CultureTopNav() {
               <path d="M12.5 12.5l4 4" />
             </svg>
           </button>
+
+          <CartIconButton />
 
           {signedIn && (
             <Link

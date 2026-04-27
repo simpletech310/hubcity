@@ -117,7 +117,7 @@ export async function POST(request: Request) {
         longitude: body.longitude || null,
         district: body.district || null,
         image_url: body.image_url || null,
-        is_published: true,
+        is_published: body.is_published === false ? false : true,
         is_featured: false,
         is_ticketed: body.is_ticketed || false,
         rsvp_count: 0,

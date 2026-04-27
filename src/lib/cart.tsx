@@ -378,10 +378,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // Save to localStorage on change
+  // Save to localStorage on change. Also dispatch a custom in-tab
+  // event so the top-nav <CartIconButton> can refresh its badge
+  // without waiting for a full re-render of the provider tree.
   useEffect(() => {
     try {
       localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(state));
+      window.dispatchEvent(new CustomEvent("cart-changed"));
     } catch {
       // ignore
     }

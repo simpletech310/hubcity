@@ -36,7 +36,7 @@ export default async function MyEventsPage() {
 
   return (
     <div className="px-5 pb-12 pt-6 mx-auto max-w-2xl">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-end justify-between mb-5 gap-3">
         <div>
           <p className="c-kicker" style={{ color: "var(--ink-mute)" }}>
             § MY EVENTS
@@ -48,6 +48,17 @@ export default async function MyEventsPage() {
             {rows.length} {rows.length === 1 ? "Event" : "Events"}
           </h1>
         </div>
+        <Link
+          href="/dashboard/events/new"
+          className="c-kicker shrink-0 px-3 py-2"
+          style={{
+            background: "var(--ink-strong)",
+            color: "var(--gold-c)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          + NEW
+        </Link>
       </div>
 
       {rows.length === 0 ? (
@@ -65,8 +76,19 @@ export default async function MyEventsPage() {
             className="c-serif-it mt-1"
             style={{ fontSize: 13, color: "var(--ink-mute)" }}
           >
-            Admins can spin one up at /admin/events/new.
+            Stage your first event in a minute.
           </p>
+          <Link
+            href="/dashboard/events/new"
+            className="c-kicker inline-block mt-4 px-4 py-2"
+            style={{
+              background: "var(--ink-strong)",
+              color: "var(--gold-c)",
+              border: "2px solid var(--rule-strong-c)",
+            }}
+          >
+            + NEW EVENT
+          </Link>
         </div>
       ) : (
         <div className="space-y-2.5">

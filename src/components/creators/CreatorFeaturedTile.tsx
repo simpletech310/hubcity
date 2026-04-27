@@ -78,7 +78,7 @@ export default function CreatorFeaturedTile({
 
   // ── reel ─────────────────────────────────────────────
   if (media.kind === "reel") {
-    const href = hrefOverride ?? `/reels?reel=${media.id}`;
+    const href = hrefOverride ?? `/moments?r=${media.id}`;
     return (
       <Link href={href} className={`block press ${cls}`} style={frame}>
         {media.poster_url ? (
@@ -87,7 +87,7 @@ export default function CreatorFeaturedTile({
         ) : (
           <video src={media.video_url} muted playsInline preload="metadata" className="w-full h-full object-cover" />
         )}
-        <KindPill label="REEL" />
+        <KindPill label="MOMENT" />
         <PlayDot />
         {!compact && media.caption && (
           <div

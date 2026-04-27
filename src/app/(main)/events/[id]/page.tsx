@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import SaveButton from "@/components/ui/SaveButton";
 import RSVPButton from "@/components/events/RSVPButton";
 import Icon from "@/components/ui/Icon";
@@ -8,7 +9,78 @@ import type { IconName } from "@/components/ui/Icon";
 import { createClient } from "@/lib/supabase/server";
 import { formatCents } from "@/lib/stripe";
 import { isTicketSalesOpen, getTicketSalesMessage } from "@/lib/tickets";
+import { buildOg } from "@/lib/og";
+import { SITE_DOMAIN } from "@/lib/branding";
 import type { Event, EventTicketConfig, Venue } from "@/types/database";
+
+async function loadEvent(idOrSlug: string): Promise<Event | null> {
+  const supabase = await createClient();
+  const looksLikeUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      idOrSlug,
+    );
+  if (looksLikeUuid) {
+    const { data } = await supabase
+      .from("events")
+      .select("*")
+      .eq("id", idOrSlug)
+      .maybeSingle();
+    if (data) return data as Event;
+  }
+  const { data } = await supabase
+    .from("events")
+    .select("*")
+    .eq("slug", idOrSlug)
+    .maybeSingle();
+  return (data as Event | null) ?? null;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const ev = await loadEvent(id);
+  if (!ev) return { title: "Event not found" };
+  const meta = buildOg({
+    title: ev.title,
+    description: ev.description ?? `Compton event on ${ev.start_date}.`,
+    image: ev.image_url ?? null,
+    type: "article",
+    path: `/events/${ev.slug || ev.id}`,
+  });
+  // Layer JSON-LD via `other` for crawlers.
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: ev.title,
+    startDate: ev.start_time
+      ? `${ev.start_date}T${ev.start_time}`
+      : ev.start_date,
+    endDate: ev.end_date
+      ? ev.end_time
+        ? `${ev.end_date}T${ev.end_time}`
+        : ev.end_date
+      : undefined,
+    location: ev.location_name
+      ? {
+          "@type": "Place",
+          name: ev.location_name,
+          address: ev.address || undefined,
+        }
+      : undefined,
+    image: ev.image_url || undefined,
+    description: ev.description || undefined,
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    url: `${SITE_DOMAIN}/events/${ev.slug || ev.id}`,
+  };
+  return {
+    ...meta,
+    other: { "application/ld+json": JSON.stringify(jsonLd) },
+  };
+}
 
 const categoryIcons: Record<string, IconName> = {
   city: "landmark",

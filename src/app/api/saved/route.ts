@@ -18,7 +18,15 @@ export async function POST(request: Request) {
     if (
       !item_type ||
       !item_id ||
-      !["business", "event", "resource"].includes(item_type)
+      ![
+        "business",
+        "event",
+        "resource",
+        "album",
+        "track",
+        "group",
+        "creator",
+      ].includes(item_type)
     ) {
       return NextResponse.json(
         { error: "Invalid item_type or item_id" },

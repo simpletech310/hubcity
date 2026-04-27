@@ -71,6 +71,14 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/login") || pathname.startsWith("/signup");
   const isAdminRoute = pathname.startsWith("/admin");
   const isVerifiedOnly = isVerifiedOnlyRoute(pathname);
+  const isOnboardingExempt =
+    pathname.startsWith("/onboarding") ||
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/signup") ||
+    pathname.startsWith("/logout") ||
+    pathname.startsWith("/suspended") ||
+    pathname.startsWith("/legal") ||
+    pathname.startsWith("/auth");
 
   // Unauthenticated access to protected or verified-only routes → login
   if (!user && !isAuthRoute && (isProtectedRoute(pathname) || isVerifiedOnly)) {
@@ -94,7 +102,7 @@ export async function updateSession(request: NextRequest) {
     try {
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("verification_status, role, is_suspended")
+        .select("verification_status, role, is_suspended, onboarded_at")
         .eq("id", user.id)
         .single();
 
@@ -119,6 +127,16 @@ export async function updateSession(request: NextRequest) {
         if (isAdminRoute && profile.role !== "admin") {
           const redirectUrl = request.nextUrl.clone();
           redirectUrl.pathname = "/";
+          return NextResponse.redirect(redirectUrl);
+        }
+
+        // Force fresh signups through /onboarding before they land on
+        // protected dashboard / profile surfaces. Existing accounts were
+        // backfilled with onboarded_at = created_at by migration 110.
+        if (!profile.onboarded_at && !isOnboardingExempt) {
+          const redirectUrl = request.nextUrl.clone();
+          redirectUrl.pathname = "/onboarding";
+          redirectUrl.search = "";
           return NextResponse.redirect(redirectUrl);
         }
       }

@@ -139,6 +139,45 @@ function HomeTab({ data }: { data: FrequencyHubData }) {
   const genresN = data.genres.length > 0 ? n++ : null;
   const playlistsN = data.playlists.length > 0 ? n++ : null;
 
+  const isEmpty =
+    !data.featured &&
+    data.new_singles.length === 0 &&
+    data.new_albums.length === 0 &&
+    data.podcasts.length === 0 &&
+    data.playlists.length === 0;
+
+  if (isEmpty) {
+    return (
+      <div className="px-5 py-12">
+        <div
+          className="p-6 text-center"
+          style={{
+            background: "var(--paper-warm)",
+            border: "2px solid var(--rule-strong-c)",
+          }}
+        >
+          <p className="c-kicker" style={{ color: "var(--ink-mute)" }}>
+            § THE BOOTH IS WARMING UP
+          </p>
+          <p
+            className="c-card-t mt-2"
+            style={{ color: "var(--ink-strong)", fontSize: 18 }}
+          >
+            No music published yet.
+          </p>
+          <p
+            className="c-serif-it mt-2"
+            style={{ fontSize: 13, color: "var(--ink-mute)" }}
+          >
+            When creators drop a single, EP, or mixtape it&rsquo;ll surface
+            here. Are you a creator? Stage your first release from the
+            dashboard.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-5 space-y-6">
       {data.featured && featuredN !== null && (

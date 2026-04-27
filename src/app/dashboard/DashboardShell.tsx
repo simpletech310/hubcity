@@ -261,27 +261,34 @@ export default function DashboardShell({
     t.push({ href: "/dashboard", label: "Home", icon: <HomeIcon /> });
 
     if (business) {
-      if (bizType === "food") {
+      // Tabs are gated by the `accepts_*` flags rather than `business_type`
+      // alone. A retail business that toggles `accepts_bookings = true`
+      // (e.g. an artist who sells prints AND books mural commissions)
+      // gets BOTH the Catalog/Orders tabs AND the Bookings/Services tabs.
+      // We still use `business_type` to pick labels (Menu vs Catalog) and
+      // to decide which marketing surface (Specials vs Coupons) to show.
+      const showOrders = business.accepts_orders;
+      const showBookings = business.accepts_bookings;
+      const menuLabel = bizType === "retail" ? "Catalog" : "Menu";
+
+      if (showOrders) {
         t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+        t.push({ href: "/dashboard/menu", label: menuLabel, icon: <MenuIcon /> });
+      }
+      if (showBookings) {
+        t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
+      }
+      if (bizType === "food" || bizType === "service" || (!bizType && showOrders)) {
         t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
-        if (business.is_mobile_vendor || business.business_sub_type === "food_truck" || business.business_sub_type === "cart") {
-          t.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
-        }
       } else if (bizType === "retail") {
-        t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        t.push({ href: "/dashboard/menu", label: "Catalog", icon: <MenuIcon /> });
         t.push({ href: "/dashboard/coupons", label: "Coupons", icon: <SpecialsIcon /> });
-      } else if (bizType === "service") {
-        t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
-      } else {
-        t.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        t.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
-        t.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
-        t.push({ href: "/dashboard/specials", label: "Specials", icon: <SpecialsIcon /> });
-        if (business.is_mobile_vendor) {
-          t.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
-        }
+      }
+      if (
+        business.is_mobile_vendor ||
+        business.business_sub_type === "food_truck" ||
+        business.business_sub_type === "cart"
+      ) {
+        t.push({ href: "/dashboard/location", label: "Fleet", icon: <LocationIcon /> });
       }
       // Locations (multi-city) — available to all business types
       t.push({ href: "/dashboard/locations", label: "Locations", icon: <LocationIcon /> });
@@ -342,17 +349,16 @@ export default function DashboardShell({
       { href: "/dashboard", label: "Overview", icon: <OverviewIcon /> },
     ];
     if (business) {
-      if (bizType === "food") {
+      // Same flag-based gating as the legacy `tabs` array — show tabs
+      // for whichever commerce flow the business has explicitly enabled.
+      const showOrders = business.accepts_orders;
+      const showBookings = business.accepts_bookings;
+      const menuLabel = bizType === "retail" ? "Catalog" : "Menu";
+      if (showOrders) {
         mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        mainTabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
-      } else if (bizType === "retail") {
-        mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        mainTabs.push({ href: "/dashboard/menu", label: "Catalog", icon: <MenuIcon /> });
-      } else if (bizType === "service") {
-        mainTabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
-      } else {
-        mainTabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        mainTabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
+        mainTabs.push({ href: "/dashboard/menu", label: menuLabel, icon: <MenuIcon /> });
+      }
+      if (showBookings) {
         mainTabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
       }
     }
@@ -378,7 +384,10 @@ export default function DashboardShell({
     // Manage section
     const manageTabs: TabDef[] = [];
     if (business) {
-      if (bizType === "service" || !bizType || bizType === "food" || bizType === "retail") {
+      // Services & Staff is only useful when the business takes
+      // bookings — gate it on `accepts_bookings` so retail-only shops
+      // don't see a configuration surface they can't use.
+      if (business.accepts_bookings) {
         manageTabs.push({ href: "/dashboard/services", label: "Services & Staff", icon: <ServicesIcon /> });
       }
       manageTabs.push({ href: "/dashboard/customers", label: "Customers", icon: <CustomersIcon /> });
@@ -438,10 +447,13 @@ export default function DashboardShell({
         title: "Creator",
         tabs: [
           { href: "/dashboard/creator/content", label: "Content", icon: <ContentIcon /> },
+          { href: "/dashboard/creator/channel", label: "Channel", icon: <ContentIcon /> },
           { href: "/dashboard/creator/albums", label: "Albums", icon: <ContentIcon /> },
+          { href: "/dashboard/creator/albums/new", label: "+ New Release", icon: <ContentIcon /> },
           { href: "/dashboard/creator/live", label: "Live", icon: <LiveIcon /> },
           { href: "/dashboard/creator/featured", label: "Featured", icon: <ContentIcon /> },
           { href: "/dashboard/creator/earnings", label: "Earnings", icon: <EarningsIcon /> },
+          { href: "/dashboard/creator/settings/stripe", label: "Stripe Payouts", icon: <PayoutsIcon /> },
         ],
       });
     }
@@ -452,6 +464,15 @@ export default function DashboardShell({
       title: "Events",
       tabs: [
         { href: "/dashboard/events", label: "My Events", icon: <ContentIcon /> },
+        { href: "/dashboard/events/new", label: "+ New Event", icon: <ContentIcon /> },
+      ],
+    });
+
+    // Trash — soft-deleted content + restore.
+    s.push({
+      title: "Account",
+      tabs: [
+        { href: "/dashboard/trash", label: "Trash", icon: <ContentIcon /> },
       ],
     });
 
@@ -467,17 +488,21 @@ export default function DashboardShell({
 
     // Business owner
     if (business) {
+      // Bottom-nav mirrors the same accepts_* gating used elsewhere in
+      // this shell so a single tab tray works for businesses that
+      // sell + book simultaneously.
       const tabs: TabDef[] = [
         { href: "/dashboard", label: "Home", icon: <HomeIcon /> },
       ];
-      if (bizType === "food" || bizType === "retail") {
+      const showOrders = business.accepts_orders;
+      const showBookings = business.accepts_bookings;
+      const menuLabel = bizType === "retail" ? "Catalog" : "Menu";
+      if (showOrders) {
         tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        tabs.push({ href: "/dashboard/menu", label: bizType === "retail" ? "Catalog" : "Menu", icon: <MenuIcon /> });
-      } else if (bizType === "service") {
+        tabs.push({ href: "/dashboard/menu", label: menuLabel, icon: <MenuIcon /> });
+      }
+      if (showBookings) {
         tabs.push({ href: "/dashboard/bookings", label: "Bookings", icon: <BookingsIcon /> });
-      } else {
-        tabs.push({ href: "/dashboard/orders", label: "Orders", icon: <OrdersIcon /> });
-        tabs.push({ href: "/dashboard/menu", label: "Menu", icon: <MenuIcon /> });
       }
       tabs.push({ href: "/dashboard/inbox", label: "Inbox", icon: <InboxIcon /> });
       return tabs;

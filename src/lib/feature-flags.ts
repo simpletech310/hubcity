@@ -9,7 +9,7 @@ export const FEATURE_FLAGS_DEFAULTS: Record<string, boolean> = {
   civic_enabled: false,
   multi_city_enabled: true,
   creator_studio_enabled: true,
-  spanish_enabled: false,
+  spanish_enabled: true,
 };
 
 /**

@@ -81,31 +81,8 @@ export async function POST(request: Request) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Only non-citizen roles can create groups
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    const allowedRoles = [
-      "business_owner",
-      "city_official",
-      "admin",
-      "content_creator",
-      "city_ambassador",
-      "chamber_admin",
-      "resource_provider",
-      "school_trustee",
-    ];
-
-    if (!profile || !allowedRoles.includes(profile.role)) {
-      return NextResponse.json(
-        { error: "Only authorized roles can create groups" },
-        { status: 403 }
-      );
-    }
+    // Group creation is open to all signed-in users as of migration 108.
+    // RLS still enforces auth.uid() = created_by on INSERT.
 
     const body = await request.json();
     const { name, description, category, image_url, is_public, tags } = body;

@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/editorial";
 import ProfileHero from "@/components/profile/ProfileHero";
 import ProfileMusicShelf from "@/components/profile/ProfileMusicShelf";
+import ProfilePodcastShelf, {
+  type PodcastShelfShow,
+} from "@/components/profile/ProfilePodcastShelf";
 import ProfileChannelStrip from "@/components/profile/ProfileChannelStrip";
 import ProfileBusinessStrip from "@/components/profile/ProfileBusinessStrip";
 import ProfileDealsRow from "@/components/profile/ProfileDealsRow";
@@ -42,13 +45,21 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("display_name")
+    .select("display_name, bio, avatar_url, handle")
     .eq("handle", handle)
     .single();
 
-  return {
-    title: profile ? `${profile.display_name} -- Culture` : "Profile -- Culture",
-  };
+  if (!profile) return { title: "Profile not found" };
+
+  const { buildOg } = await import("@/lib/og");
+  return buildOg({
+    title: profile.display_name || `@${profile.handle}`,
+    description:
+      profile.bio ?? `${profile.display_name || `@${profile.handle}`} on Culture.`,
+    image: profile.avatar_url ?? null,
+    type: "profile",
+    path: `/user/${profile.handle}`,
+  });
 }
 
 const ROLE_LABEL_MAP: Record<string, string> = {
@@ -225,6 +236,91 @@ export default async function PublicProfilePage({
     release_type: string | null;
     release_date: string | null;
   }>;
+
+  // Artwork — combined creative-works count across exhibits + gallery
+  // items. Surfaces as the ARTWORK stat in the hero AND drives a new
+  // "ARTWORK" section below the music shelf for visual artists.
+  const [{ data: artistGalleryItems }, { data: artistExhibits }] =
+    await Promise.all([
+      supabase
+        .from("gallery_items")
+        .select("id, slug, title, image_urls, item_type, year_created, medium")
+        .eq("artist_id", profile.id)
+        .eq("is_published", true)
+        .order("display_order", { ascending: true })
+        .limit(24),
+      supabase
+        .from("museum_exhibits")
+        .select("id, slug, title, subtitle, cover_image_url, era")
+        .eq("created_by", profile.id)
+        .eq("is_published", true)
+        .order("display_order", { ascending: true })
+        .limit(12),
+    ]);
+  const profileArtworks = (artistGalleryItems ?? []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    image_urls: string[] | null;
+    item_type: string | null;
+    year_created: string | null;
+    medium: string | null;
+  }>;
+  const profileExhibits = (artistExhibits ?? []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    cover_image_url: string | null;
+    era: string | null;
+  }>;
+  const artworkCount = profileArtworks.length + profileExhibits.length;
+
+  // Podcast shows hosted by this creator. We aggregate by `show_slug`
+  // because the `podcasts` table stores one row per episode — the
+  // shelf wants one tile per show. Ordered by most-recent episode.
+  const { data: podcastEpisodes } = await supabase
+    .from("podcasts")
+    .select(
+      "show_slug, show_title, show_description, thumbnail_url, published_at, is_published",
+    )
+    .eq("creator_id", profile.id)
+    .eq("is_published", true)
+    .not("show_slug", "is", null);
+  const profilePodcasts: PodcastShelfShow[] = (() => {
+    const byShow = new Map<string, PodcastShelfShow>();
+    for (const ep of (podcastEpisodes ?? []) as Array<{
+      show_slug: string;
+      show_title: string | null;
+      show_description: string | null;
+      thumbnail_url: string | null;
+      published_at: string | null;
+    }>) {
+      const cur = byShow.get(ep.show_slug);
+      if (cur) {
+        cur.episode_count += 1;
+        if (
+          ep.published_at &&
+          (!cur.latest_episode_at || ep.published_at > cur.latest_episode_at)
+        ) {
+          cur.latest_episode_at = ep.published_at;
+          cur.cover_url = ep.thumbnail_url ?? cur.cover_url;
+        }
+      } else {
+        byShow.set(ep.show_slug, {
+          show_slug: ep.show_slug,
+          show_title: ep.show_title ?? ep.show_slug,
+          show_description: ep.show_description,
+          cover_url: ep.thumbnail_url,
+          episode_count: 1,
+          latest_episode_at: ep.published_at,
+        });
+      }
+    }
+    return Array.from(byShow.values()).sort((a, b) =>
+      (b.latest_episode_at ?? "").localeCompare(a.latest_episode_at ?? ""),
+    );
+  })();
 
   // Viewer's reactions on this profile's posts (for the grid overlay).
   const userReactions: Record<string, ReactionEmoji[]> = {};
@@ -449,15 +545,24 @@ export default async function PublicProfilePage({
 
   // Editorial numbered sections — dynamically built so numerals stay in sync
   // with what we actually render below. Order defines the reading flow.
-  const numberedSections: string[] = ["posts"];
-  if (profileReels.length > 0 || isOwner) numberedSections.push("reels");
+  // "moments" merges what used to be the legacy "posts" + "reels" sections —
+  // both render as a single grid now so creators don't have to think about
+  // which surface to drop content into.
+  const numberedSections: string[] = ["moments"];
+  if (artworkCount > 0) numberedSections.push("artwork");
   if (profileAlbums.length > 0) numberedSections.push("music");
+  if (profilePodcasts.length > 0) numberedSections.push("podcasts");
   if (events.length > 0) numberedSections.push("events");
   if (channel) numberedSections.push("channel");
   if (ownedBusiness) numberedSections.push("business");
   if (deals.length > 0) numberedSections.push("deals");
   if (ownedResources.length > 0) numberedSections.push("resources");
-  const sectionIndex = (key: string) => numberedSections.indexOf(key) + 1;
+  // Legacy alias — older render paths still call sectionIndex("posts")
+  // and sectionIndex("reels"); both resolve to the merged moments index.
+  const sectionIndex = (key: string) => {
+    const legacy = key === "posts" || key === "reels" ? "moments" : key;
+    return numberedSections.indexOf(legacy) + 1;
+  };
 
   return (
     <div className="culture-surface animate-fade-in pb-24 min-h-dvh">
@@ -480,6 +585,7 @@ export default async function PublicProfilePage({
         postCount={postCount ?? 0}
         totalLikes={totalLikes}
         galleryCount={gallery.length}
+        artworkCount={artworkCount}
         creatorStripeAccountId={creatorStripeAccountId}
         currentUserId={currentUser?.id ?? null}
         isOwner={isOwner}
@@ -501,20 +607,41 @@ export default async function PublicProfilePage({
       )}
 
 
-      {/* --- № 01 POSTS --- */}
+      {/* --- № 01 MOMENTS — merges posts + reels into one tab so creators
+                              don't have to pick which surface to publish to.
+                              Reels rail surfaces above the posts grid; both
+                              count toward the same "ENTRIES" tally. */}
       <section className="pt-5 pb-2">
         <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
           <div className="flex items-baseline gap-3 min-w-0">
-            <EditorialNumber n={sectionIndex("posts")} size="lg" />
-            <SectionKicker tone="muted">Posts</SectionKicker>
+            <EditorialNumber n={sectionIndex("moments")} size="lg" />
+            <SectionKicker tone="muted">Moments</SectionKicker>
           </div>
-          <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
-            {postCount ?? userPosts.length} {(postCount ?? userPosts.length) === 1 ? "ENTRY" : "ENTRIES"}
+          <span
+            className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums"
+            style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+          >
+            {(postCount ?? userPosts.length) + profileReels.length}{" "}
+            {(postCount ?? userPosts.length) + profileReels.length === 1
+              ? "ENTRY"
+              : "ENTRIES"}
           </span>
         </div>
         <div className="px-5 mb-5">
           <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
         </div>
+
+        {(profileReels.length > 0 || isOwner) && (
+          <div className="mb-5">
+            <ReelsRail
+              reels={profileReels}
+              label=""
+              showSeeAll={false}
+              canPost={isOwner}
+            />
+          </div>
+        )}
+
         <div className="px-5">
           <UserPostsGrid
             posts={userPosts}
@@ -524,29 +651,162 @@ export default async function PublicProfilePage({
         </div>
       </section>
 
-      {/* --- REELS --- */}
-      {(profileReels.length > 0 || isOwner) && (
+      {/* --- ARTWORK (exhibits + gallery items / artworks / murals) ---
+              Surfaces a creative-works portfolio for visual artists.
+              Each tile links back to the museum surfaces (/culture/exhibits,
+              /culture/gallery) where the full record lives. */}
+      {artworkCount > 0 && (
         <>
           <IssueDivider />
           <section>
             <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
-              <div className="flex items-baseline gap-3">
-                <EditorialNumber n={sectionIndex("reels")} size="lg" />
-                <SectionKicker tone="muted">Moments</SectionKicker>
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("artwork")} size="lg" />
+                <SectionKicker tone="muted">Artwork</SectionKicker>
               </div>
-              <span className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums" style={{ color: "var(--ink-strong)", opacity: 0.5 }}>
-                {profileReels.length}
+              <span
+                className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums"
+                style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+              >
+                {artworkCount} {artworkCount === 1 ? "PIECE" : "PIECES"}
               </span>
             </div>
             <div className="px-5 mb-5">
               <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
             </div>
-            <ReelsRail
-              reels={profileReels}
-              label=""
-              showSeeAll={false}
-              canPost={isOwner}
-            />
+
+            {profileExhibits.length > 0 && (
+              <div className="px-5 mb-4">
+                <p
+                  className="c-kicker mb-2"
+                  style={{ fontSize: 10, color: "var(--ink-mute)" }}
+                >
+                  § EXHIBITS
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {profileExhibits.map((ex) => (
+                    <a
+                      key={ex.id}
+                      href={`/culture/exhibits/${ex.slug}`}
+                      className="block press"
+                    >
+                      <div
+                        className="relative overflow-hidden"
+                        style={{
+                          aspectRatio: "1/1",
+                          background: "var(--ink-strong)",
+                          border: "2px solid var(--rule-strong-c)",
+                        }}
+                      >
+                        {ex.cover_image_url && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={ex.cover_image_url}
+                            alt={ex.title}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        <span
+                          className="absolute top-1.5 left-1.5 c-kicker"
+                          style={{
+                            fontSize: 8,
+                            letterSpacing: "0.14em",
+                            background: "rgba(0,0,0,0.55)",
+                            color: "#fff",
+                            padding: "2px 5px",
+                            border: "1px solid rgba(255,255,255,0.18)",
+                          }}
+                        >
+                          EXHIBIT
+                        </span>
+                      </div>
+                      <p
+                        className="c-card-t mt-2 line-clamp-1"
+                        style={{ fontSize: 13, color: "var(--ink-strong)" }}
+                      >
+                        {ex.title}
+                      </p>
+                      {(ex.subtitle || ex.era) && (
+                        <p
+                          className="c-meta mt-0.5 line-clamp-1"
+                          style={{
+                            fontSize: 11,
+                            color: "var(--ink-strong)",
+                            opacity: 0.65,
+                          }}
+                        >
+                          {[ex.subtitle, ex.era].filter(Boolean).join(" · ")}
+                        </p>
+                      )}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {profileArtworks.length > 0 && (
+              <div className="px-5">
+                <p
+                  className="c-kicker mb-2"
+                  style={{ fontSize: 10, color: "var(--ink-mute)" }}
+                >
+                  § PIECES
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {profileArtworks.map((art) => {
+                    const cover = art.image_urls?.[0] ?? null;
+                    return (
+                      <a
+                        key={art.id}
+                        href={`/culture/gallery/${art.slug}`}
+                        className="block press"
+                      >
+                        <div
+                          className="relative overflow-hidden"
+                          style={{
+                            aspectRatio: "1/1",
+                            background: "var(--ink-strong)",
+                            border: "2px solid var(--rule-strong-c)",
+                          }}
+                        >
+                          {cover && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={cover}
+                              alt={art.title}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                          {art.item_type && (
+                            <span
+                              className="absolute bottom-1 right-1 c-kicker"
+                              style={{
+                                fontSize: 8,
+                                background: "rgba(0,0,0,0.55)",
+                                color: "#fff",
+                                padding: "1px 4px",
+                              }}
+                            >
+                              {art.item_type.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className="c-meta mt-1 line-clamp-1"
+                          style={{
+                            fontSize: 10,
+                            color: "var(--ink-strong)",
+                          }}
+                        >
+                          {art.title}
+                          {art.year_created ? ` · ${art.year_created}` : ""}
+                        </p>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </section>
         </>
       )}
@@ -573,6 +833,34 @@ export default async function PublicProfilePage({
             </div>
             <div className="px-5">
               <ProfileMusicShelf albums={profileAlbums} />
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* --- PODCASTS --- */}
+      {profilePodcasts.length > 0 && (
+        <>
+          <IssueDivider />
+          <section>
+            <div className="px-5 mb-2.5 flex items-baseline justify-between gap-3">
+              <div className="flex items-baseline gap-3 min-w-0">
+                <EditorialNumber n={sectionIndex("podcasts")} size="lg" />
+                <SectionKicker tone="muted">Podcasts</SectionKicker>
+              </div>
+              <span
+                className="text-[10px] font-bold tracking-editorial-tight uppercase tabular-nums"
+                style={{ color: "var(--ink-strong)", opacity: 0.5 }}
+              >
+                {profilePodcasts.length}{" "}
+                {profilePodcasts.length === 1 ? "SHOW" : "SHOWS"}
+              </span>
+            </div>
+            <div className="px-5 mb-5">
+              <div style={{ height: 2, background: "var(--rule-strong-c)" }} />
+            </div>
+            <div className="px-5">
+              <ProfilePodcastShelf shows={profilePodcasts} />
             </div>
           </section>
         </>

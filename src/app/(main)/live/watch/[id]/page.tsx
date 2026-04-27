@@ -1,6 +1,52 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import WatchPage from "@/components/live/WatchPage";
+import { buildOg } from "@/lib/og";
+import { SITE_DOMAIN } from "@/lib/branding";
 import type { ChannelVideo } from "@/types/database";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: video } = await supabase
+    .from("channel_videos")
+    .select("id, title, description, thumbnail_url, mux_playback_id, duration")
+    .eq("id", id)
+    .maybeSingle();
+  if (!video) return { title: "Video not found" };
+
+  const thumb =
+    video.thumbnail_url ||
+    (video.mux_playback_id
+      ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?fit_mode=smartcrop&width=1200&height=630`
+      : null);
+
+  const meta = buildOg({
+    title: video.title || "Watch on Live",
+    description: video.description ?? "Watch on Hub City Live.",
+    image: thumb,
+    type: "video.other",
+    path: `/live/watch/${video.id}`,
+  });
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: video.title,
+    description: video.description || undefined,
+    thumbnailUrl: thumb || undefined,
+    uploadDate: undefined,
+    duration: video.duration ? `PT${Math.round(video.duration)}S` : undefined,
+    contentUrl: `${SITE_DOMAIN}/live/watch/${video.id}`,
+  };
+  return {
+    ...meta,
+    other: { "application/ld+json": JSON.stringify(jsonLd) },
+  };
+}
 
 export default async function VideoWatchPage({
   params,

@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveCity } from "@/lib/city-context";
 import Icon from "@/components/ui/Icon";
 import CreatorCard, { type WorkItem } from "@/components/creators/CreatorCard";
+import FeaturedCreatorsCarousel from "@/components/creators/FeaturedCreatorsCarousel";
+import CreatorsSearchBar from "@/components/creators/CreatorsSearchBar";
 import { resolveFeaturedMedia, type FeaturedMedia } from "@/lib/featured-media";
 import { deriveDiscipline } from "@/lib/creator-discipline";
 
@@ -87,7 +89,7 @@ type CreatorVideo = {
   channel_id: string;
 };
 
-type SearchParams = { role?: string; city?: string };
+type SearchParams = { role?: string; city?: string; q?: string };
 
 export default async function CreatorsPage({
   searchParams,
@@ -101,6 +103,7 @@ export default async function CreatorsPage({
   const selectedRole: RoleKey | "all" =
     sp.role && isRoleKey(sp.role) ? sp.role : "all";
   const selectedCitySlug = sp.city && sp.city !== "all" ? sp.city : "all";
+  const searchQuery = (sp.q ?? "").trim();
 
   const { data: cityRows } = await supabase
     .from("cities")
@@ -122,6 +125,17 @@ export default async function CreatorsPage({
     .not("handle", "is", null);
   if (selectedRole !== "all") query = query.eq("role", selectedRole);
   if (selectedCity) query = query.eq("city_id", selectedCity.id);
+  // Free-text search on display_name OR handle. ilike escaping is done
+  // by Supabase; we just sanitize the % and , characters that would
+  // confuse the .or() syntax.
+  if (searchQuery) {
+    const safe = searchQuery.replace(/[,%]/g, "");
+    if (safe) {
+      query = query.or(
+        `display_name.ilike.%${safe}%,handle.ilike.%${safe}%`,
+      );
+    }
+  }
 
   const { data: creatorRows } = await query.order("display_name", { ascending: true });
   const creators = (creatorRows ?? []) as unknown as CreatorProfile[];
@@ -137,9 +151,17 @@ export default async function CreatorsPage({
   const creatorIds = creators.map((c) => c.id);
   const nowISO = new Date().toISOString();
 
-  const [postsRes, reelsRes, channelsRes, albumsRes, galleryRes] =
+  const [postsRes, reelsRes, channelsRes, albumsRes, galleryRes, artworksRes, exhibitsRes] =
     creatorIds.length === 0
-      ? [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { data: [] }]
+      ? [
+          { data: [] },
+          { data: [] },
+          { data: [] },
+          { data: [] },
+          { data: [] },
+          { data: [] },
+          { data: [] },
+        ]
       : await Promise.all([
           supabase
             .from("posts")
@@ -178,6 +200,20 @@ export default async function CreatorsPage({
             .in("owner_id", creatorIds)
             .order("display_order", { ascending: true })
             .limit(200),
+          // Artwork stat data — gallery_items (artist's pieces) + museum_exhibits.
+          // Combined as the ARTWORK count on each CreatorCard.
+          supabase
+            .from("gallery_items")
+            .select("id, artist_id")
+            .in("artist_id", creatorIds)
+            .eq("is_published", true)
+            .limit(400),
+          supabase
+            .from("museum_exhibits")
+            .select("id, created_by")
+            .in("created_by", creatorIds)
+            .eq("is_published", true)
+            .limit(120),
         ]);
 
   const posts = (postsRes.data ?? []) as CreatorPost[];
@@ -187,6 +223,28 @@ export default async function CreatorsPage({
   type CreatorGalleryImage = { id: string; image_url: string; caption: string | null; owner_id: string };
   const albums = (albumsRes.data ?? []) as CreatorAlbum[];
   const galleryImages = (galleryRes.data ?? []) as CreatorGalleryImage[];
+  const artworkRows = (artworksRes.data ?? []) as Array<{
+    id: string;
+    artist_id: string;
+  }>;
+  const exhibitRows = (exhibitsRes.data ?? []) as Array<{
+    id: string;
+    created_by: string;
+  }>;
+  // Artwork count per creator = gallery_items + museum_exhibits combined.
+  const artworkByCreator = new Map<string, number>();
+  for (const a of artworkRows) {
+    artworkByCreator.set(
+      a.artist_id,
+      (artworkByCreator.get(a.artist_id) ?? 0) + 1,
+    );
+  }
+  for (const e of exhibitRows) {
+    artworkByCreator.set(
+      e.created_by,
+      (artworkByCreator.get(e.created_by) ?? 0) + 1,
+    );
+  }
 
   type HotPoster = {
     id: string;
@@ -340,8 +398,13 @@ export default async function CreatorsPage({
     return reelCount * 2 + postCount + vidCount * 3 + verifyBoost;
   };
   const sortedByScore = [...creators].sort((a, b) => scoreCreator(b) - scoreCreator(a));
-  const featuredCreator = sortedByScore[0] ?? null;
-  const featuredHasMedia = featuredCreator ? scoreCreator(featuredCreator) > 0 : false;
+  // Cover carousel: top 3 creators with at least some media. Falls
+  // back to fewer slides if not enough creators have content yet.
+  const coverCreators = sortedByScore
+    .filter((c) => scoreCreator(c) > 0)
+    .slice(0, 3);
+  const featuredCreator = coverCreators[0] ?? null;
+  const featuredHasMedia = !!featuredCreator;
 
   // What's the hero piece of media for the featured creator?
   let featuredMedia: {
@@ -391,11 +454,71 @@ export default async function CreatorsPage({
     }
   }
 
-  // Remove the featured creator from the main loop so the spotlight isn't
-  // duplicated below.
-  const remainingCreators = featuredCreator
-    ? creators.filter((c) => c.id !== featuredCreator.id)
-    : creators;
+  // Build a slide per cover creator for the FeaturedCreatorsCarousel.
+  // Each slide gets the strongest piece of media (video → reel → post)
+  // for that creator so the cinematic still always has something to
+  // render against.
+  const carouselSlides: import(
+    "@/components/creators/FeaturedCreatorsCarousel"
+  ).FeaturedCarouselSlide[] = [];
+  for (const c of coverCreators) {
+    const ch = channelByOwner.get(c.id);
+    const cVids = ch ? videosByChannel.get(ch.id) ?? [] : [];
+    const cReels = reelsByCreator.get(c.id) ?? [];
+    const cPosts = (postsByCreator.get(c.id) ?? []).filter((p) => p.image_url);
+    let media: import(
+      "@/components/creators/FeaturedCreatorsCarousel"
+    ).FeaturedCarouselSlide["media"] | null = null;
+    if (cVids.length > 0) {
+      const v = cVids[0];
+      media = {
+        kind: "video",
+        href: `/live/watch/${v.id}`,
+        img:
+          v.thumbnail_url ??
+          (v.mux_playback_id
+            ? `https://image.mux.com/${v.mux_playback_id}/thumbnail.webp?width=800&height=450&time=5`
+            : null),
+        title: v.title,
+        duration: v.duration,
+      };
+    } else if (cReels.length > 0) {
+      const r = cReels[0];
+      media = {
+        kind: "reel",
+        href: `/moments?r=${r.id}`,
+        img: r.poster_url,
+        title: r.caption,
+        duration: null,
+      };
+    } else if (cPosts.length > 0) {
+      const p = cPosts[0];
+      media = {
+        kind: "post",
+        href: `/user/${c.handle}`,
+        img: p.image_url,
+        title: null,
+        duration: null,
+      };
+    }
+    if (!media) continue;
+    if (!c.handle) continue; // creators query already filters null handles, but narrow for TS
+    carouselSlides.push({
+      creator: {
+        id: c.id,
+        handle: c.handle,
+        display_name: c.display_name,
+        avatar_url: c.avatar_url,
+        bio: c.bio,
+        verified: c.verification_status === "verified",
+      },
+      media,
+    });
+  }
+
+  // Featured creators stay in the main list — the user wants every
+  // creator surfaced, even when they're also the cover this week.
+  const remainingCreators = creators;
 
   return (
     <div className="culture-surface min-h-dvh animate-fade-in pb-safe">
@@ -463,6 +586,14 @@ export default async function CreatorsPage({
             </div>
           </div>
         ))}
+      </div>
+
+      {/* ── Search ─────────────────────────────────────────────── */}
+      <div
+        className="px-5 pt-3 pb-3"
+        style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+      >
+        <CreatorsSearchBar initial={searchQuery} />
       </div>
 
       {/* ── Filters ─────────────────────────────────────────────── */}
@@ -568,240 +699,9 @@ export default async function CreatorsPage({
         )}
       </div>
 
-      {/* ── FEATURED SPOTLIGHT ─ magazine cover-style hero for top creator ─ */}
-      {featuredCreator && featuredMedia && (
-        <section
-          style={{
-            background: "var(--ink-strong)",
-            borderBottom: "3px solid var(--rule-strong-c)",
-          }}
-        >
-          {/* Top byline strip */}
-          <div
-            className="flex items-center justify-between px-5 py-2.5"
-            style={{ borderBottom: "1px solid rgba(242,169,0,0.35)" }}
-          >
-            <div className="flex items-center gap-2">
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  background: "var(--gold-c)",
-                  display: "inline-block",
-                }}
-              />
-              <span
-                className="c-kicker"
-                style={{ fontSize: 9, color: "var(--gold-c)", letterSpacing: "0.14em" }}
-              >
-                THE COVER · TONIGHT&apos;S BIG STORY
-              </span>
-            </div>
-            <span
-              className="c-kicker"
-              style={{ fontSize: 9, color: "var(--paper)", opacity: 0.55 }}
-            >
-              № 00
-            </span>
-          </div>
+      {/* ── FEATURED SPOTLIGHT ─ horizontal carousel cycling top creators ── */}
+      <FeaturedCreatorsCarousel slides={carouselSlides} />
 
-          {/* Featured media — wide cinema treatment */}
-          <Link href={featuredMedia.href} className="block press relative">
-            <div
-              className="relative overflow-hidden"
-              style={{
-                aspectRatio: "16/10",
-                background: "var(--ink-strong)",
-                borderBottom: "2px solid var(--gold-c)",
-              }}
-            >
-              {featuredMedia.img && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={featuredMedia.img}
-                  alt=""
-                  className="w-full h-full object-cover"
-                  style={{ opacity: 0.78 }}
-                />
-              )}
-              {/* Cinematic gradient — dark left for type, lighter right */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(90deg, rgba(26,21,18,0.92) 0%, rgba(26,21,18,0.55) 45%, rgba(26,21,18,0.25) 100%)",
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(180deg, transparent 50%, rgba(26,21,18,0.85) 100%)",
-                }}
-              />
-
-              {/* Kind chip top-right */}
-              <div className="absolute top-4 right-4">
-                <div
-                  className="inline-flex items-center gap-1.5 px-2 py-1"
-                  style={{
-                    background: "var(--gold-c)",
-                    color: "var(--ink-strong)",
-                  }}
-                >
-                  <Icon
-                    name={featuredMedia.kind === "video" ? "film" : featuredMedia.kind === "reel" ? "video" : "photo"}
-                    size={10}
-                    style={{ color: "var(--ink-strong)" }}
-                  />
-                  <span className="c-kicker" style={{ fontSize: 9, color: "var(--ink-strong)" }}>
-                    {featuredMedia.kind === "video"
-                      ? "FEATURED FILM"
-                      : featuredMedia.kind === "reel"
-                      ? "REEL"
-                      : "FROM THE FEED"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Big play */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div
-                  className="flex items-center justify-center"
-                  style={{
-                    width: 64,
-                    height: 64,
-                    background: "var(--gold-c)",
-                    border: "3px solid var(--paper)",
-                    boxShadow: "5px 5px 0 rgba(0,0,0,0.45)",
-                  }}
-                >
-                  <svg width="22" height="22" fill="var(--ink-strong)" viewBox="0 0 10 10">
-                    <polygon points="3,1.5 9,5 3,8.5" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Bottom slab — title + creator */}
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                {featuredMedia.title && (
-                  <h2
-                    className="c-hero line-clamp-2 mb-2"
-                    style={{
-                      fontSize: 28,
-                      lineHeight: 1.0,
-                      letterSpacing: "-0.02em",
-                      color: "var(--paper)",
-                      textShadow: "0 2px 8px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {featuredMedia.title}
-                  </h2>
-                )}
-                <div className="flex items-center gap-2">
-                  <span
-                    className="c-kicker"
-                    style={{ fontSize: 9, color: "var(--gold-c)" }}
-                  >
-                    @{featuredCreator.handle}
-                  </span>
-                  {featuredCreator.verification_status === "verified" && (
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ color: "var(--gold-c)" }}>
-                      <path d="M9 12l2 2 4-4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
-                    </svg>
-                  )}
-                  {featuredMedia.duration && (
-                    <>
-                      <span
-                        className="c-kicker"
-                        style={{ fontSize: 9, color: "var(--paper)", opacity: 0.5 }}
-                      >
-                        ·
-                      </span>
-                      <span
-                        className="c-kicker tabular-nums"
-                        style={{ fontSize: 9, color: "var(--paper)", opacity: 0.65 }}
-                      >
-                        {Math.floor(featuredMedia.duration / 60)}:
-                        {Math.floor(featuredMedia.duration % 60).toString().padStart(2, "0")}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Link>
-
-          {/* Creator credit slab */}
-          <Link
-            href={`/user/${featuredCreator.handle}`}
-            className="flex items-center gap-3 px-5 py-4 press"
-          >
-            <div
-              className="shrink-0 overflow-hidden"
-              style={{
-                width: 48,
-                height: 48,
-                background: "var(--gold-c)",
-                border: "2px solid var(--gold-c)",
-              }}
-            >
-              {featuredCreator.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={featuredCreator.avatar_url}
-                  alt={featuredCreator.display_name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span
-                    className="c-card-t"
-                    style={{ fontSize: 16, color: "var(--ink-strong)" }}
-                  >
-                    {featuredCreator.display_name
-                      .split(" ")
-                      .map((w) => w[0])
-                      .join("")
-                      .slice(0, 2)
-                      .toUpperCase()}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p
-                className="c-card-t truncate"
-                style={{ fontSize: 16, color: "var(--paper)", lineHeight: 1.1 }}
-              >
-                {featuredCreator.display_name}
-              </p>
-              {featuredCreator.bio ? (
-                <p
-                  className="c-serif-it line-clamp-1 mt-0.5"
-                  style={{ fontSize: 12, color: "var(--paper)", opacity: 0.7 }}
-                >
-                  {featuredCreator.bio}
-                </p>
-              ) : featuredCreator.role ? (
-                <p
-                  className="c-kicker mt-0.5"
-                  style={{ fontSize: 9, color: "var(--paper)", opacity: 0.55 }}
-                >
-                  {(ROLE_LABEL[featuredCreator.role as RoleKey] ?? featuredCreator.role).toUpperCase()}
-                </p>
-              ) : null}
-            </div>
-            <span
-              className="c-kicker shrink-0"
-              style={{ fontSize: 9, color: "var(--gold-c)" }}
-            >
-              VIEW PROFILE ↗
-            </span>
-          </Link>
-        </section>
-      )}
 
       {/* ── № 01 · HOT RIGHT NOW — poster grid: songs / films / art ─ */}
       {hotPosters.length > 0 && (
@@ -984,6 +884,7 @@ export default async function CreatorsPage({
           videos: creatorVideos.length,
           posts: imagePosts.length,
           tracks: creatorAlbums.length,
+          artwork: artworkByCreator.get(creator.id) ?? 0,
         };
 
         const discipline = deriveDiscipline(
@@ -993,6 +894,7 @@ export default async function CreatorsPage({
             videos: creatorVideos.length,
             tracks: creatorAlbums.length,
             image_posts: imagePosts.length,
+            artwork: stats.artwork,
           }
         );
 
@@ -1059,7 +961,7 @@ export default async function CreatorsPage({
         // Build a flat WorkItem[] for the portfolio grid (uniform 1:1 squares)
         const work: WorkItem[] = [];
         for (const r of creatorReels) {
-          work.push({ id: r.id, kind: "reel", thumb: r.poster_url, href: `/reels?reel=${r.id}` });
+          work.push({ id: r.id, kind: "reel", thumb: r.poster_url, href: `/moments?r=${r.id}` });
         }
         for (const v of creatorVideos) {
           const thumb =
