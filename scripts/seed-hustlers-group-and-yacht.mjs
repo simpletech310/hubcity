@@ -436,6 +436,7 @@ async function main() {
       ticket_sales_start: new Date().toISOString(),
       ticket_sales_end: new Date(secondSat.getTime() - 6 * 60 * 60 * 1000).toISOString(),
       city_id: city.id,
+      group_id: group.id,
       created_by: profile.id,
     })
     .select("id, slug, start_date")
