@@ -171,29 +171,51 @@ export default function ReelsViewer({
       >
         <button
           onClick={() => {
+            // 1. Inline modal (ReelsRail) — close in place.
             if (onClose) {
               onClose();
               return;
             }
+            // 2. Browser-history present (e.g. came from feed / profile /
+            //    home / trending strip) — pop back so the listener returns
+            //    to whatever scroll position they had.
             if (typeof window !== "undefined" && window.history.length > 1) {
               router.back();
-            } else {
-              router.push("/");
+              return;
             }
+            // 3. Direct deep-link with no history — go to the moments
+            //    grid so it still feels like a "back" rather than a hard
+            //    bounce home.
+            router.push("/moments");
           }}
-          className="flex items-center justify-center press pointer-events-auto"
+          className="inline-flex items-center gap-1.5 press pointer-events-auto"
           style={{
-            width: 40,
-            height: 40,
-            background: "var(--paper)",
-            border: "2px solid var(--rule-strong-c)",
+            height: 32,
+            padding: "0 12px 0 10px",
+            background: "var(--gold-c)",
+            border: "2px solid var(--ink-strong)",
             color: "var(--ink-strong)",
+            fontFamily: "var(--font-archivo), Archivo, sans-serif",
+            fontWeight: 800,
+            fontSize: 11,
+            letterSpacing: "0.16em",
+            textTransform: "uppercase",
           }}
           aria-label="Back"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <path d="M19 12H5M12 19l-7-7 7-7" />
           </svg>
+          BACK
         </button>
         <div
           className="inline-flex items-center gap-1.5 px-2 pointer-events-none"

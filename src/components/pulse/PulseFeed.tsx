@@ -13,7 +13,6 @@ import PulseLiveCard from "./PulseLiveCard";
 import Icon from "@/components/ui/Icon";
 import type { IconName } from "@/components/ui/Icon";
 import Badge from "@/components/ui/Badge";
-import CityPulseBar from "./CityPulseBar";
 import ReelsRail from "@/components/reels/ReelsRail";
 import { ROLE_BADGE_MAP } from "@/lib/constants";
 import type { Post, ReactionEmoji, LiveStream, Poll, Survey, Reel } from "@/types/database";
@@ -251,6 +250,9 @@ interface PulseFeedProps {
   surveys?: Survey[];
   events?: CityEvent[];
   promotions?: Promotion[];
+  /** Kept on the interface for back-compat with callers that still pass
+   *  it; the weather/traffic strip was removed from /pulse so this is
+   *  no longer rendered. */
   trafficAlertCount?: number;
   suggestedProfiles?: SuggestedProfile[];
   reels?: Reel[];
@@ -269,7 +271,7 @@ export default function PulseFeed({
   surveys = [],
   events = [],
   promotions = [],
-  trafficAlertCount = 0,
+  // trafficAlertCount: deliberately not destructured — see prop comment.
   suggestedProfiles = [],
   reels = [],
   followedIds = [],
@@ -378,11 +380,6 @@ export default function PulseFeed({
 
   return (
     <div className="animate-fade-in pb-safe">
-      {/* ─── The Pulse Bar ─── */}
-      <div className="pt-4">
-        <CityPulseBar trafficAlertCount={trafficAlertCount} />
-      </div>
-
       {/* ─── Reels Rail ─── */}
       {(visibleReels.length > 0 || (canPost && !inFollowing)) && (
         <div className="pt-4">
