@@ -305,8 +305,25 @@ export default async function BusinessDetailPage({
     .order("start_date", { ascending: true });
   const activeChallenges = (challengesData ?? []) as import("@/types/database").FoodChallenge[];
 
-  // Fetch services if accepts bookings
-  let services: { id: string; name: string; description: string | null; duration: number; price: number }[] = [];
+  // Fetch services if accepts bookings (+ their add-ons in one shot
+  // so the section can render "+ Wine Pairing $15" etc. under each
+  // service line). Add-ons surfaced read-only for now; the booking
+  // checkout can opt into them in a follow-up pass.
+  type ServiceAddon = {
+    id: string;
+    service_id: string;
+    name: string;
+    description: string | null;
+    price: number;
+  };
+  let services: {
+    id: string;
+    name: string;
+    description: string | null;
+    duration: number;
+    price: number;
+    addons?: ServiceAddon[];
+  }[] = [];
   if (biz.accepts_bookings) {
     const { data: svcData } = await supabase
       .from("services")
@@ -314,8 +331,29 @@ export default async function BusinessDetailPage({
       .eq("business_id", biz.id)
       .eq("is_available", true)
       .order("sort_order")
-      .limit(6);
+      .limit(8);
     services = (svcData ?? []) as typeof services;
+    if (services.length > 0) {
+      const { data: addonData } = await supabase
+        .from("service_addons")
+        .select("id, service_id, name, description, price")
+        .in(
+          "service_id",
+          services.map((s) => s.id),
+        )
+        .eq("is_available", true)
+        .order("sort_order");
+      const byService = new Map<string, ServiceAddon[]>();
+      for (const a of (addonData ?? []) as ServiceAddon[]) {
+        const arr = byService.get(a.service_id) ?? [];
+        arr.push(a);
+        byService.set(a.service_id, arr);
+      }
+      services = services.map((s) => ({
+        ...s,
+        addons: byService.get(s.id) ?? [],
+      }));
+    }
   }
 
   // Featured reviews — top picks (manually flagged) or otherwise the
@@ -809,6 +847,76 @@ export default async function BusinessDetailPage({
                 >
                   ${(svc.price / 100).toFixed(0)}
                 </div>
+                {/* Add-ons sit just under the service title in the
+                    same row so customers see "what comes with this"
+                    without leaving the service. The current booking
+                    flow doesn't yet take addon ids; copy reads
+                    "Optional" so expectations stay accurate. */}
+                {svc.addons && svc.addons.length > 0 && (
+                  <div
+                    className="w-full"
+                    style={{
+                      marginTop: 8,
+                      paddingTop: 10,
+                      borderTop: "1px dashed rgba(243,238,220,0.18)",
+                      flexBasis: "100%",
+                    }}
+                  >
+                    <div
+                      className="c-kicker"
+                      style={{
+                        fontSize: 9,
+                        color: "var(--gold-c)",
+                        opacity: 0.85,
+                        marginBottom: 6,
+                      }}
+                    >
+                      § OPTIONAL ADD-ONS
+                    </div>
+                    {svc.addons.map((a) => (
+                      <div
+                        key={a.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "baseline",
+                          gap: 10,
+                          padding: "4px 0",
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            className="c-card-t"
+                            style={{ fontSize: 13, color: "var(--paper)" }}
+                          >
+                            + {a.name}
+                          </div>
+                          {a.description && (
+                            <div
+                              className="c-body-sm"
+                              style={{
+                                color: "rgba(243,238,220,0.7)",
+                                fontSize: 11,
+                                marginTop: 2,
+                              }}
+                            >
+                              {a.description}
+                            </div>
+                          )}
+                        </div>
+                        <div
+                          style={{
+                            fontFamily:
+                              "var(--font-anton), Anton, Impact, sans-serif",
+                            fontSize: 14,
+                            color: "var(--gold-c)",
+                          }}
+                        >
+                          +${(a.price / 100).toFixed(0)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
