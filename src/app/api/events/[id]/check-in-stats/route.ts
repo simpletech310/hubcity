@@ -24,8 +24,20 @@ export async function GET(
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "city_official", "city_ambassador"].includes(profile.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const isStaff =
+      profile && ["admin", "city_official", "city_ambassador"].includes(profile.role);
+
+    // Non-staff users can still see stats for events they themselves
+    // created — the creator-side dashboard check-in page calls this.
+    if (!isStaff) {
+      const { data: ev } = await supabase
+        .from("events")
+        .select("created_by")
+        .eq("id", eventId)
+        .maybeSingle();
+      if (!ev || ev.created_by !== user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
     }
 
     // Fetch all tickets for this event, joined through order_items → ticket_config → venue_section

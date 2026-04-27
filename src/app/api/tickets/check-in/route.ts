@@ -12,7 +12,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check role — must be admin or city_official
+    // Role check — admin / city_official / city_ambassador get global
+    // access. Anyone else must be the creator of the event the ticket
+    // belongs to (verified after we resolve the ticket below). Citizens
+    // never reach this endpoint.
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("role")
@@ -23,12 +26,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (profile.role !== "admin" && profile.role !== "city_official" && profile.role !== "city_ambassador") {
-      return NextResponse.json(
-        { error: "Insufficient permissions" },
-        { status: 403 }
-      );
-    }
+    const isStaff =
+      profile.role === "admin" ||
+      profile.role === "city_official" ||
+      profile.role === "city_ambassador";
 
     const { ticket_code } = await request.json();
 
@@ -51,6 +52,22 @@ export async function POST(request: Request) {
         { error: "Ticket not found" },
         { status: 404 }
       );
+    }
+
+    // If non-staff, allow only when this user is the event creator —
+    // i.e. checking in attendees at an event they themselves own.
+    if (!isStaff) {
+      const { data: ev } = await supabase
+        .from("events")
+        .select("created_by")
+        .eq("id", ticket.event_id)
+        .maybeSingle();
+      if (!ev || ev.created_by !== user.id) {
+        return NextResponse.json(
+          { error: "Insufficient permissions" },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if already checked in
