@@ -147,7 +147,11 @@ export default async function CreatorsPage({
             .in("author_id", creatorIds)
             .eq("is_published", true)
             .order("created_at", { ascending: false })
-            .limit(120),
+            // Bumped 120 → 400 so a creator with a deep wall (e.g. the
+            // museum @compton-museum has 13 posts + climbing) actually
+            // gets enough rows to populate the portfolio grid instead
+            // of being crowded out by everyone else's recent activity.
+            .limit(400),
           supabase
             .from("reels")
             .select("id, video_url, poster_url, caption, author_id, like_count")
@@ -155,7 +159,7 @@ export default async function CreatorsPage({
             .eq("is_published", true)
             .or(`expires_at.is.null,expires_at.gt.${nowISO}`)
             .order("created_at", { ascending: false })
-            .limit(80),
+            .limit(160),
           supabase
             .from("channels")
             .select("id, slug, name, owner_id, follower_count")
@@ -167,13 +171,13 @@ export default async function CreatorsPage({
             .in("creator_id", creatorIds)
             .eq("is_published", true)
             .order("release_date", { ascending: false, nullsFirst: false })
-            .limit(60),
+            .limit(120),
           supabase
             .from("profile_gallery_images")
             .select("id, image_url, caption, owner_id, display_order")
             .in("owner_id", creatorIds)
             .order("display_order", { ascending: true })
-            .limit(60),
+            .limit(200),
         ]);
 
   const posts = (postsRes.data ?? []) as CreatorPost[];
