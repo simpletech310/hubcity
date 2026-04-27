@@ -316,10 +316,16 @@ export default function DashboardShell({
     if (isCreator && !business) {
       t.push({ href: "/dashboard/creator/content", label: "Content", icon: <ContentIcon /> });
       t.push({ href: "/dashboard/creator/live", label: "Live", icon: <LiveIcon /> });
+      t.push({ href: "/dashboard/creator/albums", label: "Albums", icon: <ContentIcon /> });
       t.push({ href: "/dashboard/creator/collabs", label: "Collabs", icon: <CollabsIcon /> });
       t.push({ href: "/dashboard/creator/earnings", label: "Earnings", icon: <EarningsIcon /> });
       t.push({ href: "/dashboard/creator/audience", label: "Audience", icon: <CustomersIcon /> });
     }
+
+    // My Events — every non-citizen role can create events (per RLS
+    // in migration 047), so the edit-my-events list shows for all
+    // dashboard-eligible users.
+    t.push({ href: "/dashboard/events", label: "My Events", icon: <ContentIcon /> });
 
     t.push({ href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> });
 
@@ -376,6 +382,7 @@ export default function DashboardShell({
         manageTabs.push({ href: "/dashboard/services", label: "Services & Staff", icon: <ServicesIcon /> });
       }
       manageTabs.push({ href: "/dashboard/customers", label: "Customers", icon: <CustomersIcon /> });
+      manageTabs.push({ href: "/dashboard/business/edit", label: "Business Info", icon: <LocationIcon /> });
       manageTabs.push({ href: "/dashboard/profile", label: "Profile & Photos", icon: <LocationIcon /> });
       manageTabs.push({ href: "/dashboard/payouts", label: "Payouts", icon: <PayoutsIcon /> });
     }
@@ -425,8 +432,31 @@ export default function DashboardShell({
       });
     }
 
+    // Creator section — shows the album editor + per-creator pages
+    if (isCreator && !business) {
+      s.push({
+        title: "Creator",
+        tabs: [
+          { href: "/dashboard/creator/content", label: "Content", icon: <ContentIcon /> },
+          { href: "/dashboard/creator/albums", label: "Albums", icon: <ContentIcon /> },
+          { href: "/dashboard/creator/live", label: "Live", icon: <LiveIcon /> },
+          { href: "/dashboard/creator/featured", label: "Featured", icon: <ContentIcon /> },
+          { href: "/dashboard/creator/earnings", label: "Earnings", icon: <EarningsIcon /> },
+        ],
+      });
+    }
+
+    // My Events — visible to everyone in the dashboard. Each user only
+    // sees the events they own (the page itself scopes by created_by).
+    s.push({
+      title: "Events",
+      tabs: [
+        { href: "/dashboard/events", label: "My Events", icon: <ContentIcon /> },
+      ],
+    });
+
     return s;
-  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, canPostJobs]);
+  }, [business, isResourceManager, isChamberAdmin, isBusinessOwner, isCreator, canPostJobs]);
 
   // Settings tab (always at bottom, separate from sections)
   const settingsTab: TabDef = { href: "/dashboard/settings", label: "Settings", icon: <SettingsIcon /> };
