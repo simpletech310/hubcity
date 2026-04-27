@@ -51,6 +51,49 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "i.giphy.com",
       },
+      // Apple CDN — used for real album / podcast / movie / TV show
+      // cover art fetched from the iTunes Search API. Hosts span
+      // is1-ssl through is5-ssl across regions.
+      {
+        protocol: "https",
+        hostname: "is1-ssl.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "is2-ssl.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "is3-ssl.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "is4-ssl.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "is5-ssl.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a1.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a2.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a3.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a4.mzstatic.com",
+      },
+      {
+        protocol: "https",
+        hostname: "a5.mzstatic.com",
+      },
     ],
   },
 };
