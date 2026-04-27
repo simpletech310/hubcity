@@ -16,6 +16,11 @@ import CityFilterChip from "@/components/ui/CityFilterChip";
 import { formatDistanceToNow } from "date-fns";
 import type { Post } from "@/types/database";
 
+// Always render fresh — the home page surfaces newest deals / events /
+// posts / moments and any cache lag would mean visitors miss new
+// content for minutes at a time.
+export const dynamic = "force-dynamic";
+
 function timeAgo(dateStr: string): string {
   return formatDistanceToNow(new Date(dateStr), { addSuffix: true });
 }
@@ -34,6 +39,23 @@ type RecentPodcast = {
   episode_number: number | null;
   thumbnail_url: string | null;
   duration: number | null;
+};
+
+type ActiveDeal = {
+  id: string;
+  title: string;
+  description: string;
+  discount_label: string;
+  promo_code: string | null;
+  valid_until: string;
+  business: {
+    id: string;
+    name: string;
+    slug: string;
+    category: string;
+    image_urls: string[] | null;
+    is_published: boolean;
+  } | null;
 };
 
 export default async function HomePage({
@@ -77,6 +99,7 @@ export default async function HomePage({
     { data: recentPodcasts },
     { data: trendingReelsRaw },
     { data: trendingEventsRaw },
+    { data: activeDealsRaw },
   ] = await Promise.all([
     supabase.auth.getUser(),
     scopeToCity(
@@ -175,6 +198,19 @@ export default async function HomePage({
       .order("created_at", { ascending: false })
       .limit(6)
       .returns<TrendingEvent[]>(),
+    // Active deals — newest first. Joined to the parent business so the
+    // tile can render brand context + a link. Page hides the rail when
+    // no rows come back so freshly-deployed instances don't show empties.
+    supabase
+      .from("business_deals")
+      .select(
+        "id, title, description, discount_label, promo_code, valid_until, business:businesses!inner(id, name, slug, category, image_urls, is_published)",
+      )
+      .eq("is_active", true)
+      .lte("valid_from", nowIso)
+      .gte("valid_until", nowIso)
+      .order("created_at", { ascending: false })
+      .limit(6),
   ]);
 
   // ── Personalization data (logged-in only, all errors are non-fatal) ──────
@@ -300,6 +336,29 @@ export default async function HomePage({
   const trendingReels: TrendingReel[] = trendingReelsRaw ?? [];
   const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
 
+  // Flatten the joined deals shape — Supabase JS may return `business`
+  // as an object or a single-item array depending on the relationship,
+  // so coerce to the first row regardless.
+  const activeDeals = ((activeDealsRaw ?? []) as unknown as ActiveDeal[])
+    .map((d) => {
+      const b = Array.isArray(d.business) ? d.business[0] : d.business;
+      if (!b || !b.is_published) return null;
+      return {
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        discount_label: d.discount_label,
+        promo_code: d.promo_code,
+        valid_until: d.valid_until,
+        business_id: b.id,
+        business_name: b.name,
+        business_slug: b.slug,
+        business_category: b.category,
+        business_cover: b.image_urls?.[0] ?? null,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x !== null);
+
   // ── Derived UI values ────────────────────────────────────────────────────
   // The label tracks the *filter* city when one is set, and only falls back
   // to the home city's name when the listener hasn't filtered down. With no
@@ -410,29 +469,7 @@ export default async function HomePage({
         <span className="flex-1" />
       </div>
 
-      {/* Location ink-strip */}
-      <div
-        className="flex items-center gap-2 px-[18px] py-2.5"
-        style={{ background: "var(--rule-strong-c)", color: "var(--paper)" }}
-      >
-        <span
-          className="c-live-dot inline-block"
-          style={{ width: 8, height: 8, background: "var(--green-c)" }}
-        />
-        <span className="c-kicker" style={{ color: "var(--paper)" }}>
-          ON THE BLOCK · {cityUpper} · 72°
-        </span>
-        <span className="flex-1" />
-        <Link
-          href="/choose-city"
-          className="c-kicker"
-          style={{ color: "var(--gold-c)" }}
-        >
-          CHANGE ↗
-        </Link>
-      </div>
-
-      {/* Marquee */}
+      {/* Marquee — first scrolling element after the city filter strip */}
       <CultureMarquee items={marqueeItems} />
 
       {/* Discover chip row */}
@@ -587,6 +624,113 @@ export default async function HomePage({
             })}
           </div>
         </>
+      )}
+
+      {/* § DEALS — live promo codes from local businesses */}
+      {activeDeals.length > 0 && (
+        <section>
+          <div className="px-[18px] pt-6">
+            <div className="flex items-baseline gap-3">
+              <span className="c-kicker">§ DEALS DROPPED</span>
+              <span className="ml-auto c-kicker" style={{ opacity: 0.55 }}>
+                {activeDeals.length} ACTIVE
+              </span>
+            </div>
+            <div className="c-rule mt-2 mb-3" />
+          </div>
+          <div className="overflow-x-auto scrollbar-hide pb-2">
+            <div className="flex gap-3 px-[18px]">
+              {activeDeals.map((d) => (
+                <Link
+                  key={d.id}
+                  href={`/business/${d.business_slug}`}
+                  className="shrink-0 w-[230px] press"
+                >
+                  <div
+                    className="overflow-hidden h-full"
+                    style={{
+                      background: "var(--paper-warm)",
+                      border: "2px solid var(--rule-strong-c)",
+                    }}
+                  >
+                    {d.business_cover ? (
+                      <div
+                        className="aspect-[4/3] relative overflow-hidden"
+                        style={{ background: "var(--ink-strong)" }}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={d.business_cover}
+                          alt={d.business_name}
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <span
+                          className="c-badge c-badge-gold absolute"
+                          style={{ top: 10, right: 10 }}
+                        >
+                          {d.discount_label}
+                        </span>
+                      </div>
+                    ) : (
+                      <div
+                        className="px-4 pt-4 flex items-center justify-end"
+                        style={{ background: "var(--paper-warm)" }}
+                      >
+                        <span className="c-badge c-badge-gold">
+                          {d.discount_label}
+                        </span>
+                      </div>
+                    )}
+                    <div className="px-4 py-3">
+                      <p
+                        className="c-kicker truncate"
+                        style={{
+                          fontSize: 9,
+                          letterSpacing: "0.16em",
+                          color: "var(--ink-strong)",
+                          opacity: 0.65,
+                        }}
+                      >
+                        {d.business_name.toUpperCase()}
+                      </p>
+                      <p
+                        className="c-card-t mt-1 line-clamp-2"
+                        style={{
+                          fontSize: 14,
+                          lineHeight: 1.2,
+                          color: "var(--ink-strong)",
+                        }}
+                      >
+                        {d.title}
+                      </p>
+                      {d.promo_code && (
+                        <div
+                          className="mt-2.5 px-2 py-1 text-center"
+                          style={{
+                            background: "var(--paper)",
+                            border: "2px dashed var(--rule-strong-c)",
+                          }}
+                        >
+                          <span
+                            className="font-mono"
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              color: "var(--gold-c)",
+                            }}
+                          >
+                            {d.promo_code}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* § TRENDING */}
