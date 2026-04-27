@@ -1,6 +1,6 @@
 # Hub City — Accounts Roster
 
-_Generated 2026-04-27T06:06:13.695Z_
+_Generated 2026-04-27T06:10:15.331Z_
 
 
 **Standard password for every demo account: `HubCity2026!`**
@@ -70,17 +70,6 @@ _Generated 2026-04-27T06:06:13.695Z_
   - 📺 channel **long-beach-runclub-owner** _(long-beach-runclub-owner)_
   - 👥 group **Long Beach Run Club** _(long-beach-runclub, admin)_
 
-### Source LA · @source-la
-- **Email:** `source-la@hubcity.test`
-- **Password:** `HubCity2026!`
-- **Role:** `city_ambassador` · verification: `unverified`
-- **City:** Los Angeles
-- **Attached:**
-  - 📺 channel **source-la** _(source-la)_
-  - 👥 group **South Central Run Club** _(south-central-runclub, admin)_
-  - 👥 group **BLK Film Space** _(blk-film-space, admin)_
-  - 📝 12 posts · 9 moments
-
 
 ## BUSINESS_OWNER
 
@@ -133,6 +122,20 @@ _Generated 2026-04-27T06:06:13.695Z_
   - 📺 channel **pucker-up-owner** _(pucker-up-owner)_
   - 🏪 business **Pucker Up** _(pucker-up)_
   - 📝 6 posts · 6 moments
+
+
+## RESOURCE_PROVIDER
+
+### Source LA · @source-la
+- **Email:** `source-la@hubcity.test`
+- **Password:** `HubCity2026!`
+- **Role:** `resource_provider` · verification: `unverified`
+- **City:** Los Angeles
+- **Attached:**
+  - 📺 channel **source-la** _(source-la)_
+  - 👥 group **South Central Run Club** _(south-central-runclub, admin)_
+  - 👥 group **BLK Film Space** _(blk-film-space, admin)_
+  - 📝 12 posts · 9 moments
 
 
 ## CONTENT_CREATOR
