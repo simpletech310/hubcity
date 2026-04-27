@@ -1165,7 +1165,7 @@ export default function FoodPage() {
             <div className="c-rule-hair" />
           </div>
           <div className="space-y-2.5 stagger">
-            {challenges.map((ch) => {
+            {challenges.slice(0, 5).map((ch) => {
               const iconName: IconName =
                 ch.challenge_type === "eating"
                   ? "trophy"
@@ -1173,9 +1173,10 @@ export default function FoodPage() {
                   ? "camera"
                   : "star";
               return (
-                <div
+                <Link
                   key={ch.id}
-                  className="p-4"
+                  href={`/food/challenges/${ch.slug}`}
+                  className="block p-4 press"
                   style={{
                     border: "2px solid var(--rule-strong-c)",
                     background: "var(--paper)",
@@ -1220,11 +1221,41 @@ export default function FoodPage() {
                         </p>
                       )}
                     </div>
+                    <span
+                      aria-hidden
+                      className="c-kicker shrink-0 self-center"
+                      style={{
+                        fontSize: 11,
+                        letterSpacing: "0.18em",
+                        color: "var(--gold-c)",
+                      }}
+                    >
+                      →
+                    </span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
+          {challenges.length > 5 && (
+            <Link
+              href="/food/challenges"
+              className="block text-center mt-4 press"
+              style={{
+                padding: "10px 14px",
+                background: "var(--paper-warm)",
+                border: "2px solid var(--rule-strong-c)",
+                color: "var(--ink-strong)",
+                fontFamily: "var(--font-archivo), Archivo, sans-serif",
+                fontWeight: 800,
+                fontSize: 11,
+                letterSpacing: "0.18em",
+                textTransform: "uppercase",
+              }}
+            >
+              View All {challenges.length} Challenges →
+            </Link>
+          )}
         </section>
       )}
 
