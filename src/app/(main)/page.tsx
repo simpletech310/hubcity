@@ -1,6 +1,5 @@
 import Link from "next/link";
 import LiveNowBanner from "@/components/live/LiveNowBanner";
-import TrendingStrip from "@/components/TrendingStrip";
 import type { TrendingReel, TrendingEvent } from "@/components/TrendingStrip";
 import EventSliderHero, { type HeroSlide } from "@/components/home/EventSliderHero";
 import {
@@ -780,13 +779,6 @@ export default async function HomePage({
             </div>
           </div>
         </section>
-      )}
-
-      {/* § TRENDING — header sits below the moments inside <TrendingStrip> */}
-      {(trendingReels.length > 0 || trendingEvents.length > 0) && (
-        <div className="pt-4">
-          <TrendingStrip reels={trendingReels} events={trendingEvents} />
-        </div>
       )}
 
       {/* Live on the Block — LiveNowBanner in ink block */}
