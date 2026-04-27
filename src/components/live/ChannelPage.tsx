@@ -8,6 +8,9 @@ import StreamCard from "./StreamCard";
 import ChannelSubscribeButton from "./ChannelSubscribeButton";
 import TipJar from "@/components/TipJar";
 import ProfileMusicShelf from "@/components/profile/ProfileMusicShelf";
+import ProfilePodcastShelf, {
+  type PodcastShelfShow,
+} from "@/components/profile/ProfilePodcastShelf";
 import type {
   Channel,
   ChannelVideo,
@@ -96,6 +99,9 @@ interface ChannelPageProps {
   streams: LiveStream[];
   timeBlocks: TimeBlock[];
   albums?: ChannelAlbum[];
+  /** Podcast shows hosted by this channel's owner. Aggregated server-side
+   *  from podcasts.show_slug so each tile maps to one show. */
+  podcasts?: PodcastShelfShow[];
   isFollowing: boolean;
   userId: string | null;
   stripeAccountId: string | null;
@@ -107,6 +113,7 @@ export default function ChannelPage({
   streams,
   timeBlocks,
   albums = [],
+  podcasts = [],
   isFollowing: initialFollowing,
   userId,
   stripeAccountId,
@@ -652,8 +659,11 @@ export default function ChannelPage({
                 </section>
               )}
 
-              {/* Main catalog */}
-              {regularVideos.length > 0 && (
+              {/* Main catalog — every video (including the featured one
+                  rendered as the hero) so the count on the label matches
+                  the channel's actual catalog size. The hero acts as a
+                  preview; the grid is the canonical list. */}
+              {videos.length > 0 && (
                 <section className="mb-2">
                   <div className="px-5 mb-3">
                     <div className="flex items-baseline gap-3 pb-2" style={{ borderBottom: "2px solid var(--rule-strong-c)" }}>
@@ -664,12 +674,12 @@ export default function ChannelPage({
                         ALL VIDEOS
                       </span>
                       <span className="ml-auto c-kicker tabular-nums" style={{ fontSize: 9, opacity: 0.55 }}>
-                        {regularVideos.length}
+                        {videos.length}
                       </span>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-x-3 gap-y-5 px-5">
-                    {regularVideos.map((video) => {
+                    {videos.map((video) => {
                       const thumb = video.thumbnail_url ??
                         (video.mux_playback_id
                           ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.webp?width=400&height=225&time=5`
@@ -774,6 +784,39 @@ export default function ChannelPage({
               </div>
               <div className="px-5">
                 <ProfileMusicShelf albums={albums} />
+              </div>
+            </section>
+          )}
+
+          {/* ── Podcast shelf — every show hosted by this channel's
+               owner. Mirrors the music shelf so audio + video catalog
+               sit side-by-side. */}
+          {podcasts.length > 0 && (
+            <section className="mt-8 mb-2">
+              <div className="px-5 mb-3">
+                <div
+                  className="flex items-baseline gap-3 pb-2"
+                  style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+                >
+                  <span
+                    className="c-display c-tabnum"
+                    style={{ fontSize: 22, color: "var(--gold-c)", lineHeight: 1, letterSpacing: "-0.02em" }}
+                  >
+                    §
+                  </span>
+                  <span className="c-kicker" style={{ fontSize: 11, letterSpacing: "0.14em" }}>
+                    PODCASTS
+                  </span>
+                  <span
+                    className="ml-auto c-kicker tabular-nums"
+                    style={{ fontSize: 9, opacity: 0.55 }}
+                  >
+                    {podcasts.length} {podcasts.length === 1 ? "SHOW" : "SHOWS"}
+                  </span>
+                </div>
+              </div>
+              <div className="px-5">
+                <ProfilePodcastShelf shows={podcasts} />
               </div>
             </section>
           )}

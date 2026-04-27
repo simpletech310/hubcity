@@ -83,6 +83,68 @@ export default async function ChannelDetailPage({
     .order("release_date", { ascending: false, nullsFirst: false })
     .limit(12);
 
+  // Fetch podcast episodes by the channel owner — aggregated below to
+  // one tile per show. We key off `creator_id` so podcasts work even
+  // if the host hasn't linked individual episodes to a specific
+  // `channel_id` (none of the seeded shows do).
+  type PodcastEpisodeRow = {
+    show_slug: string;
+    show_title: string | null;
+    show_description: string | null;
+    thumbnail_url: string | null;
+    published_at: string | null;
+  };
+  let rawPodcastEpisodes: PodcastEpisodeRow[] = [];
+  if (channel.owner_id) {
+    const { data } = await supabase
+      .from("podcasts")
+      .select(
+        "show_slug, show_title, show_description, thumbnail_url, published_at",
+      )
+      .eq("creator_id", channel.owner_id)
+      .eq("is_published", true)
+      .not("show_slug", "is", null);
+    rawPodcastEpisodes = (data ?? []) as unknown as PodcastEpisodeRow[];
+  }
+  const podcasts = (() => {
+    const byShow = new Map<
+      string,
+      {
+        show_slug: string;
+        show_title: string;
+        show_description: string | null;
+        cover_url: string | null;
+        episode_count: number;
+        latest_episode_at: string | null;
+      }
+    >();
+    for (const ep of rawPodcastEpisodes) {
+      const cur = byShow.get(ep.show_slug);
+      if (cur) {
+        cur.episode_count += 1;
+        if (
+          ep.published_at &&
+          (!cur.latest_episode_at || ep.published_at > cur.latest_episode_at)
+        ) {
+          cur.latest_episode_at = ep.published_at;
+          cur.cover_url = ep.thumbnail_url ?? cur.cover_url;
+        }
+      } else {
+        byShow.set(ep.show_slug, {
+          show_slug: ep.show_slug,
+          show_title: ep.show_title ?? ep.show_slug,
+          show_description: ep.show_description,
+          cover_url: ep.thumbnail_url,
+          episode_count: 1,
+          latest_episode_at: ep.published_at,
+        });
+      }
+    }
+    return Array.from(byShow.values()).sort((a, b) =>
+      (b.latest_episode_at ?? "").localeCompare(a.latest_episode_at ?? ""),
+    );
+  })();
+
   // Check follow status
   const {
     data: { user },
@@ -128,6 +190,7 @@ export default async function ChannelDetailPage({
           release_date: string | null;
         }>) ?? []
       }
+      podcasts={podcasts}
       isFollowing={isFollowing}
       userId={user?.id || null}
       stripeAccountId={stripeAccountId}

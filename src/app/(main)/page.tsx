@@ -33,6 +33,77 @@ function timeAgo(dateStr: string): string {
  * request. Safe because the page is `dynamic = "force-dynamic"`,
  * so each visit re-runs the queries AND re-shuffles.
  */
+/** A single image-led tile in the home-page Culture rail. */
+function CultureTileCard({
+  tile,
+  aspect,
+}: {
+  tile: {
+    kind: "exhibit" | "art";
+    title: string;
+    image: string | null;
+    href: string;
+    meta: string | null;
+  };
+  aspect: "1/1" | "4/3" | "2/1";
+}) {
+  return (
+    <Link
+      href={tile.href}
+      className="block press relative overflow-hidden"
+      style={{
+        aspectRatio: aspect,
+        background: "var(--ink-strong)",
+        border: "2px solid var(--rule-strong-c)",
+      }}
+    >
+      {tile.image && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={tile.image}
+          alt={tile.title}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
+      {/* Bottom gradient + label */}
+      <div
+        className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2"
+        style={{
+          background:
+            "linear-gradient(180deg, transparent 0%, rgba(26,21,18,0.88) 100%)",
+        }}
+      >
+        <p
+          className="c-card-t line-clamp-1"
+          style={{ fontSize: 12, color: "var(--paper)", lineHeight: 1.2 }}
+        >
+          {tile.title}
+        </p>
+        {tile.meta && (
+          <p
+            className="c-meta line-clamp-1"
+            style={{ fontSize: 9, color: "var(--paper)", opacity: 0.75 }}
+          >
+            {tile.meta}
+          </p>
+        )}
+      </div>
+      <span
+        className="absolute top-1.5 left-1.5 c-kicker"
+        style={{
+          fontSize: 8,
+          letterSpacing: "0.14em",
+          background: "var(--gold-c)",
+          color: "var(--ink-strong)",
+          padding: "2px 5px",
+        }}
+      >
+        {tile.kind === "exhibit" ? "EXHIBIT" : "ART"}
+      </span>
+    </Link>
+  );
+}
+
 function pickRandom<T>(arr: T[], n: number): T[] {
   if (!arr || arr.length === 0) return [];
   if (arr.length <= n) return arr.slice();
@@ -120,6 +191,8 @@ export default async function HomePage({
     { data: trendingReelsRaw },
     { data: trendingEventsRaw },
     { data: activeDealsRaw },
+    { data: cultureExhibitsRaw },
+    { data: cultureGalleryRaw },
   ] = await Promise.all([
     supabase.auth.getUser(),
     // Local Favorites pool — we pull a wider top-rated set so the
@@ -203,7 +276,8 @@ export default async function HomePage({
       .order("published_at", { ascending: false, nullsFirst: false })
       .limit(4)
       .returns<RecentPodcast[]>(),
-    // Trending reels — sorted by engagement
+    // Trending reels — sorted by engagement. Pool widened so the
+    // home-page Moments rail can shuffle a random 6 of N each visit.
     supabase
       .from("reels")
       .select(
@@ -211,7 +285,7 @@ export default async function HomePage({
       )
       .eq("is_published", true)
       .order("like_count", { ascending: false })
-      .limit(8)
+      .limit(24)
       .returns<TrendingReel[]>(),
     // Trending events — future only, sorted by rsvp_count
     scopeToCity(
@@ -240,6 +314,22 @@ export default async function HomePage({
       .gte("valid_until", nowIso)
       .order("created_at", { ascending: false })
       .limit(15),
+    // Culture pool — exhibits + gallery items. Drives the new
+    // image-heavy "Culture Right Now" rail under Deals. Only published
+    // items with cover art so the grid never has empty cells.
+    supabase
+      .from("museum_exhibits")
+      .select("id, slug, title, subtitle, cover_image_url, era")
+      .eq("is_published", true)
+      .not("cover_image_url", "is", null)
+      .order("display_order", { ascending: true })
+      .limit(20),
+    supabase
+      .from("gallery_items")
+      .select("id, slug, title, image_urls, item_type, artist_name, year_created")
+      .eq("is_published", true)
+      .order("display_order", { ascending: true })
+      .limit(40),
   ]);
 
   // ── Personalization data (logged-in only, all errors are non-fatal) ──────
@@ -367,6 +457,57 @@ export default async function HomePage({
 
   const trendingReels: TrendingReel[] = trendingReelsRaw ?? [];
   const trendingEvents: TrendingEvent[] = trendingEventsRaw ?? [];
+
+  // Culture pool — flatten exhibits + gallery items into a single
+  // shuffled list of image-led tiles. Drives the new rail under
+  // Deals Dropped. Each tile has a kind so the chip can label it.
+  type CultureTile = {
+    id: string;
+    kind: "exhibit" | "art";
+    title: string;
+    image: string | null;
+    href: string;
+    meta: string | null;
+  };
+  const cultureTiles: CultureTile[] = [];
+  for (const ex of (cultureExhibitsRaw ?? []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    subtitle: string | null;
+    cover_image_url: string | null;
+    era: string | null;
+  }>) {
+    if (!ex.cover_image_url) continue;
+    cultureTiles.push({
+      id: `exhibit-${ex.id}`,
+      kind: "exhibit",
+      title: ex.title,
+      image: ex.cover_image_url,
+      href: `/culture/exhibits/${ex.slug}`,
+      meta: ex.era ?? ex.subtitle,
+    });
+  }
+  for (const g of (cultureGalleryRaw ?? []) as Array<{
+    id: string;
+    slug: string;
+    title: string;
+    image_urls: string[] | null;
+    item_type: string | null;
+    artist_name: string | null;
+    year_created: string | null;
+  }>) {
+    const cover = g.image_urls?.[0];
+    if (!cover) continue;
+    cultureTiles.push({
+      id: `art-${g.id}`,
+      kind: "art",
+      title: g.title,
+      image: cover,
+      href: `/culture/gallery/${g.slug}`,
+      meta: [g.artist_name, g.year_created].filter(Boolean).join(" · ") || null,
+    });
+  }
 
   // Flatten the joined deals shape — Supabase JS may return `business`
   // as an object or a single-item array depending on the relationship,
@@ -608,7 +749,7 @@ export default async function HomePage({
           </div>
           <div className="overflow-x-auto scrollbar-hide pb-1">
             <div className="flex gap-2 px-[18px]">
-              {trendingReels.slice(0, 8).map((r) => (
+              {pickRandom(trendingReels, 8).map((r) => (
                 <Link
                   key={r.id}
                   href={`/moments?r=${r.id}`}
@@ -810,6 +951,95 @@ export default async function HomePage({
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* § CULTURE RIGHT NOW — random exhibits + gallery pieces from
+            /culture. Image-heavy mosaic tile to break up the text-led
+            rails above (Dispatches, Local Favorites). Refreshes on
+            every load via pickRandom + force-dynamic. */}
+      {cultureTiles.length > 0 && (
+        <section className="pt-6">
+          <div className="px-[18px] mb-3">
+            <div
+              className="flex items-baseline gap-3 pb-2"
+              style={{ borderBottom: "2px solid var(--rule-strong-c)" }}
+            >
+              <span
+                className="c-display c-tabnum"
+                style={{
+                  fontSize: 22,
+                  color: "var(--gold-c)",
+                  lineHeight: 1,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                §
+              </span>
+              <div className="flex flex-col">
+                <span
+                  className="c-kicker"
+                  style={{ fontSize: 10, letterSpacing: "0.18em" }}
+                >
+                  CULTURE RIGHT NOW
+                </span>
+                <span
+                  className="c-serif-it"
+                  style={{ fontSize: 12, color: "var(--ink-strong)", opacity: 0.65 }}
+                >
+                  Compton, in frame.
+                </span>
+              </div>
+              <Link
+                href="/culture/gallery"
+                className="ml-auto c-kicker press"
+                style={{
+                  fontSize: 9,
+                  color: "var(--gold-c)",
+                  letterSpacing: "0.16em",
+                }}
+              >
+                ALL ↗
+              </Link>
+            </div>
+          </div>
+          {(() => {
+            const picks = pickRandom(cultureTiles, 6);
+            // Mosaic layout: row 1 = 1 wide hero + 2 stacked squares;
+            // row 2 = 3 squares. Falls back to a simple 3-grid if we
+            // somehow get fewer than 4 tiles.
+            const [t0, t1, t2, t3, t4, t5] = picks;
+            if (picks.length < 4) {
+              return (
+                <div className="grid grid-cols-3 gap-2 px-[18px]">
+                  {picks.map((t) => (
+                    <CultureTileCard key={t.id} tile={t} aspect="1/1" />
+                  ))}
+                </div>
+              );
+            }
+            return (
+              <div className="px-[18px] space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Hero spans 2 cols */}
+                  <div className="col-span-2">
+                    <CultureTileCard tile={t0} aspect="4/3" />
+                  </div>
+                  <div className="grid grid-rows-2 gap-2">
+                    <CultureTileCard tile={t1} aspect="2/1" />
+                    <CultureTileCard tile={t2} aspect="2/1" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[t3, t4, t5]
+                    .filter((t): t is CultureTile => Boolean(t))
+                    .map((t) => (
+                      <CultureTileCard key={t.id} tile={t} aspect="1/1" />
+                    ))}
+                </div>
+              </div>
+            );
+          })()}
         </section>
       )}
 
