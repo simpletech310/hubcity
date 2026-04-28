@@ -155,6 +155,14 @@ export async function GET(request: Request) {
     {
       width: 1200,
       height: 630,
+      headers: {
+        // OG cards are deterministic for any (title, kicker, accent)
+        // tuple, so we can let edge + browser cache them aggressively.
+        // 1 day at edge, immutable at the browser — drops the CPU
+        // cost of re-rendering identical cards across crawls.
+        "cache-control":
+          "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800, immutable",
+      },
     },
   );
 }

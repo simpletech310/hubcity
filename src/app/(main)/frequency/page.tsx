@@ -9,7 +9,11 @@ import type { Album, AudioGenre, Playlist, Podcast } from "@/types/database";
 // here to feature a different single without touching DB rows.
 const FEATURED_ALBUM_SLUG = "westside-party";
 
-export const dynamic = "force-dynamic";
+// ISR — re-render at most once per minute. The catalog only changes
+// when an admin publishes a new album / episode / playlist, so a
+// 60s cache is essentially live but cuts our Supabase round-trip
+// cost on every render of the heaviest page on the platform.
+export const revalidate = 60;
 
 /**
  * /frequency — server-rendered hub index.

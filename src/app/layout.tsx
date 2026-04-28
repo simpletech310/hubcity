@@ -139,6 +139,22 @@ export default function RootLayout({
     >
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* Preconnect to the third-party origins we hit on every
+            page so the browser can finish DNS + TCP + TLS while
+            React hydrates. Saves 100-300ms on first image / video
+            depending on RTT. */}
+        <link
+          rel="preconnect"
+          href="https://fahqtnwwikvocpvvfgqi.supabase.co"
+          crossOrigin=""
+        />
+        <link
+          rel="dns-prefetch"
+          href="https://fahqtnwwikvocpvvfgqi.supabase.co"
+        />
+        <link rel="preconnect" href="https://image.mux.com" crossOrigin="" />
+        <link rel="preconnect" href="https://stream.mux.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://image.mux.com" />
       </head>
       <body className="font-body antialiased">
         {children}

@@ -1,16 +1,34 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // ── Build-time perf ─────────────────────────────────────────
+  // Compress responses on the Node server (Vercel handles this at
+  // the edge anyway, but harmless on self-host).
+  compress: true,
+  // Strip all `console.*` calls from the production bundle except
+  // errors + warnings — saves bytes + avoids leaking info.
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? { exclude: ["error", "warn"] }
+        : false,
+  },
+  // ── Runtime image-optimization config ───────────────────────
+  // Re-enabled after the Vercel Pro upgrade. Free tier was 402-ing
+  // /_next/image because of quota; Pro lifts the cap to 10k source
+  // images / month with reasonable overage pricing. We get back:
+  //  • avif/webp conversion (often 60-80% smaller than source JPGs)
+  //  • srcset responsive sizing — phones request 384/640px instead
+  //    of pulling the 1697px source for every tile
+  //  • year-long edge cache so repeat hits don't re-bill
   images: {
-    // Vercel's free-tier image-optimization quota is finite, and at
-    // demo scale (~thousands of seeded posts/events/business covers)
-    // we've been blowing through it — `/_next/image` starts returning
-    // HTTP 402 OPTIMIZED_IMAGE_REQUEST_PAYMENT_REQUIRED, which renders
-    // every <Image> as a broken thumbnail. Bypassing optimization
-    // ships the source URLs straight through. We trade webp/avif +
-    // responsive resizing for actually-rendering images, which is the
-    // right call until the project is on a paid Vercel tier.
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31_536_000, // 1 year
+    // Phone-first device sizes — slimmer than the Next default
+    // (which goes up to 3840px). We rarely render images larger
+    // than ~1200px outside hero art.
+    deviceSizes: [320, 420, 640, 750, 828, 1080, 1200, 1600],
+    imageSizes: [64, 96, 128, 200, 256, 384],
     remotePatterns: [
       {
         protocol: "https",
